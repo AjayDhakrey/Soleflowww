@@ -1,18 +1,29 @@
-import { createServer } from 'node:http';
+import express from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const port = Number(process.env.API_PORT || 4000);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const port = Number(process.env.PORT || 3000);
+const distPath = path.resolve(__dirname, '../frontend/dist');
 
-const server = createServer((request, response) => {
-  if (request.url === '/api/health' && request.method === 'GET') {
-    response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-    response.end(JSON.stringify({ status: 'ok', service: 'soleflow-api' }));
-    return;
-  }
+const app = express();
+app.use(express.json());
 
-  response.writeHead(404, { 'content-type': 'application/json; charset=utf-8' });
-  response.end(JSON.stringify({ error: 'Not found' }));
+app.get('/api/health', (_request, response) => {
+  response.status(200).json({ status: 'ok', service: 'soleflow-api' });
 });
 
-server.listen(port, '0.0.0.0', () => {
-  console.log(`SoleFlow API listening on http://localhost:${port}`);
+app.use('/api', (_request, response) => {
+  response.status(404).json({ error: 'Not found' });
 });
+
+app.use(express.static(distPath));
+
+app.get('*', (_request, response) => {
+  response.sendFile(path.join(distPath, 'index.html'));
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`SoleFlow server listening on http://0.0.0.0:${port}`);
+});
+

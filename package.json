@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/dev.mjs",
-    "dev:frontend": "vite frontend --config frontend/vite.config.ts --host 0.0.0.0",
+    "dev": "npm run build:frontend && node backend/server.js",
+    "build:frontend": "vite build frontend --config frontend/vite.config.ts",
+    "dev:frontend": "vite frontend --config frontend/vite.config.ts --host 0.0.0.0 --port 3000",
     "dev:backend": "node backend/server.js",
     "build": "vite build frontend --config frontend/vite.config.ts",
+    "start": "node backend/server.js",
     "preview": "vite preview frontend --config frontend/vite.config.ts",
     "clean": "node scripts/clean.mjs",
     "lint": "tsc --noEmit"

@@ -1,0 +1,6 @@
+{
+  "name": "SoleFlow - B2B Footwear Trade & CRM",
+  "description": "Enterprise B2B Footwear Trade Management & CRM Web Application for wholesale shoe distributors, manufacturers, and sales teams.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

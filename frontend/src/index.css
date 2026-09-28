@@ -315,26 +315,50 @@
 }
 
 /* A single, page-scoped cinematic background for the public landing page. */
+.landing-video-page .landing-background-video {
+  filter: contrast(102%) brightness(92%);
+  will-change: transform;
+}
+
 .landing-video-page .landing-background-overlay {
   background: linear-gradient(
-    180deg,
-    rgb(248 250 252 / 0.32) 0%,
-    rgb(248 250 252 / 0.2) 34%,
-    rgb(248 250 252 / 0.2) 72%,
-    rgb(248 250 252 / 0.3) 100%
+    90deg,
+    rgba(2, 6, 23, 0.82) 0%,
+    rgba(2, 6, 23, 0.65) 40%,
+    rgba(2, 6, 23, 0.35) 70%,
+    rgba(2, 6, 23, 0.25) 100%
+  ),
+  radial-gradient(
+    circle at 72% 40%,
+    rgba(37, 99, 235, 0.08) 0%,
+    rgba(2, 6, 23, 0.25) 55%,
+    rgba(2, 6, 23, 0.75) 100%
   );
+  backdrop-filter: contrast(101%);
+}
+
+@media (max-width: 768px) {
+  .landing-video-page .landing-background-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(2, 6, 23, 0.88) 0%,
+      rgba(2, 6, 23, 0.72) 42%,
+      rgba(2, 6, 23, 0.45) 78%,
+      rgba(2, 6, 23, 0.68) 100%
+    );
+  }
 }
 
 .landing-video-page #hero h1,
 .landing-video-page .cinematic-transparent-section h2,
 .landing-video-page #motion-lab > section h2 {
   color: #f8fafc;
-  text-shadow: 0 2px 14px rgb(15 23 42 / 0.75);
+  text-shadow: 0 2px 14px rgb(2 6 23 / 0.85);
 }
 
 .landing-video-page .cinematic-section-description {
   color: #e2e8f0;
-  text-shadow: 0 1px 10px rgb(15 23 42 / 0.8);
+  text-shadow: 0 1px 10px rgb(2 6 23 / 0.9);
 }
 
 .landing-video-page footer.cinematic-transparent-section :is(.text-slate-900, .text-slate-800, .text-slate-700) {
@@ -361,7 +385,7 @@
 
 @media (max-width: 640px) {
   .landing-background-video {
-    object-position: 52% center;
+    object-position: 50% center;
   }
 }
 

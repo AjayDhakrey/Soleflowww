@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ArrowRight,
   ShoppingBag,
@@ -46,7 +46,8 @@ import { useApp } from '../../context/AppContext';
 import { WholesaleCalculator } from './WholesaleCalculator';
 import { FootwearMotionStage } from './FootwearMotionStage';
 
-// High-fidelity image assets
+// High-fidelity image and video poster assets
+import heroVideoPosterImg from '../../assets/images/hero_video_poster.jpg';
 import heroFootwearImg from '../../assets/images/hero_footwear_editorial_1790321154027.jpg';
 import sneakerMotionImg from '../../assets/images/sneaker_motion_stride_1790321168010.jpg';
 import leatherCraftImg from '../../assets/images/leather_craft_detail_1790321180013.jpg';
@@ -73,6 +74,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [email, setEmail] = useState('admin@soleflow.com');
   const [password, setPassword] = useState('admin123');
   const [authError, setAuthError] = useState('');
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (heroVideoRef.current) {
+      heroVideoRef.current.play().catch(() => {
+        // Browser autoplay restriction fallback handled by high-res poster
+      });
+    }
+  }, []);
 
   // Create Account (Sign up) form state
   const [signupName, setSignupName] = useState('');
@@ -440,11 +450,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="landing-video-page relative isolate min-h-screen overflow-x-clip text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
       <div
-        className="fixed inset-0 -z-30 h-screen w-screen bg-cover bg-center bg-no-repeat pointer-events-none"
-        style={{ backgroundImage: `url(${heroFootwearImg})` }}
+        className="fixed inset-0 -z-30 h-screen w-screen bg-cover bg-center bg-no-repeat pointer-events-none transition-opacity duration-700"
+        style={{ backgroundImage: `url(${heroVideoPosterImg})` }}
         aria-hidden="true"
       />
       <video
+        ref={heroVideoRef}
         className="landing-background-video fixed inset-0 -z-20 h-screen w-screen object-cover object-center pointer-events-none"
         autoPlay
         muted
@@ -452,12 +463,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         playsInline
         controls={false}
         disablePictureInPicture
-        preload="metadata"
-        poster={heroFootwearImg}
+        preload="auto"
+        poster={heroVideoPosterImg}
         aria-hidden="true"
         tabIndex={-1}
       >
-        <source src="/assets/videos/landing-cinematic.mp4" type="video/mp4" />
+        <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
       </video>
       <div className="landing-background-overlay fixed inset-0 -z-10 pointer-events-none" aria-hidden="true" />
 
