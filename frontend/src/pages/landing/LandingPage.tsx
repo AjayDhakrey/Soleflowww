@@ -20,14 +20,10 @@ import {
   ExternalLink,
   ChevronRight,
   ChevronDown,
-  ChevronLeft,
   ShieldCheck,
   Zap,
-  Camera,
   Star,
   Compass,
-  Play,
-  Pause,
   Sliders,
   Check,
   Search,
@@ -40,10 +36,21 @@ import {
   Phone,
   Eye,
   EyeOff,
+  Truck,
+  RotateCw,
+  Calculator,
+  Receipt,
+  Tag,
+  MessageCircle,
+  IndianRupee,
+  BarChart3,
+  Boxes,
+  HelpCircle,
+  Play,
+  CheckCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../../context/AppContext';
-import { WholesaleCalculator } from './WholesaleCalculator';
 import { FootwearMotionStage } from './FootwearMotionStage';
 
 // High-fidelity image and video poster assets
@@ -53,6 +60,81 @@ import sneakerMotionImg from '../../assets/images/sneaker_motion_stride_17903211
 import leatherCraftImg from '../../assets/images/leather_craft_detail_1790321180013.jpg';
 import outdoorBootImg from '../../assets/images/outdoor_technical_boot_1790321192724.jpg';
 import walkingMotionBg from '../../assets/images/footwear_walking_motion_1790245134535.jpg';
+import footwearShowcaseBanner from '../../assets/images/footwear_showcase_banner_1790245146976.jpg';
+
+// =========================================================================
+// MEMOIZED HARDWARE-ACCELERATED BACKGROUND VIDEO PLAYER
+// =========================================================================
+const BackgroundVideoPlayer = React.memo(() => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const tryPlay = () => {
+      video.play().catch(() => {
+        // Fallback silently handled by poster
+      });
+    };
+
+    tryPlay();
+
+    // Pause video when user leaves tab to save GPU/CPU; resume immediately when active
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        video.pause();
+      } else {
+        tryPlay();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 -z-20 h-screen w-screen overflow-hidden pointer-events-none transform-gpu contain-strict">
+      {/* Fallback Poster */}
+      <div
+        className="absolute inset-0 -z-30 bg-cover bg-[50%_35%] sm:bg-[50%_38%] md:bg-[50%_40%] lg:bg-[50%_36%] bg-no-repeat transition-opacity duration-700"
+        style={{ backgroundImage: `url(${heroVideoPosterImg})` }}
+        aria-hidden="true"
+      />
+
+      {/* Hardware-Accelerated Video Element */}
+      <video
+        ref={videoRef}
+        className="w-full h-full object-cover object-[50%_35%] sm:object-[50%_38%] md:object-[50%_40%] lg:object-[50%_36%] will-change-transform transform-gpu"
+        autoPlay
+        muted
+        loop
+        playsInline
+        controls={false}
+        disablePictureInPicture
+        preload="auto"
+        poster={heroVideoPosterImg}
+        aria-hidden="true"
+        tabIndex={-1}
+      >
+        <source media="(min-width: 768px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+        <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
+      </video>
+
+      {/* Pure High-Contrast Gradient Overlay without destructive full-screen filters */}
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none transform-gpu"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 32%, rgba(15, 23, 42, 0.40) 0%, rgba(15, 23, 42, 0.65) 85%, rgba(2, 6, 23, 0.85) 100%)',
+        }}
+        aria-hidden="true"
+      />
+    </div>
+  );
+});
+BackgroundVideoPlayer.displayName = 'BackgroundVideoPlayer';
 
 interface LandingPageProps {
   onLoginSuccess: (role: 'admin' | 'salesperson') => void;
@@ -74,17 +156,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [email, setEmail] = useState('admin@soleflow.com');
   const [password, setPassword] = useState('admin123');
   const [authError, setAuthError] = useState('');
-  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (heroVideoRef.current) {
-      heroVideoRef.current.play().catch(() => {
-        // Browser autoplay restriction fallback handled by high-res poster
-      });
-    }
-  }, []);
-
-  // Create Account (Sign up) form state
+  // Sign up form state
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -93,59 +167,93 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [signupRole, setSignupRole] = useState<'admin' | 'salesperson'>('admin');
   const [signupBusinessName, setSignupBusinessName] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
-  const [signupZone, setSignupZone] = useState('Delhi-NCR & Western UP Hub');
+  const [signupZone, setSignupZone] = useState('Agra Footwear Belt');
   const [signupError, setSignupError] = useState('');
   const [isSubmittingSignup, setIsSubmittingSignup] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
 
-  const prefillSignup = (role: 'admin' | 'salesperson') => {
-    setSignupRole(role);
-    setSignupError('');
-    if (role === 'admin') {
-      setSignupName('Vikram Malhotra');
-      setSignupEmail('vikram@apexfootwear.com');
-      setSignupPassword('soleflow2026');
-      setSignupConfirmPassword('soleflow2026');
-      setSignupBusinessName('Apex Footwear Wholesale');
-      setSignupPhone('+91 98112 34567');
-      setSignupZone('Delhi-NCR & Western UP Hub');
-    } else {
-      setSignupName('Arjun Rawat');
-      setSignupEmail('arjun.rawat@soleflow.com');
-      setSignupPassword('salesrep2026');
-      setSignupConfirmPassword('salesrep2026');
-      setSignupBusinessName('North Region Traveling Rep');
-      setSignupPhone('+91 98234 56789');
-      setSignupZone('Agra Footwear Manufacturing Belt');
-    }
+  // FAQ accordion state
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Wholesale calculator state
+  const [calcSizeCurve, setCalcSizeCurve] = useState<'mens' | 'womens' | 'unisex'>('mens');
+  const [calcCartons, setCalcCartons] = useState<number>(4);
+  const [calcPricePerPair, setCalcPricePerPair] = useState<number>(1250);
+  const [calcRetailMrp, setCalcRetailMrp] = useState<number>(2499);
+
+  const calcCurves = {
+    mens: {
+      name: "Men's Pro Runner (EU 39-44)",
+      sizes: ['6', '7', '8', '9', '10', '11'],
+      ratio: [6, 12, 12, 8, 6, 4],
+      pairsPerCarton: 12,
+      baseRatio: [1.5, 3, 3, 2, 1.5, 1],
+    },
+    womens: {
+      name: "Women's Comfort Curve (EU 36-41)",
+      sizes: ['4', '5', '6', '7', '8', '9'],
+      ratio: [4, 10, 14, 10, 6, 4],
+      pairsPerCarton: 12,
+      baseRatio: [1, 2.5, 3.5, 2.5, 1.5, 1],
+    },
+    unisex: {
+      name: 'Universal Sneaker Assortment',
+      sizes: ['5', '6', '7', '8', '9', '10'],
+      ratio: [6, 8, 12, 12, 6, 4],
+      pairsPerCarton: 12,
+      baseRatio: [1.5, 2, 3, 3, 1.5, 1],
+    },
   };
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const activeCalcCurve = calcCurves[calcSizeCurve];
+  const calcTotalPairs = calcCartons * activeCalcCurve.pairsPerCarton;
+  const calcTotalOrderValue = calcTotalPairs * calcPricePerPair;
+  const calcGst = Math.round(calcTotalOrderValue * 0.12);
+  const calcFreight = 2500;
+  const calcTotalLandedCost = calcTotalOrderValue + calcGst + calcFreight;
+  const calcPotentialRevenue = calcTotalPairs * calcRetailMrp;
+  const calcMargin = Math.max(0, Math.round(((calcPotentialRevenue - calcTotalLandedCost) / calcPotentialRevenue) * 100)) || 18;
+
+  const prefillSignup = (role: 'admin' | 'salesperson') => {
+    setSignupRole(role);
+    if (role === 'admin') {
+      setSignupName('Rajesh Verma');
+      setSignupEmail('rajesh@vermafootwear.com');
+      setSignupBusinessName('Verma Footwear Distributors');
+      setSignupPhone('+91 98290 12345');
+      setSignupZone('Agra Footwear Belt');
+    } else {
+      setSignupName('Vikram Malhotra');
+      setSignupEmail('vikram@apexfootwear.com');
+      setSignupBusinessName('Apex Field Sales Operations');
+      setSignupPhone('+91 98111 87654');
+      setSignupZone('North Zone (Delhi-NCR & UP)');
+    }
+    setSignupPassword('soleflow2026');
+    setSignupConfirmPassword('soleflow2026');
+  };
+
+  const handleFormSignup = (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
 
-    if (!signupName.trim()) {
-      setSignupError('Please enter your full name.');
+    if (!signupName.trim() || !signupEmail.trim() || !signupPassword) {
+      setSignupError('Please fill in all required fields.');
       return;
     }
-    if (!signupEmail.trim() || !signupEmail.includes('@') || !signupEmail.includes('.')) {
-      setSignupError('Please enter a valid work email address.');
+
+    if (signupPassword !== signupConfirmPassword) {
+      setSignupError('Passwords do not match.');
       return;
     }
+
     if (signupPassword.length < 6) {
       setSignupError('Password must be at least 6 characters.');
       return;
     }
-    if (signupConfirmPassword && signupPassword !== signupConfirmPassword) {
-      setSignupError('Passwords do not match.');
-      return;
-    }
-    if (!agreeTerms) {
-      setSignupError('Please accept the Terms of Service to continue.');
-      return;
-    }
 
     setIsSubmittingSignup(true);
+
     setTimeout(() => {
       const success = register({
         name: signupName,
@@ -166,265 +274,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       }
     }, 450);
   };
-
-  // Interactive Prompt Generator State (Hercules-style)
-  const [activeArchetype, setActiveArchetype] = useState<string>('factory');
-  const [promptText, setPromptText] = useState<string>(
-    'Build a 24-pair master carton assortment for 600 injection runners with SATRA TM92 certification...'
-  );
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
-  const [simulationResult, setSimulationResult] = useState<any | null>(null);
-  const [attachedSpec, setAttachedSpec] = useState<string | null>(null);
-
-  // Case Studies Carousel State
-  const [activeCaseIndex, setActiveCaseIndex] = useState<number>(0);
-
-  // FAQ Accordion State
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
-  // Archetype prompts mapping
-  const archetypePrompts: Record<string, { label: string; prompt: string; icon: any }> = {
-    factory: {
-      label: 'Factory Production',
-      prompt: 'Build a multi-stage lasting pipeline for 1,200 pairs of PU direct injection sneakers tracking upper cutting, stitch line, soling and QC pass...',
-      icon: Factory,
-    },
-    lineSheets: {
-      label: 'Wholesale Line Sheets',
-      prompt: 'Create a digital line sheet for 350 retailers with 24-pair master carton size curves, FOB wholesale tiers, and 1-click WhatsApp export...',
-      icon: Layers,
-    },
-    fieldSales: {
-      label: 'Field Rep Routes',
-      prompt: 'Build a GPS-geotagged route planner for 12 sales reps with offline dealer ordering, instant balance check, and sample bag stock sync...',
-      icon: Users,
-    },
-    mobileApps: {
-      label: 'Mobile Order App',
-      prompt: 'Create a rapid footwear B2B order checkout app for retail shop owners with pre-pack curve assortment and instant GST invoice generation...',
-      icon: Smartphone,
-    },
-  };
-
-  const handleArchetypeClick = (key: string) => {
-    setActiveArchetype(key);
-    setPromptText(archetypePrompts[key].prompt);
-  };
-
-  const handleTryTagClick = (tag: string) => {
-    switch (tag) {
-      case '24-Pr Master Carton':
-        setPromptText('Model a 24-pair master carton assortment with EU 40-45 ratio (2:4:6:6:4:2) and volumetric freight calculation...');
-        break;
-      case 'PU Injection Runner':
-        setPromptText('Generate factory lasting specs for Apex Runner Pro with dual-density Phylon midsole and 180,000 SATRA TM92 flex cycles...');
-        break;
-      case 'Blake Welt Derby':
-        setPromptText('Create artisan wholesale order for 240 pairs of Italian calfskin Blake-stitched derbies with vegetable tanned leather outsoles...');
-        break;
-      case 'Geotagged Visit':
-        setPromptText('Log a verified store visit at Metro Footwear Hub with ₹4,20,000 outstanding ledger recovery and 5 master carton order...');
-        break;
-      case '30-Day Credit Aging':
-        setPromptText('Enforce 30-day dealer credit limit lock with automated overdue payment reminders and post-dated cheque reconciliation...');
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleRunSimulation = () => {
-    setIsSimulating(true);
-    setTimeout(() => {
-      setIsSimulating(false);
-      setSimulationResult({
-        title: promptText.includes('Blake')
-          ? 'Blake-Stitched Executive Production Run'
-          : promptText.includes('Master Carton')
-          ? '24-Pair Master Carton Pre-Pack Assortment'
-          : promptText.includes('Visit')
-          ? 'Geotagged Retailer Store Order & Ledger'
-          : 'High-Performance Injection Batch SF-1024',
-        article: promptText.includes('Blake') ? 'Firenze Blake Derby' : 'Apex Runner Pro SF-1024',
-        volume: promptText.includes('Blake') ? '240 Pairs (20 Cartons)' : '600 Pairs (25 Cartons)',
-        fob: promptText.includes('Blake') ? '₹1,350 / pair' : '₹780 / pair',
-        qcStandard: 'SATRA TM92 Certified (Zero Delamination)',
-        leadTime: '12 Working Days',
-        status: 'Simulation Ready · Click below to launch in portal',
-      });
-    }, 700);
-  };
-
-  // Case Studies (matching Hercules image 3 cards layout)
-  const caseStudies = [
-    {
-      id: 1,
-      company: 'Kingdom Footwear Dist.',
-      category: 'Wholesale Distribution',
-      stat1: '$30k',
-      label1: 'Saved per year',
-      stat2: '4',
-      label2: 'Vendors replaced',
-      image: heroFootwearImg,
-      quote: 'Consolidated order sheets, dealer credit control, and factory tracking into one unified system.',
-    },
-    {
-      id: 2,
-      company: 'The Sole Hut',
-      category: 'Footwear Retail Chain',
-      stat1: '30x',
-      label1: 'Reorder velocity',
-      stat2: '$50k',
-      label2: 'Saved in deadstock',
-      image: sneakerMotionImg,
-      quote: 'Eliminated broken size-curves with automated 24-pair master carton ratio ordering.',
-    },
-    {
-      id: 3,
-      company: 'Sold Out Footwear',
-      category: 'Athletic Brand',
-      stat1: '30x',
-      label1: 'Faster bulk releases',
-      stat2: '75 hrs',
-      label2: 'Saved a month',
-      image: leatherCraftImg,
-      quote: 'Automated digital line sheets with customized wholesale pricing for every distributor tier.',
-    },
-    {
-      id: 4,
-      company: 'Petony Footwear Logistics',
-      category: 'Fleet & Dispatch',
-      stat1: '+20%',
-      label1: 'Revenue growth',
-      stat2: '$230k',
-      label2: 'Saved in transit',
-      image: outdoorBootImg,
-      quote: 'Real-time transport LR tracking and GST e-invoicing integrated straight with our dispatch docks.',
-    },
-    {
-      id: 5,
-      company: 'Gamatauri Shoes',
-      category: 'OEM Leather Mill',
-      stat1: '+$200k',
-      label1: 'Added revenue',
-      stat2: '49%',
-      label2: 'Higher dealer retention',
-      image: walkingMotionBg,
-      quote: 'Connected our lasting factory lines directly to wholesale distributor orders with zero mispacking.',
-    },
-  ];
-
-  // Testimonials (matching Hercules image 4 4x2 grid)
-  const testimonials = [
-    {
-      id: 1,
-      quote:
-        '“I lost over $36k on a software agency that spent a year and never delivered. I built my company’s whole footwear trade operating system on SoleFlow in under a month.”',
-      author: 'Sarah',
-      role: 'Founder, Imjomat Footwear',
-      avatarBg: 'bg-emerald-600',
-      initials: 'S',
-    },
-    {
-      id: 2,
-      quote:
-        '“I’m a full-stack engineer and shoe brand owner. I’ve tried dozens of ERP systems in 8 years. I built what I have now on SoleFlow in 15 days for about $1,000. It’s incredible.”',
-      author: 'Airam',
-      role: 'Founder, Pleno',
-      avatarBg: 'bg-blue-600',
-      initials: 'A',
-    },
-    {
-      id: 3,
-      quote:
-        '“I found SoleFlow on a Friday evening and kept configuring until 3am. The next morning I showed my wholesale partners what I’d built and they were amazed.”',
-      author: 'Doug Dostal',
-      role: 'Founder, Reiliz Kicks',
-      avatarBg: 'bg-amber-600',
-      initials: 'D',
-    },
-    {
-      id: 4,
-      quote:
-        '“As a non-technical founder, SoleFlow has already saved me thousands I would have spent on an ERP consultant and bespoke inventory developers.”',
-      author: 'Brittany B.',
-      role: 'Founder, B-Sole Footwear',
-      avatarBg: 'bg-rose-600',
-      initials: 'B',
-    },
-    {
-      id: 5,
-      quote:
-        '“It took me an hour to configure an order portal that my whole 12-person sales team now uses every day. I can’t even code, but SoleFlow makes it that easy.”',
-      author: 'Dorian P.',
-      role: 'VP Operations, Apex Footwear',
-      avatarBg: 'bg-indigo-600',
-      initials: 'D',
-    },
-    {
-      id: 6,
-      quote:
-        '“It cut my daily admin work from 12 hours down to maybe 1.5. SoleFlow rekindled something in me I thought I’d lost—the joy of building great shoes.”',
-      author: 'Donnie Lee',
-      role: 'Founder, Donald Lee Footwear',
-      avatarBg: 'bg-slate-700',
-      initials: 'DL',
-    },
-    {
-      id: 7,
-      quote:
-        '“With SoleFlow I can set a different wholesale price for every product and every customer in seconds. My dealer reorders instantly went up.”',
-      author: 'Thales',
-      role: 'Founder, Gamatauri',
-      avatarBg: 'bg-teal-600',
-      initials: 'T',
-    },
-    {
-      id: 8,
-      quote:
-        '“A pre-pack size breakdown used to take me an hour. Now it’s instant, and it generates the factory production ticket and GST invoice automatically.”',
-      author: 'David Restrepo',
-      role: 'VP Logistics, Sold Out',
-      avatarBg: 'bg-purple-600',
-      initials: 'DR',
-    },
-  ];
-
-  // Frequently Asked Questions (matching Hercules image 5)
-  const faqs = [
-    {
-      q: 'What is SoleFlow?',
-      a: 'SoleFlow is the specialized B2B operating system and software platform built specifically for footwear wholesale distributors, OEM manufacturing mills, and traveling sales teams. It manages master carton size curves, factory lasting milestones, field rep GPS routes, dealer credit limits, and WhatsApp digital line sheets.',
-    },
-    {
-      q: 'How does SoleFlow work?',
-      a: 'SoleFlow unifies your entire footwear trade cycle: designers upload article CAD and specs, traders configure master carton pre-pack ratios, traveling reps capture geotagged dealer orders on tablets, factories update real-time lasting gates (Cutting, Stitching, Soling, QC), and accountants track 30/60/90-day aging receivables.',
-    },
-    {
-      q: 'What can I build and run with SoleFlow?',
-      a: 'You can run complete dealer ordering portals, digital lookbooks with customized wholesale tier pricing, factory batch tracking pipelines, sales rep route management with sample bag checkouts, and automated GST-compliant e-invoices with HSN 6403/6404 codes.',
-    },
-    {
-      q: 'What features are built into SoleFlow for master carton size curves?',
-      a: 'SoleFlow has a built-in pre-pack modeling engine that automatically calculates pairs per carton (e.g. 24 pairs with a 2:4:6:6:4:2 ratio), volumetric weight, CBM freight estimates, and projected retail profit margins before factory production starts.',
-    },
-    {
-      q: 'Do I need coding or ERP experience?',
-      a: 'No. SoleFlow is designed for footwear industry business owners, merchandisers, and sales reps. You can start with our pre-loaded footwear catalog and sample data in 1 click.',
-    },
-    {
-      q: 'Can field reps work offline during store visits?',
-      a: 'Yes. Traveling reps can browse digital line sheets, check customer credit limits, and capture orders in retail shops even with intermittent or zero internet connectivity. Data synchronizes automatically once back online.',
-    },
-    {
-      q: 'How are factory production gates and quality tests tracked?',
-      a: 'Every production order moves through standard industrial milestones: Upper Leather Die Cutting, Closing & Stitching, PU Injection / Blake Welt Lasting, and Quality Inspection. SATRA TM92 flex cycle test certifications and batch barcodes are verified before master carton packing.',
-    },
-    {
-      q: 'Can I export digital line sheets directly to WhatsApp?',
-      a: 'Yes! SoleFlow generates high-resolution, branded digital line sheets and PDF catalogs with 1 click. You can select whether to show MSRP, wholesale FOB, or custom dealer tier discounts when sharing via WhatsApp or email.',
-    },
-  ];
 
   const handleInstantLogin = (role: 'admin' | 'salesperson') => {
     if (role === 'admin') {
@@ -447,1396 +296,1358 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }
   };
 
+  const openAuth = (mode: 'login' | 'signup') => {
+    if (onNavigateToLogin) {
+      onNavigateToLogin(mode);
+    } else {
+      setAuthMode(mode);
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  // Frequently Asked Questions
+  const faqs = [
+    {
+      q: 'What is SoleFlow?',
+      a: 'SoleFlow is an all-in-one software platform built specifically for Indian footwear wholesalers, distributors, manufacturers, and sales teams to manage products, stock, dealer orders, factory production, and payments in one simple place.',
+    },
+    {
+      q: 'Who is SoleFlow for?',
+      a: 'SoleFlow is made for footwear business owners, wholesale traders, master distributors, OEM manufacturing mills, retail chain buyers, and field sales teams taking orders on the go.',
+    },
+    {
+      q: 'Can I manage inventory and wholesale orders?',
+      a: 'Yes. You can add shoes with size curves, colors, and prices, track live stock across warehouses, and generate master carton wholesale orders with automatic GST and landed cost calculations.',
+    },
+    {
+      q: 'Do I need technical knowledge?',
+      a: 'No. SoleFlow is intentionally designed with a clean, simple Indian business interface. Anyone comfortable using a smartphone or WhatsApp can run their business on SoleFlow without spreadsheets or ERP consultants.',
+    },
+    {
+      q: 'Can I share orders on WhatsApp?',
+      a: 'Yes! You can export professional digital line sheets, wholesale order summaries, and GST-ready invoices directly to dealers via WhatsApp in 1 click.',
+    },
+    {
+      q: 'Does SoleFlow support GST and HSN codes?',
+      a: 'Yes. SoleFlow includes native Indian GST invoicing (5%, 12%, 18%) with standard footwear HSN codes (6402, 6403, 6404) pre-configured.',
+    },
+    {
+      q: 'How does dealer credit work?',
+      a: 'You can set credit limits, track outstanding balances, view aging reports (30/60/90 days), and record part payments via Bank NEFT, UPI, Cheque, or Cash.',
+    },
+    {
+      q: 'Can my sales team use SoleFlow on mobile?',
+      a: 'Yes. Traveling sales reps can open digital shoe catalogs, check live dealer balances, and book pre-pack orders right from their mobile phones during market visits.',
+    },
+    {
+      q: 'How does factory production tracking work?',
+      a: 'Send approved dealer orders directly to your factory unit and monitor progress through Cutting, Stitching, Lasting/Soling, and Quality Inspection before dispatch.',
+    },
+  ];
+
   return (
     <div className="landing-video-page relative isolate min-h-screen overflow-x-clip text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
-      <div
-        className="fixed inset-0 -z-30 h-screen w-screen bg-cover bg-center bg-no-repeat pointer-events-none transition-opacity duration-700"
-        style={{ backgroundImage: `url(${heroVideoPosterImg})` }}
-        aria-hidden="true"
-      />
-      <video
-        ref={heroVideoRef}
-        className="landing-background-video fixed inset-0 -z-20 h-screen w-screen object-cover object-center pointer-events-none"
-        autoPlay
-        muted
-        loop
-        playsInline
-        controls={false}
-        disablePictureInPicture
-        preload="auto"
-        poster={heroVideoPosterImg}
-        aria-hidden="true"
-        tabIndex={-1}
-      >
-        <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
-      </video>
-      <div className="landing-background-overlay fixed inset-0 -z-10 pointer-events-none" aria-hidden="true" />
+      {/* Isolated Memoized Background Video */}
+      <BackgroundVideoPlayer />
 
       <div className="relative z-0">
-      {/* ========================================================================= */}
-      {/* 1. FLOATING PILL TOP NAVIGATION BAR (Exact Hercules styling)             */}
-      {/* ========================================================================= */}
-      <div className="sticky top-2 sm:top-3 z-50 px-2 sm:px-6">
-        <header className="max-w-5xl mx-auto h-12 sm:h-14 bg-white/95 backdrop-blur-md px-3 sm:px-5 rounded-full border border-slate-200/90 shadow-sm flex items-center justify-between transition-all">
-          {/* Brand Wordmark with Lion/Sole Logo */}
-          <a href="#hero" className="flex items-center gap-2 text-sm sm:text-base font-black tracking-tight text-slate-900 shrink-0">
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold shadow-xs">
-              <svg
-                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-              </svg>
-            </div>
-            <span className="font-extrabold tracking-tight">SoleFlow</span>
-          </a>
-
-          {/* Clean Nav Links (matching Hercules) */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-7 text-xs font-semibold text-slate-600">
-            <a href="#capabilities" className="hover:text-slate-900 transition-colors">
-              Docs
-            </a>
-            <a href="#case-studies" className="hover:text-slate-900 transition-colors">
-              Case Studies
-            </a>
-            <a href="#wholesale-calculator" className="hover:text-slate-900 transition-colors">
-              Pricing
-            </a>
-            <a href="#faqs" className="hover:text-slate-900 transition-colors">
-              Support
-            </a>
-          </nav>
-
-          {/* Action Buttons: Log in + Create account / Demo */}
-          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
-            {isAlreadyLoggedIn ? (
-              <button
-                onClick={onReturnToDashboard}
-                className="px-3 sm:px-4 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
-              >
-                <span className="hidden sm:inline">Back to Portal</span>
-                <span className="sm:hidden">Portal</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => {
-                    if (onNavigateToLogin) {
-                      onNavigateToLogin('login');
-                    } else {
-                      setAuthMode('login');
-                      setAuthError('');
-                      setIsAuthModalOpen(true);
-                    }
-                  }}
-                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+        {/* ========================================================================= */}
+        {/* TOP FLOATING NAVBAR                                                       */}
+        {/* ========================================================================= */}
+        <div className="sticky top-2 sm:top-3 z-50 px-3 sm:px-6">
+          <header className="max-w-6xl mx-auto h-12 sm:h-14 bg-white/95 backdrop-blur-md px-4 sm:px-6 rounded-full border border-slate-200/90 shadow-md flex items-center justify-between transition-all">
+            {/* Logo */}
+            <a href="#hero" className="flex items-center gap-2 text-sm sm:text-base font-black tracking-tight text-slate-900 shrink-0">
+              <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <svg
+                  className="w-4 h-4 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  Log in
-                </button>
-                <button
-                  onClick={() => {
-                    if (onNavigateToLogin) {
-                      onNavigateToLogin('signup');
-                    } else {
-                      setAuthMode('signup');
-                      setSignupError('');
-                      setIsAuthModalOpen(true);
-                    }
-                  }}
-                  className="px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-all shadow-sm hover:shadow-md active:scale-95 cursor-pointer whitespace-nowrap"
-                >
-                  <span className="hidden xs:inline">Create account</span>
-                  <span className="xs:hidden">Sign up</span>
-                </button>
-              </>
-            )}
-          </div>
-        </header>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 2. HERO SECTION WITH HERCULES PROMPT GENERATOR & DIAMOND GRID            */}
-      {/* ========================================================================= */}
-      <section id="hero" className="min-h-[calc(100svh-4rem)] pt-8 pb-14 sm:pt-16 sm:pb-24 px-3 sm:px-6 relative overflow-hidden text-center">
-        <div className="relative z-10 max-w-4xl mx-auto space-y-4 sm:space-y-6">
-          {/* Animated Footwear Studio Tag */}
-          <div className="inline-flex items-center justify-center">
-            <a
-              href="#motion-lab"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50/80 hover:bg-blue-100 text-blue-700 border border-blue-200/80 text-[11px] font-semibold transition-all shadow-2xs group active:scale-95"
-            >
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping shrink-0" />
-              <span>Interactive Footwear Lab · Test 360° Spin &amp; Runway Stride</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </a>
-          </div>
-
-          {/* Main Headline (Exact Hercules composition) */}
-          <h1 className="text-2xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.14] text-balance">
-            The Best{' '}
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 bg-clip-text text-transparent">
-              Footwear B2B Platform
-            </span>{' '}
-            for Wholesale
-          </h1>
-
-          {/* Underlined Subtitle */}
-          <p className="cinematic-section-description text-xs sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed text-balance px-2">
-            Run wholesale orders, factory production &amp; field sales{' '}
-            <span className="relative inline-block text-slate-800 font-semibold underline decoration-blue-500/60 decoration-2 underline-offset-4">
-              without spreadsheet chaos
-            </span>
-          </p>
-
-          {/* Archetype Filter Buttons (2x2 grid on mobile for perfect symmetry, flex on tablet/desktop) */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 pt-1 max-w-sm sm:max-w-none mx-auto">
-            {Object.entries(archetypePrompts).map(([key, item]) => {
-              const IconComp = item.icon;
-              const isActive = activeArchetype === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => handleArchetypeClick(key)}
-                  className={`px-3 py-2 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer truncate ${
-                    isActive
-                      ? 'bg-white text-blue-700 border border-blue-400/80 shadow-xs ring-2 ring-blue-500/10 font-bold'
-                      : 'bg-white/80 hover:bg-white text-slate-600 border border-slate-200/80 shadow-2xs'
-                  }`}
-                >
-                  <IconComp className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                  <span className="truncate">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* The Central Interactive Generator Box (Exact Hercules Card Design) */}
-          <div className="max-w-3xl mx-auto bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 border border-slate-200/90 shadow-xl text-left space-y-3 sm:space-y-4 relative">
-            {/* Input area */}
-            <div className="relative">
-              <textarea
-                value={promptText}
-                onChange={(e) => setPromptText(e.target.value)}
-                rows={3}
-                className="w-full text-xs sm:text-base font-medium text-slate-800 placeholder-slate-400 bg-transparent resize-none border-0 focus:outline-none focus:ring-0 leading-relaxed"
-                placeholder="Describe your footwear wholesale assortment, master carton run, or dealer route..."
-              />
-            </div>
-
-            {/* Bottom Row Inside Box: Attach Image & Build it Button */}
-            <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-slate-100 gap-2">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <button
-                  onClick={() => {
-                    setAttachedSpec('Apex_Runner_TechPack_SF1024.pdf');
-                  }}
-                  className="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-                >
-                  <Camera className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>{attachedSpec ? 'Tech Pack ✓' : 'Attach Spec Sheet'}</span>
-                </button>
-
-                {attachedSpec && (
-                  <span className="hidden sm:inline text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 truncate">
-                    {attachedSpec}
-                  </span>
-                )}
+                  <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
+                  <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
+                </svg>
               </div>
+              <span className="font-extrabold tracking-tight text-slate-900">SoleFlow</span>
+            </a>
 
-              <button
-                onClick={handleRunSimulation}
-                disabled={isSimulating}
-                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/30 cursor-pointer shrink-0 disabled:opacity-75"
-              >
-                {isSimulating ? (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 animate-spin" />
-                    <span>Modeling...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Build it</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+            {/* Nav Links */}
+            <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
+              <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
+              <a href="#product-view" className="hover:text-blue-600 transition-colors">Product View</a>
+              <a href="#calculator" className="hover:text-blue-600 transition-colors">Pricing &amp; Calculator</a>
+              <a href="#how-it-works" className="hover:text-blue-600 transition-colors">How It Works</a>
+              <a href="#faq" className="hover:text-blue-600 transition-colors">Support &amp; FAQ</a>
+            </nav>
 
-          {/* Quick Click Tags below box: Try it -> [ ... ] with centered wrapping */}
-          <div className="pt-1 space-y-1.5">
-            <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-500">
-              <span>Try prompt examples:</span>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs text-slate-500 max-w-lg mx-auto">
-              {[
-                '24-Pr Master Carton',
-                'PU Injection Runner',
-                'Blake Welt Derby',
-                'Geotagged Visit',
-                '30-Day Credit Aging',
-              ].map((tag) => (
+            {/* Auth Actions */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {isAlreadyLoggedIn ? (
                 <button
-                  key={tag}
-                  onClick={() => handleTryTagClick(tag)}
-                  className="px-2.5 sm:px-3 py-1 rounded-full bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200/90 shadow-2xs text-[10px] sm:text-[11px] transition-colors cursor-pointer active:scale-95"
+                  onClick={onReturnToDashboard}
+                  className="h-8 sm:h-9 px-3.5 sm:px-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
                 >
-                  {tag}
+                  <span>Go to Dashboard</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Trusted subtext */}
-          <div className="pt-1">
-            <span className="text-[11px] sm:text-xs text-slate-400 font-medium">
-              Trusted by 350+ wholesale footwear distributors &amp; OEM factories
-            </span>
-          </div>
-        </div>
-
-        {/* Simulation Modal / Result Drawer */}
-        <AnimatePresence>
-          {simulationResult && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl shadow-2xl border border-slate-200/90 w-full max-w-lg overflow-hidden text-left"
-              >
-                <div className="p-6 bg-slate-900 text-white relative">
+              ) : (
+                <>
                   <button
-                    onClick={() => setSimulationResult(null)}
-                    className="absolute top-5 right-5 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                    onClick={() => openAuth('login')}
+                    className="text-xs font-bold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 transition-colors cursor-pointer"
                   >
-                    <X className="w-4 h-4" />
+                    Log in
                   </button>
-                  <div className="inline-flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider mb-2">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Live Simulation Generated</span>
-                  </div>
-                  <h3 className="text-xl font-black text-white">{simulationResult.title}</h3>
-                  <p className="text-xs text-slate-300 mt-1">{simulationResult.qcStandard}</p>
-                </div>
-
-                <div className="p-6 space-y-4 text-xs">
-                  <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div>
-                      <span className="text-slate-400 block text-[10px] font-bold uppercase">Article Target</span>
-                      <span className="font-bold text-slate-900 text-sm">{simulationResult.article}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px] font-bold uppercase">Volume Allocation</span>
-                      <span className="font-mono font-bold text-blue-600 text-sm">{simulationResult.volume}</span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-200">
-                      <span className="text-slate-400 block text-[10px] font-bold uppercase">Wholesale FOB</span>
-                      <span className="font-mono font-bold text-slate-900">{simulationResult.fob}</span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-200">
-                      <span className="text-slate-400 block text-[10px] font-bold uppercase">Factory Lead Time</span>
-                      <span className="font-bold text-emerald-600">{simulationResult.leadTime}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-slate-600 leading-relaxed">
-                    This commercial batch is configured with 24-pair master carton curves, SATRA flex test thresholds, and automated GST e-invoicing.
-                  </p>
-
-                  <div className="space-y-2 pt-2">
-                    <button
-                      onClick={() => handleInstantLogin('admin')}
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-blue-600/20"
-                    >
-                      <span>Launch This Run in Trader Admin</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setSimulationResult(null);
-                        const calc = document.getElementById('wholesale-calculator');
-                        calc?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Layers className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Model Pre-Pack Curve &amp; Pricing</span>
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
+                  <button
+                    onClick={() => openAuth('signup')}
+                    className="h-8 sm:h-9 px-3.5 sm:px-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Create account</span>
+                  </button>
+                </>
+              )}
             </div>
-          )}
-        </AnimatePresence>
+          </header>
+        </div>
 
         {/* ========================================================================= */}
-        {/* 3. CATEGORY / INDUSTRY CARDS STRIP (Matching Hercules bottom of hero)    */}
+        {/* HERO SECTION — TWO COLUMN HERO WITH RIGHT STATS PANEL                     */}
         {/* ========================================================================= */}
-        <div className="relative z-10 max-w-6xl mx-auto pt-6 sm:pt-8">
-          <div className="flex md:grid md:grid-cols-5 gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 text-left">
-            {[
-              {
-                title: 'Apex Runner Pro',
-                category: 'Injection Athletic',
-                icon: '👟',
-                stat: '180k Flex Cycles',
-                image: sneakerMotionImg,
-              },
-              {
-                title: 'Firenze Derby',
-                category: 'Blake Calfskin',
-                icon: '👞',
-                stat: '90k Wet/Dry Pass',
-                image: leatherCraftImg,
-              },
-              {
-                title: 'TerraGrip All-Weather',
-                category: 'Commando Boots',
-                icon: '🥾',
-                stat: '-20°C Crack Proof',
-                image: outdoorBootImg,
-              },
-              {
-                title: 'AeroGlide Knit',
-                category: 'Ultralight Mesh',
-                icon: '🏃',
-                stat: '284g Featherweight',
-                image: heroFootwearImg,
-              },
-              {
-                title: 'Royal Footwear Mills',
-                category: 'Direct OEM Soling',
-                icon: '🏭',
-                stat: '99.4% QC Accept',
-                image: walkingMotionBg,
-              },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                onClick={() => {
-                  const lab = document.getElementById('motion-lab');
-                  lab?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className={`w-[155px] xs:w-[170px] sm:w-auto shrink-0 snap-start relative aspect-[4/3] rounded-2xl overflow-hidden group cursor-pointer border border-slate-200 shadow-2xs hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 ${
-                  idx % 2 === 0 ? 'hover:rotate-0.5' : 'hover:-rotate-0.5'
-                }`}
-              >
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 filter brightness-90 group-hover:brightness-100"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+        <section id="hero" className="pt-8 sm:pt-16 pb-12 sm:pb-20 px-3.5 sm:px-6 relative">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Hero Column (7 cols) */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              {/* Hero Headline */}
+              <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-[54px] font-black text-white tracking-tight leading-[1.12]">
+                Manage Your Entire <br />
+                Footwear <span className="text-blue-400">Business</span> <br />
+                From <span className="text-blue-400">One Place</span>
+              </h1>
 
-                {/* Animated light sweep on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+              {/* Hero Description */}
+              <p className="text-xs sm:text-sm lg:text-base text-slate-200 max-w-xl leading-relaxed">
+                SoleFlow helps footwear wholesalers, distributors, manufacturers and sales teams manage products, stock,
+                wholesale orders, customers, factory production and payments — without complicated spreadsheets.
+              </p>
 
-                {/* Top Badge */}
-                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md text-[10px] font-semibold text-white flex items-center gap-1 border border-white/10 group-hover:border-blue-400/50 transition-colors">
-                  <span>{item.icon}</span>
-                  <span className="truncate max-w-[90px]">{item.category}</span>
-                </div>
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  onClick={() => openAuth('signup')}
+                  className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Get started free</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
 
-                {/* Bottom Title */}
-                <div className="absolute bottom-2 inset-x-2">
-                  <div className="text-xs font-bold text-white leading-tight truncate group-hover:text-blue-300 transition-colors">
-                    {item.title}
-                  </div>
-                  <div className="text-[10px] font-mono text-emerald-400 font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>{item.stat}</span>
-                  </div>
-                </div>
+                <button
+                  onClick={() => setIsVideoModalOpen(true)}
+                  className="h-11 sm:h-12 px-6 rounded-full bg-slate-900/60 hover:bg-slate-900/80 backdrop-blur-md border border-white/20 text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current text-blue-400" />
+                  <span>Watch demo</span>
+                </button>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3.5 INTERACTIVE FOOTWEAR MOTION LAB & 3D STRIDE PHYSICS                   */}
-      {/* ========================================================================= */}
-      <div id="motion-lab">
-        <FootwearMotionStage
-          onOpenOrderWizard={() => {
-            if (onNavigateToLogin) {
-              onNavigateToLogin('signup');
-            } else {
-              setIsAuthModalOpen(true);
-            }
-          }}
-        />
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 4. CASE STUDIES CAROUSEL WITH DUAL STATS (Exact Hercules Screenshot 3)   */}
-      {/* ========================================================================= */}
-      <section id="case-studies" className="cinematic-transparent-section py-12 sm:py-24">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6">
-          {/* Header (Matching Hercules "From idea to published app in minutes") */}
-          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 leading-tight">
-              From line sheet to factory dispatch{' '}
-              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                in minutes
-              </span>
-            </h2>
-            <p className="cinematic-section-description mt-2 sm:mt-3 text-xs sm:text-base text-slate-600">
-              Trusted by 350+ wholesale footwear distributors and high-capacity OEM mills across major trading hubs.
-            </p>
-          </div>
-
-          {/* Carousel Cards: Horizontally swipeable with snap on mobile, clean grid on desktop */}
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-3 -mx-3 px-3 sm:mx-0 sm:px-0">
-            {caseStudies.map((study) => (
-              <div
-                key={study.id}
-                className="w-[230px] sm:w-auto shrink-0 snap-center relative aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 text-white shadow-lg border border-slate-800 flex flex-col justify-end p-4 sm:p-5 group"
-              >
-                {/* Background Photo */}
-                <img
-                  src={study.image}
-                  alt={study.company}
-                  referrerPolicy="no-referrer"
-                  className="absolute inset-0 w-full h-full object-cover object-center filter brightness-75 group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
-
-                {/* Content Overlay (Matching Hercules Screenshot 3) */}
-                <div className="relative z-10 space-y-2.5 sm:space-y-3">
-                  <h3 className="text-base sm:text-lg font-black text-white leading-tight truncate">{study.company}</h3>
-
-                  {/* Dual Metrics */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/20">
-                    <div>
-                      <div className="text-lg sm:text-xl font-black text-white font-mono">{study.stat1}</div>
-                      <div className="text-[10px] text-slate-300 leading-tight mt-0.5">{study.label1}</div>
-                    </div>
-                    <div>
-                      <div className="text-lg sm:text-xl font-black text-white font-mono">{study.stat2}</div>
-                      <div className="text-[10px] text-slate-300 leading-tight mt-0.5">{study.label2}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Dots Indicator & Link (Exact Hercules Screenshot 3) */}
-          <div className="flex flex-col items-center justify-center gap-3 mt-8">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-slate-300" />
-              <span className="w-2 h-2 rounded-full bg-slate-300" />
-              <span className="w-2 h-2 rounded-full bg-slate-300" />
-              <span className="w-6 h-2 rounded-full bg-blue-600" />
-              <span className="w-2 h-2 rounded-full bg-slate-300" />
-              <span className="w-2 h-2 rounded-full bg-slate-300" />
             </div>
 
-            <a
-              href="#wholesale-calculator"
-              className="text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <span>View all case studies</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 6. WHOLESALE CALCULATOR (Pre-Pack Modeling)                              */}
-      {/* ========================================================================= */}
-      <WholesaleCalculator
-        onOpenOrderWizard={() => {
-          if (onNavigateToLogin) {
-            onNavigateToLogin('signup');
-          } else {
-            setIsAuthModalOpen(true);
-          }
-        }}
-      />
-
-      {/* ========================================================================= */}
-      {/* 7. CUSTOMER TESTIMONIALS (4x2 Grid matching Hercules Screenshot 4)       */}
-      {/* ========================================================================= */}
-      <section className="cinematic-transparent-section py-16 sm:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-2">
-              Loved by Traders &amp; Manufacturers
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-tight">
-              Neither have our customers
-            </h2>
-          </div>
-
-          {/* 4x2 Grid (Exact layout from Screenshot 4) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {testimonials.map((t) => (
-              <div
-                key={t.id}
-                className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow"
-              >
-                <div className="space-y-3">
-                  {/* 5 Golden Stars */}
-                  <div className="flex items-center gap-0.5 text-amber-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    ))}
+            {/* Right Hero Stats Card (5 cols) */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <div className="w-full max-w-sm rounded-3xl bg-slate-900/50 backdrop-blur-md border border-white/15 p-5 sm:p-6 space-y-4 shadow-2xl text-left">
+                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
+                    <Building className="w-5 h-5" />
                   </div>
-
-                  {/* Quote */}
-                  <p className="text-xs text-slate-700 leading-relaxed font-normal">
-                    {t.quote}
-                  </p>
-                </div>
-
-                {/* Author row with avatar photo */}
-                <div className="flex items-center gap-2.5 pt-3 border-t border-slate-100">
-                  <div
-                    className={`w-8 h-8 rounded-full ${t.avatarBg} text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs`}
-                  >
-                    {t.initials}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-slate-900 truncate">{t.author}</div>
-                    <div className="text-[10px] text-slate-500 truncate">{t.role}</div>
+                  <div>
+                    <div className="text-base sm:text-lg font-black text-white">350+</div>
+                    <div className="text-xs text-slate-300">Businesses trust us</div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ========================================================================= */}
-      {/* 7.5 ANIMATED CONTINUOUS FOOTWEAR RUNWAY MARQUEE                          */}
-      {/* ========================================================================= */}
-      <div className="cinematic-dark-section py-6 sm:py-8 overflow-hidden relative select-none">
-        <div className="absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-slate-900 to-transparent z-10 pointer-events-none" />
-        
-        <div className="animate-marquee items-center gap-4 sm:gap-6 hover:[animation-play-state:paused] active:[animation-play-state:paused] cursor-pointer">
-          {[
-            {
-              code: 'SF-1024',
-              name: 'Apex Runner Pro',
-              spec: 'PU Direct Injection · 180k SATRA Cycles',
-              price: '₹780 FOB',
-              badge: '🔥 1,240 Pairs Lasted',
-              image: sneakerMotionImg,
-            },
-            {
-              code: 'SF-884',
-              name: 'Firenze Blake Derby',
-              spec: 'Blake-Stitched Italian Crust Calfskin',
-              price: '₹1,350 FOB',
-              badge: '✨ Handcrafted Blake Sole',
-              image: leatherCraftImg,
-            },
-            {
-              code: 'SF-512',
-              name: 'TerraGrip All-Weather',
-              spec: 'Goodyear Welted Waterproof Boot',
-              price: '₹1,620 FOB',
-              badge: '⚡ -20°C Crack Proof',
-              image: outdoorBootImg,
-            },
-            {
-              code: 'SF-204',
-              name: 'AeroGlide Knit Runner',
-              spec: '284g Lightweight Supercritical Foam',
-              price: '₹620 FOB',
-              badge: '🏃 Master Assortment Ready',
-              image: heroFootwearImg,
-            },
-            {
-              code: 'SF-910',
-              name: 'Verona Crust Brogue',
-              spec: 'Vegetable Tanned Leather Outsole',
-              price: '₹1,420 FOB',
-              badge: '👞 Export Grade Lasting',
-              image: walkingMotionBg,
-            },
-            {
-              code: 'SF-1024',
-              name: 'Apex Runner Pro',
-              spec: 'PU Direct Injection · 180k SATRA Cycles',
-              price: '₹780 FOB',
-              badge: '🔥 1,240 Pairs Lasted',
-              image: sneakerMotionImg,
-            },
-            {
-              code: 'SF-884',
-              name: 'Firenze Blake Derby',
-              spec: 'Blake-Stitched Italian Crust Calfskin',
-              price: '₹1,350 FOB',
-              badge: '✨ Handcrafted Blake Sole',
-              image: leatherCraftImg,
-            },
-            {
-              code: 'SF-512',
-              name: 'TerraGrip All-Weather',
-              spec: 'Goodyear Welted Waterproof Boot',
-              price: '₹1,620 FOB',
-              badge: '⚡ -20°C Crack Proof',
-              image: outdoorBootImg,
-            },
-            {
-              code: 'SF-204',
-              name: 'AeroGlide Knit Runner',
-              spec: '284g Lightweight Supercritical Foam',
-              price: '₹620 FOB',
-              badge: '🏃 Master Assortment Ready',
-              image: heroFootwearImg,
-            },
-            {
-              code: 'SF-910',
-              name: 'Verona Crust Brogue',
-              spec: 'Vegetable Tanned Leather Outsole',
-              price: '₹1,420 FOB',
-              badge: '👞 Export Grade Lasting',
-              image: walkingMotionBg,
-            },
-          ].map((shoe, idx) => (
-            <div
-              key={`${shoe.code}-${idx}`}
-              onClick={() => {
-                if (onNavigateToLogin) {
-                  onNavigateToLogin('signup');
-                } else {
-                  setIsAuthModalOpen(true);
-                }
-              }}
-              className="flex items-center gap-3 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-blue-500/50 shadow-md hover:shadow-blue-500/10 transition-all duration-300 shrink-0 group hover:-translate-y-1"
-            >
-              <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shrink-0 border border-white/10 group-hover:scale-105 transition-transform">
-                <img
-                  src={shoe.image}
-                  alt={shoe.name}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center animate-shoe-float"
-                  style={{ animationDelay: `${(idx % 5) * 0.5}s` }}
-                />
-              </div>
-              <div className="space-y-0.5 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-blue-400 font-bold text-[10px] sm:text-xs">
-                    {shoe.code}
-                  </span>
-                  <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-500/20">
-                    {shoe.badge}
-                  </span>
+                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 shrink-0">
+                    <Package className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-base sm:text-lg font-black text-white">1M+</div>
+                    <div className="text-xs text-slate-300">Pairs managed</div>
+                  </div>
                 </div>
-                <div className="font-bold text-white text-xs sm:text-sm group-hover:text-blue-300 transition-colors">
-                  {shoe.name}
+
+                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-base sm:text-lg font-black text-white">5,000+</div>
+                    <div className="text-xs text-slate-300">Active Dealers</div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                  <span>{shoe.spec}</span>
-                  <span>·</span>
-                  <span className="font-mono font-bold text-slate-200">{shoe.price}</span>
+
+                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
+                    <BarChart3 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-base sm:text-lg font-black text-white">99%</div>
+                    <div className="text-xs text-slate-300">Order accuracy</div>
+                  </div>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 8. FREQUENTLY ASKED QUESTIONS (Accordion matching Hercules Screenshot 5) */}
-      {/* ========================================================================= */}
-      <section id="faqs" className="cinematic-transparent-section py-16 sm:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-14">
-            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-tight">
-              Frequently Asked Questions
-            </h2>
           </div>
+        </section>
 
-          {/* White Rounded Container */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden divide-y divide-slate-100">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div key={idx} className="transition-colors">
-                  <button
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left cursor-pointer hover:bg-slate-50/60 transition-colors"
-                  >
-                    <span className="text-sm sm:text-base font-bold text-slate-900 pr-4">{faq.q}</span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${
-                        isOpen ? 'rotate-180 text-blue-600' : ''
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-6 pb-5 text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 9. BOTTOM PROMPT CALL TO ACTION (Matching Hercules Screenshot 1 & 6)     */}
-      {/* ========================================================================= */}
-      <section className="cinematic-transparent-section py-16 sm:py-24 text-center px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900">
-            Start building for free
-          </h2>
-          <p className="cinematic-section-description text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
-            No credit card required. Describe your footwear assortment and start production in seconds.
-          </p>
-
-          {/* Bottom Prompt Card (Exact Hercules Screenshot 1/6) */}
-          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-lg text-left space-y-3">
-            <textarea
-              defaultValue="Build a master carton stock tracker for my injection running shoe line with 30-day dealer credit limits..."
-              rows={2}
-              className="w-full text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 bg-transparent resize-none border-0 focus:outline-none focus:ring-0 leading-relaxed"
-            />
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-              <button
-                onClick={() => setAttachedSpec('Running_Shoe_Sole_CAD.png')}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Camera className="w-4 h-4 text-slate-400" />
-                <span>Attach Image</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  if (onNavigateToLogin) {
-                    onNavigateToLogin('signup');
-                  } else {
-                    setAuthMode('signup');
-                    setSignupError('');
-                    setIsAuthModalOpen(true);
-                  }
-                }}
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/30 cursor-pointer"
-              >
-                <span>Create Free Account</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 10. LIGHT MULTI-COLUMN FOOTER (Exact Hercules Screenshot 1 & 6)          */}
-      {/* ========================================================================= */}
-      <footer className="cinematic-transparent-section py-14 text-xs text-slate-600 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto space-y-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
-            {/* Left Brand Col */}
-            <div className="sm:col-span-2 md:col-span-2 space-y-2">
-              <div className="flex items-center gap-2 text-base font-black text-slate-900">
-                <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">
-                  <svg
-                    className="w-3.5 h-3.5 text-blue-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                    <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                  </svg>
-                </div>
-                <span>SoleFlow</span>
-              </div>
-              <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-                The best footwear B2B operating system and line sheet builder for business.
+        {/* ========================================================================= */}
+        {/* SECTION 1 — EVERYTHING YOU NEED TO RUN YOUR FOOTWEAR BUSINESS             */}
+        {/* ========================================================================= */}
+        <section id="features" className="py-6 sm:py-10 px-3 sm:px-6">
+          <div
+            className="max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 space-y-8 text-center"
+            style={{
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.70)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+            }}
+          >
+            <div className="max-w-2xl mx-auto space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Everything You Need to Run Your Footwear Business
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                From product management to factory dispatch, SoleFlow covers your complete business flow.
               </p>
             </div>
 
-            {/* Links Columns: 3 columns balanced on mobile/tablet/desktop */}
-            <div className="sm:col-span-2 md:col-span-3 grid grid-cols-3 gap-3 sm:gap-6">
-              {/* Col 1: Product */}
-              <div className="space-y-2.5 text-left">
-                <div className="font-bold text-slate-900 text-xs">Product</div>
-                <ul className="space-y-2 text-slate-500 text-[11px] sm:text-xs">
-                  <li>
-                    <button
-                      onClick={() => {
-                        if (onNavigateToLogin) {
-                          onNavigateToLogin('signup');
-                        } else {
-                          setAuthMode('signup');
-                          setSignupError('');
-                          setIsAuthModalOpen(true);
-                        }
-                      }}
-                      className="hover:text-blue-600 transition-colors text-left cursor-pointer font-medium text-blue-600"
-                    >
-                      Create Account
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => {
-                        if (onNavigateToLogin) {
-                          onNavigateToLogin('login');
-                        } else {
-                          setAuthMode('login');
-                          setAuthError('');
-                          setIsAuthModalOpen(true);
-                        }
-                      }}
-                      className="hover:text-blue-600 transition-colors text-left cursor-pointer"
-                    >
-                      Sign In
-                    </button>
-                  </li>
-                  <li><a href="#wholesale-calculator" className="hover:text-blue-600 transition-colors">Pricing</a></li>
-                  <li><a href="#wholesale-calculator" className="hover:text-blue-600 transition-colors">Pre-Pack</a></li>
-                  <li><a href="#capabilities" className="hover:text-blue-600 transition-colors">Skills</a></li>
-                </ul>
+            {/* 5 Translucent Feature Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* Card 1 */}
+              <div
+                className="p-5 rounded-2xl hover:bg-white/90 transition-all text-left space-y-3 shadow-xs"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-100/90 text-blue-600 flex items-center justify-center font-bold">
+                  <Boxes className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Products &amp; Inventory</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Add shoes with sizes, colours, pricing and track real-time stock.
+                </p>
               </div>
 
-              {/* Col 2: Company */}
-              <div className="space-y-2.5 text-left">
-                <div className="font-bold text-slate-900 text-xs">Company</div>
-                <ul className="space-y-2 text-slate-500 text-[11px] sm:text-xs">
-                  <li><a href="#case-studies" className="hover:text-blue-600 transition-colors">Case Studies</a></li>
-                  <li><span className="hover:text-blue-600 transition-colors cursor-pointer">Careers</span></li>
-                  <li><span className="hover:text-blue-600 transition-colors cursor-pointer">Affiliates</span></li>
-                  <li><span className="hover:text-blue-600 transition-colors cursor-pointer">Changelog</span></li>
-                </ul>
+              {/* Card 2 */}
+              <div
+                className="p-5 rounded-2xl hover:bg-white/90 transition-all text-left space-y-3 shadow-xs"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-100/90 text-blue-600 flex items-center justify-center font-bold">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Wholesale Orders</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Create and manage dealer orders with size-wise quantities.
+                </p>
               </div>
 
-              {/* Col 3: Support */}
-              <div className="space-y-2.5 text-left">
-                <div className="font-bold text-slate-900 text-xs">Support</div>
-                <ul className="space-y-2 text-slate-500 text-[11px] sm:text-xs">
-                  <li><a href="#capabilities" className="hover:text-blue-600 transition-colors">Docs</a></li>
-                  <li><a href="#faqs" className="hover:text-blue-600 transition-colors">Forum</a></li>
-                  <li><span className="hover:text-blue-600 transition-colors cursor-pointer">Status</span></li>
-                  <li><span className="hover:text-blue-600 transition-colors cursor-pointer">Contact us</span></li>
-                </ul>
+              {/* Card 3 */}
+              <div
+                className="p-5 rounded-2xl hover:bg-white/90 transition-all text-left space-y-3 shadow-xs"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-100/90 text-blue-600 flex items-center justify-center font-bold">
+                  <Factory className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Factory Production</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Send orders to production and track progress from factory to dispatch.
+                </p>
+              </div>
+
+              {/* Card 4 */}
+              <div
+                className="p-5 rounded-2xl hover:bg-white/90 transition-all text-left space-y-3 shadow-xs"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-100/90 text-blue-600 flex items-center justify-center font-bold">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Customers &amp; Dealers</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Manage customer details, pricing, credit limits and order history.
+                </p>
+              </div>
+
+              {/* Card 5 */}
+              <div
+                className="p-5 rounded-2xl hover:bg-white/90 transition-all text-left space-y-3 shadow-xs sm:col-span-2 lg:col-span-1"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-100/90 text-blue-600 flex items-center justify-center font-bold">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Sales Team</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Help your field team show products and take orders from mobile.
+                </p>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Bottom Legal Rule */}
-          <div className="pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 text-center sm:text-left">
-            <div>© 2026 Aflix infotech pvt ltd, Inc.</div>
-            <div className="flex items-center gap-4">
-              <span className="hover:text-slate-800 transition-colors cursor-pointer">Terms</span>
-              <span>|</span>
-              <span className="hover:text-slate-800 transition-colors cursor-pointer">Privacy</span>
+        {/* ========================================================================= */}
+        {/* SECTION 2 — PRODUCT VIEW (Interactive Product View)                        */}
+        {/* ========================================================================= */}
+        <section id="product-view" className="py-6 sm:py-10 px-3 sm:px-6">
+          <div
+            className="max-w-6xl mx-auto rounded-3xl p-4 sm:p-8"
+            style={{
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.70)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+            }}
+          >
+            <FootwearMotionStage onOpenOrderWizard={() => openAuth('signup')} />
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 3 — WHOLESALE ORDER & PROFIT CALCULATOR                           */}
+        {/* ========================================================================= */}
+        <section id="calculator" className="py-6 sm:py-10 px-3 sm:px-6">
+          <div
+            className="max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 space-y-6"
+            style={{
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.70)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+            }}
+          >
+            {/* 3-Column Calculator Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Column: Heading & CTA (3.5 cols) */}
+              <div className="lg:col-span-4 space-y-4 text-left">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 tracking-wider uppercase">
+                  <span>WHOLESALE ORDER CALCULATOR</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                  Plan Your Wholesale Order &amp; Profit
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Choose sizes, carton quantity and selling price. SoleFlow automatically shows your total order cost,
+                  GST, freight and expected margin.
+                </p>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => openAuth('signup')}
+                    className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Create Wholesale Order</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Middle Column: Size-wise Order Plan (4.5 cols) */}
+              <div
+                className="lg:col-span-4 p-5 rounded-2xl space-y-4 text-left"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.90)',
+                  border: '1px solid rgba(255, 255, 255, 0.95)',
+                  borderRadius: '18px',
+                }}
+              >
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                  Size-wise Order Plan
+                </h3>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-500 font-medium">
+                        <th className="py-2 text-left">Size</th>
+                        {activeCalcCurve.sizes.map((s) => (
+                          <th key={s} className="py-2 text-center">{s}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-mono">
+                      <tr>
+                        <td className="py-2.5 text-slate-600 font-semibold">Pairs per size</td>
+                        {activeCalcCurve.sizes.map((s, idx) => {
+                          const pairsForSize = Math.round(activeCalcCurve.baseRatio[idx] * calcCartons);
+                          return (
+                            <td key={s} className="py-2.5 text-center font-bold text-slate-900">
+                              {pairsForSize}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-bold">
+                  <span className="text-slate-700">Total pairs</span>
+                  <span className="text-slate-900 font-mono font-black">{calcTotalPairs}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-slate-700">Cartons (12 pairs)</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCalcCartons(Math.max(1, calcCartons - 1))}
+                      className="w-6 h-6 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-800 flex items-center justify-center font-bold cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <span className="font-mono text-blue-600 font-bold px-1">{calcCartons}</span>
+                    <button
+                      onClick={() => setCalcCartons(calcCartons + 1)}
+                      className="w-6 h-6 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-800 flex items-center justify-center font-bold cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Order Summary (4 cols) */}
+              <div
+                className="lg:col-span-4 p-5 rounded-2xl space-y-3.5 text-left shadow-sm"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.94)',
+                  border: '1px solid rgba(255, 255, 255, 0.98)',
+                  borderRadius: '18px',
+                }}
+              >
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                  Order Summary
+                </h3>
+
+                <div className="space-y-2 text-xs font-mono">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Price per pair</span>
+                    <span className="text-slate-900 font-bold">₹{calcPricePerPair.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="flex justify-between text-slate-600">
+                    <span>Total pairs</span>
+                    <span className="text-slate-900 font-bold">{calcTotalPairs}</span>
+                  </div>
+
+                  <div className="flex justify-between text-slate-600">
+                    <span>Total order value</span>
+                    <span className="text-slate-900 font-bold">₹{calcTotalOrderValue.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="flex justify-between text-slate-600">
+                    <span>GST (12%)</span>
+                    <span className="text-slate-900 font-bold">₹{calcGst.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="flex justify-between text-slate-600">
+                    <span>Freight / Handling</span>
+                    <span className="text-slate-900 font-bold">₹{calcFreight.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="pt-2.5 border-t border-slate-200 flex justify-between text-xs font-bold text-slate-900">
+                    <span>Total landed cost</span>
+                    <span className="text-sm font-black">₹{calcTotalLandedCost.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="pt-1 flex justify-between text-xs text-blue-600 font-bold">
+                    <span>Expected margin</span>
+                    <span>{calcMargin}%</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 4 — HOW SOLEFLOW WORKS (5-Step Horizontal Process)                */}
+        {/* ========================================================================= */}
+        <section id="how-it-works" className="py-6 sm:py-10 px-3 sm:px-6">
+          <div
+            className="max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 space-y-8 text-center"
+            style={{
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.70)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+            }}
+          >
+            <div className="max-w-2xl mx-auto space-y-2">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 tracking-wider uppercase">
+                <span>SAMPLE 5 STEP PROCESS</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                How SoleFlow Works
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                A simple process to manage your entire footwear business.
+              </p>
+            </div>
+
+            {/* 5 Connected Step Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
+              {[
+                {
+                  icon: Boxes,
+                  title: '1. Add Products',
+                  desc: 'Add shoes with sizes, colours, prices and stock.',
+                },
+                {
+                  icon: FileText,
+                  title: '2. Receive an Order',
+                  desc: 'Create wholesale orders for dealers or retailers.',
+                },
+                {
+                  icon: Factory,
+                  title: '3. Check Stock or Start Production',
+                  desc: 'Use available inventory or send required quantities for production.',
+                },
+                {
+                  icon: Truck,
+                  title: '4. Track Payment & Delivery',
+                  desc: 'Record payment status, dealer credit and dispatch details.',
+                },
+                {
+                  icon: BarChart3,
+                  title: '5. View Reports',
+                  desc: 'See sales, stock, payments and business performance.',
+                },
+              ].map((step, idx) => (
+                <div
+                  key={idx}
+                  className="relative p-4 sm:p-5 text-left space-y-3 flex flex-col justify-between"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.65)',
+                    border: '1px solid rgba(255, 255, 255, 0.80)',
+                    backdropFilter: 'blur(4px)',
+                    borderRadius: '18px',
+                  }}
+                >
+                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+                    <step.icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">{step.title}</h3>
+                    <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1.5">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 5 — COMPLETE FOOTWEAR BUSINESS MANAGEMENT (Dashboard Preview)     */}
+        {/* ========================================================================= */}
+        <section className="py-6 sm:py-10 px-3 sm:px-6">
+          <div
+            className="max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 space-y-8 text-center"
+            style={{
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.70)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column: Title & CTA (4 cols) */}
+              <div className="lg:col-span-4 space-y-4 text-left">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 tracking-wider uppercase">
+                  <span>POWERFUL &amp; EASY TO USE</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                  Complete Footwear Business Management
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  A simple and modern interface designed for real business needs. Access everything from desktop or mobile.
+                </p>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => openAuth('signup')}
+                    className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>View All Features</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Desktop & Mobile Mockup (8 cols) */}
+              <div className="lg:col-span-8 relative">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                  {/* Desktop Mockup (8 cols) */}
+                  <div className="md:col-span-8 bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-xl text-left">
+                    <div className="h-7 bg-slate-950 px-3 flex items-center gap-1.5 border-b border-slate-800">
+                      <div className="w-2 h-2 rounded-full bg-rose-500" />
+                      <div className="w-2 h-2 rounded-full bg-amber-500" />
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <div className="mx-auto text-[9px] text-slate-400 font-mono">SoleFlow Admin</div>
+                    </div>
+
+                    <div className="p-4 space-y-3 bg-slate-900 text-white">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
+                          <div className="text-[9px] text-slate-400">Total Orders</div>
+                          <div className="text-sm font-bold text-white font-mono">245</div>
+                        </div>
+                        <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
+                          <div className="text-[9px] text-slate-400">Inventory Value</div>
+                          <div className="text-sm font-bold text-white font-mono">₹48,20,000</div>
+                        </div>
+                        <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
+                          <div className="text-[9px] text-slate-400">Active Dealers</div>
+                          <div className="text-sm font-bold text-white font-mono">186</div>
+                        </div>
+                      </div>
+
+                      {/* Mock Chart */}
+                      <div className="p-3 rounded-lg bg-slate-800/60 border border-slate-700 space-y-2">
+                        <div className="text-[10px] font-bold text-slate-300">Sales Overview</div>
+                        <div className="h-16 flex items-end justify-between gap-1 pt-2">
+                          {[35, 55, 40, 75, 60, 90, 80].map((h, i) => (
+                            <div key={i} className="flex-1 bg-blue-500/80 rounded-t-xs" style={{ height: `${h}%` }} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mobile Mockup (4 cols) */}
+                  <div className="md:col-span-4 bg-slate-900 rounded-3xl overflow-hidden border-2 border-slate-700 shadow-2xl p-3 text-left space-y-3 text-white">
+                    <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-1" />
+                    <div className="text-[11px] font-bold">SoleFlow Mobile</div>
+                    <div className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
+                      <div className="text-[9px] text-slate-400">Live Orders</div>
+                      <div className="text-sm font-mono font-bold text-blue-400">245 Active</div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
+                      <div className="text-[9px] text-slate-400">Inventory Stock</div>
+                      <div className="text-xs font-mono font-bold text-emerald-400">₹48,20,000</div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
+                      <div className="text-[9px] text-slate-400">Dealers</div>
+                      <div className="text-xs font-mono font-bold">186 Connected</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 6 — MADE FOR EVERY TYPE OF FOOTWEAR BUSINESS                      */}
+        {/* ========================================================================= */}
+        <section className="py-6 sm:py-10 px-3 sm:px-6">
+          <div
+            className="max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 space-y-8 text-center"
+            style={{
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.70)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+            }}
+          >
+            <div className="max-w-2xl mx-auto space-y-2">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 tracking-wider uppercase">
+                <span>BUILT FOR EVERY TYPE OF FOOTWEAR BUSINESS</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Made for Every Type of Footwear Business
+              </h2>
+            </div>
+
+            {/* 5 Business Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[
+                {
+                  title: 'Wholesalers',
+                  desc: 'Manage dealers, bulk orders, pricing and stock.',
+                  image: heroFootwearImg,
+                },
+                {
+                  title: 'Distributors',
+                  desc: 'Track inventory, customer orders, credit and delivery.',
+                  image: outdoorBootImg,
+                },
+                {
+                  title: 'Manufacturers',
+                  desc: 'Manage production orders, materials and dispatch.',
+                  image: leatherCraftImg,
+                },
+                {
+                  title: 'Retail Chains',
+                  desc: 'Monitor products, availability and supplier orders.',
+                  image: footwearShowcaseBanner,
+                },
+                {
+                  title: 'Sales Teams',
+                  desc: 'Show products and take dealer orders from mobile.',
+                  image: walkingMotionBg,
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="group relative rounded-2xl overflow-hidden aspect-[4/5] border border-slate-200/80 shadow-sm text-left flex flex-col justify-end p-4"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
+                  <div className="relative z-10 space-y-1">
+                    <h3 className="text-sm font-bold text-white">{item.title}</h3>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 7 — BUILT FOR THE INDIAN FOOTWEAR MARKET                          */}
+        {/* ========================================================================= */}
+        <section className="py-6 sm:py-10 px-3 sm:px-6">
+          <div
+            className="max-w-6xl mx-auto rounded-3xl p-6 sm:p-10 space-y-8 text-center"
+            style={{
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.70)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+            }}
+          >
+            <div className="max-w-2xl mx-auto space-y-2">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 tracking-wider uppercase">
+                <span>BUILT FOR THE INDIAN FOOTWEAR MARKET</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Everything You Need for the Indian Footwear Market
+              </h2>
+            </div>
+
+            {/* 6 India Feature Pill Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                className="p-4 rounded-2xl flex items-center gap-3.5 text-left"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                  ₹
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">₹ Pricing</h3>
+                  <p className="text-[11px] text-slate-600">Use Indian currency throughout.</p>
+                </div>
+              </div>
+
+              <div
+                className="p-4 rounded-2xl flex items-center gap-3.5 text-left"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">GST Invoicing</h3>
+                  <p className="text-[11px] text-slate-600">Create GST-friendly invoices.</p>
+                </div>
+              </div>
+
+              <div
+                className="p-4 rounded-2xl flex items-center gap-3.5 text-left"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                  <Tag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">HSN Code Support</h3>
+                  <p className="text-[11px] text-slate-600">Organise products with HSN codes.</p>
+                </div>
+              </div>
+
+              <div
+                className="p-4 rounded-2xl flex items-center gap-3.5 text-left"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">WhatsApp Sharing</h3>
+                  <p className="text-[11px] text-slate-600">Share orders instantly.</p>
+                </div>
+              </div>
+
+              <div
+                className="p-4 rounded-2xl flex items-center gap-3.5 text-left"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">Dealer Credit</h3>
+                  <p className="text-[11px] text-slate-600">Track customer credit limits.</p>
+                </div>
+              </div>
+
+              <div
+                className="p-4 rounded-2xl flex items-center gap-3.5 text-left"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.80)',
+                  backdropFilter: 'blur(4px)',
+                  borderRadius: '18px',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">UPI / Bank / Cash</h3>
+                  <p className="text-[11px] text-slate-600">Record payments easily.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 8 & 9 COMBINED — FAQ (LEFT) & FINAL CTA (RIGHT)                   */}
+        {/* ========================================================================= */}
+        <section id="faq" className="py-6 sm:py-10 px-3 sm:px-6">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* Left Column: Frequently Asked Questions (6.5 cols) */}
+            <div
+              className="lg:col-span-6 p-6 sm:p-8 space-y-5 text-left flex flex-col justify-between"
+              style={{
+                background: 'rgba(255, 255, 255, 0.88)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.70)',
+                borderRadius: '28px',
+                boxShadow: '0 20px 60px rgba(15, 23, 42, 0.10)',
+              }}
+            >
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <div className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+                    FREQUENTLY ASKED QUESTIONS
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    Frequently Asked Questions
+                  </h2>
+                </div>
+
+                {/* FAQ Accordion List */}
+                <div className="space-y-2">
+                  {faqs.slice(0, 5).map((faq, idx) => {
+                    const isOpen = openFaqIndex === idx;
+                    return (
+                      <div
+                        key={idx}
+                        className="rounded-xl border border-slate-200/80 overflow-hidden bg-white/80"
+                      >
+                        <button
+                          onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                          className="w-full px-3.5 py-3 text-left flex items-center justify-between gap-2 text-xs font-bold text-slate-900 hover:bg-white transition-colors cursor-pointer"
+                        >
+                          <span>{faq.q}</span>
+                          <span className="text-slate-500 font-mono text-sm">{isOpen ? '−' : '+'}</span>
+                        </button>
+
+                        <AnimatePresence initial={false}>
+                          {isOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-3.5 pb-3 pt-1 text-[11px] text-slate-600 leading-relaxed border-t border-slate-100">
+                                {faq.a}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Ready to Simplify Your Footwear Business? (6 cols) */}
+            <div
+              className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-slate-900/85 backdrop-blur-xl border border-slate-700/80 text-white shadow-2xl flex flex-col justify-between space-y-6 text-left"
+              style={{
+                borderRadius: '28px',
+              }}
+            >
+              <div className="space-y-3">
+                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                  Ready to Simplify Your <br />
+                  Footwear Business?
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Manage products, orders, inventory, customers and production from one place.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-3 pt-3">
+                  <button
+                    onClick={() => openAuth('signup')}
+                    className="h-11 px-7 rounded-full bg-blue-600 hover:bg-blue-500 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Get started free</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => setIsVideoModalOpen(true)}
+                    className="h-11 px-6 rounded-full bg-slate-800/80 hover:bg-slate-700 backdrop-blur-md border border-slate-700 text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current text-blue-400" />
+                    <span>Watch demo</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Trust Points */}
+              <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-300 pt-4 border-t border-slate-800">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>No credit card required</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Easy setup</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Start in minutes</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* FOOTER                                                                    */}
+        {/* ========================================================================= */}
+        <footer className="bg-slate-950/95 text-white border-t border-slate-900 py-10 px-4 sm:px-6">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-6 text-left text-xs">
+              {/* Brand Description (2 cols) */}
+              <div className="col-span-2 space-y-3">
+                <div className="flex items-center gap-2 text-base font-black tracking-tight text-white">
+                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                      <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
+                    </svg>
+                  </div>
+                  <span>SoleFlow</span>
+                </div>
+                <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
+                  One platform to manage footwear products, inventory, wholesale orders, and production.
+                </p>
+              </div>
+
+              {/* Product */}
+              <div className="space-y-2">
+                <div className="font-bold text-slate-300 text-[11px]">Product</div>
+                <ul className="space-y-1 text-slate-400">
+                  <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                  <li><a href="#calculator" className="hover:text-white transition-colors">Pricing</a></li>
+                </ul>
+              </div>
+
+              {/* Operations */}
+              <div className="space-y-2">
+                <div className="font-bold text-slate-300 text-[11px]">Operations</div>
+                <ul className="space-y-1 text-slate-400">
+                  <li><a href="#product-view" className="hover:text-white transition-colors">Case Studies</a></li>
+                  <li><a href="#hero" className="hover:text-white transition-colors">What&apos;s New</a></li>
+                </ul>
+              </div>
+
+              {/* Company */}
+              <div className="space-y-2">
+                <div className="font-bold text-slate-300 text-[11px]">Company</div>
+                <ul className="space-y-1 text-slate-400">
+                  <li><span className="hover:text-white transition-colors cursor-pointer">About Us</span></li>
+                  <li><span className="hover:text-white transition-colors cursor-pointer">Careers</span></li>
+                  <li><span className="hover:text-white transition-colors cursor-pointer">Blog</span></li>
+                </ul>
+              </div>
+
+              {/* Support */}
+              <div className="space-y-2">
+                <div className="font-bold text-slate-300 text-[11px]">Support</div>
+                <ul className="space-y-1 text-slate-400">
+                  <li><a href="#faq" className="hover:text-white transition-colors">Docs</a></li>
+                  <li><a href="#faq" className="hover:text-white transition-colors">Help Center</a></li>
+                  <li><span onClick={() => openAuth('signup')} className="hover:text-white transition-colors cursor-pointer">Book a Demo</span></li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Bottom Credit */}
+            <div className="pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+              <div>© 2026 SoleFlow Technologies Inc. All rights reserved.</div>
+              <div className="font-medium text-slate-400">
+                Made for India&apos;s Footwear Businesses 🇮🇳
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
 
       {/* ========================================================================= */}
-      {/* 11. AUTH & 1-CLICK DEMO LOGIN MODAL                                      */}
+      {/* AUTHENTICATION MODAL (Login / Sign up)                                    */}
       {/* ========================================================================= */}
       <AnimatePresence>
         {isAuthModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white rounded-3xl shadow-2xl border border-slate-200/90 w-full max-w-lg my-auto overflow-hidden relative max-h-[92vh] flex flex-col"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 text-left space-y-5 relative max-h-[90vh] overflow-y-auto"
             >
-              {/* Modal Top Header with Tab Switcher */}
-              <div className="p-5 sm:p-6 bg-slate-900 text-white relative shrink-0">
+              {/* Close Button */}
+              <button
+                onClick={() => setIsAuthModalOpen(false)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Mode Tabs */}
+              <div className="flex rounded-xl bg-slate-100 p-1">
                 <button
-                  onClick={() => setIsAuthModalOpen(false)}
-                  className="absolute top-4 right-4 sm:top-5 sm:right-5 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-                  aria-label="Close modal"
+                  type="button"
+                  onClick={() => setAuthMode('signup')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    authMode === 'signup' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Create Account
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('login')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    authMode === 'login' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Log In
+                </button>
+              </div>
+
+              {authMode === 'login' ? (
+                /* Login Form */
+                <form onSubmit={handleFormLogin} className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Welcome Back</h3>
+                    <p className="text-xs text-slate-500">Sign in to your SoleFlow workspace</p>
+                  </div>
+
+                  {/* 1-Click Instant Demo Access */}
+                  <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
+                    <div className="text-[11px] font-bold text-blue-900 uppercase tracking-wider">
+                      Instant 1-Click Demo Login
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleInstantLogin('admin')}
+                        className="py-2 px-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <Building2 className="w-3.5 h-3.5" />
+                        <span>Trader Admin</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleInstantLogin('salesperson')}
+                        className="py-2 px-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <UserIcon className="w-3.5 h-3.5" />
+                        <span>Sales Rep</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Work Email</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-900 focus:outline-blue-600"
+                        placeholder="admin@soleflow.com"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Password</label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-900 focus:outline-blue-600"
+                        placeholder="••••••••"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {authError && <div className="text-xs font-semibold text-rose-600">{authError}</div>}
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md"
+                  >
+                    Sign In
+                  </button>
+                </form>
+              ) : (
+                /* Sign Up Form */
+                <form onSubmit={handleFormSignup} className="space-y-3.5">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Create Free Account</h3>
+                    <p className="text-xs text-slate-500">Join 350+ footwear wholesalers &amp; manufacturers</p>
+                  </div>
+
+                  {/* Role Selector */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => prefillSignup('admin')}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                        signupRole === 'admin'
+                          ? 'bg-blue-50 border-blue-300 text-blue-700'
+                          : 'bg-slate-50 border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      Fill as Wholesaler / Admin
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => prefillSignup('salesperson')}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                        signupRole === 'salesperson'
+                          ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                          : 'bg-slate-50 border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      Fill as Field Rep
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Full Name</label>
+                      <input
+                        type="text"
+                        value={signupName}
+                        onChange={(e) => setSignupName(e.target.value)}
+                        placeholder="Vikram Malhotra"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Work Email</label>
+                      <input
+                        type="email"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        placeholder="vikram@apexfootwear.com"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Business Name</label>
+                      <input
+                        type="text"
+                        value={signupBusinessName}
+                        onChange={(e) => setSignupBusinessName(e.target.value)}
+                        placeholder="Apex Footwear Wholesale"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Password</label>
+                        <input
+                          type="password"
+                          value={signupPassword}
+                          onChange={(e) => setSignupPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Confirm Password</label>
+                        <input
+                          type="password"
+                          value={signupConfirmPassword}
+                          onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {signupError && <div className="text-xs font-semibold text-rose-600">{signupError}</div>}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingSignup}
+                    className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md"
+                  >
+                    {isSubmittingSignup ? 'Activating Account...' : 'Get Started Now'}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* WATCH DEMO VIDEO MODAL                                                    */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isVideoModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/90 backdrop-blur-lg">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-4xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-700 relative"
+            >
+              {/* Modal Header */}
+              <div className="p-4 bg-slate-950 flex items-center justify-between text-white border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Play className="w-4 h-4 text-blue-400 fill-current" />
+                  <span className="text-xs sm:text-sm font-bold">SoleFlow B2B Platform Walkthrough</span>
+                </div>
+                <button
+                  onClick={() => setIsVideoModalOpen(false)}
+                  className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center cursor-pointer transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
-
-                <div className="flex items-center gap-2.5 mb-2.5">
-                  <div className="w-9 h-9 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-md">
-                    <svg
-                      className="w-4 h-4 text-white"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                      <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-black tracking-wider uppercase text-blue-400">SoleFlow Platform</span>
-                    <h3 className="text-lg sm:text-xl font-black text-white leading-tight">
-                      {authMode === 'signup' ? 'Create Your Account' : 'Sign In to SoleFlow'}
-                    </h3>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-300">
-                  {authMode === 'signup'
-                    ? 'Start your 14-day free access. Setup your footwear distribution hub & catalog in seconds.'
-                    : 'Select a demo role below for instant access, or sign in with your credentials.'}
-                </p>
-
-                {/* Segmented Mode Switcher */}
-                <div className="mt-4 grid grid-cols-2 p-1 bg-white/10 rounded-2xl gap-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode('login');
-                      setAuthError('');
-                      setSignupError('');
-                    }}
-                    className={`py-1.5 sm:py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      authMode === 'login'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-white/70 hover:text-white'
-                    }`}
-                  >
-                    <span>Sign In</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthMode('signup');
-                      setAuthError('');
-                      setSignupError('');
-                    }}
-                    className={`py-1.5 sm:py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      authMode === 'signup'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-white/70 hover:text-white'
-                    }`}
-                  >
-                    <span>Create Account</span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/20 text-white font-semibold">
-                      Free
-                    </span>
-                  </button>
-                </div>
               </div>
 
-              {/* Scrollable Modal Content */}
-              <div className="p-5 sm:p-6 overflow-y-auto space-y-4">
-                {authMode === 'signup' ? (
-                  /* ================= CREATE ACCOUNT FORM ================= */
-                  <form onSubmit={handleSignupSubmit} className="space-y-4">
-                    {/* Role Selection */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-bold text-slate-800">
-                          Select Account Role
-                        </label>
-                        {/* Quick Prefill options */}
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-slate-400 font-semibold hidden xs:inline">Quick Fill:</span>
-                          <button
-                            type="button"
-                            onClick={() => prefillSignup('admin')}
-                            className="text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-md border border-blue-200 transition-colors cursor-pointer"
-                          >
-                            ✨ Trader
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => prefillSignup('salesperson')}
-                            className="text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200 transition-colors cursor-pointer"
-                          >
-                            ✨ Sales Rep
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <div
-                          onClick={() => setSignupRole('admin')}
-                          className={`p-3 rounded-2xl border text-left cursor-pointer transition-all ${
-                            signupRole === 'admin'
-                              ? 'border-blue-600 bg-blue-50/60 ring-2 ring-blue-500/20 shadow-xs'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                              🏢 Trader / Distributor
-                            </span>
-                            {signupRole === 'admin' && (
-                              <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-500 leading-snug">
-                            Master cartons, size curves, pricing tiers, factory lasting gates &amp; GST invoices.
-                          </p>
-                        </div>
-
-                        <div
-                          onClick={() => setSignupRole('salesperson')}
-                          className={`p-3 rounded-2xl border text-left cursor-pointer transition-all ${
-                            signupRole === 'salesperson'
-                              ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-500/20 shadow-xs'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                              💼 Field Sales Rep
-                            </span>
-                            {signupRole === 'salesperson' && (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-500 leading-snug">
-                            Mobile catalog showcase, dealer GPS visits, WhatsApp orders &amp; collection receipts.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {signupError && (
-                      <div className="p-2.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-medium border border-rose-200">
-                        {signupError}
-                      </div>
-                    )}
-
-                    {/* Inputs */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Full Name *
-                        </label>
-                        <div className="relative">
-                          <UserIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="text"
-                            required
-                            value={signupName}
-                            onChange={(e) => setSignupName(e.target.value)}
-                            className="w-full h-10 pl-9 pr-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="e.g. Vikram Malhotra"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Company / Trade Name *
-                        </label>
-                        <div className="relative">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="text"
-                            required
-                            value={signupBusinessName}
-                            onChange={(e) => setSignupBusinessName(e.target.value)}
-                            className="w-full h-10 pl-9 pr-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="e.g. Apex Footwear Trading"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Work Email *
-                        </label>
-                        <div className="relative">
-                          <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="email"
-                            required
-                            value={signupEmail}
-                            onChange={(e) => setSignupEmail(e.target.value)}
-                            className="w-full h-10 pl-9 pr-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="vikram@apexfootwear.com"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Mobile / WhatsApp Number
-                        </label>
-                        <div className="relative">
-                          <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="tel"
-                            value={signupPhone}
-                            onChange={(e) => setSignupPhone(e.target.value)}
-                            className="w-full h-10 pl-9 pr-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="+91 98200 12345"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">
-                        Footwear Trade Territory / Primary Zone
-                      </label>
-                      <select
-                        value={signupZone}
-                        onChange={(e) => setSignupZone(e.target.value)}
-                        className="w-full h-10 px-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900 font-medium"
-                      >
-                        <option value="Delhi-NCR & Western UP Hub">Delhi-NCR & Western UP Hub</option>
-                        <option value="Agra Footwear Manufacturing Belt">Agra Footwear Manufacturing Belt</option>
-                        <option value="Mumbai & Western Maharashtra">Mumbai & Western Maharashtra</option>
-                        <option value="Bangalore & South India Region">Bangalore & South India Region</option>
-                        <option value="Kolkata & Eastern Wholesale Hub">Kolkata & Eastern Wholesale Hub</option>
-                        <option value="International / Export Division">International / Export Division</option>
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Password (min 6 chars) *
-                        </label>
-                        <div className="relative">
-                          <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            required
-                            value={signupPassword}
-                            onChange={(e) => setSignupPassword(e.target.value)}
-                            className="w-full h-10 pl-9 pr-9 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="••••••••"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
-                          >
-                            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Confirm Password *
-                        </label>
-                        <div className="relative">
-                          <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            required
-                            value={signupConfirmPassword}
-                            onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                            className="w-full h-10 pl-9 pr-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="••••••••"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Terms Checkbox */}
-                    <div className="flex items-start gap-2 pt-1">
-                      <input
-                        type="checkbox"
-                        id="agreeTerms"
-                        checked={agreeTerms}
-                        onChange={(e) => setAgreeTerms(e.target.checked)}
-                        className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                      />
-                      <label htmlFor="agreeTerms" className="text-[11px] text-slate-500 leading-tight cursor-pointer">
-                        I agree to SoleFlow's <span className="text-slate-800 font-semibold underline">Terms of Service</span> and <span className="text-slate-800 font-semibold underline">Privacy Policy</span>. No credit card required.
-                      </label>
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      disabled={isSubmittingSignup}
-                      className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-600/30 active:scale-[0.99] disabled:opacity-75"
-                    >
-                      {isSubmittingSignup ? (
-                        <>
-                          <Sparkles className="w-4 h-4 animate-spin" />
-                          <span>Setting up your footwear portal...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Create Account &amp; Launch Portal</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </>
-                      )}
-                    </button>
-
-                    <div className="text-center pt-1 border-t border-slate-100">
-                      <p className="text-xs text-slate-500">
-                        Already have an account?{' '}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAuthMode('login');
-                            setAuthError('');
-                            setSignupError('');
-                          }}
-                          className="font-bold text-blue-600 hover:text-blue-700 cursor-pointer underline"
-                        >
-                          Sign In here
-                        </button>
-                      </p>
-                    </div>
-                  </form>
-                ) : (
-                  /* ================= SIGN IN FORM ================= */
-                  <div className="space-y-4">
-                    {/* Instant 1-Click Launchers */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                        Instant 1-Click Demo Login
-                      </span>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => handleInstantLogin('admin')}
-                          className="p-3 rounded-2xl border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-left transition-all cursor-pointer group"
-                        >
-                          <span className="text-xs font-black text-blue-900 block group-hover:text-blue-700">
-                            Trader Admin
-                          </span>
-                          <span className="text-[10px] text-blue-700 font-mono block">
-                            admin@soleflow.com
-                          </span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleInstantLogin('salesperson')}
-                          className="p-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-left transition-all cursor-pointer group"
-                        >
-                          <span className="text-xs font-black text-emerald-900 block group-hover:text-emerald-700">
-                            Field Rep
-                          </span>
-                          <span className="text-[10px] text-emerald-700 font-mono block">
-                            sales@soleflow.com
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="relative flex items-center justify-center">
-                      <div className="border-t border-slate-200 w-full" />
-                      <span className="bg-white px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider absolute">
-                        or sign in with credentials
-                      </span>
-                    </div>
-
-                    {/* Form Credentials */}
-                    <form onSubmit={handleFormLogin} className="space-y-3 pt-1">
-                      {authError && (
-                        <div className="p-2.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-medium border border-rose-200">
-                          {authError}
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Email Address
-                        </label>
-                        <div className="relative">
-                          <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full h-10 pl-9 pr-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="name@soleflow.com"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Password
-                        </label>
-                        <div className="relative">
-                          <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                          <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full h-10 pl-9 pr-3 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 text-slate-900"
-                            placeholder="••••••••"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98]"
-                      >
-                        <span>Sign In</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-
-                      <div className="text-center pt-2 border-t border-slate-100">
-                        <p className="text-xs text-slate-500">
-                          Don't have an account yet?{' '}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAuthMode('signup');
-                              setAuthError('');
-                              setSignupError('');
-                            }}
-                            className="font-bold text-blue-600 hover:text-blue-700 cursor-pointer underline"
-                          >
-                            Create a free account
-                          </button>
-                        </p>
-                      </div>
-                    </form>
-                  </div>
-                )}
+              {/* Video Player */}
+              <div className="aspect-video bg-black">
+                <video
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  controls
+                  playsInline
+                >
+                  <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+                </video>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-      </div>
     </div>
   );
 };
