@@ -22,6 +22,8 @@ import {
   ChevronRight,
   X,
   Sparkles,
+  History,
+  PlayCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -41,6 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     toggleSidebar,
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
+    setIsWalkthroughOpen,
+    setWalkthroughStep,
   } = useApp();
 
   // Keyboard shortcut: Ctrl+B or Cmd+B to toggle sidebar
@@ -69,6 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     { name: 'Manufacturers', path: '/admin/manufacturers', icon: Factory },
     { name: 'Payments & Amount Due', path: '/admin/payments', icon: CreditCard },
     { name: 'Reports & Alerts', path: '/admin/reports', icon: BarChart3, badge: unreadAlerts },
+    { name: 'Audit Log', path: '/admin/audit-log', icon: History },
     { name: 'Public Landing Page', path: '/landing', icon: Sparkles },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
@@ -456,8 +461,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
           })}
         </nav>
 
+        {/* Interactive Prototype Demo Tour Trigger (Section 21) */}
+        <div className="px-2.5 py-1.5 border-t border-slate-100">
+          {!isSidebarCollapsed ? (
+            <button
+              onClick={() => {
+                setWalkthroughStep(0);
+                setIsWalkthroughOpen(true);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 hover:bg-blue-100 hover:text-blue-900 transition-all border border-blue-200/80 cursor-pointer shadow-2xs"
+              title="Start End-to-End Stakeholder Demonstration Walkthrough"
+            >
+              <span className="flex items-center gap-2">
+                <PlayCircle className="w-4 h-4 text-blue-600" />
+                <span>Demo Storyline</span>
+              </span>
+              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-blue-600 text-white">
+                Live Tour
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setWalkthroughStep(0);
+                setIsWalkthroughOpen(true);
+              }}
+              className="w-full flex items-center justify-center p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+              title="Launch Demo Walkthrough"
+            >
+              <PlayCircle className="w-5 h-5 text-blue-600" />
+            </button>
+          )}
+        </div>
+
         {/* Desktop Collapse Action Bar (Ctrl+B) */}
-        <div className="px-2.5 py-2 border-t border-slate-100">
+        <div className="px-2.5 py-1.5 border-t border-slate-100">
           {!isSidebarCollapsed ? (
             <button
               onClick={toggleSidebar}

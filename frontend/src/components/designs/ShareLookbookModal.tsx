@@ -10,6 +10,7 @@ export const ShareLookbookModal: React.FC = () => {
     designs,
     selectedDesignIds,
     currentUser,
+    recordDesignShare,
     showToast,
   } = useApp();
 
@@ -33,6 +34,16 @@ export const ShareLookbookModal: React.FC = () => {
       description: `Sent digital catalog lookbook link to ${currentCust.propName}'s WhatsApp (${currentCust.phone}).`,
       timestamp: 'Just now',
       badge: 'WhatsApp Sent',
+    });
+
+    recordDesignShare({
+      targetClientId: currentCust.id,
+      targetClientName: currentCust.businessName,
+      targetPhone: currentCust.phone,
+      designsCount: activeDesigns.length,
+      designIds: activeDesigns.map((d) => d.id),
+      designNames: activeDesigns.map((d) => d.name),
+      channel: 'WhatsApp',
     });
 
     showToast(`Lookbook successfully shared with ${currentCust.businessName} on WhatsApp!`);

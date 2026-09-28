@@ -12,6 +12,7 @@ import { PaymentsPage } from './pages/payments/PaymentsPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
+import { AuditLogPage } from './pages/admin/AuditLogPage';
 import { SalesDashboard } from './pages/sales/SalesDashboard';
 import { FollowUpsPage } from './pages/sales/FollowUpsPage';
 import { VisitsPage } from './pages/sales/VisitsPage';
@@ -22,6 +23,7 @@ import { RecordPaymentModal } from './components/payments/RecordPaymentModal';
 import { CreateOrderWizardModal } from './components/orders/CreateOrderWizardModal';
 import { AddCustomerModal } from './components/customers/AddCustomerModal';
 import { ShareLookbookModal } from './components/designs/ShareLookbookModal';
+import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -162,6 +164,9 @@ const AppContent: React.FC = () => {
     if (currentPath === '/admin/notifications') {
       return <NotificationsPage />;
     }
+    if (currentPath === '/admin/audit-log') {
+      return <AuditLogPage />;
+    }
 
     // Sales routes
     if (currentPath === '/sales/dashboard') {
@@ -227,6 +232,7 @@ const AppContent: React.FC = () => {
       <CreateOrderWizardModal />
       <AddCustomerModal />
       <ShareLookbookModal />
+      <DemoWalkthroughModal onNavigate={handleNavigate} />
 
       {/* 5. Global Toast Alert */}
       {toastMessage && (

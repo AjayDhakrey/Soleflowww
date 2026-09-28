@@ -247,3 +247,36 @@ export interface NotificationItem {
   read: boolean;
   linkTab?: string;
 }
+
+export interface AuditEvent {
+  id: string;
+  actor: string;
+  actorRole: 'Trader / Admin' | 'Field Sales Rep' | 'System';
+  action: string;
+  recordType: 'Client' | 'Order' | 'Design' | 'Payment' | 'Manufacturer' | 'Salesperson' | 'Settings';
+  recordId: string;
+  recordTitle: string;
+  oldValue?: string;
+  newValue: string;
+  timestamp: string;
+  source: 'Web App' | 'Mobile App' | 'Automated System';
+}
+
+export interface DesignShareRecord {
+  id: string;
+  sharedBy: string;
+  sharedByRole: string;
+  targetClientId: string;
+  targetClientName: string;
+  targetPhone: string;
+  designsCount: number;
+  designIds: string[];
+  designNames: string[];
+  timestamp: string;
+  channel: 'WhatsApp' | 'Direct Link' | 'PDF Lookbook';
+  wasViewed: boolean;
+  viewCount: number;
+  wasOrdered: boolean;
+  orderId?: string;
+}
+

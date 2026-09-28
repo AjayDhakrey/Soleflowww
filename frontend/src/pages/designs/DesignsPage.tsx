@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ShoeDesign } from '../../types';
+import { DesignSharesModal } from '../../components/designs/DesignSharesModal';
 
 interface DesignsPageProps {
   onNavigate: (path: string) => void;
@@ -40,6 +41,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const [sortBy, setSortBy] = useState<'popular' | 'price_low' | 'price_high' | 'margin'>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [quickViewShoe, setQuickViewShoe] = useState<ShoeDesign | null>(null);
+  const [isShareHistoryOpen, setIsShareHistoryOpen] = useState(false);
 
   const categories = [
     'All',
@@ -97,11 +99,18 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
           </h1>
         </div>
 
-        {/* Lookbook Share Action */}
+        {/* Lookbook Share & History Action */}
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setIsShareHistoryOpen(true)}
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            <Share2 className="w-3.5 h-3.5 text-blue-600" />
+            <span>Sharing History</span>
+          </button>
+          <button
             onClick={() => setIsShareModalOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>Share WhatsApp Lookbook ({selectedDesignIds.length})</span>
@@ -668,6 +677,12 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
           </div>
         </div>
       )}
+
+      {/* Design Shares History Modal */}
+      <DesignSharesModal
+        isOpen={isShareHistoryOpen}
+        onClose={() => setIsShareHistoryOpen(false)}
+      />
     </div>
   );
 };

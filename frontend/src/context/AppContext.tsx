@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   User,
   UserRole,
@@ -11,6 +11,8 @@ import {
   FollowUpItem,
   FieldVisitItem,
   PaymentReceipt,
+  AuditEvent,
+  DesignShareRecord,
 } from '../types';
 import {
   MOCK_USERS,
@@ -22,7 +24,10 @@ import {
   MOCK_NOTIFICATIONS,
   MOCK_FOLLOWUPS,
   MOCK_FIELD_VISITS,
+  MOCK_AUDIT_LOGS,
+  MOCK_DESIGN_SHARES,
 } from '../data/mockData';
+import { supabaseApi, isSupabaseConfigured } from '../lib/supabase';
 
 interface AppContextType {
   currentUser: User;
@@ -62,6 +67,17 @@ interface AppContextType {
   completeFieldVisit: (id: string, outcome: FieldVisitItem['outcome'], notes: string) => void;
   payments: PaymentReceipt[];
   recordPayment: (payment: Partial<PaymentReceipt>) => void;
+  // Audit Logs & Traceability
+  auditLogs: AuditEvent[];
+  addAuditEvent: (event: Partial<AuditEvent>) => void;
+  // Design Shares
+  designShares: DesignShareRecord[];
+  recordDesignShare: (share: Partial<DesignShareRecord>) => void;
+  // Interactive Demonstration Walkthrough Mode
+  isWalkthroughOpen: boolean;
+  setIsWalkthroughOpen: (open: boolean) => void;
+  walkthroughStep: number;
+  setWalkthroughStep: React.Dispatch<React.SetStateAction<number>>;
   // Modals
   isPaymentModalOpen: boolean;
   setIsPaymentModalOpen: (open: boolean) => void;
@@ -82,6 +98,7 @@ interface AppContextType {
   showToast: (msg: string) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  isSupabaseActive: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -136,6 +153,94 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [followUps, setFollowUps] = useState<FollowUpItem[]>(MOCK_FOLLOWUPS);
   const [fieldVisits, setFieldVisits] = useState<FieldVisitItem[]>(MOCK_FIELD_VISITS);
   const [payments, setPayments] = useState<PaymentReceipt[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditEvent[]>(MOCK_AUDIT_LOGS);
+  const [designShares, setDesignShares] = useState<DesignShareRecord[]>(MOCK_DESIGN_SHARES);
+
+  const isSupabaseActive = isSupabaseConfigured();
+
+  // Hydrate from live Supabase database if configured
+  useEffect(() => {
+    if (isSupabaseActive) {
+      supabaseApi.getCustomers().then((data) => {
+        if (data && data.length > 0) {
+          setCustomers(data);
+          setSelectedCustomer(data[0]);
+        }
+      });
+      supabaseApi.getOrders().then((data) => {
+        if (data && data.length > 0) setOrders(data);
+      });
+      supabaseApi.getPayments().then((data) => {
+        if (data && data.length > 0) setPayments(data);
+      });
+      supabaseApi.getAuditLogs().then((data) => {
+        if (data && data.length > 0) setAuditLogs(data);
+      });
+      supabaseApi.getDesignShares().then((data) => {
+        if (data && data.length > 0) setDesignShares(data);
+      });
+      supabaseApi.getManufacturers().then((data) => {
+        if (data && data.length > 0) setManufacturers(data);
+      });
+      supabaseApi.getSalesTeam().then((data) => {
+        if (data && data.length > 0) setSalesTeam(data);
+      });
+    }
+  }, [isSupabaseActive]);
+
+  // Interactive Demonstration Walkthrough State
+  const [isWalkthroughOpen, setIsWalkthroughOpen] = useState(false);
+  const [walkthroughStep, setWalkthroughStep] = useState(0);
+
+  const addAuditEvent = (eventData: Partial<AuditEvent>) => {
+    const newEvent: AuditEvent = {
+      id: `aud-${Date.now()}`,
+      actor: eventData.actor || currentUser.name,
+      actorRole: eventData.actorRole || (currentUser.role === 'admin' ? 'Trader / Admin' : 'Field Sales Rep'),
+      action: eventData.action || 'System Update',
+      recordType: eventData.recordType || 'Client',
+      recordId: eventData.recordId || 'REF-001',
+      recordTitle: eventData.recordTitle || 'Record Updated',
+      oldValue: eventData.oldValue,
+      newValue: eventData.newValue || 'Updated',
+      timestamp: 'Just now',
+      source: eventData.source || 'Web App',
+    };
+    setAuditLogs((prev) => [newEvent, ...prev]);
+    if (isSupabaseActive) {
+      supabaseApi.insertAuditLog(newEvent);
+    }
+  };
+
+  const recordDesignShare = (shareData: Partial<DesignShareRecord>) => {
+    const newShare: DesignShareRecord = {
+      id: `dshare-${Date.now()}`,
+      sharedBy: shareData.sharedBy || currentUser.name,
+      sharedByRole: shareData.sharedByRole || (currentUser.role === 'admin' ? 'Trader / Admin' : 'Field Sales Rep'),
+      targetClientId: shareData.targetClientId || (customers[0]?.id || 'cust-1'),
+      targetClientName: shareData.targetClientName || (customers[0]?.businessName || 'Wholesale Client'),
+      targetPhone: shareData.targetPhone || (customers[0]?.phone || '+91 98000 00000'),
+      designsCount: shareData.designsCount || (shareData.designIds?.length || 1),
+      designIds: shareData.designIds || ['sf-1024'],
+      designNames: shareData.designNames || ['Runner Classic'],
+      timestamp: 'Just now',
+      channel: shareData.channel || 'WhatsApp',
+      wasViewed: false,
+      viewCount: 0,
+      wasOrdered: false,
+    };
+    setDesignShares((prev) => [newShare, ...prev]);
+    if (isSupabaseActive) {
+      supabaseApi.insertDesignShare(newShare);
+    }
+    addAuditEvent({
+      action: `Shared ${newShare.designsCount} Shoe Designs`,
+      recordType: 'Design',
+      recordId: newShare.id,
+      recordTitle: `${newShare.targetClientName} (${newShare.channel})`,
+      newValue: `Shared via ${newShare.channel} to ${newShare.targetPhone}`,
+    });
+  };
 
   // Modals state
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -335,6 +440,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setCustomers((prev) => [newCust, ...prev]);
     setSelectedCustomer(newCust);
+    if (isSupabaseActive) {
+      supabaseApi.insertCustomer(newCust);
+    }
+    addAuditEvent({
+      action: 'Created Client Account',
+      recordType: 'Client',
+      recordId: newCust.id,
+      recordTitle: newCust.businessName,
+      newValue: `Registered: ${newCust.city}, Terms: ${newCust.paymentTerms}`,
+    });
     showToast(`Added customer: ${newCust.businessName}`);
   };
 
@@ -382,12 +497,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setOrders((prev) => [newOrder, ...prev]);
+    if (isSupabaseActive) {
+      supabaseApi.insertOrder(newOrder);
+    }
+
+    addAuditEvent({
+      action: 'Created Wholesale Order',
+      recordType: 'Order',
+      recordId: newOrder.id,
+      recordTitle: `${newOrder.customerName} (${newOrder.pairsCount} Pairs)`,
+      newValue: `Net Payable: ₹${newOrder.netPayable.toLocaleString('en-IN')}, Status: ${newOrder.status}`,
+    });
 
     // Update customer stats
     setCustomers((prev) =>
       prev.map((c) => {
         if (c.id === newOrder.customerId) {
-          return {
+          const updatedCust = {
             ...c,
             ordersCount: c.ordersCount + 1,
             totalBusiness: c.totalBusiness + newOrder.netPayable,
@@ -395,7 +521,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             activityHistory: [
               {
                 id: `act-ord-${Date.now()}`,
-                type: 'order_confirmed',
+                type: 'order_confirmed' as const,
                 title: `Order ${newOrder.id} Booked (${newOrder.pairsCount} Pairs)`,
                 description: `Created for ₹${newOrder.netPayable.toLocaleString('en-IN')} with ₹${newOrder.advanceDeposited.toLocaleString('en-IN')} advance recorded.`,
                 timestamp: 'Just now',
@@ -403,6 +529,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               ...c.activityHistory,
             ],
           };
+          if (isSupabaseActive) {
+            supabaseApi.updateCustomer(updatedCust.id, updatedCust);
+          }
+          return updatedCust;
         }
         return c;
       })
@@ -413,7 +543,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateOrderStatus = (orderId: string, status: Order['status']) => {
     setOrders((prev) =>
-      prev.map((ord) => (ord.id === orderId ? { ...ord, status } : ord))
+      prev.map((ord) => {
+        if (ord.id === orderId) {
+          addAuditEvent({
+            action: 'Updated Order Status',
+            recordType: 'Order',
+            recordId: ord.id,
+            recordTitle: `${ord.customerName} - ${ord.id}`,
+            oldValue: `Status: ${ord.status}`,
+            newValue: `Status: ${status}`,
+          });
+          if (isSupabaseActive) {
+            supabaseApi.updateOrderStatus(orderId, status);
+          }
+          return { ...ord, status };
+        }
+        return ord;
+      })
     );
     showToast(`Order ${orderId} status updated to: ${status}`);
   };
@@ -480,24 +626,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setPayments((prev) => [newReceipt, ...prev]);
+    if (isSupabaseActive) {
+      supabaseApi.insertPayment(newReceipt);
+    }
+
+    addAuditEvent({
+      action: 'Recorded Payment Collection',
+      recordType: 'Payment',
+      recordId: newReceipt.receiptNumber,
+      recordTitle: `${newReceipt.customerName} - ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} (${newReceipt.paymentMethod})`,
+      oldValue: `Outstanding: ₹${newReceipt.amountDueBefore.toLocaleString('en-IN')}`,
+      newValue: `Outstanding: ₹${newReceipt.amountDueAfter.toLocaleString('en-IN')} (Ref: ${newReceipt.utrRef})`,
+    });
 
     // Update customer balances
     setCustomers((prev) =>
       prev.map((cust) => {
         if (cust.id === newReceipt.customerId) {
           const newDue = Math.max(0, cust.amountDue - newReceipt.paymentAmount);
-          return {
+          const updatedCust = {
             ...cust,
             amountDue: newDue,
             totalPaid: cust.totalPaid + newReceipt.paymentAmount,
             lastPaymentDate: 'Today',
             lastPaymentAmount: newReceipt.paymentAmount,
-            status: newDue === 0 ? 'active' : cust.status,
+            status: newDue === 0 ? ('active' as const) : cust.status,
             overdueDays: newDue === 0 ? 0 : cust.overdueDays,
             activityHistory: [
               {
                 id: `act-pay-${Date.now()}`,
-                type: 'payment',
+                type: 'payment' as const,
                 title: `Received ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} payment via ${newReceipt.paymentMethod}`,
                 description: `Transaction Ref: ${newReceipt.utrRef}. Adjusted against balance. Remaining Due: ₹${newDue.toLocaleString('en-IN')}.`,
                 timestamp: 'Just now',
@@ -506,6 +664,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               ...cust.activityHistory,
             ],
           };
+          if (isSupabaseActive) {
+            supabaseApi.updateCustomer(updatedCust.id, updatedCust);
+          }
+          return updatedCust;
         }
         return cust;
       })
@@ -546,6 +708,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         completeFieldVisit,
         payments,
         recordPayment,
+        auditLogs,
+        addAuditEvent,
+        designShares,
+        recordDesignShare,
+        isWalkthroughOpen,
+        setIsWalkthroughOpen,
+        walkthroughStep,
+        setWalkthroughStep,
         isPaymentModalOpen,
         setIsPaymentModalOpen,
         isCreateOrderModalOpen,
@@ -564,6 +734,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         showToast,
         isDarkMode,
         toggleDarkMode,
+        isSupabaseActive,
       }}
     >
       {children}

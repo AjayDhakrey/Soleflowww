@@ -61,42 +61,56 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
         </button>
       </div>
 
-      {/* 2. KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-rose-50/70 p-4 rounded-3xl border border-rose-200/80">
+      {/* 2. Receivables & Aging Matrix (Section 8.5) */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+        <div className="bg-rose-50/90 p-4 rounded-3xl border border-rose-200/80">
           <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
-            TOTAL RECEIVABLES DUE
+            TOTAL RECEIVABLES
           </span>
-          <span className="text-2xl font-black text-rose-700 font-display block mt-1">
-            ₹{(totalOutstanding / 100000).toFixed(2)} Lakhs
+          <span className="text-2xl font-black text-rose-700 font-display block mt-1 font-mono">
+            ₹{(totalOutstanding / 100000).toFixed(2)}L
           </span>
+          <span className="text-[10px] text-rose-600 font-bold block mt-0.5">Across {overdueCustomers.length} active stores</span>
         </div>
 
         <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            OVERDUE (&gt; 14 DAYS)
+            DUE THIS WEEK
           </span>
-          <span className="text-2xl font-black text-slate-900 font-display block mt-1">
-            ₹3.45 Lakhs
+          <span className="text-2xl font-black text-amber-600 font-display block mt-1 font-mono">
+            ₹4.20L
           </span>
+          <span className="text-[10px] text-amber-600 font-bold block mt-0.5">3 buyers promise to pay</span>
         </div>
 
         <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            COLLECTED THIS MONTH
+            OVERDUE (&gt; 15 DAYS)
           </span>
-          <span className="text-2xl font-black text-emerald-700 font-display block mt-1">
-            ₹21.40 Lakhs
+          <span className="text-2xl font-black text-rose-600 font-display block mt-1 font-mono">
+            ₹3.45L
           </span>
+          <span className="text-[10px] text-rose-500 font-bold block mt-0.5">Priority collection queue</span>
         </div>
 
         <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            PAYMENTS TODAY
+            CRITICAL (&gt; 30 DAYS)
           </span>
-          <span className="text-2xl font-black text-blue-700 font-display block mt-1">
-            ₹1.45 Lakhs
+          <span className="text-2xl font-black text-purple-700 font-display block mt-1 font-mono">
+            ₹0.80L
           </span>
+          <span className="text-[10px] text-purple-600 font-bold block mt-0.5">Legal reminder sent</span>
+        </div>
+
+        <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs col-span-2 md:col-span-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+            COLLECTED (MONTH)
+          </span>
+          <span className="text-2xl font-black text-emerald-700 font-display block mt-1 font-mono">
+            ₹21.40L
+          </span>
+          <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">92% on-time rate</span>
         </div>
       </div>
 
