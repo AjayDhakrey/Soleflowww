@@ -314,3 +314,137 @@
   background-image: url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M24 0 L48 24 L24 48 L0 24 Z' fill='none' stroke='%2394a3b8' stroke-width='0.5' stroke-opacity='0.25'/%3E%3C/svg%3E");
 }
 
+/* A single, page-scoped cinematic background for the public landing page. */
+.landing-video-page .landing-background-overlay {
+  background: linear-gradient(
+    180deg,
+    rgb(248 250 252 / 0.32) 0%,
+    rgb(248 250 252 / 0.2) 34%,
+    rgb(248 250 252 / 0.2) 72%,
+    rgb(248 250 252 / 0.3) 100%
+  );
+}
+
+.landing-video-page #hero h1,
+.landing-video-page .cinematic-transparent-section h2,
+.landing-video-page #motion-lab > section h2 {
+  color: #f8fafc;
+  text-shadow: 0 2px 14px rgb(15 23 42 / 0.75);
+}
+
+.landing-video-page .cinematic-section-description {
+  color: #e2e8f0;
+  text-shadow: 0 1px 10px rgb(15 23 42 / 0.8);
+}
+
+.landing-video-page footer.cinematic-transparent-section :is(.text-slate-900, .text-slate-800, .text-slate-700) {
+  color: #f8fafc;
+}
+
+.landing-video-page footer.cinematic-transparent-section :is(.text-slate-600, .text-slate-500, .text-slate-400) {
+  color: #cbd5e1;
+}
+
+.landing-video-page .cinematic-transparent-section,
+.landing-video-page #motion-lab > section {
+  background-color: transparent;
+  background-image: none;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.landing-video-page .cinematic-dark-section {
+  background-color: transparent;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+@media (max-width: 640px) {
+  .landing-background-video {
+    object-position: 52% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-background-video {
+    display: none;
+  }
+}
+
+/* App-wide dark theme. Scope overrides to the authenticated workspace so the
+   public landing and sign-in pages retain their intentional light design. */
+.dark-theme {
+  color-scheme: dark;
+  background-color: #0b1220 !important;
+  color: #e2e8f0 !important;
+}
+
+.dark-theme main,
+.dark-theme .app-content {
+  background-color: #0b1220;
+}
+
+.dark-theme :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-white\/70) {
+  background-color: #111c2e !important;
+}
+
+.dark-theme :is(.bg-slate-50, .bg-slate-50\/80, .bg-slate-50\/50) {
+  background-color: #172338 !important;
+}
+
+.dark-theme :is(.bg-slate-100, .bg-slate-100\/80, .bg-slate-200, .bg-slate-200\/70) {
+  background-color: #1e2b40 !important;
+}
+
+.dark-theme :is(.text-slate-900, .text-slate-800, .text-slate-700) {
+  color: #e2e8f0 !important;
+}
+
+.dark-theme :is(.text-slate-600, .text-slate-500) {
+  color: #a3b1c6 !important;
+}
+
+.dark-theme .text-slate-400 {
+  color: #8291a8 !important;
+}
+
+.dark-theme :is([class*="border-slate-100"], [class*="border-slate-200"], [class*="border-slate-300"]) {
+  border-color: #2a3a52 !important;
+}
+
+.dark-theme :is([class*="divide-slate-100"], [class*="divide-slate-200"]) > :not([hidden]) ~ :not([hidden]) {
+  border-color: #2a3a52 !important;
+}
+
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea {
+  color: #e2e8f0;
+  background-color: #172338;
+  border-color: #34445d;
+}
+
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+  color: #8291a8;
+}
+
+.dark-theme input:focus,
+.dark-theme select:focus,
+.dark-theme textarea:focus {
+  background-color: #1e2b40;
+}
+
+.dark-theme .bg-diamond-pattern,
+.dark-theme .bg-diamond-pattern-subtle {
+  background-color: #0b1220;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.48);
+}
+

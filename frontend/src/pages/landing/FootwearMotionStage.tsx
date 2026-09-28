@@ -232,7 +232,7 @@ export const FootwearMotionStage: React.FC<FootwearMotionStageProps> = ({
   const activeAccent = selectedModel.colorways[selectedColorIndex]?.accent || '#3b82f6';
 
   return (
-    <section className="py-8 sm:py-16 lg:py-20 px-3 sm:px-6 relative overflow-hidden bg-white border-y border-slate-200/90">
+    <section className="cinematic-transparent-section py-8 sm:py-16 lg:py-20 px-3 sm:px-6 relative overflow-hidden">
       {/* Background ambient lighting dynamically colored by shoe accent */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[700px] h-[300px] sm:h-[450px] blur-3xl rounded-full pointer-events-none opacity-20 transition-all duration-700"
@@ -255,7 +255,7 @@ export const FootwearMotionStage: React.FC<FootwearMotionStageProps> = ({
                 Runway Stride
               </span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl text-balance">
+            <p className="cinematic-section-description text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl text-balance">
               Interact with real-time 3D stride physics, 360° turntable spin, SATRA TM92 flex tests, and technical lasting anatomy.
             </p>
           </div>

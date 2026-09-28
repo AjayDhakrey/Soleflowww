@@ -80,11 +80,22 @@ interface AppContextType {
   toggleMobileSidebar: () => void;
   toastMessage: string | null;
   showToast: (msg: string) => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'soleflow_auth_session';
+const THEME_STORAGE_KEY = 'soleflow_dark_mode';
+
+const getInitialDarkMode = () => {
+  try {
+    return typeof window !== 'undefined' && localStorage.getItem(THEME_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
 
 const getInitialAuth = (): { isLoggedIn: boolean; user: User } => {
   try {
@@ -113,6 +124,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const initialAuth = getInitialAuth();
   const [currentUser, setCurrentUser] = useState<User>(initialAuth.user);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(initialAuth.isLoggedIn);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(getInitialDarkMode);
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(MOCK_CUSTOMERS[0]);
   const [designs] = useState<ShoeDesign[]>(MOCK_DESIGNS);
@@ -142,6 +154,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen((prev) => !prev);
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, String(next));
+      } catch (e) {
+        console.error('Failed to save theme preference:', e);
+      }
+      return next;
+    });
   };
 
   const showToast = (msg: string) => {
@@ -538,6 +562,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleMobileSidebar,
         toastMessage,
         showToast,
+        isDarkMode,
+        toggleDarkMode,
       }}
     >
       {children}

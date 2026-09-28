@@ -438,7 +438,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-diamond-pattern text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="landing-video-page relative isolate min-h-screen overflow-x-clip text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
+      <div
+        className="fixed inset-0 -z-30 h-screen w-screen bg-cover bg-center bg-no-repeat pointer-events-none"
+        style={{ backgroundImage: `url(${heroFootwearImg})` }}
+        aria-hidden="true"
+      />
+      <video
+        className="landing-background-video fixed inset-0 -z-20 h-screen w-screen object-cover object-center pointer-events-none"
+        autoPlay
+        muted
+        loop
+        playsInline
+        controls={false}
+        disablePictureInPicture
+        preload="metadata"
+        poster={heroFootwearImg}
+        aria-hidden="true"
+        tabIndex={-1}
+      >
+        <source src="/assets/videos/landing-cinematic.mp4" type="video/mp4" />
+      </video>
+      <div className="landing-background-overlay fixed inset-0 -z-10 pointer-events-none" aria-hidden="true" />
+
+      <div className="relative z-0">
       {/* ========================================================================= */}
       {/* 1. FLOATING PILL TOP NAVIGATION BAR (Exact Hercules styling)             */}
       {/* ========================================================================= */}
@@ -530,8 +553,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* 2. HERO SECTION WITH HERCULES PROMPT GENERATOR & DIAMOND GRID            */}
       {/* ========================================================================= */}
-      <section id="hero" className="pt-8 pb-14 sm:pt-16 sm:pb-24 px-3 sm:px-6 relative overflow-hidden text-center">
-        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+      <section id="hero" className="min-h-[calc(100svh-4rem)] pt-8 pb-14 sm:pt-16 sm:pb-24 px-3 sm:px-6 relative overflow-hidden text-center">
+        <div className="relative z-10 max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {/* Animated Footwear Studio Tag */}
           <div className="inline-flex items-center justify-center">
             <a
@@ -554,7 +577,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </h1>
 
           {/* Underlined Subtitle */}
-          <p className="text-xs sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed text-balance px-2">
+          <p className="cinematic-section-description text-xs sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed text-balance px-2">
             Run wholesale orders, factory production &amp; field sales{' '}
             <span className="relative inline-block text-slate-800 font-semibold underline decoration-blue-500/60 decoration-2 underline-offset-4">
               without spreadsheet chaos
@@ -747,7 +770,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* ========================================================================= */}
         {/* 3. CATEGORY / INDUSTRY CARDS STRIP (Matching Hercules bottom of hero)    */}
         {/* ========================================================================= */}
-        <div className="max-w-6xl mx-auto pt-6 sm:pt-8">
+        <div className="relative z-10 max-w-6xl mx-auto pt-6 sm:pt-8">
           <div className="flex md:grid md:grid-cols-5 gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 text-left">
             {[
               {
@@ -847,7 +870,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* 4. CASE STUDIES CAROUSEL WITH DUAL STATS (Exact Hercules Screenshot 3)   */}
       {/* ========================================================================= */}
-      <section id="case-studies" className="py-12 sm:py-24 bg-white border-y border-slate-200/80">
+      <section id="case-studies" className="cinematic-transparent-section py-12 sm:py-24">
         <div className="max-w-6xl mx-auto px-3 sm:px-6">
           {/* Header (Matching Hercules "From idea to published app in minutes") */}
           <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
@@ -857,7 +880,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 in minutes
               </span>
             </h2>
-            <p className="mt-2 sm:mt-3 text-xs sm:text-base text-slate-600">
+            <p className="cinematic-section-description mt-2 sm:mt-3 text-xs sm:text-base text-slate-600">
               Trusted by 350+ wholesale footwear distributors and high-capacity OEM mills across major trading hubs.
             </p>
           </div>
@@ -936,7 +959,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* 7. CUSTOMER TESTIMONIALS (4x2 Grid matching Hercules Screenshot 4)       */}
       {/* ========================================================================= */}
-      <section className="py-16 sm:py-24 bg-diamond-pattern border-b border-slate-200/80">
+      <section className="cinematic-transparent-section py-16 sm:py-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14">
             <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-2">
@@ -989,7 +1012,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* 7.5 ANIMATED CONTINUOUS FOOTWEAR RUNWAY MARQUEE                          */}
       {/* ========================================================================= */}
-      <div className="py-6 sm:py-8 bg-slate-900 border-y border-slate-800 overflow-hidden relative select-none">
+      <div className="cinematic-dark-section py-6 sm:py-8 overflow-hidden relative select-none">
         <div className="absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-slate-900 to-transparent z-10 pointer-events-none" />
         
@@ -1122,7 +1145,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* 8. FREQUENTLY ASKED QUESTIONS (Accordion matching Hercules Screenshot 5) */}
       {/* ========================================================================= */}
-      <section id="faqs" className="py-16 sm:py-24 bg-diamond-pattern">
+      <section id="faqs" className="cinematic-transparent-section py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-tight">
@@ -1173,12 +1196,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* 9. BOTTOM PROMPT CALL TO ACTION (Matching Hercules Screenshot 1 & 6)     */}
       {/* ========================================================================= */}
-      <section className="py-16 sm:py-24 bg-diamond-pattern-subtle border-t border-slate-200/80 text-center px-4 sm:px-6">
+      <section className="cinematic-transparent-section py-16 sm:py-24 text-center px-4 sm:px-6">
         <div className="max-w-3xl mx-auto space-y-6">
           <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900">
             Start building for free
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+          <p className="cinematic-section-description text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
             No credit card required. Describe your footwear assortment and start production in seconds.
           </p>
 
@@ -1221,7 +1244,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* 10. LIGHT MULTI-COLUMN FOOTER (Exact Hercules Screenshot 1 & 6)          */}
       {/* ========================================================================= */}
-      <footer className="bg-slate-50/80 border-t border-slate-200/90 py-14 text-xs text-slate-600 px-4 sm:px-6 lg:px-8">
+      <footer className="cinematic-transparent-section py-14 text-xs text-slate-600 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
             {/* Left Brand Col */}
@@ -1802,6 +1825,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };

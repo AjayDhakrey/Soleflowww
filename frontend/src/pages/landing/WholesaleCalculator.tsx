@@ -77,7 +77,7 @@ export const WholesaleCalculator: React.FC<WholesaleCalculatorProps> = ({ onOpen
   };
 
   return (
-    <section id="wholesale-calculator" className="py-16 sm:py-24 bg-slate-50 border-y border-slate-200/80">
+    <section id="wholesale-calculator" className="cinematic-transparent-section py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
@@ -90,7 +90,7 @@ export const WholesaleCalculator: React.FC<WholesaleCalculatorProps> = ({ onOpen
           <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-tight">
             Wholesale Pre-Pack &amp; Margin Simulator
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed text-balance">
+          <p className="cinematic-section-description mt-3 text-sm sm:text-base text-slate-600 leading-relaxed text-balance">
             Model accurate footwear size-curve assortments, volumetric weight, landed freight, and retail markup before booking master carton batch production.
           </p>
         </div>

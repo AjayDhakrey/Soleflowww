@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "dev": "node scripts/dev.mjs",
+    "dev:frontend": "vite frontend --config frontend/vite.config.ts --host 0.0.0.0",
+    "dev:backend": "node backend/server.js",
+    "build": "vite build frontend --config frontend/vite.config.ts",
+    "preview": "vite preview frontend --config frontend/vite.config.ts",
+    "clean": "node scripts/clean.mjs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

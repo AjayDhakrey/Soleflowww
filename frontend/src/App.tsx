@@ -32,6 +32,7 @@ const AppContent: React.FC = () => {
     toastMessage,
     showToast,
     setIsMobileSidebarOpen,
+    isDarkMode,
   } = useApp();
   const [currentPath, setCurrentPath] = useState<string>(
     currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard'
@@ -203,7 +204,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
+    <div className={`app-shell flex h-screen bg-[#f8fafc] text-slate-800 overflow-hidden font-sans${isDarkMode ? ' dark-theme' : ''}`}>
       {/* 1. Left Persistent Sidebar */}
       <Sidebar currentPath={currentPath} onNavigate={handleNavigate} />
 

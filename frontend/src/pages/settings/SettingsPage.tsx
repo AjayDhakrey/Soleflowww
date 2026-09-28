@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Settings, ShieldCheck, Building, User, Bell, Database, Check } from 'lucide-react';
+import { Settings, ShieldCheck, Building, User, Bell, Database, Check, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const SettingsPage: React.FC = () => {
-  const { currentUser, switchRole, showToast } = useApp();
+  const { currentUser, switchRole, showToast, isDarkMode, toggleDarkMode } = useApp();
 
   const [companyName, setCompanyName] = useState('SoleFlow Footwear Trading Ltd.');
   const [gstin, setGstin] = useState('09AAACS4412M1Z0');
@@ -69,6 +69,30 @@ export const SettingsPage: React.FC = () => {
               onChange={(e) => setHubAddress(e.target.value)}
               className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
             />
+          </div>
+        </div>
+
+        {/* Appearance */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            {isDarkMode ? <Moon className="w-4 h-4 text-blue-600" /> : <Sun className="w-4 h-4 text-amber-500" />}
+            <span>Appearance</span>
+          </h3>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold text-slate-800">Dark mode</p>
+              <p className="text-xs text-slate-500 mt-1">Use a darker color theme across the workspace.</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isDarkMode}
+              aria-label="Toggle dark mode"
+              onClick={toggleDarkMode}
+              className={`relative w-12 h-7 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${isDarkMode ? 'bg-blue-600' : 'bg-slate-300'}`}
+            >
+              <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${isDarkMode ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
           </div>
         </div>
 
