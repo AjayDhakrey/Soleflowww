@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings, ShieldCheck, Building, User, Bell, Database, Check, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { supabaseApi } from '../../lib/supabase';
 
 export const SettingsPage: React.FC = () => {
   const { currentUser, switchRole, showToast, isDarkMode, toggleDarkMode } = useApp();
@@ -8,6 +9,8 @@ export const SettingsPage: React.FC = () => {
   const [companyName, setCompanyName] = useState('SoleFlow Footwear Trading Ltd.');
   const [gstin, setGstin] = useState('09AAACS4412M1Z0');
   const [hubAddress, setHubAddress] = useState('Agra Mandi Dock 4, Hing Ki Mandi, Agra UP');
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,17 +155,31 @@ export const SettingsPage: React.FC = () => {
 
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1 font-mono text-slate-700">
             <div><strong>Endpoint:</strong> https://jpcaptmmcbuqlgrdetde.supabase.co</div>
-            <div><strong>Status:</strong> 8 Tables Verified (customers, orders, designs, payments, audit_logs, design_shares, manufacturers, sales_team)</div>
-            <div><strong>Mode:</strong> Real-time PostgreSQL Synchronization Active</div>
+            <div><strong>Status:</strong> Live PostgreSQL Synchronization Active</div>
+            {testResult && <div><strong>Last Live Ping:</strong> {testResult}</div>}
           </div>
 
           <button
             type="button"
-            onClick={() => showToast('✅ Supabase connection verified! All 8 tables responded OK.')}
-            className="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+            disabled={isTesting}
+            onClick={async () => {
+              setIsTesting(true);
+              const res = await supabaseApi.testLiveConnection();
+              setIsTesting(false);
+              if (res.success) {
+                const msg = `✅ Live Database OK! (${res.latencyMs}ms, ${res.customerCount} customers saved in cloud)`;
+                setTestResult(msg);
+                showToast(msg);
+              } else {
+                const msg = `❌ Connection Error: ${res.message}`;
+                setTestResult(msg);
+                showToast(msg);
+              }
+            }}
+            className="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>Test Database Connection</span>
+            <span>{isTesting ? 'Pinging Database...' : 'Test Database Connection'}</span>
           </button>
         </div>
 

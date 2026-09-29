@@ -13,16 +13,20 @@ import {
   NotificationItem,
 } from '../types';
 
+const FALLBACK_SUPABASE_URL = 'https://jpcaptmmcbuqlgrdetde.supabase.co';
+const FALLBACK_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwY2FwdG1tY2J1cWxncmRldGRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTE0MjAsImV4cCI6MjEwNjE2NzQyMH0.zh3W-mNQA43UVNMe5V5EwBcZAK-UIa-KpmnZX5zcI6U';
+
 const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
-  '';
+  FALLBACK_SUPABASE_URL;
 
 const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  '';
+  FALLBACK_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(
@@ -42,6 +46,32 @@ export const supabase = isSupabaseConfigured()
 // =========================================================================
 
 export const supabaseApi = {
+  // Test & Diagnostics
+  async testLiveConnection(): Promise<{ success: boolean; message: string; customerCount?: number; latencyMs?: number }> {
+    if (!supabase) return { success: false, message: 'Supabase client is not configured' };
+    const startTime = performance.now();
+    try {
+      const { data, error, count } = await supabase
+        .from('customers')
+        .select('*', { count: 'exact' });
+      const latencyMs = Math.round(performance.now() - startTime);
+
+      if (error) {
+        console.error('Supabase test connection error:', error);
+        return { success: false, message: error.message, latencyMs };
+      }
+      return {
+        success: true,
+        message: `Connected to Supabase successfully (${latencyMs}ms)`,
+        customerCount: count ?? data?.length ?? 0,
+        latencyMs,
+      };
+    } catch (err: any) {
+      console.error('Supabase network error during test:', err);
+      return { success: false, message: err?.message || 'Network connection failed' };
+    }
+  },
+
   // 1. Customers / Clients
   async getCustomers(): Promise<Customer[] | null> {
     if (!supabase) return null;
@@ -50,20 +80,29 @@ export const supabaseApi = {
       .select('*')
       .order('created_at', { ascending: false });
     if (error) {
-      console.warn('Supabase getCustomers error:', error);
+      console.error('Supabase getCustomers error:', error);
       return null;
     }
     return data as Customer[];
   },
 
   async insertCustomer(customer: Customer): Promise<boolean> {
-    if (!supabase) return false;
-    const { error } = await supabase.from('customers').insert([customer]);
-    if (error) {
-      console.warn('Supabase insertCustomer error:', error);
+    if (!supabase) {
+      console.warn('Supabase not configured, skipping cloud insert');
       return false;
     }
-    return true;
+    try {
+      const { error } = await supabase.from('customers').insert([customer]);
+      if (error) {
+        console.error('❌ Supabase insertCustomer error:', error);
+        return false;
+      }
+      console.log('✅ Supabase insertCustomer success:', customer.id);
+      return true;
+    } catch (err) {
+      console.error('❌ Supabase insertCustomer exception:', err);
+      return false;
+    }
   },
 
   async updateCustomer(customerId: string, updates: Partial<Customer>): Promise<boolean> {

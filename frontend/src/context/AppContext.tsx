@@ -441,8 +441,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCustomers((prev) => [newCust, ...prev]);
     setSelectedCustomer(newCust);
     if (isSupabaseActive) {
-      supabaseApi.insertCustomer(newCust);
+      supabaseApi.insertCustomer(newCust).then((ok) => {
+        if (ok) {
+          showToast(`✅ Customer '${newCust.businessName}' saved to Supabase!`);
+        } else {
+          showToast(`⚠️ Cloud save failed for '${newCust.businessName}' (saved locally)`);
+        }
+      });
+    } else {
+      showToast(`Added customer: ${newCust.businessName}`);
     }
+
     addAuditEvent({
       action: 'Created Client Account',
       recordType: 'Client',
@@ -450,7 +459,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordTitle: newCust.businessName,
       newValue: `Registered: ${newCust.city}, Terms: ${newCust.paymentTerms}`,
     });
-    showToast(`Added customer: ${newCust.businessName}`);
   };
 
   const createOrder = (orderData: Partial<Order>) => {
