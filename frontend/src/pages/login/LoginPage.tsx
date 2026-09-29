@@ -15,8 +15,10 @@ import {
   Phone,
   CheckCircle2,
   Sparkles,
+  KeyRound,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../auth/AuthProvider';
 import walkingMotionBg from '../../assets/images/footwear_walking_motion_1790245134535.jpg';
 import showcaseBannerBg from '../../assets/images/footwear_showcase_banner_1790245146976.jpg';
 
@@ -24,14 +26,17 @@ interface LoginPageProps {
   onSuccess: (role: 'admin' | 'salesperson') => void;
   initialMode?: 'login' | 'signup';
   onBackToLanding?: () => void;
+  onForgotPassword?: () => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({
   onSuccess,
   initialMode = 'login',
   onBackToLanding,
+  onForgotPassword,
 }) => {
-  const { login, register } = useApp();
+  const { login: appLogin, register } = useApp();
+  const { signIn, isDemoMode } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('admin@soleflow.com');
   const [password, setPassword] = useState('admin123');
@@ -155,28 +160,46 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const success = login(email, password);
-    if (success) {
-      onSuccess(email.includes('sales') ? 'salesperson' : 'admin');
-    } else {
-      setError('Invalid credentials. Use demo credentials below.');
+    setIsSubmittingLogin(true);
+
+    try {
+      const res = await signIn(email, password);
+      if (res.success) {
+        appLogin(email, password);
+        onSuccess(email.includes('sales') ? 'salesperson' : 'admin');
+      } else {
+        setError(res.error || 'Invalid credentials. Use demo credentials below.');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Login failed.');
+    } finally {
+      setIsSubmittingLogin(false);
     }
   };
 
-  const handleQuickLogin = (role: 'admin' | 'salesperson') => {
-    if (role === 'admin') {
-      setEmail('admin@soleflow.com');
-      setPassword('admin123');
-      login('admin@soleflow.com', 'admin123');
-      onSuccess('admin');
-    } else {
-      setEmail('sales@soleflow.com');
-      setPassword('sales123');
-      login('sales@soleflow.com', 'sales123');
-      onSuccess('salesperson');
+  const handleQuickLogin = async (role: 'admin' | 'salesperson') => {
+    setError('');
+    setIsSubmittingLogin(true);
+    const targetEmail = role === 'admin' ? 'admin@soleflow.com' : 'sales@soleflow.com';
+    const targetPass = role === 'admin' ? 'admin123' : 'sales123';
+
+    setEmail(targetEmail);
+    setPassword(targetPass);
+
+    try {
+      await signIn(targetEmail, targetPass);
+      appLogin(targetEmail, targetPass);
+      onSuccess(role);
+    } catch (e) {
+      appLogin(targetEmail, targetPass);
+      onSuccess(role);
+    } finally {
+      setIsSubmittingLogin(false);
     }
   };
 
@@ -554,13 +577,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               </div>
 
               <div>
-                <label
-                  className={`text-[10px] sm:text-xs font-bold block mb-1 ${
-                    isUltraTransparent ? 'text-slate-200' : 'text-slate-700'
-                  }`}
-                >
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label
+                    className={`text-[10px] sm:text-xs font-bold block ${
+                      isUltraTransparent ? 'text-slate-200' : 'text-slate-700'
+                    }`}
+                  >
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onForgotPassword) {
+                        onForgotPassword();
+                      } else {
+                        window.location.hash = '#auth/forgot-password';
+                      }
+                    }}
+                    className="text-[10px] font-semibold text-blue-300 hover:text-blue-200 transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 <div className="relative">
                   <Lock
                     className={`w-3.5 h-3.5 absolute left-3 top-2.5 sm:top-3 ${
@@ -584,10 +622,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
               <button
                 type="submit"
-                className="w-full h-9 sm:h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] mt-1"
+                disabled={isSubmittingLogin}
+                className="w-full h-9 sm:h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] mt-1 disabled:opacity-60"
               >
-                <span>Sign In to SoleFlow</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {isSubmittingLogin ? (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Sign In to SoleFlow</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
               </button>
 
               {/* Quick Demo Role Picker Buttons (Transparent Frosted Glass) */}

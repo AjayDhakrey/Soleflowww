@@ -1,0 +1,22 @@
+{
+  "short_name": "SoleFlow",
+  "name": "SoleFlow — Shoe Trade CRM & B2B Wholesale",
+  "description": "Production B2B Footwear Wholesale Management & Field Sales CRM",
+  "icons": [
+    {
+      "src": "/assets/thumb-apex-runner-B61O1jqi.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/thumb-aeroglide-knit-DkeugByq.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#2563eb",
+  "display": "standalone",
+  "orientation": "portrait"
+}

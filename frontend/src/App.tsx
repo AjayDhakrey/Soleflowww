@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { AppProvider, useApp } from './context/AppContext';
+import { RequireAuth, RequireRole } from './auth/RouteGuards';
+import { useRealtimeSubscriptions } from './hooks/useRealtime';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -19,6 +23,9 @@ import { VisitsPage } from './pages/sales/VisitsPage';
 import { CollectionsPage } from './pages/sales/CollectionsPage';
 import { LoginPage } from './pages/login/LoginPage';
 import { LandingPage } from './pages/landing/LandingPage';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
+import { PublicLookbookPage } from './pages/public/PublicLookbookPage';
 import { RecordPaymentModal } from './components/payments/RecordPaymentModal';
 import { CreateOrderWizardModal } from './components/orders/CreateOrderWizardModal';
 import { AddCustomerModal } from './components/customers/AddCustomerModal';
@@ -26,6 +33,16 @@ import { ShareLookbookModal } from './components/designs/ShareLookbookModal';
 import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 2,
+      retry: 1,
+    },
+  },
+});
 
 const AppContent: React.FC = () => {
   const {
@@ -36,26 +53,51 @@ const AppContent: React.FC = () => {
     setIsMobileSidebarOpen,
     isDarkMode,
   } = useApp();
+
+  const { user: authUser, role: authRole } = useAuth();
+
   const [currentPath, setCurrentPath] = useState<string>(
     currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard'
   );
 
-  const [unauthView, setUnauthView] = useState<'landing' | 'login' | 'signup'>('landing');
+  const [unauthView, setUnauthView] = useState<'landing' | 'login' | 'signup' | 'forgot_password' | 'reset_password' | 'lookbook'>('landing');
+  const [activeShareToken, setActiveShareToken] = useState<string>('');
 
-  // Handle URL hash routing for direct access like #login or #signup
+  // Live Supabase Realtime subscriptions for orders and notifications
+  useRealtimeSubscriptions(authUser?.id, (msg) => {
+    showToast(msg);
+  });
+
+  // URL hash and path routing for direct link access
   useEffect(() => {
-    const handleHash = () => {
-      if (window.location.hash === '#login') {
+    const handleRoute = () => {
+      const hash = window.location.hash;
+      const pathname = window.location.pathname;
+
+      if (hash.startsWith('#s/')) {
+        const token = hash.replace('#s/', '');
+        setActiveShareToken(token);
+        setUnauthView('lookbook');
+      } else if (pathname.startsWith('/s/')) {
+        const token = pathname.replace('/s/', '');
+        setActiveShareToken(token);
+        setUnauthView('lookbook');
+      } else if (hash === '#auth/forgot-password') {
+        setUnauthView('forgot_password');
+      } else if (hash === '#auth/reset') {
+        setUnauthView('reset_password');
+      } else if (hash === '#login') {
         setUnauthView('login');
-      } else if (window.location.hash === '#signup') {
+      } else if (hash === '#signup') {
         setUnauthView('signup');
-      } else if (window.location.hash === '#landing' || window.location.hash === '#home') {
+      } else if (hash === '#landing' || hash === '#home') {
         setUnauthView('landing');
       }
     };
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+
+    handleRoute();
+    window.addEventListener('hashchange', handleRoute);
+    return () => window.removeEventListener('hashchange', handleRoute);
   }, []);
 
   // Sync route on role switch
@@ -86,7 +128,43 @@ const AppContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 1. Anonymous Public Share Lookbook Route (/s/:token or #s/:token)
+  if (unauthView === 'lookbook') {
+    return (
+      <PublicLookbookPage
+        shareToken={activeShareToken || 'token-abc-001'}
+        onReturnToApp={() => {
+          window.location.hash = '';
+          setUnauthView(isLoggedIn ? 'landing' : 'landing');
+        }}
+      />
+    );
+  }
+
+  // 2. Unauthenticated Auth Routes
   if (!isLoggedIn) {
+    if (unauthView === 'forgot_password') {
+      return (
+        <ForgotPasswordPage
+          onBackToLogin={() => {
+            window.location.hash = '#login';
+            setUnauthView('login');
+          }}
+        />
+      );
+    }
+
+    if (unauthView === 'reset_password') {
+      return (
+        <ResetPasswordPage
+          onSuccess={() => {
+            window.location.hash = '#login';
+            setUnauthView('login');
+          }}
+        />
+      );
+    }
+
     if (unauthView === 'login' || unauthView === 'signup') {
       return (
         <LoginPage
@@ -98,6 +176,10 @@ const AppContent: React.FC = () => {
           onBackToLanding={() => {
             window.location.hash = '';
             setUnauthView('landing');
+          }}
+          onForgotPassword={() => {
+            window.location.hash = '#auth/forgot-password';
+            setUnauthView('forgot_password');
           }}
         />
       );
@@ -117,7 +199,7 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Render Page Content based on currentPath
+  // 3. Authenticated Page Content based on currentPath
   const renderPage = () => {
     // Public Landing Page view for authenticated user
     if (currentPath === '/landing') {
@@ -133,9 +215,14 @@ const AppContent: React.FC = () => {
         />
       );
     }
-    // Admin routes
+
+    // Admin routes guarded by RequireRole
     if (currentPath === '/admin/dashboard') {
-      return <AdminDashboard onNavigate={handleNavigate} />;
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
+          <AdminDashboard onNavigate={handleNavigate} />
+        </RequireRole>
+      );
     }
     if (currentPath === '/admin/customers' || currentPath.startsWith('/admin/customers/')) {
       return <CustomersPage onNavigate={handleNavigate} />;
@@ -147,25 +234,45 @@ const AppContent: React.FC = () => {
       return <OrdersPage onNavigate={handleNavigate} />;
     }
     if (currentPath === '/admin/sales-team') {
-      return <SalesTeamPage onNavigate={handleNavigate} />;
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
+          <SalesTeamPage onNavigate={handleNavigate} />
+        </RequireRole>
+      );
     }
     if (currentPath === '/admin/manufacturers') {
-      return <ManufacturersPage onNavigate={handleNavigate} />;
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
+          <ManufacturersPage onNavigate={handleNavigate} />
+        </RequireRole>
+      );
     }
     if (currentPath === '/admin/payments') {
       return <PaymentsPage onNavigate={handleNavigate} />;
     }
     if (currentPath === '/admin/reports') {
-      return <ReportsPage />;
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
+          <ReportsPage />
+        </RequireRole>
+      );
     }
     if (currentPath === '/admin/settings') {
-      return <SettingsPage />;
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
+          <SettingsPage />
+        </RequireRole>
+      );
     }
     if (currentPath === '/admin/notifications') {
       return <NotificationsPage />;
     }
     if (currentPath === '/admin/audit-log') {
-      return <AuditLogPage />;
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
+          <AuditLogPage />
+        </RequireRole>
+      );
     }
 
     // Sales routes
@@ -249,8 +356,12 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

@@ -13,6 +13,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useReceivables } from '../../hooks/usePayments';
 
 interface PaymentsPageProps {
   onNavigate: (path: string) => void;
@@ -27,9 +28,12 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
     showToast,
   } = useApp();
 
+  const { data: receivablesList } = useReceivables();
+
   const [search, setSearch] = useState('');
 
-  const totalOutstanding = customers.reduce((sum, c) => sum + (c.amountDue || 0), 0);
+  const dbOutstanding = (receivablesList || []).reduce((sum, r: any) => sum + Number(r.total_outstanding || 0), 0);
+  const totalOutstanding = dbOutstanding > 0 ? dbOutstanding : customers.reduce((sum, c) => sum + (c.amountDue || 0), 0);
   const overdueCustomers = customers.filter((c) => c.amountDue > 0);
 
   const filteredOverdue = overdueCustomers.filter(

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { Database } from '../types/database.types';
 import {
   Customer,
   ShoeDesign,
@@ -13,20 +14,32 @@ import {
   NotificationItem,
 } from '../types';
 
-const FALLBACK_SUPABASE_URL = 'https://jpcaptmmcbuqlgrdetde.supabase.co';
-const FALLBACK_SUPABASE_ANON_KEY =
+/**
+ * @deprecated Use environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY instead.
+ * Retained strictly for offline/demo mode backwards-compatibility.
+ */
+export const FALLBACK_SUPABASE_URL = 'https://jpcaptmmcbuqlgrdetde.supabase.co';
+
+/**
+ * @deprecated Use environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY instead.
+ * Retained strictly for offline/demo mode backwards-compatibility.
+ */
+export const FALLBACK_SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwY2FwdG1tY2J1cWxncmRldGRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTE0MjAsImV4cCI6MjEwNjE2NzQyMH0.zh3W-mNQA43UVNMe5V5EwBcZAK-UIa-KpmnZX5zcI6U';
 
-const supabaseUrl =
+const rawUrl =
   import.meta.env.VITE_SUPABASE_URL ||
-  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
-  FALLBACK_SUPABASE_URL;
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
 
-const supabaseAnonKey =
+const rawAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  FALLBACK_SUPABASE_ANON_KEY;
+  import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+export const isDemoModeActive = import.meta.env.VITE_DEMO_MODE === 'true';
+
+const supabaseUrl = rawUrl || FALLBACK_SUPABASE_URL;
+const supabaseAnonKey = rawAnonKey || FALLBACK_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(
@@ -51,7 +64,7 @@ export const supabaseApi = {
     if (!supabase) return { success: false, message: 'Supabase client is not configured' };
     const startTime = performance.now();
     try {
-      const { data, error, count } = await supabase
+      const { data, error, count } = await (supabase as any)
         .from('customers')
         .select('*', { count: 'exact' });
       const latencyMs = Math.round(performance.now() - startTime);
@@ -75,7 +88,7 @@ export const supabaseApi = {
   // 1. Customers / Clients
   async getCustomers(): Promise<Customer[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('customers')
       .select('*')
       .order('created_at', { ascending: false });
@@ -92,7 +105,7 @@ export const supabaseApi = {
       return false;
     }
     try {
-      const { error } = await supabase.from('customers').insert([customer]);
+      const { error } = await (supabase as any).from('customers').insert([customer]);
       if (error) {
         console.error('❌ Supabase insertCustomer error:', error);
         return false;
@@ -107,7 +120,7 @@ export const supabaseApi = {
 
   async updateCustomer(customerId: string, updates: Partial<Customer>): Promise<boolean> {
     if (!supabase) return false;
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('customers')
       .update(updates)
       .eq('id', customerId);
@@ -121,7 +134,7 @@ export const supabaseApi = {
   // 2. Orders
   async getOrders(): Promise<Order[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false });
@@ -134,7 +147,7 @@ export const supabaseApi = {
 
   async insertOrder(order: Order): Promise<boolean> {
     if (!supabase) return false;
-    const { error } = await supabase.from('orders').insert([order]);
+    const { error } = await (supabase as any).from('orders').insert([order]);
     if (error) {
       console.warn('Supabase insertOrder error:', error);
       return false;
@@ -144,7 +157,7 @@ export const supabaseApi = {
 
   async updateOrderStatus(orderId: string, status: Order['status']): Promise<boolean> {
     if (!supabase) return false;
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('orders')
       .update({ status })
       .eq('id', orderId);
@@ -158,7 +171,7 @@ export const supabaseApi = {
   // 3. Shoe Designs
   async getDesigns(): Promise<ShoeDesign[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('designs')
       .select('*')
       .order('created_at', { ascending: false });
@@ -172,7 +185,7 @@ export const supabaseApi = {
   // 4. Payments
   async getPayments(): Promise<PaymentReceipt[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('payments')
       .select('*')
       .order('created_at', { ascending: false });
@@ -185,7 +198,7 @@ export const supabaseApi = {
 
   async insertPayment(payment: PaymentReceipt): Promise<boolean> {
     if (!supabase) return false;
-    const { error } = await supabase.from('payments').insert([payment]);
+    const { error } = await (supabase as any).from('payments').insert([payment]);
     if (error) {
       console.warn('Supabase insertPayment error:', error);
       return false;
@@ -196,7 +209,7 @@ export const supabaseApi = {
   // 5. Audit Logs
   async getAuditLogs(): Promise<AuditEvent[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('audit_logs')
       .select('*')
       .order('created_at', { ascending: false });
@@ -209,7 +222,7 @@ export const supabaseApi = {
 
   async insertAuditLog(event: AuditEvent): Promise<boolean> {
     if (!supabase) return false;
-    const { error } = await supabase.from('audit_logs').insert([event]);
+    const { error } = await (supabase as any).from('audit_logs').insert([event]);
     if (error) {
       console.warn('Supabase insertAuditLog error:', error);
       return false;
@@ -220,7 +233,7 @@ export const supabaseApi = {
   // 6. Design Shares
   async getDesignShares(): Promise<DesignShareRecord[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('design_shares')
       .select('*')
       .order('created_at', { ascending: false });
@@ -233,7 +246,7 @@ export const supabaseApi = {
 
   async insertDesignShare(share: DesignShareRecord): Promise<boolean> {
     if (!supabase) return false;
-    const { error } = await supabase.from('design_shares').insert([share]);
+    const { error } = await (supabase as any).from('design_shares').insert([share]);
     if (error) {
       console.warn('Supabase insertDesignShare error:', error);
       return false;
@@ -244,7 +257,7 @@ export const supabaseApi = {
   // 7. Manufacturers
   async getManufacturers(): Promise<Manufacturer[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase.from('manufacturers').select('*');
+    const { data, error } = await (supabase as any).from('manufacturers').select('*');
     if (error) {
       console.warn('Supabase getManufacturers error:', error);
       return null;
@@ -255,7 +268,7 @@ export const supabaseApi = {
   // 8. Sales Team
   async getSalesTeam(): Promise<Salesperson[] | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase.from('sales_team').select('*');
+    const { data, error } = await (supabase as any).from('sales_team').select('*');
     if (error) {
       console.warn('Supabase getSalesTeam error:', error);
       return null;

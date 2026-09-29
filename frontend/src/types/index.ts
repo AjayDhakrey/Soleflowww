@@ -280,3 +280,5 @@ export interface DesignShareRecord {
   orderId?: string;
 }
 
+export * from './database.types';
+

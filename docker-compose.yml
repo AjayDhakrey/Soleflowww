@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  soleflow-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: soleflow_app
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - VITE_DEMO_MODE=false
+    restart: unless-stopped
