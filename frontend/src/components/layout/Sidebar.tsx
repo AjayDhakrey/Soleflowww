@@ -1,31 +1,7 @@
 import React, { useEffect } from 'react';
-import {
-  LayoutDashboard,
-  Users,
-  Layers,
-  ShoppingBag,
-  UserCheck,
-  Factory,
-  CreditCard,
-  BarChart3,
-  Settings,
-  CalendarCheck,
-  MapPin,
-  Bell,
-  Briefcase,
-  User,
-  LogOut,
-  ArrowLeftRight,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Sparkles,
-  History,
-  PlayCircle,
-} from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { Icons, Icon } from '../../lib/icons';
+import { ChevronLeft, ChevronRight, PanelLeftClose, LogOut, ArrowLeftRight } from 'lucide-react';
 
 interface SidebarProps {
   currentPath: string;
@@ -39,12 +15,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     logout,
     notifications,
     isSidebarCollapsed,
-    setIsSidebarCollapsed,
     toggleSidebar,
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
-    setIsWalkthroughOpen,
-    setWalkthroughStep,
   } = useApp();
 
   // Keyboard shortcut: Ctrl+B or Cmd+B to toggle sidebar
@@ -59,37 +32,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar]);
 
-  const unreadAlerts =
-    notifications.filter(
-      (n) => !n.read && (n.category === 'alert' || n.category === 'order')
-    ).length || 4;
+  const unreadAlerts = notifications.filter((n) => !n.read).length || 0;
 
   const adminNav = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Customers', path: '/admin/customers', icon: Users },
-    { name: 'Designs', path: '/admin/designs', icon: Layers },
-    { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
-    { name: 'Sales Team', path: '/admin/sales-team', icon: UserCheck },
-    { name: 'Manufacturers', path: '/admin/manufacturers', icon: Factory },
-    { name: 'Payments & Amount Due', path: '/admin/payments', icon: CreditCard },
-    { name: 'Reports & Alerts', path: '/admin/reports', icon: BarChart3, badge: unreadAlerts },
-    { name: 'Audit Log', path: '/admin/audit-log', icon: History },
-    { name: 'Public Landing Page', path: '/landing', icon: Sparkles },
-    { name: 'Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: Icons.Dashboard },
+    { name: 'Clients', path: '/admin/customers', icon: Icons.Clients },
+    { name: 'Designs', path: '/admin/designs', icon: Icons.Designs },
+    { name: 'Orders', path: '/admin/orders', icon: Icons.Orders },
+    { name: 'Salesmen', path: '/admin/sales-team', icon: Icons.Salesmen },
+    { name: 'Manufacturers', path: '/admin/manufacturers', icon: Icons.Manufacturers },
+    { name: 'Payments', path: '/admin/payments', icon: Icons.Payments },
+    { name: 'Reports', path: '/admin/reports', icon: Icons.Reports, badge: unreadAlerts > 0 ? unreadAlerts : undefined },
+    { name: 'Audit log', path: '/admin/audit-log', icon: Icons.AuditLog },
+    { name: 'Settings', path: '/admin/settings', icon: Icons.Settings },
   ];
 
   const salesNav = [
-    { name: 'Dashboard', path: '/sales/dashboard', icon: LayoutDashboard },
-    { name: 'My Customers', path: '/sales/customers', icon: Users },
-    { name: 'Design Catalogue', path: '/sales/designs', icon: Layers },
-    { name: 'My Orders', path: '/sales/orders', icon: ShoppingBag },
-    { name: 'Collections', path: '/sales/collections', icon: CreditCard },
-    { name: 'Follow-ups', path: '/sales/follow-ups', icon: CalendarCheck },
-    { name: 'My Visits', path: '/sales/visits', icon: MapPin },
-    { name: 'Notifications', path: '/sales/notifications', icon: Bell, badge: 2 },
-    { name: 'My Activity', path: '/sales/activity', icon: Briefcase },
-    { name: 'Public Landing Page', path: '/landing', icon: Sparkles },
-    { name: 'Profile', path: '/sales/profile', icon: User },
+    { name: 'Today', path: '/sales/dashboard', icon: Icons.Dashboard },
+    { name: 'Clients', path: '/sales/customers', icon: Icons.Clients },
+    { name: 'Designs', path: '/sales/designs', icon: Icons.Designs },
+    { name: 'Orders', path: '/sales/orders', icon: Icons.Orders },
+    { name: 'Collections', path: '/sales/collections', icon: Icons.Collections },
+    { name: 'Follow-ups', path: '/sales/follow-ups', icon: Icons.FollowUps },
+    { name: 'Visits', path: '/sales/visits', icon: Icons.Visits },
+    { name: 'Notifications', path: '/sales/notifications', icon: Icons.Notifications, badge: 2 },
+    { name: 'Activity', path: '/sales/activity', icon: Icons.Meta.Activity },
   ];
 
   const currentNav = currentUser.role === 'admin' ? adminNav : salesNav;
@@ -103,101 +70,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
 
   return (
     <>
-      {/* ========================================================================= */}
-      {/* 1. DEDICATED PHONE NAVIGATION DRAWER (Mobile-only < md)                   */}
-      {/* ========================================================================= */}
+      {/* 1. Mobile Drawer */}
       {isMobileSidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] flex">
-          {/* Full-screen Dark Frosted Touch-Dismiss Backdrop */}
+        <div className="md:hidden fixed inset-0 z-50 flex">
           <div
             onClick={() => setIsMobileSidebarOpen(false)}
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-300"
+            className="fixed inset-0 bg-black/40 transition-opacity"
             aria-hidden="true"
           />
 
-          {/* Phone Drawer Panel */}
-          <div className="relative w-[86vw] max-w-[320px] bg-white h-full shadow-2xl flex flex-col z-[101] animate-in slide-in-from-left duration-200">
-            {/* Phone Header with Large Close Button */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
-              <div
-                className="flex items-center gap-2.5 cursor-pointer"
-                onClick={() => {
-                  handleNavClick(
-                    currentUser.role === 'admin'
-                      ? '/admin/dashboard'
-                      : '/sales/dashboard'
-                  );
-                }}
-              >
-                <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs shrink-0">
-                  <svg
-                    className="w-5 h-5 text-blue-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                    <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="font-extrabold text-base tracking-tight text-slate-900 leading-tight">
-                    SoleFlow
-                  </h2>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                    {currentUser.role === 'admin'
-                      ? 'Trader / Admin'
-                      : 'Sales Representative'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Close Button on Phone */}
+          <div className="relative w-64 max-w-[80vw] bg-white dark:bg-zinc-900 h-full border-r border-zinc-200 dark:border-zinc-800 flex flex-col z-50">
+            {/* Header */}
+            <div className="h-14 px-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <span className="font-semibold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">
+                SoleFlow
+              </span>
               <button
                 onClick={() => setIsMobileSidebarOpen(false)}
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all cursor-pointer"
-                aria-label="Close menu"
+                className="p-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
               >
-                <X className="w-5 h-5" />
+                <Icon icon={Icons.Close} size={18} />
               </button>
             </div>
 
-            {/* Phone Role Switcher */}
-            <div className="p-3 bg-slate-50 border-b border-slate-100">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 px-1">
-                Portal Mode
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 bg-slate-200/70 p-1 rounded-xl">
-                <button
-                  onClick={() => switchRole('admin')}
-                  className={`py-1.5 px-2 text-xs font-bold rounded-lg transition-all text-center ${
-                    currentUser.role === 'admin'
-                      ? 'bg-white text-blue-700 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Trader Admin
-                </button>
-                <button
-                  onClick={() => switchRole('salesperson')}
-                  className={`py-1.5 px-2 text-xs font-bold rounded-lg transition-all text-center ${
-                    currentUser.role === 'salesperson'
-                      ? 'bg-white text-emerald-700 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Sales Rep
-                </button>
-              </div>
-            </div>
-
-            {/* Phone Navigation Links */}
-            <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+            {/* Navigation */}
+            <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
               {currentNav.map((item) => {
-                const Icon = item.icon;
                 const isActive =
                   currentPath === item.path ||
                   (item.path !== '/admin/dashboard' &&
@@ -208,23 +106,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                   <button
                     key={item.path}
                     onClick={() => handleNavClick(item.path)}
-                    className={`w-full min-h-[46px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-[6px] text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70'
-                        : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200/80'
+                        ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       <Icon
-                        className={`w-5 h-5 shrink-0 ${
-                          isActive ? 'text-blue-600' : 'text-slate-500'
-                        }`}
+                        icon={item.icon}
+                        size={18}
+                        className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400'}
                       />
                       <span>{item.name}</span>
                     </div>
-
                     {item.badge !== undefined && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-600 border border-rose-200">
+                      <span className="px-1.5 py-0.2 rounded-full text-[11px] font-medium bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300">
                         {item.badge}
                       </span>
                     )}
@@ -233,72 +130,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
               })}
             </nav>
 
-            {/* Phone User Profile Card with Sign Out */}
-            <div className="p-3.5 border-t border-slate-100 bg-white">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-300 shrink-0">
-                    {currentUser.initials}
-                  </div>
-                  <div className="truncate">
-                    <h4 className="text-xs font-bold text-slate-900 truncate leading-tight">
-                      {currentUser.name}
-                    </h4>
-                    <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                      {currentUser.roleLabel}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={logout}
-                  className="px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors flex items-center gap-1 shrink-0 border border-rose-200/70 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Logout</span>
-                </button>
-              </div>
+            {/* Role Switcher & User */}
+            <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+              <button
+                onClick={() =>
+                  switchRole(currentUser.role === 'admin' ? 'salesperson' : 'admin')
+                }
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800 rounded-[6px] hover:bg-zinc-100"
+              >
+                <span>Role: {currentUser.role === 'admin' ? 'Trader' : 'Salesman'}</span>
+                <Icon icon={ArrowLeftRight} size={14} />
+              </button>
+              <button
+                onClick={logout}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-[6px]"
+              >
+                <span>Sign out</span>
+                <Icon icon={LogOut} size={14} />
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 2. DESKTOP PERMANENT SIDEBAR (Desktop-only md:flex)                       */}
-      {/* ========================================================================= */}
+      {/* 2. Desktop Permanent Sidebar */}
       <aside
-        className={`hidden md:flex bg-white border-r border-slate-200/90 flex-col shrink-0 min-h-screen select-none transition-all duration-300 ease-in-out relative ${
-          isSidebarCollapsed ? 'w-[72px]' : 'w-64'
+        className={`hidden md:flex bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex-col shrink-0 min-h-screen select-none transition-all duration-150 ease-out ${
+          isSidebarCollapsed ? 'w-16' : 'w-[240px]'
         }`}
       >
-        {/* Desktop Brand Header - Strictly h-16 to align seamlessly with navbar */}
-        <div className="h-16 px-3.5 border-b border-slate-200/90 flex items-center justify-between box-border">
-          {isSidebarCollapsed ? (
-            <div className="w-full flex items-center justify-center">
-              <button
-                onClick={toggleSidebar}
-                className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-white shadow-xs group transition-all"
-                title="Expand sidebar (Ctrl+B)"
-                aria-label="Expand sidebar"
-              >
-                <svg
-                  className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                  <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                </svg>
-              </button>
-            </div>
-          ) : (
+        {/* Brand Header */}
+        <div className="h-14 px-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+          {!isSidebarCollapsed ? (
             <>
               <div
-                className="flex items-center gap-3 overflow-hidden cursor-pointer"
                 onClick={() =>
                   onNavigate(
                     currentUser.role === 'admin'
@@ -306,106 +171,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                       : '/sales/dashboard'
                   )
                 }
+                className="flex items-center gap-2 cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs shrink-0">
-                  <svg
-                    className="w-5 h-5 text-blue-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                    <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                  </svg>
+                <div className="w-6 h-6 rounded-[6px] bg-blue-600 flex items-center justify-center text-white">
+                  <Icon icon={Icons.Designs} size={14} className="text-white" />
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-base tracking-tight text-slate-900 truncate">
-                      SoleFlow
-                    </span>
-                  </div>
-                  <p className="text-[10px] font-bold tracking-widest uppercase text-slate-500 truncate">
-                    {currentUser.role === 'admin'
-                      ? 'B2B FOOTWEAR'
-                      : 'FOOTWEAR TRADE • REP'}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={toggleSidebar}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                title="Collapse Sidebar (Ctrl+B)"
-                aria-label="Collapse Sidebar"
-              >
-                <PanelLeftClose className="w-4 h-4 text-slate-500 hover:text-slate-800" />
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Desktop Role Indicator */}
-        <div className="px-3 pt-3">
-          {!isSidebarCollapsed ? (
-            <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200/70 text-[11px]">
-              <span className="text-slate-700 font-medium">Mode:</span>
-              <div className="flex items-center gap-1.5 truncate">
-                <span
-                  className={`w-2 h-2 rounded-full shrink-0 ${
-                    currentUser.role === 'admin'
-                      ? 'bg-blue-600'
-                      : 'bg-emerald-500'
-                  }`}
-                />
-                <span className="font-bold text-slate-900 truncate">
-                  {currentUser.role === 'admin' ? 'Trader / Admin' : 'Sales Rep'}
+                <span className="font-semibold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">
+                  SoleFlow
                 </span>
               </div>
               <button
-                onClick={() =>
-                  switchRole(
-                    currentUser.role === 'admin' ? 'salesperson' : 'admin'
-                  )
-                }
-                title="Switch User Role"
-                className="p-1 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition-colors shrink-0 cursor-pointer"
+                onClick={toggleSidebar}
+                className="p-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                title="Collapse (⌘B)"
+                aria-label="Collapse sidebar"
               >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
+                <Icon icon={PanelLeftClose} size={16} />
               </button>
-            </div>
+            </>
           ) : (
-            <div className="flex justify-center">
+            <div className="w-full flex justify-center">
               <button
-                onClick={() =>
-                  switchRole(
-                    currentUser.role === 'admin' ? 'salesperson' : 'admin'
-                  )
-                }
-                title={`Role: ${
-                  currentUser.role === 'admin' ? 'Trader' : 'Sales Rep'
-                }. Click to switch.`}
-                className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer"
+                onClick={toggleSidebar}
+                className="w-8 h-8 rounded-[6px] bg-blue-600 flex items-center justify-center text-white"
+                title="Expand (⌘B)"
+                aria-label="Expand sidebar"
               >
-                <span
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    currentUser.role === 'admin'
-                      ? 'bg-blue-600'
-                      : 'bg-emerald-500'
-                  }`}
-                />
+                <Icon icon={Icons.Designs} size={16} />
               </button>
             </div>
           )}
         </div>
 
-        {/* Desktop Navigation Links */}
-        <nav className="flex-1 px-2.5 py-3 space-y-1 overflow-y-auto">
+        {/* Navigation Items */}
+        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
           {currentNav.map((item) => {
-            const Icon = item.icon;
             const isActive =
               currentPath === item.path ||
               (item.path !== '/admin/dashboard' &&
@@ -418,123 +218,82 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                 onClick={() => handleNavClick(item.path)}
                 title={isSidebarCollapsed ? item.name : undefined}
                 className={`w-full flex items-center ${
-                  isSidebarCollapsed
-                    ? 'justify-center p-2.5 relative'
-                    : 'justify-between px-3 py-2.5'
-                } rounded-xl text-[13px] font-medium transition-colors ${
+                  isSidebarCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'
+                } rounded-[6px] text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-blue-100/90 text-blue-900 font-semibold shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
+                    ? 'bg-zinc-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100'
                 }`}
               >
-                <div
-                  className={`flex items-center ${
-                    isSidebarCollapsed ? 'justify-center' : 'gap-3'
-                  }`}
-                >
+                <div className="flex items-center gap-2.5">
                   <Icon
-                    className={`w-4 h-4 shrink-0 ${
-                      isActive ? 'text-blue-700' : 'text-slate-500'
-                    }`}
+                    icon={item.icon}
+                    size={18}
+                    className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400'}
                   />
-                  {!isSidebarCollapsed && (
-                    <span className="truncate">{item.name}</span>
-                  )}
+                  {!isSidebarCollapsed && <span>{item.name}</span>}
                 </div>
 
-                {item.badge !== undefined &&
-                  (!isSidebarCollapsed ? (
-                    <span
-                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                        isActive
-                          ? 'bg-blue-200 text-blue-800'
-                          : 'bg-rose-100 text-rose-600 border border-rose-200'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  ) : (
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
-                  ))}
+                {!isSidebarCollapsed && item.badge !== undefined && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[11px] font-medium bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
-        {/* Interactive Prototype Demo Tour Trigger (Section 21) */}
-        <div className="px-2.5 py-1.5 border-t border-slate-100">
+        {/* Footer Role Switcher & User Profile */}
+        <div className="p-2 border-t border-zinc-200 dark:border-zinc-800 space-y-1">
           {!isSidebarCollapsed ? (
-            <button
-              onClick={() => {
-                setWalkthroughStep(0);
-                setIsWalkthroughOpen(true);
-              }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 hover:bg-blue-100 hover:text-blue-900 transition-all border border-blue-200/80 cursor-pointer shadow-2xs"
-              title="Start End-to-End Stakeholder Demonstration Walkthrough"
-            >
-              <span className="flex items-center gap-2">
-                <PlayCircle className="w-4 h-4 text-blue-600" />
-                <span>Demo Storyline</span>
-              </span>
-              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-blue-600 text-white">
-                Live Tour
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setWalkthroughStep(0);
-                setIsWalkthroughOpen(true);
-              }}
-              className="w-full flex items-center justify-center p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-              title="Launch Demo Walkthrough"
-            >
-              <PlayCircle className="w-5 h-5 text-blue-600" />
-            </button>
-          )}
-        </div>
-
-
-
-        {/* Desktop User Profile Section */}
-        <div className="p-3 border-t border-slate-100">
-          {!isSidebarCollapsed ? (
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50/70 border border-blue-100/80">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-300 shrink-0">
-                  {currentUser.initials}
-                </div>
-                <div className="text-left truncate">
-                  <h4 className="text-xs font-bold text-slate-900 leading-tight truncate">
-                    {currentUser.name}
-                  </h4>
-                  <p className="text-[10px] text-slate-600 truncate">
-                    {currentUser.roleLabel}
-                  </p>
-                </div>
-              </div>
+            <>
               <button
-                onClick={logout}
-                title="Sign Out"
-                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 cursor-pointer"
+                onClick={() =>
+                  switchRole(currentUser.role === 'admin' ? 'salesperson' : 'admin')
+                }
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/60 rounded-[6px] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                title="Switch role"
               >
-                <LogOut className="w-4 h-4" />
+                <span>{currentUser.role === 'admin' ? 'Trader' : 'Salesman'}</span>
+                <Icon icon={ArrowLeftRight} size={13} className="text-zinc-400" />
               </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className="w-10 h-10 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-300 cursor-pointer"
-                title={`${currentUser.name} (${currentUser.roleLabel})`}
-              >
-                {currentUser.initials}
+              <div className="flex items-center justify-between px-2 py-1.5">
+                <div className="truncate">
+                  <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                    {currentUser.name}
+                  </div>
+                  <div className="text-[11px] text-zinc-400 truncate">
+                    {currentUser.email || 'user@soleflow.in'}
+                  </div>
+                </div>
+                <button
+                  onClick={logout}
+                  title="Sign out"
+                  aria-label="Sign out"
+                  className="p-1 rounded text-zinc-400 hover:text-red-600 transition-colors"
+                >
+                  <Icon icon={LogOut} size={15} />
+                </button>
               </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 py-1">
+              <button
+                onClick={() =>
+                  switchRole(currentUser.role === 'admin' ? 'salesperson' : 'admin')
+                }
+                title={`Role: ${currentUser.role === 'admin' ? 'Trader' : 'Salesman'}`}
+                className="p-1.5 rounded text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              >
+                <Icon icon={ArrowLeftRight} size={15} />
+              </button>
               <button
                 onClick={logout}
-                title="Sign Out"
-                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                title="Sign out"
+                className="p-1.5 rounded text-zinc-400 hover:text-red-600"
               >
-                <LogOut className="w-4 h-4" />
+                <Icon icon={LogOut} size={15} />
               </button>
             </div>
           )}
