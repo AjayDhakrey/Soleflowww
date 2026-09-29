@@ -494,32 +494,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
           )}
         </div>
 
-        {/* Desktop Collapse Action Bar (Ctrl+B) */}
-        <div className="px-2.5 py-1.5 border-t border-slate-100">
-          {!isSidebarCollapsed ? (
-            <button
-              onClick={toggleSidebar}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200 cursor-pointer"
-              title="Collapse sidebar to maximize workspace (Ctrl+B)"
-            >
-              <span className="text-[11px] font-medium flex items-center gap-2">
-                <PanelLeftClose className="w-4 h-4 text-slate-500" />
-                <span>Collapse Sidebar</span>
-              </span>
-              <kbd className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                ⌘B
-              </kbd>
-            </button>
-          ) : (
-            <button
-              onClick={toggleSidebar}
-              className="w-full flex items-center justify-center p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Expand sidebar (Ctrl+B)"
-            >
-              <PanelLeftOpen className="w-4 h-4 text-slate-600" />
-            </button>
-          )}
-        </div>
+
 
         {/* Desktop User Profile Section */}
         <div className="p-3 border-t border-slate-100">
