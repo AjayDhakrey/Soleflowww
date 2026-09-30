@@ -6,14 +6,14 @@ import { MOCK_FIELD_VISITS } from '../data/mockData';
 
 export type FieldVisitRow = Database['public']['Tables']['field_visits']['Row'];
 
-export function mapFieldVisitRow(row: FieldVisitRow): FieldVisitItem {
+export function mapFieldVisitRow(row: any): FieldVisitItem {
   return {
     id: row.id,
     customerId: row.client_id,
-    customerName: 'Client Store',
-    location: row.location,
-    time: row.visit_time || '10:30 AM',
-    purpose: row.purpose,
+    customerName: row.customerName || 'Client Store',
+    location: row.location || 'Agra Footwear Market',
+    time: row.visit_time || (row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : '10:30 AM'),
+    purpose: row.purpose || 'Routine Relationship Visit',
     status: (row.status || 'today') as FieldVisitItem['status'],
     outcome: (row.outcome as FieldVisitItem['outcome']) || undefined,
     notes: row.notes || undefined,

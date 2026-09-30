@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import AuditKpiCards from '../../components/admin/AuditKpiCards';
 import {
   FileCheck,
   ShieldCheck,
@@ -16,131 +17,116 @@ import {
   MoreVertical,
   ChevronRight,
   ArrowUpDown,
+  X,
 } from 'lucide-react';
 
 interface AuditLogPageProps {
   onNavigate?: (path: string) => void;
 }
 
-const AUDIT_EVENTS = [
-  {
-    id: 'evt-1',
-    timestamp: 'Today, 02:45 PM',
-    actorName: 'Ajay Sharma',
-    actorRole: 'Trader / Admin',
-    actorInitials: 'AS',
-    actorColor: 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50',
-    action: 'Approved Wholesale Order',
-    entityTitle: 'ABC Footwear (420 Pairs)',
-    entityRef: 'ORD-0148',
-    entityIcon: Box,
-    entityType: 'Order',
-    stateModBadge: 'Status: Approved',
-    stateModDetail: '(Assigned to Apex...)',
-  },
-  {
-    id: 'evt-2',
-    timestamp: 'Today, 01:15 PM',
-    actorName: 'Rahul Sharma',
-    actorRole: 'Field Sales Rep',
-    actorInitials: 'RS',
-    actorColor: 'bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50',
-    action: 'Recorded Payment Collection',
-    entityTitle: 'ABC Footwear – ₹1,00,000 NEFT',
-    entityRef: 'PAY-00931',
-    entityIcon: IndianRupee,
-    entityType: 'Payment',
-    stateModBadge: 'Customer Due: ₹1,30,000',
-    stateModDetail: '(UTR HDFC...)',
-  },
-  {
-    id: 'evt-3',
-    timestamp: 'Yesterday, 05:30 PM',
-    actorName: 'Ajay Sharma',
-    actorRole: 'Trader / Admin',
-    actorInitials: 'AS',
-    actorColor: 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50',
-    action: 'Assigned Manufacturing Facility',
-    entityTitle: 'Apex Footwear Works (Agra Plant)',
-    entityRef: 'mfg-1',
-    entityIcon: Building2,
-    entityType: 'Manufacturer',
-    stateModBadge: 'Active Batches: 9',
-    stateModDetail: '(Batch SF-903...)',
-  },
-  {
-    id: 'evt-4',
-    timestamp: 'Yesterday, 11:20 AM',
-    actorName: 'Rahul Sharma',
-    actorRole: 'Field Sales Rep',
-    actorInitials: 'RS',
-    actorColor: 'bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50',
-    action: 'Shared Digital Lookbook',
-    entityTitle: '3 Autumn Designs shared with ABC Footwear',
-    entityRef: 'sf-1024',
-    entityIcon: Share2,
-    isWhatsAppIcon: true,
-    entityType: 'Design',
-    stateModBadge: 'Shared via WhatsApp',
-    stateModDetail: '(with Ramesh A...)',
-  },
-  {
-    id: 'evt-5',
-    timestamp: '24 Sep, 04:10 PM',
-    actorName: 'Ajay Sharma',
-    actorRole: 'Trader / Admin',
-    actorInitials: 'AS',
-    actorColor: 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50',
-    action: 'Adjusted Customer Credit Limit',
-    entityTitle: 'ABC Footwear',
-    entityRef: 'cust-1',
-    entityIcon: CreditCard,
-    entityType: 'Client',
-    stateModBadge: 'Credit Limit: ₹5,00,000',
-    stateModDetail: '(Approved...)',
-  },
-  {
-    id: 'evt-6',
-    timestamp: '24 Sep, 09:00 AM',
-    actorName: 'System',
-    actorRole: 'System',
-    actorInitials: 'SS',
-    actorColor: 'bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50',
-    action: 'Generated Automatic Overdue Alert',
-    entityTitle: 'Regal Footwear Hub',
-    entityRef: 'cust-2',
-    entityIcon: Bell,
-    entityType: 'Client',
-    stateModBadge: 'Overdue: 14 Days',
-    stateModDetail: '(₹1,15,000 Overd...)',
-  },
-];
-
 export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
-  const { showToast } = useApp();
+  const { auditLogs, showToast } = useApp();
   const [search, setSearch] = useState('');
   const [entityFilter, setEntityFilter] = useState('All');
   const [roleFilter, setRoleFilter] = useState('All');
+  const [selectedAudit, setSelectedAudit] = useState<any | null>(null);
 
-  const filteredLogs = AUDIT_EVENTS.filter((log) => {
-    const q = search.toLowerCase();
-    const matchesSearch =
-      log.action.toLowerCase().includes(q) ||
-      log.entityTitle.toLowerCase().includes(q) ||
-      log.entityRef.toLowerCase().includes(q) ||
-      log.actorName.toLowerCase().includes(q) ||
-      log.stateModBadge.toLowerCase().includes(q);
+  // Map AppContext audit logs
+  const mappedLogs = useMemo(() => {
+    return auditLogs.map((log, idx) => {
+      const isSystem = log.actorRole?.includes('System') || log.actor === 'System';
+      const isAdmin = log.actorRole?.includes('Admin') || log.actorRole?.includes('Trader');
 
-    const matchesEntity = entityFilter === 'All' || log.entityType === entityFilter;
-    const matchesRole = roleFilter === 'All' || log.actorRole === roleFilter;
+      let icon = Box;
+      let isWhatsApp = false;
+      if (log.recordType === 'Payment') icon = IndianRupee;
+      else if (log.recordType === 'Client') icon = CreditCard;
+      else if (log.recordType === 'Manufacturer') icon = Building2;
+      else if (log.recordType === 'Design') {
+        icon = Share2;
+        isWhatsApp = true;
+      } else if (isSystem) icon = Bell;
 
-    return matchesSearch && matchesEntity && matchesRole;
-  });
+      const actorInitials = log.actor
+        ? log.actor.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()
+        : 'SF';
+
+      const actorColor = isAdmin
+        ? 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50'
+        : isSystem
+        ? 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900/50'
+        : 'bg-purple-50 text-purple-600 border border-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50';
+
+      return {
+        id: log.id || `evt-${idx}`,
+        timestamp: log.timestamp || 'Today',
+        actorName: log.actor || 'System Admin',
+        actorRole: log.actorRole || (isAdmin ? 'Trader / Admin' : 'Field Sales Rep'),
+        actorInitials,
+        actorColor,
+        action: log.action || 'Updated Record',
+        entityTitle: log.recordTitle || `${log.recordType} ${log.recordId || ''}`,
+        entityRef: log.recordId || 'REF',
+        entityIcon: icon,
+        isWhatsAppIcon: isWhatsApp,
+        entityType: log.recordType || 'Order',
+        stateModBadge: log.newValue || 'Updated state',
+        stateModDetail: log.oldValue ? `Prev: ${log.oldValue}` : '(Direct mutation)',
+        raw: log,
+      };
+    });
+  }, [auditLogs]);
+
+  const filteredLogs = useMemo(() => {
+    return mappedLogs.filter((log) => {
+      const q = search.toLowerCase();
+      const matchesSearch =
+        log.action.toLowerCase().includes(q) ||
+        log.entityTitle.toLowerCase().includes(q) ||
+        log.entityRef.toLowerCase().includes(q) ||
+        log.actorName.toLowerCase().includes(q) ||
+        log.stateModBadge.toLowerCase().includes(q);
+
+      const matchesEntity = entityFilter === 'All' || log.entityType === entityFilter;
+      const matchesRole = roleFilter === 'All' || log.actorRole === roleFilter;
+
+      return matchesSearch && matchesEntity && matchesRole;
+    });
+  }, [mappedLogs, search, entityFilter, roleFilter]);
+
+  // Counts for KPIs
+  const traderCount = useMemo(() => mappedLogs.filter((l) => l.actorRole.includes('Admin') || l.actorRole.includes('Trader')).length, [mappedLogs]);
+  const fieldRepCount = useMemo(() => mappedLogs.filter((l) => l.actorRole.includes('Sales') || l.actorRole.includes('Field')).length, [mappedLogs]);
+  const systemCount = useMemo(() => mappedLogs.filter((l) => l.actorRole.includes('System') || l.actorName === 'System').length, [mappedLogs]);
+
+  const handleExportCSV = () => {
+    const headers = ['Timestamp', 'Actor Name', 'Actor Role', 'Action', 'Entity Type', 'Entity Title', 'Reference ID', 'New Value', 'Old Value'];
+    const rows = filteredLogs.map((l) => [
+      `"${l.timestamp}"`,
+      `"${l.actorName}"`,
+      `"${l.actorRole}"`,
+      `"${l.action}"`,
+      `"${l.entityType}"`,
+      `"${l.entityTitle}"`,
+      `"${l.entityRef}"`,
+      `"${l.stateModBadge}"`,
+      `"${l.stateModDetail}"`,
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `soleflow_audit_trail_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Audit Trail exported to CSV!');
+  };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
       {/* 1. Breadcrumbs */}
-      <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400">
+      <div className="flex items-center gap-2 text-xs font-semibold text-primary">
         <button
           type="button"
           onClick={() => onNavigate?.('/admin/dashboard')}
@@ -149,7 +135,7 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
           Dashboard
         </button>
         <ChevronRight size={13} className="text-muted-foreground/60" />
-        <span className="text-blue-600 dark:text-blue-400 font-bold">
+        <span className="text-primary font-bold">
           Audit Log
         </span>
       </div>
@@ -167,7 +153,7 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
 
         <button
           type="button"
-          onClick={() => showToast('Audit Log exported to CSV!')}
+          onClick={handleExportCSV}
           className="px-4 py-2.5 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer shadow-2xs self-start sm:self-auto"
         >
           <Download size={16} />
@@ -176,71 +162,16 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* 3. 4 KPI Summary Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Audit Events */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-            <FileCheck size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Total Audit Events</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              6
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Immutable event ledger
-            </p>
-          </div>
-        </div>
-
-        {/* Card 2: Trader Authorizations */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
-            <ShieldCheck size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Trader Authorizations</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              3
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Full authority actions
-            </p>
-          </div>
-        </div>
-
-        {/* Card 3: Field Rep Entries */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-            <User size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Field Rep Entries</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              2
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Collections &amp; orders
-            </p>
-          </div>
-        </div>
-
-        {/* Card 4: Automated Triggers */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <AlertTriangle size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Automated Triggers</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              1
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Overdue &amp; stage alerts
-            </p>
-          </div>
-        </div>
-      </div>
+      <AuditKpiCards
+        totalEvents={mappedLogs.length}
+        totalCaption="Live transactional log"
+        traderCount={traderCount}
+        traderCaption="Full authority actions"
+        fieldRepCount={fieldRepCount}
+        fieldRepCaption="Collections & orders"
+        automatedCount={systemCount}
+        automatedCaption="Overdue & stage alerts"
+      />
 
       {/* 4. Table Panel */}
       <div className="bg-surface border border-border rounded-2xl shadow-2xs overflow-hidden">
@@ -292,7 +223,7 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
             <thead>
               <tr className="border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider bg-muted/25">
                 <th className="py-3.5 px-4 md:px-6">
-                  <div className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <div className="flex items-center gap-1.5 select-none">
                     <span>Timestamp</span>
                     <ArrowUpDown size={12} />
                   </div>
@@ -301,7 +232,7 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
                 <th className="py-3.5 px-4">Action</th>
                 <th className="py-3.5 px-4">Entity &amp; Reference</th>
                 <th className="py-3.5 px-4">State Modification</th>
-                <th className="py-3.5 px-4 md:px-6 text-right"></th>
+                <th className="py-3.5 px-4 md:px-6 text-right">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -311,7 +242,8 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
                 return (
                   <tr
                     key={log.id}
-                    className="hover:bg-muted/40 transition-colors"
+                    className="hover:bg-muted/40 transition-colors cursor-pointer"
+                    onClick={() => setSelectedAudit(log)}
                   >
                     {/* Timestamp */}
                     <td className="py-3.5 px-4 md:px-6 whitespace-nowrap text-muted-foreground font-medium text-xs">
@@ -376,11 +308,12 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3.5 px-4 md:px-6 text-right">
+                    <td className="py-3.5 px-4 md:px-6 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
-                        onClick={() => showToast(`Audit details for ${log.id}`)}
+                        onClick={() => setSelectedAudit(log)}
                         className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        title="View Full Audit Event"
                       >
                         <MoreVertical size={16} />
                       </button>
@@ -392,6 +325,59 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
           </table>
         </div>
       </div>
+
+      {/* Audit Detail Modal */}
+      {selectedAudit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-surface rounded-2xl shadow-xl border border-border p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="font-bold text-base text-foreground">Audit Event Snapshot</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedAudit(null)}
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Action:</span>
+                <span className="font-bold text-foreground">{selectedAudit.action}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Actor:</span>
+                <span className="text-foreground">{selectedAudit.actorName} ({selectedAudit.actorRole})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Entity:</span>
+                <span className="font-mono text-foreground">{selectedAudit.entityType} ({selectedAudit.entityRef})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Timestamp:</span>
+                <span className="font-mono text-foreground">{selectedAudit.timestamp}</span>
+              </div>
+              <div className="border-t border-border pt-2 space-y-1">
+                <span className="text-muted-foreground block">Modified Value:</span>
+                <p className="p-2.5 rounded-lg bg-muted/60 text-foreground font-mono text-[11px] break-all">
+                  {selectedAudit.stateModBadge}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedAudit(null)}
+                className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

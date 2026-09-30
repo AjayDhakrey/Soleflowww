@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useCustomerMetrics, formatIndianCurrency } from '../../hooks/useCustomerMetrics';
-import { CustomerRowActionMenu } from '../../components/customers/CustomerRowActionMenu';
+import { useDashboardOverview, DashboardPeriod } from '../../hooks/useDashboardOverview';
+import { Icons } from '../../lib/icons';
+import { PaymentReceipt, Order } from '../../types';
 import {
-  Users,
-  Wallet,
-  AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
-  Plus,
-  Search,
-  Store,
-  Eye,
-  MoreVertical,
-  Zap,
-  ShoppingBag,
-  TrendingUp,
-  Package,
-  UserPlus,
-  CreditCard,
-  ArrowUpRight,
-  SunMedium,
-  Check,
-} from 'lucide-react';
+  ReceiptPreviewModal,
+  mapPaymentStatusToReceiptStatus,
+} from '../../components/payments/ReceiptTemplate';
+import { OverviewKpiCards } from '../../components/dashboard/OverviewKpiCards';
+import { QuickShortcutsGrid } from '../../components/dashboard/QuickShortcutsGrid';
+import {
+  Panel,
+  Button,
+  StatusBadge,
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableAvatarCell,
+  TableMoneyCell,
+  EmptyState,
+} from '../../components/ui';
 
 interface AdminDashboardProps {
   onNavigate: (path: string) => void;
@@ -32,670 +32,807 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const {
     currentUser,
     customers,
-    orders,
     setIsPaymentModalOpen,
     setIsCreateOrderModalOpen,
     setIsAddCustomerModalOpen,
+    setIsShareModalOpen,
     showToast,
   } = useApp();
 
-  const metrics = useCustomerMetrics();
+  const {
+    period,
+    setPeriod,
+    needsAttention,
+    kpis,
+    ordersPipeline,
+    collectionsData,
+    customersSummary,
+    productionSummary,
+    designsSummary,
+    salesTeamSummary,
+    approvalsSummary,
+    recentActivities,
+    actions,
+  } = useDashboardOverview();
 
-  const [searchFilter, setSearchFilter] = useState('');
-  const [accountTypeFilter, setAccountTypeFilter] = useState('all');
+  const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
 
-  const STORE_THUMBNAILS: Record<string, string> = {
-    'ABC Footwear': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80',
-    'Regal Footwear Hub': 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=120&q=80',
-    'Delhi Walkways Hub': 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=120&q=80',
-    'Kanpur Leather Mart': 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=120&q=80',
-    'ABC Footwear Hub': 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=120&q=80',
-  };
+  const formatLakh = (amount: number) => `₹${(amount / 100000).toFixed(2)}L`;
+  const formatINR = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
-  const filteredAccounts = React.useMemo(() => {
-    return metrics.allCustomers.filter((c) => {
-      const query = searchFilter.toLowerCase();
-      const matchesSearch =
-        c.businessName.toLowerCase().includes(query) ||
-        (c.propName && c.propName.toLowerCase().includes(query)) ||
-        c.city.toLowerCase().includes(query) ||
-        (c.address && c.address.toLowerCase().includes(query)) ||
-        (c.gstin && c.gstin.toLowerCase().includes(query)) ||
-        c.phone.includes(query);
-
-      if (!matchesSearch) return false;
-      if (accountTypeFilter === 'overdue') return (c.amountDue || 0) > 0 && (c.overdueDays > 0 || c.status === 'overdue');
-      if (accountTypeFilter === 'active') return c.status === 'active' || ((c.amountDue || 0) === 0 && (c.ordersCount || 0) > 0);
-      if (accountTypeFilter === 'hold') return c.status === 'hold' || c.status === 'credit_hold';
-      return true;
-    });
-  }, [metrics.allCustomers, searchFilter, accountTypeFilter]);
-
-  const getStatusPill = (status: string) => {
-    switch (status) {
-      case 'Overdue':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50">
-            Overdue
-          </span>
-        );
-      case 'Active':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
-            Active
-          </span>
-        );
-      case 'Credit Hold':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50">
-            Credit Hold
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
-            {status}
-          </span>
-        );
-    }
-  };
+  const todayDateFormatted = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground">
-      {/* 1. Top Greeting Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1720px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-200">
+      {/* 1. Header with Greeting, Period Filter, and Action Buttons */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/80 pb-5">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="text-2xl select-none" role="img" aria-label="sun">
-              ☀️
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            <span className="text-2xl select-none">☀️</span>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Good morning, {currentUser.name}
             </h1>
+            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+              Live Operations
+            </span>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Here's what's happening with your shoe wholesale business today.
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            {todayDateFormatted} • Consolidated commercial overview across orders, collections, production, and accounts.
           </p>
         </div>
-      </div>
 
-      {/* 2. Top 4 KPI Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Customers */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Open Total Customers details"
-          onClick={() => onNavigate('/admin/customers/insights/total?from=/admin/dashboard')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onNavigate('/admin/customers/insights/total?from=/admin/dashboard');
-            }
-          }}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer group flex items-start justify-between"
-        >
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <Users size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Total Customers</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight tabular-nums">
-                {metrics.totalCustomers}
-              </h3>
-              <div className="flex items-center gap-1.5 mt-2 text-xs font-medium">
-                {metrics.trends.totalCustomers && (
-                  <span className={`font-bold inline-flex items-center ${
-                    metrics.trends.totalCustomers.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                  }`}>
-                    {metrics.trends.totalCustomers.value}
-                  </span>
-                )}
-                <span className="text-muted-foreground">Active dealer accounts</span>
-              </div>
-            </div>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Period Selector Tabs */}
+          <div className="flex items-center bg-muted/70 p-1 rounded-xl border border-border">
+            {(
+              [
+                { label: 'Today', value: 'today' },
+                { label: 'This Week', value: 'week' },
+                { label: 'This Month', value: 'month' },
+                { label: 'This Quarter', value: 'quarter' },
+              ] as { label: string; value: DashboardPeriod }[]
+            ).map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setPeriod(tab.value)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  period === tab.value
+                    ? 'bg-surface text-foreground shadow-xs font-bold'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 group-hover:text-foreground group-hover:translate-x-0.5 transition-all mt-1" />
-        </div>
 
-        {/* Card 2: Total Receivables */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Open Total Receivables details"
-          onClick={() => onNavigate('/admin/customers/insights/receivables?from=/admin/dashboard')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onNavigate('/admin/customers/insights/receivables?from=/admin/dashboard');
-            }
-          }}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-rose-500/40 focus:outline-none focus:ring-2 focus:ring-rose-500/20 transition-all cursor-pointer group flex items-start justify-between"
-        >
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400 flex items-center justify-center shrink-0">
-              <Wallet size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Total Receivables</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight tabular-nums">
-                {formatIndianCurrency(metrics.totalReceivables, true)}
-              </h3>
-              <div className="flex items-center gap-1.5 mt-2 text-xs font-medium">
-                {metrics.trends.totalReceivables && (
-                  <span className={`font-bold inline-flex items-center ${
-                    metrics.trends.totalReceivables.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                  }`}>
-                    {metrics.trends.totalReceivables.value}
-                  </span>
-                )}
-                <span className="text-muted-foreground">Outstanding ledger balance</span>
-              </div>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 group-hover:text-foreground group-hover:translate-x-0.5 transition-all mt-1" />
-        </div>
+          <Button
+            variant="secondary"
+            icon={Icons.Payments}
+            onClick={() => setIsPaymentModalOpen(true)}
+            className="hover:border-emerald-500/40"
+          >
+            Record Payment
+          </Button>
 
-        {/* Card 3: Overdue Accounts */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Open Overdue Accounts details"
-          onClick={() => onNavigate('/admin/customers/insights/overdue?from=/admin/dashboard')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onNavigate('/admin/customers/insights/overdue?from=/admin/dashboard');
-            }
-          }}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-amber-500/40 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all cursor-pointer group flex items-start justify-between"
-        >
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <AlertTriangle size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Overdue Accounts</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight tabular-nums">
-                {metrics.overdueAccounts}
-              </h3>
-              <div className="flex items-center gap-1.5 mt-2 text-xs font-medium">
-                {metrics.trends.overdueAccounts && (
-                  <span className={`font-bold inline-flex items-center ${
-                    metrics.trends.overdueAccounts.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                  }`}>
-                    {metrics.trends.overdueAccounts.value}
-                  </span>
-                )}
-                <span className="text-muted-foreground">Exceeded credit cycle</span>
-              </div>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 group-hover:text-foreground group-hover:translate-x-0.5 transition-all mt-1" />
-        </div>
-
-        {/* Card 4: Cleared Accounts */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Open Cleared Accounts details"
-          onClick={() => onNavigate('/admin/customers/insights/cleared?from=/admin/dashboard')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onNavigate('/admin/customers/insights/cleared?from=/admin/dashboard');
-            }
-          }}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer group flex items-start justify-between"
-        >
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <CheckCircle2 size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Cleared Accounts</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight tabular-nums">
-                {metrics.clearedAccounts}
-              </h3>
-              <div className="flex items-center gap-1.5 mt-2 text-xs font-medium">
-                {metrics.trends.clearedAccounts && (
-                  <span className={`font-bold inline-flex items-center ${
-                    metrics.trends.clearedAccounts.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                  }`}>
-                    {metrics.trends.clearedAccounts.value}
-                  </span>
-                )}
-                <span className="text-muted-foreground">Zero pending balance</span>
-              </div>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 group-hover:text-foreground group-hover:translate-x-0.5 transition-all mt-1" />
+          <Button
+            variant="primary"
+            icon={Icons.Add}
+            onClick={() => setIsCreateOrderModalOpen(true)}
+          >
+            New Order
+          </Button>
         </div>
       </div>
 
-      {/* 3. Full-Width Customers & Store Accounts Panel */}
-      <div className="w-full bg-surface border border-border rounded-2xl shadow-2xs overflow-hidden">
-        {/* Header: Title + Action Buttons */}
-        <div className="p-5 md:p-6 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-100 dark:border-emerald-900/40">
-              <Store size={22} strokeWidth={2} />
+      {/* 2. Needs Immediate Attention Alert Banner */}
+      {needsAttention.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/25 dark:border-amber-500/20 rounded-2xl p-4 shadow-xs">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
+                Needs Immediate Attention ({needsAttention.reduce((sum, i) => sum + i.count, 0)} Items)
+              </span>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground leading-tight">
-                Customers &amp; Store Accounts
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Manage retailer store profiles, outstanding ledgers, credit terms, and order history.
-              </p>
-            </div>
+            <span className="text-[11px] text-amber-800/80 dark:text-amber-300/80 font-medium">
+              Click item to resolve
+            </span>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 hover:bg-blue-100/60 dark:bg-blue-950/30 dark:hover:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <span>₹</span>
-              <span>Record Payment</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsAddCustomerModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-              <span>Add Client</span>
-            </button>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {needsAttention.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onNavigate(item.route)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99] ${
+                  item.badgeVariant === 'rose'
+                    ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900/50'
+                    : item.badgeVariant === 'purple'
+                    ? 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50'
+                    : item.badgeVariant === 'blue'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50'
+                    : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900/50'
+                }`}
+              >
+                <span>{item.title}</span>
+                {item.amount != null && item.amount > 0 && (
+                  <span className="font-mono font-bold">({formatLakh(item.amount)})</span>
+                )}
+                <Icons.ChevronRight size={13} className="opacity-60" />
+              </button>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Filter Bar: Search + Account Status Dropdown */}
-        <div className="p-4 md:px-6 bg-surface border-b border-border flex flex-col sm:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="Search by store name, proprietor, city, GSTIN, phone..."
-              className="w-full h-10 pl-10 pr-4 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+      {/* 3. 6 Key Business KPI Cards (3D Claymorphic Masterpiece Design) */}
+      <OverviewKpiCards
+        salesValue={formatLakh(kpis.sales.value || 1956000)}
+        salesGrowth={kpis.sales.comparison.changePercent || 14}
+        collectionsValue={formatLakh(kpis.collections.value)}
+        collectionsGrowth={kpis.collections.comparison.changePercent || 8}
+        receivablesValue={formatLakh(kpis.receivables.value || 750000)}
+        receivablesAccountsCount={kpis.receivables.customerCount || 5}
+        openOrdersCount={kpis.openOrders.count || 3}
+        openOrdersValue={formatLakh(kpis.openOrders.value || 1025000)}
+        activeStoresCount={kpis.activeCustomers.count || 7}
+        totalRegisteredBuyers={kpis.activeCustomers.total || 7}
+        pairsBookedValue={kpis.pairsBooked.value || 1000}
+        pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 12}
+        onNavigate={onNavigate}
+        isSalesperson={false}
+      />
+
+      {/* 4. Main 2-Column Business Overview Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* WIDGET A: Orders Pipeline & Funnel */}
+        <Panel
+          title="Orders Pipeline & Funnel"
+          subtitle="Real-time order progression from booking to dispatch"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/orders')}
+            >
+              View all orders
+            </Button>
+          }
+          noPadding
+        >
+          {/* Segmented Funnel Stepper */}
+          <div className="p-4 border-b border-border bg-muted/15">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+              {ordersPipeline.stages.map((st) => (
+                <div
+                  key={st.name}
+                  onClick={() => onNavigate(`/admin/orders?status=${encodeURIComponent(st.name)}`)}
+                  className="p-2.5 rounded-xl border border-border bg-surface hover:border-zinc-400 dark:hover:border-zinc-500 transition-all cursor-pointer text-center"
+                >
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block truncate">
+                    {st.name}
+                  </span>
+                  <span className="text-base font-bold text-foreground block font-mono mt-1">
+                    {st.count}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono block">
+                    {formatLakh(st.value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Latest 5 Orders Table */}
+          {ordersPipeline.latestOrders.length === 0 ? (
+            <EmptyState
+              icon={Icons.Orders}
+              title="No Orders Logged"
+              description="Wholesale bookings will appear here."
             />
-          </div>
-
-          <div className="w-full sm:w-48 shrink-0">
-            <select
-              value={accountTypeFilter}
-              onChange={(e) => setAccountTypeFilter(e.target.value)}
-              className="w-full h-10 px-3 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-            >
-              <option value="all">All Accounts</option>
-              <option value="active">Active Only</option>
-              <option value="overdue">Overdue Only</option>
-              <option value="hold">Credit Hold</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Customers Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider bg-muted/25">
-                <th className="py-3.5 px-4 md:px-6">Store &amp; Proprietor</th>
-                <th className="py-3.5 px-4">GSTIN</th>
-                <th className="py-3.5 px-4">Location Hub</th>
-                <th className="py-3.5 px-4">Phone / Contact</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Credit Limit</th>
-                <th className="py-3.5 px-4">Balance Due</th>
-                <th className="py-3.5 px-4 md:px-6 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredAccounts.map((account) => {
-                const thumb = STORE_THUMBNAILS[account.businessName] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80';
-                const initials = account.businessName
-                  .trim()
-                  .split(' ')
-                  .slice(0, 2)
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase();
-
-                const isOverdue = (account.amountDue || 0) > 0 && (account.overdueDays > 0 || account.status === 'overdue');
-                const isHold = account.status === 'hold' || account.status === 'credit_hold';
-                const displayStatus = isOverdue ? 'Overdue' : isHold ? 'Credit Hold' : 'Active';
-
-                return (
-                  <tr
-                    key={account.id}
-                    onClick={() => onNavigate(`/admin/customers/${account.id}?from=/admin/dashboard`)}
-                    className="hover:bg-muted/40 transition-colors cursor-pointer group"
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order #</TableHead>
+                  <TableHead>Retail Store</TableHead>
+                  <TableHead>Pairs</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Net Payable</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {ordersPipeline.latestOrders.map((ord: Order) => (
+                  <TableRow
+                    key={ord.id}
+                    onClick={() => onNavigate(`/admin/orders?inspect=${ord.id}`)}
+                    className="cursor-pointer hover:bg-muted/40 transition-colors"
                   >
-                    {/* Store & Proprietor */}
-                    <td className="py-3.5 px-4 md:px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
-                          {initials}
-                        </div>
-                        <img
-                          src={thumb}
-                          alt={account.businessName}
-                          className="w-10 h-8 rounded-lg object-cover border border-border shrink-0 bg-muted hidden sm:block"
-                        />
-                        <div>
-                          <div className="font-bold text-foreground text-xs sm:text-sm leading-tight group-hover:text-blue-600 transition-colors">
-                            {account.businessName}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground mt-0.5">
-                            {account.propName || account.city}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* GSTIN */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {account.gstin || '09AAACA1234F1Z5'}
+                    <TableCell className="font-mono font-bold text-xs text-primary">
+                      {ord.id}
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
+                        {ord.customerName}
                       </span>
-                    </td>
+                      <span className="text-[11px] text-muted-foreground">{ord.customerCity || 'Agra'}</span>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {ord.pairsCount || 0} Pairs
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge
+                        variant={
+                          ord.status === 'Delivered'
+                            ? 'success'
+                            : ord.status === 'Dispatched'
+                            ? 'info'
+                            : ord.status === 'In Production' || ord.status === 'Ready QC'
+                            ? 'active'
+                            : ord.status === 'Approved'
+                            ? 'purple'
+                            : 'pending'
+                        }
+                      >
+                        {ord.status}
+                      </StatusBadge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <TableMoneyCell amount={ord.netPayable || ord.subtotal || 0} isBold />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Panel>
 
-                    {/* Location Hub */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-medium text-foreground text-xs sm:text-sm leading-tight">
-                        {account.city}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[140px]">
-                        {account.address || 'Market Complex'}
-                      </div>
-                    </td>
-
-                    {/* Phone / Contact */}
-                    <td className="py-3.5 px-4">
-                      <span className="text-xs text-foreground font-medium">
-                        {account.phone}
-                      </span>
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3.5 px-4">
-                      {getStatusPill(displayStatus)}
-                    </td>
-
-                    {/* Credit Limit */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-medium text-muted-foreground text-xs sm:text-sm">
-                        {formatIndianCurrency(account.creditLimit || 500000, true)}
-                      </span>
-                    </td>
-
-                    {/* Balance Due */}
-                    <td className="py-3.5 px-4">
-                      <span className={`font-bold font-mono text-xs sm:text-sm ${
-                        isOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'
-                      }`}>
-                        {formatIndianCurrency(account.amountDue || 0)}
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 md:px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => onNavigate(`/admin/customers/${account.id}?from=/admin/dashboard`)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                        >
-                          <Eye size={14} />
-                          <span>Details</span>
-                        </button>
-                        <CustomerRowActionMenu customer={account} onNavigate={onNavigate} fromPath="/admin/dashboard" />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* 4. Bottom 3-Card Grid: Promo + Quick Actions + Recent Activity */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-        
-        {/* 1. Sneaker Promo Banner Card */}
-        <div className="rounded-2xl p-6 bg-gradient-to-br from-blue-50/90 via-sky-50/50 to-white dark:from-blue-950/40 dark:via-sky-950/20 dark:to-surface border border-blue-100 dark:border-blue-900/40 relative overflow-hidden shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-3 z-10 max-w-[60%]">
-              <h3 className="text-base sm:text-lg font-bold text-blue-950 dark:text-blue-100 leading-tight">
-                Good Business Starts with Good Shoes
-              </h3>
-              <div className="space-y-1.5 text-xs font-medium text-blue-900/80 dark:text-blue-200/80">
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-600 dark:text-blue-400 font-bold">✓</span>
-                  <span>Quality shoes</span>
+        {/* WIDGET B: Collections & Ageing Breakdown */}
+        <Panel
+          title="Collections & Receivables Ageing"
+          subtitle="Realized payments and overdue commercial aging brackets"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/payments')}
+            >
+              View ledger
+            </Button>
+          }
+          noPadding
+        >
+          {/* Ageing Summary Bar */}
+          <div className="p-4 border-b border-border bg-muted/15">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-2.5">
+              Outstanding Balances by Aging Bracket
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {collectionsData.agingBuckets.map((b) => (
+                <div
+                  key={b.label}
+                  onClick={() => onNavigate(`/admin/payments?aging=${b.range}`)}
+                  className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                    b.range === '90+' && b.amount > 0
+                      ? 'bg-rose-50/70 border-rose-300 dark:bg-rose-950/40 dark:border-rose-900/60'
+                      : 'bg-surface border-border hover:border-zinc-400 dark:hover:border-zinc-500'
+                  }`}
+                >
+                  <span className="text-[11px] font-semibold text-muted-foreground block truncate">{b.label}</span>
+                  <span className="text-xs font-bold text-foreground block font-mono mt-1">
+                    {formatLakh(b.amount)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">({b.count} Stores)</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-600 dark:text-blue-400 font-bold">✓</span>
-                  <span>Better margins</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Latest 5 Payments with Direct Receipt Modal Action */}
+          {collectionsData.latestPayments.length === 0 ? (
+            <EmptyState
+              icon={Icons.Payments}
+              title="No Payments Recorded"
+              description="Record collections to track ledger cashflow."
+            />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Receipt #</TableHead>
+                  <TableHead>Store &amp; City</TableHead>
+                  <TableHead>Mode</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Realized</TableHead>
+                  <TableHead className="text-center">Receipt</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {collectionsData.latestPayments.map((p) => (
+                  <TableRow
+                    key={p.id}
+                    className="hover:bg-muted/40 transition-colors"
+                  >
+                    <TableCell className="font-mono font-bold text-xs text-primary">
+                      {p.receiptNumber || `SF-REC-${p.id.slice(-5)}`}
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-semibold text-foreground text-xs block truncate max-w-[130px]">
+                        {p.customerName}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">{p.customerCity || 'Agra'}</span>
+                    </TableCell>
+                    <TableCell className="text-xs font-medium">
+                      {p.paymentMethod}
+                    </TableCell>
+                    <TableCell className="text-xs font-mono text-muted-foreground">
+                      {p.paymentDate}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <TableMoneyCell
+                        amount={p.paymentAmount}
+                        isBold
+                        className="text-emerald-600 dark:text-emerald-400"
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedReceiptPayment(p);
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                        title="View & Print Official Receipt"
+                      >
+                        <Icons.FileText size={15} />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Panel>
+
+        {/* WIDGET C: Customers & Key Wholesale Accounts */}
+        <Panel
+          title="Customers & Key Wholesale Accounts"
+          subtitle="Top buyers by volume and account credit health"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/customers')}
+            >
+              View all customers
+            </Button>
+          }
+          noPadding
+        >
+          {/* Health Status Filter Strip */}
+          <div className="p-3.5 border-b border-border bg-muted/15 flex items-center justify-between text-xs font-semibold gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => onNavigate('/admin/customers/insights/total')}
+              className="text-foreground hover:underline flex items-center gap-1.5 cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span>Active: {customersSummary.active}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('/admin/customers/insights/overdue')}
+              className="text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1.5 cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <span>Overdue: {customersSummary.overdue}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('/admin/customers/insights/cleared')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1.5 cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Cleared: {customersSummary.cleared}</span>
+            </button>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Store &amp; City</TableHead>
+                <TableHead>Terms</TableHead>
+                <TableHead className="text-right">Total Business</TableHead>
+                <TableHead className="text-right">Balance Due</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {customersSummary.topCustomers.map((cust) => (
+                <TableRow
+                  key={cust.id}
+                  onClick={() => onNavigate(`/admin/customers/${cust.id}`)}
+                  className="cursor-pointer hover:bg-muted/40 transition-colors"
+                >
+                  <TableCell>
+                    <TableAvatarCell
+                      name={cust.businessName}
+                      subtext={`${cust.city}, ${cust.state}`}
+                    />
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {cust.paymentTerms || '30% Adv + 70% Bilty'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <TableMoneyCell amount={cust.totalBusiness} isBold />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <TableMoneyCell
+                      amount={cust.amountDue}
+                      className={cust.amountDue > 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-muted-foreground'}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Panel>
+
+        {/* WIDGET D: Production & Manufacturing Plants */}
+        <Panel
+          title="Production & Manufacturing Plants"
+          subtitle="Consignment load, active footwear lines, and plant dispatch rates"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/manufacturers')}
+            >
+              View plants
+            </Button>
+          }
+          noPadding
+        >
+          <div className="divide-y divide-border">
+            {productionSummary.manufacturers.map((m) => (
+              <div
+                key={m.id}
+                onClick={() => onNavigate('/admin/manufacturers')}
+                className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors cursor-pointer"
+              >
+                <div>
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                    <Icons.Manufacturers size={15} className="text-blue-600" />
+                    <span>{m.name}</span>
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{m.plant}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-600 dark:text-blue-400 font-bold">✓</span>
-                  <span>Happier customers</span>
+                <div className="text-right">
+                  <span className="font-mono font-bold text-xs text-foreground block">
+                    {m.activeOrdersCount} Active Batches • {m.onTimeRate}% On-Time
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {m.pairsInProduction.toLocaleString('en-IN')} Pairs in Production
+                  </span>
                 </div>
               </div>
-            </div>
-
-            {/* Sneaker Graphic */}
-            <div className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 relative flex items-center justify-center">
-              <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-xl animate-pulse"></div>
-              <img
-                src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
-                alt="Shoe"
-                className="w-full h-full object-contain relative z-10 drop-shadow-lg transform -rotate-12 hover:rotate-0 transition-transform duration-300"
-              />
-            </div>
+            ))}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-blue-100/60 dark:border-blue-900/30 flex items-center justify-between text-xs text-blue-800 dark:text-blue-300 font-semibold">
-            <span>Wholesale Line Sheet 2026</span>
-            <span className="text-blue-600 dark:text-blue-400">SoleFlow Premium</span>
-          </div>
-        </div>
-
-        {/* 2. Quick Actions Panel */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 pb-2 border-b border-border">
-              <Zap size={18} className="text-blue-600 dark:text-blue-400" />
-              <h3 className="text-sm font-bold text-foreground">
-                Quick Actions
-              </h3>
+          {/* Delayed Production Alert Banner */}
+          {productionSummary.delayedOrders.length > 0 && (
+            <div className="p-3.5 bg-rose-50/80 dark:bg-rose-950/40 border-t border-rose-200 dark:border-rose-900/60 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-semibold">
+                <Icons.Overdue size={15} />
+                <span>{productionSummary.delayedOrders.length} Order(s) past promised delivery date</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('/admin/orders?filter=delayed')}
+                className="text-rose-700 dark:text-rose-300 underline font-bold cursor-pointer"
+              >
+                Inspect Delayed
+              </button>
             </div>
+          )}
+        </Panel>
 
-            <div className="space-y-2 mt-3">
-              {/* Add New Client */}
-              <button
-                type="button"
-                onClick={() => setIsAddCustomerModalOpen(true)}
-                className="w-full p-2.5 rounded-xl bg-surface hover:bg-muted/60 border border-border flex items-center justify-between transition-all group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-                    <UserPlus size={16} />
-                  </div>
-                  <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors">
-                    Add New Client
-                  </span>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-              </button>
-
-              {/* Create Order */}
-              <button
-                type="button"
-                onClick={() => setIsCreateOrderModalOpen(true)}
-                className="w-full p-2.5 rounded-xl bg-surface hover:bg-muted/60 border border-border flex items-center justify-between transition-all group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400 flex items-center justify-center shrink-0">
-                    <ShoppingBag size={16} />
-                  </div>
-                  <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors">
-                    Create Order
-                  </span>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-              </button>
-
-              {/* View Reports */}
-              <button
-                type="button"
-                onClick={() => onNavigate('/admin/reports')}
-                className="w-full p-2.5 rounded-xl bg-surface hover:bg-muted/60 border border-border flex items-center justify-between transition-all group cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400 flex items-center justify-center shrink-0">
-                    <TrendingUp size={16} />
-                  </div>
-                  <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors">
-                    View Reports
-                  </span>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-              </button>
-
-              {/* Manage Inventory */}
-              <button
-                type="button"
+        {/* WIDGET E: Design Catalogue & Bestsellers */}
+        <Panel
+          title="Design Catalogue & Bestselling Models"
+          subtitle="Top customer favorites and volume demand by article"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/designs')}
+            >
+              View catalogue
+            </Button>
+          }
+          noPadding
+        >
+          <div className="divide-y divide-border">
+            {designsSummary.topDesigns.map((d) => (
+              <div
+                key={d.id}
                 onClick={() => onNavigate('/admin/designs')}
-                className="w-full p-2.5 rounded-xl bg-surface hover:bg-muted/60 border border-border flex items-center justify-between transition-all group cursor-pointer"
+                className="p-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0">
-                    <Package size={16} />
+                  <div className="w-10 h-10 rounded-lg bg-muted overflow-hidden shrink-0 border border-border flex items-center justify-center">
+                    {d.image ? (
+                      <img
+                        src={d.image}
+                        alt={d.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Icons.Designs size={18} className="text-muted-foreground opacity-50" />
+                    )}
                   </div>
-                  <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors">
-                    Manage Inventory
+                  <div>
+                    <h5 className="font-bold text-xs text-foreground truncate max-w-[160px] sm:max-w-xs">
+                      {d.name}
+                    </h5>
+                    <span className="text-[11px] font-mono text-muted-foreground">
+                      {d.articleCode} • {d.category}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="font-bold font-mono text-xs text-foreground block">
+                    {d.orderedPairs || 240} Pairs
+                  </span>
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    ₹{(d.price || 1250).toLocaleString('en-IN')}/pr
                   </span>
                 </div>
-                <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Recent Activity Feed */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs space-y-4 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-2 border-b border-border">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <h3 className="text-sm font-bold text-foreground">
-                  Recent Activity
-                </h3>
               </div>
-              <button
-                type="button"
-                onClick={() => onNavigate('/admin/orders')}
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+            ))}
+          </div>
+        </Panel>
+
+        {/* WIDGET F: Sales Force Performance Leaderboard */}
+        <Panel
+          title="Sales Force & Field Team"
+          subtitle="Monthly targets, collection achievements, and active reps"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/sales-team')}
+            >
+              View team
+            </Button>
+          }
+          noPadding
+        >
+          <div className="divide-y divide-border">
+            {salesTeamSummary.map((rep) => (
+              <div
+                key={rep.id}
+                onClick={() => onNavigate('/admin/sales-team')}
+                className="p-4 space-y-2 hover:bg-muted/30 transition-colors cursor-pointer"
               >
-                <span>View All</span>
-                <ChevronRight size={14} />
-              </button>
-            </div>
-
-            <div className="space-y-3 mt-3">
-              {/* Activity Item 1 */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <ShoppingBag size={15} />
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <TableAvatarCell name={rep.name} subtext={rep.cluster || rep.zone} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate">
-                      Order #ORD-0148 created
-                    </p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      ABC Footwear
-                    </p>
+                  <div className="text-right">
+                    <span className="font-mono font-bold text-foreground">
+                      {formatLakh(rep.bookedThisMonth)}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground block">
+                      Target: {formatLakh(rep.monthlyTarget || 1200000)} ({rep.targetPct}%)
+                    </span>
                   </div>
                 </div>
-                <span className="text-[11px] text-muted-foreground shrink-0">
-                  2h ago
-                </span>
-              </div>
 
-              {/* Activity Item 2 */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <CreditCard size={15} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate">
-                      Payment received
-                    </p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      ₹75,000 from Regal Footwear
-                    </p>
-                  </div>
+                {/* Progress Bar */}
+                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    style={{ width: `${Math.min(rep.targetPct, 100)}%` }}
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      rep.targetPct >= 80 ? 'bg-emerald-500' : rep.targetPct >= 50 ? 'bg-blue-500' : 'bg-amber-500'
+                    }`}
+                  />
                 </div>
-                <span className="text-[11px] text-muted-foreground shrink-0">
-                  4h ago
-                </span>
               </div>
-
-              {/* Activity Item 3 */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <UserPlus size={15} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate">
-                      New customer added
-                    </p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      Delhi Walkways Hub
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[11px] text-muted-foreground shrink-0">
-                  6h ago
-                </span>
-              </div>
-
-              {/* Activity Item 4 */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <Package size={15} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate">
-                      Stock updated
-                    </p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      Kanpur Leather Mart
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[11px] text-muted-foreground shrink-0">
-                  8h ago
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
+        </Panel>
 
+        {/* WIDGET G: Pending Approvals & Authorizations */}
+        <Panel
+          title="Pending Approvals & Margin Overrides"
+          subtitle="Trade discount requests and orders requiring trader authorization"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/reports')}
+            >
+              Approvals center
+            </Button>
+          }
+          noPadding
+        >
+          {approvalsSummary.totalPendingCount === 0 ? (
+            <EmptyState
+              icon={Icons.Approved}
+              title="All Approvals Cleared"
+              description="No pending trade discounts or orders awaiting review."
+            />
+          ) : (
+            <div className="divide-y divide-border">
+              {/* 1. Pending Discount Requests */}
+              {approvalsSummary.pendingDiscounts.map((d) => (
+                <div key={d.id} className="p-4 space-y-2.5 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-foreground">{d.clientName}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-300">
+                          {d.requestedPercent}% Discount Requested
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Order #{d.orderId} • Rep: {d.salesmanName} • Concession: ₹{d.marginConcession.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => actions.rejectDiscount(d.id)}
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={Icons.Check}
+                      onClick={() => actions.approveDiscount(d.id)}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      Approve Margin
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              {/* 2. Orders Awaiting Approval */}
+              {approvalsSummary.ordersAwaitingReview.map((ord) => (
+                <div key={ord.id} className="p-4 flex items-center justify-between gap-2 hover:bg-muted/30 transition-colors">
+                  <div>
+                    <span className="font-bold text-xs text-foreground block">
+                      Order #{ord.id} — {ord.customerName}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      {ord.pairsCount} Pairs • Value: ₹{(ord.netPayable || ord.subtotal || 0).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => onNavigate(`/admin/orders?inspect=${ord.id}`)}
+                    >
+                      Inspect
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={Icons.Check}
+                      onClick={() => actions.approveOrder(ord.id)}
+                    >
+                      Approve
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+
+        {/* WIDGET H: Recent Activity & Audit Trail */}
+        <Panel
+          title="Recent Business Activity & Audit Log"
+          subtitle="Real-time timeline of operational transactions and updates"
+          headerAction={
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ChevronRight}
+              iconPosition="right"
+              onClick={() => onNavigate('/admin/audit-log')}
+            >
+              Full audit log
+            </Button>
+          }
+          noPadding
+        >
+          <div className="divide-y divide-border max-h-[360px] overflow-y-auto">
+            {recentActivities.map((act) => (
+              <div key={act.id} className="p-3.5 text-xs space-y-1 hover:bg-muted/30 transition-colors">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span className="font-semibold text-foreground">{act.actor} ({act.actorRole})</span>
+                  <span className="font-mono text-[10px]">{act.timestamp}</span>
+                </div>
+                <p className="text-foreground font-medium">{act.action}: <span className="text-muted-foreground">{act.recordTitle}</span></p>
+                {act.newValue && (
+                  <p className="text-[11px] text-muted-foreground font-mono">{act.newValue}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </Panel>
       </div>
 
+      {/* 5. Quick Operational Shortcuts Dock (3D Claymorphic Masterpiece Style) */}
+      <div className="space-y-3">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 px-1">
+          <Icons.Dashboard size={15} />
+          <span>Quick Operational Shortcuts</span>
+        </h3>
+        <QuickShortcutsGrid
+          onBookOrder={() => setIsCreateOrderModalOpen(true)}
+          onRecordPayment={() => setIsPaymentModalOpen(true)}
+          onAddCustomer={() => setIsAddCustomerModalOpen(true)}
+          onNewDesign={() => onNavigate('/admin/designs')}
+          onShareLookbook={() => setIsShareModalOpen(true)}
+          onGstLedger={() => onNavigate('/admin/reports')}
+        />
+      </div>
+
+      {/* Standalone Receipt Preview Modal */}
+      {selectedReceiptPayment && (
+        <ReceiptPreviewModal
+          open={Boolean(selectedReceiptPayment)}
+          onClose={() => setSelectedReceiptPayment(null)}
+          receipt={selectedReceiptPayment}
+          customer={(() => {
+            const cust = customers.find((c) => c.id === selectedReceiptPayment.customerId);
+            if (!cust) return undefined;
+            return {
+              customerCode: cust.id,
+              gstin: cust.gstin,
+              phone: cust.phone,
+              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+            };
+          })()}
+          status={mapPaymentStatusToReceiptStatus(selectedReceiptPayment.status)}
+        />
+      )}
     </div>
   );
 };
+
+export default AdminDashboard;

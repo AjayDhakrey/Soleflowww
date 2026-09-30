@@ -6,14 +6,14 @@ import { MOCK_NOTIFICATIONS } from '../data/mockData';
 
 export type NotificationRow = Database['public']['Tables']['notifications']['Row'];
 
-export function mapNotificationRow(row: NotificationRow): NotificationItem {
+export function mapNotificationRow(row: any): NotificationItem {
   return {
     id: row.id,
     title: row.title,
-    time: new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    desc: row.description,
-    category: (row.category || 'alert') as NotificationItem['category'],
-    read: row.is_read,
+    time: row.created_at ? new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now',
+    desc: row.body || row.description || '',
+    category: (row.type || row.category || 'alert') as NotificationItem['category'],
+    read: row.read_at !== null && row.read_at !== undefined ? true : Boolean(row.is_read),
     linkTab: row.link_tab || undefined,
   };
 }
@@ -44,7 +44,7 @@ export const notificationsService = {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ is_read: true })
+        .update({ read_at: new Date().toISOString() })
         .eq('id', id);
 
       if (error) throw parseSupabaseError(error);
@@ -61,8 +61,8 @@ export const notificationsService = {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ is_read: true })
-        .eq('is_read', false);
+        .update({ read_at: new Date().toISOString() })
+        .is('read_at', null);
 
       if (error) throw parseSupabaseError(error);
       return true;
@@ -72,3 +72,4 @@ export const notificationsService = {
     }
   },
 };
+

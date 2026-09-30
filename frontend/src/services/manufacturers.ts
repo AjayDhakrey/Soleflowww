@@ -6,23 +6,23 @@ import { MOCK_MANUFACTURERS } from '../data/mockData';
 
 export type ManufacturerRow = Database['public']['Tables']['manufacturers']['Row'];
 
-export function mapManufacturerRow(row: ManufacturerRow): Manufacturer {
+export function mapManufacturerRow(row: any): Manufacturer {
   return {
     id: row.id,
-    companyName: row.name,
-    hubLocation: row.location,
-    estYear: row.est_year || 2011,
-    primarySpecialization: row.primary_specialization || 'Footwear Assembly',
-    monthlyCapacityPairs: row.monthly_capacity_pairs,
-    runningBatchesCount: row.active_batches_count,
-    onTimeDeliveryRate: Number(row.on_time_delivery_rate),
-    qcPassRatio: Number(row.qc_pass_ratio),
-    generalManager: row.general_manager || 'Satish Gupta',
+    companyName: row.companyName || row.name || 'Footwear Manufacturer',
+    hubLocation: row.hubLocation || row.location || 'Agra Hub',
+    estYear: Number(row.estYear ?? row.est_year ?? 2011),
+    primarySpecialization: row.primarySpecialization || row.primary_specialization || 'Footwear Assembly',
+    monthlyCapacityPairs: Number(row.monthlyCapacityPairs ?? row.monthly_capacity_pairs ?? 50000),
+    runningBatchesCount: Number(row.runningBatchesCount ?? row.active_batches_count ?? 0),
+    onTimeDeliveryRate: Number(row.onTimeDeliveryRate ?? row.on_time_delivery_rate ?? 95),
+    qcPassRatio: Number(row.qcPassRatio ?? row.qc_pass_ratio ?? 98),
+    generalManager: row.generalManager || row.general_manager || 'Satish Gupta',
     phone: row.phone || '+91 98290 11223',
-    loadPercentage: row.load_percentage,
+    loadPercentage: Number(row.loadPercentage ?? row.load_percentage ?? 50),
     status: (row.status || 'Active Plants') as Manufacturer['status'],
-    toolingLeadTimeDays: row.tooling_lead_time_days,
-    moldsActiveCount: row.molds_active_count,
+    toolingLeadTimeDays: Number(row.toolingLeadTimeDays ?? row.tooling_lead_time_days ?? 5),
+    moldsActiveCount: Number(row.moldsActiveCount ?? row.molds_active_count ?? 12),
   };
 }
 

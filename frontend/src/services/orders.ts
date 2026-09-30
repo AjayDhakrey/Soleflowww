@@ -8,47 +8,50 @@ export type OrderRow = Database['public']['Tables']['orders']['Row'];
 export type OrderFinancialRow = Database['public']['Views']['v_order_financials']['Row'];
 
 export function mapOrderFinancialToOrder(
-  fin: OrderFinancialRow,
-  rawOrder?: OrderRow,
+  fin: any,
+  rawOrder?: any,
   items?: OrderItem[],
   history?: OrderTimelineEvent[]
 ): Order {
+  const status = (fin.order_status || fin.status || rawOrder?.status || 'Draft') as Order['status'];
+  const orderDate = fin.order_date_at ? new Date(fin.order_date_at).toLocaleDateString('en-IN') : (rawOrder?.orderDate || fin.order_date || 'Today');
+
   return {
-    id: fin.order_id,
-    customerId: fin.client_id,
-    customerName: 'Client Store',
-    propName: 'Store Owner',
-    customerCity: 'Agra',
-    customerState: 'Uttar Pradesh',
-    salespersonId: fin.salesperson_id || '',
-    salespersonName: 'Field Rep',
-    items: items || [],
-    pairsCount: fin.total_pairs || 0,
-    cartonsCount: fin.total_cartons || 0,
-    wholesaleRate: fin.total_pairs > 0 ? Math.round(Number(fin.subtotal) / fin.total_pairs) : 0,
-    subtotal: Number(fin.subtotal || 0),
-    tradeDiscountPercent: Number(fin.trade_discount_percent || 0),
-    tradeDiscountAmount: Number(fin.trade_discount_amount || 0),
-    taxableSubtotal: Number(fin.taxable_subtotal || 0),
-    gstPercent: Number(fin.gst_percent || 12),
-    gstAmount: Number(fin.gst_amount || 0),
-    netPayable: Number(fin.net_payable || 0),
-    advanceDeposited: Number(fin.total_paid || 0),
-    balanceDue: Number(fin.balance_due || 0),
-    manufacturerId: fin.manufacturer_id || 'mfg-1',
-    manufacturerName: 'Apex Footwear Works',
-    manufacturerPlant: 'Agra Unit 2',
-    expectedDelivery: fin.expected_delivery || 'TBD',
-    paymentStatus: (fin.payment_status || 'Advance Deposited') as Order['paymentStatus'],
-    status: (fin.status || 'Draft') as Order['status'],
-    orderDate: fin.order_date || new Date().toISOString().split('T')[0],
-    batchNumber: rawOrder?.batch_number || undefined,
+    id: fin.order_id || rawOrder?.id,
+    customerId: fin.client_id || rawOrder?.customerId,
+    customerName: fin.client_name || rawOrder?.customerName || 'Client Store',
+    propName: rawOrder?.propName || 'Store Owner',
+    customerCity: rawOrder?.customerCity || 'Agra',
+    customerState: rawOrder?.customerState || 'Uttar Pradesh',
+    salespersonId: fin.salesman_id || fin.salesperson_id || rawOrder?.salespersonId || '',
+    salespersonName: fin.salesman_name || fin.salesperson_name || rawOrder?.salespersonName || 'Field Rep',
+    items: items || rawOrder?.items || [],
+    pairsCount: Number(rawOrder?.pairsCount ?? fin.total_pairs ?? 0),
+    cartonsCount: Number(rawOrder?.cartonsCount ?? fin.total_cartons ?? 0),
+    wholesaleRate: Number(rawOrder?.wholesaleRate ?? 0),
+    subtotal: Number(rawOrder?.subtotal ?? fin.subtotal ?? 0),
+    tradeDiscountPercent: Number(rawOrder?.tradeDiscountPercent ?? fin.trade_discount_percent ?? 0),
+    tradeDiscountAmount: Number(rawOrder?.tradeDiscountAmount ?? fin.trade_discount_amount ?? 0),
+    taxableSubtotal: Number(rawOrder?.taxableSubtotal ?? fin.taxable_subtotal ?? 0),
+    gstPercent: Number(rawOrder?.gstPercent ?? fin.gst_percent ?? 12),
+    gstAmount: Number(rawOrder?.gstAmount ?? fin.gst_amount ?? 0),
+    netPayable: Number(fin.net_payable ?? rawOrder?.netPayable ?? 0),
+    advanceDeposited: Number(fin.paid_verified ?? fin.total_paid ?? rawOrder?.advanceDeposited ?? 0),
+    balanceDue: Number(fin.outstanding ?? fin.balance_due ?? rawOrder?.balanceDue ?? 0),
+    manufacturerId: rawOrder?.manufacturerId || fin.manufacturer_id || 'mfg-1',
+    manufacturerName: rawOrder?.manufacturerName || 'Apex Footwear Works',
+    manufacturerPlant: rawOrder?.manufacturerPlant || 'Agra Unit 2',
+    expectedDelivery: rawOrder?.expectedDelivery || fin.expected_delivery || 'TBD',
+    paymentStatus: (fin.payment_status || rawOrder?.paymentStatus || 'Payment Pending') as Order['paymentStatus'],
+    status,
+    orderDate,
+    batchNumber: rawOrder?.batchNumber || rawOrder?.batch_number || undefined,
     timeline: history || [
-      { step: 'Created', date: fin.order_date, completed: true },
-      { step: 'Approved', date: 'Pending', completed: fin.status !== 'Draft' },
-      { step: 'In Production', date: 'Pending', completed: ['In Production', 'Ready QC', 'Ready to Dispatch', 'Dispatched', 'Delivered'].includes(fin.status) },
-      { step: 'Dispatched', date: 'Pending', completed: ['Dispatched', 'Delivered'].includes(fin.status) },
-      { step: 'Delivered', date: 'Pending', completed: fin.status === 'Delivered' },
+      { step: 'Created', date: orderDate, completed: true },
+      { step: 'Approved', date: 'Pending', completed: status !== 'Draft' },
+      { step: 'In Production', date: 'Pending', completed: ['In Production', 'Ready QC', 'Ready to Dispatch', 'Dispatched', 'Delivered'].includes(status) },
+      { step: 'Dispatched', date: 'Pending', completed: ['Dispatched', 'Delivered'].includes(status) },
+      { step: 'Delivered', date: 'Pending', completed: status === 'Delivered' },
     ],
   };
 }
@@ -66,13 +69,13 @@ export const ordersService = {
       let query = supabase.from('v_order_financials').select('*');
 
       if (filters?.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
+        query = query.eq('order_status', filters.status);
       }
       if (filters?.clientId) {
         query = query.eq('client_id', filters.clientId);
       }
       if (filters?.salespersonId) {
-        query = query.eq('salesperson_id', filters.salespersonId);
+        query = query.eq('salesman_id', filters.salespersonId);
       }
       if (filters?.search) {
         query = query.ilike('order_id', `%${filters.search}%`);
@@ -113,15 +116,15 @@ export const ordersService = {
 
       const items: OrderItem[] = (rawItems || []).map((item: any) => ({
         designId: item.design_id || 'sf-1024',
-        designName: item.design_name,
-        articleCode: item.article_code,
+        designName: item.design_name_snapshot || item.design_name || 'Shoe Model',
+        articleCode: item.design_code_snapshot || item.article_code || 'ART-00',
         image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80',
-        ratePerPair: Number(item.rate_per_pair),
-        sizeBreakdown: Array.isArray(item.size_breakdown) ? item.size_breakdown : [],
-        totalPairs: item.total_pairs,
-        totalCartons: item.total_cartons,
-        loosePairs: item.loose_pairs,
-        itemSubtotal: Number(item.item_subtotal),
+        ratePerPair: Number(item.rate || item.rate_per_pair || 0),
+        sizeBreakdown: Array.isArray(item.size_matrix) ? item.size_matrix : (Array.isArray(item.size_breakdown) ? item.size_breakdown : []),
+        totalPairs: Number(item.qty_pairs || item.total_pairs || 0),
+        totalCartons: Number(item.cartons || item.total_cartons || 0),
+        loosePairs: Number(item.loose_pairs || 0),
+        itemSubtotal: Number(item.line_total || item.item_subtotal || 0),
       }));
 
       // Fetch status history
@@ -146,23 +149,35 @@ export const ordersService = {
   },
 
   async createOrderDraft(params: {
-    order: Partial<OrderRow>;
+    order?: Partial<OrderRow> | any;
     items: any[];
+    clientId?: string;
+    tradeDiscountPercent?: number;
+    gstPercent?: number;
+    advanceDeposited?: number;
+    expectedDelivery?: string;
+    notes?: string;
   }): Promise<{ success: boolean; data?: any; error?: string }> {
     if (!supabase) {
       return {
         success: true,
         data: {
           id: `ORD-${Date.now().toString().slice(-4)}`,
-          ...params.order,
+          ...(params.order || params),
         },
       };
     }
 
     try {
+      const order = params.order || params;
       const { data, error } = await supabase.rpc('create_order_draft', {
-        p_order: params.order as any,
-        p_items: params.items as any,
+        p_client_id: order.customerId || order.client_id || params.clientId,
+        p_items: (params.items || order.items || []) as any,
+        p_trade_discount_percent: Number(order.tradeDiscountPercent ?? order.trade_discount_percent ?? params.tradeDiscountPercent ?? 5),
+        p_gst_percent: Number(order.gstPercent ?? order.gst_percent ?? params.gstPercent ?? 12),
+        p_advance_deposited: Number(order.advanceDeposited ?? order.advance_deposited ?? params.advanceDeposited ?? 0),
+        p_expected_delivery: order.expectedDelivery || order.expected_delivery || params.expectedDelivery || null,
+        p_notes: order.notes || params.notes || null,
       });
 
       if (error) throw parseSupabaseError(error);
@@ -183,15 +198,23 @@ export const ordersService = {
     try {
       const { data, error } = await supabase.rpc('advance_order_status', {
         p_order_id: params.orderId,
-        p_new_status: params.newStatus,
-        p_note: params.note || null,
-        p_manufacturer_id: params.manufacturerId || null,
+        p_to_status: params.newStatus,
+        p_note: params.note || '',
       });
 
       if (error) throw parseSupabaseError(error);
+
+      if (params.manufacturerId) {
+        await supabase
+          .from('orders')
+          .update({ manufacturerId: params.manufacturerId })
+          .eq('id', params.orderId);
+      }
+
       return { success: true, data };
     } catch (err: any) {
       return { success: false, error: err?.message || 'Failed to advance order status' };
     }
   },
 };
+

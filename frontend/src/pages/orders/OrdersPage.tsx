@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Order } from '../../types';
 import { OrderInspectDrawer } from '../../components/orders/OrderInspectDrawer';
+import { OrdersKpiCards } from '../../components/orders/OrdersKpiCards';
 import {
   ShoppingBag,
   Factory,
@@ -337,79 +338,35 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
         )}
       </div>
 
-      {/* 3. 4 KPI Summary Cards Row */}
+      {/* 3. 4 KPI Summary Cards Row (3D Claymorphic Redesign) */}
       {viewMode === 'list' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-          {/* Card 1: Total Orders */}
-          <div className="bg-surface border border-border rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <ShoppingBag size={18} strokeWidth={2} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground truncate">Total Orders</p>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground mt-0.5 tracking-tight leading-tight truncate">
-                {orders.length > 0 ? orders.length : 4} Batches
-              </h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                All active consignments
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2: In Production */}
-          <div className="bg-surface border border-border rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
-              <Factory size={18} strokeWidth={2} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground truncate">In Production</p>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground mt-0.5 tracking-tight leading-tight truncate">
-                {orders.length > 0
-                  ? orders.filter((o) => o.status === 'In Production' || o.status === 'Approved').length
-                  : 1} Batches
-              </h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                Active on factory lines
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Ready to Dispatch */}
-          <div className="bg-surface border border-border rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <Truck size={18} strokeWidth={2} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground truncate">Ready to Dispatch</p>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground mt-0.5 tracking-tight leading-tight truncate">
-                {orders.length > 0
-                  ? orders.filter((o) => o.status === 'Ready to Dispatch' || o.status === 'Ready QC' || o.status === 'Dispatched').length
-                  : 1} Batches
-              </h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                Awaiting transport loading
-              </p>
-            </div>
-          </div>
-
-          {/* Card 4: Total Consignment Value */}
-          <div className="bg-surface border border-border rounded-xl sm:rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <IndianRupee size={18} strokeWidth={2} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground truncate">Total Consignment Value</p>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground mt-0.5 tracking-tight leading-tight truncate">
-                {orders.length > 0
-                  ? `₹${(orders.reduce((sum, o) => sum + (o.netPayable || 0), 0) / 100000).toFixed(2)}L`
-                  : '₹19.56L'}
-              </h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                Gross wholesale value
-              </p>
-            </div>
-          </div>
-        </div>
+        <OrdersKpiCards
+          totalOrdersCount={orders.length > 0 ? orders.length : 4}
+          inProductionCount={
+            orders.length > 0
+              ? orders.filter((o) => o.status === 'In Production' || o.status === 'Approved').length
+              : 1
+          }
+          readyDispatchCount={
+            orders.length > 0
+              ? orders.filter(
+                  (o) =>
+                    o.status === 'Ready to Dispatch' ||
+                    o.status === 'Ready QC' ||
+                    o.status === 'Dispatched'
+                ).length
+              : 1
+          }
+          totalConsignmentValue={
+            orders.length > 0
+              ? orders.reduce((sum, o) => sum + (o.netPayable || 0), 0)
+              : '₹19.56L'
+          }
+          onNavigateAll={() => setStatusFilter('All')}
+          onNavigateProduction={() => setStatusFilter('In Production')}
+          onNavigateDispatch={() => setStatusFilter('Ready to Dispatch')}
+          onNavigateValue={() => setStatusFilter('All')}
+        />
       )}
 
       {/* 4. Table / Main Panel */}

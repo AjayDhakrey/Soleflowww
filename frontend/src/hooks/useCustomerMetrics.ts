@@ -171,10 +171,10 @@ export function useCustomerMetrics(): CustomerMetricsResult {
     // Collected this month
     const collectedThisMonth = roleFilteredPayments
       .filter((p) => {
-        const pDate = new Date(p.date || p.paymentDate || '');
+        const pDate = new Date(p.paymentDate || '');
         return !isNaN(pDate.getTime()) && pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear;
       })
-      .reduce((sum, p) => sum + (p.amount || p.paymentAmount || 0), 0);
+      .reduce((sum, p) => sum + (p.paymentAmount || 0), 0);
 
     // Due this week (approx 15-25% of active non-overdue receivables or payment terms ending soon)
     const dueThisWeek = roleFilteredCustomers

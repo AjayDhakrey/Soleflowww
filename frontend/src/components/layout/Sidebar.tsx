@@ -4,15 +4,45 @@ import { Icons } from '../../lib/icons';
 import { Avatar } from '../ui/Avatar';
 import projectLogo from '../../assets/images/project_logo.png';
 
+import {
+  NavDashboard3D,
+  NavCustomers3D,
+  NavSalesTeam3D,
+  NavOrders3D,
+  NavDesigns3D,
+  NavManufacturers3D,
+  NavPayments3D,
+  NavReports3D,
+  NavAuditLog3D,
+  NavSettings3D,
+  NavFollowUps3D,
+  NavVisits3D,
+  NavUserAvatar3D,
+} from './Sidebar3DIcons';
+
 interface SidebarProps {
   currentPath: string;
   onNavigate: (path: string) => void;
 }
 
+type Nav3DIconKey =
+  | 'Dashboard'
+  | 'Customers'
+  | 'SalesTeam'
+  | 'Orders'
+  | 'Designs'
+  | 'Manufacturers'
+  | 'Payments'
+  | 'Reports'
+  | 'AuditLog'
+  | 'Settings'
+  | 'FollowUps'
+  | 'Visits';
+
 interface NavItemDef {
   name: string;
   path: string;
-  icon: keyof typeof Icons;
+  icon3D: Nav3DIconKey;
   badge?: number;
 }
 
@@ -60,75 +90,75 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
   const unreadAlerts =
     notifications.filter(
       (n) => !n.read && (n.category === 'alert' || n.category === 'order')
-    ).length || 4;
+    ).length || 2;
 
   const adminNavGroups: NavGroupDef[] = [
     {
-      label: 'Overview',
-      items: [{ name: 'Dashboard', path: '/admin/dashboard', icon: 'Dashboard' }],
+      label: 'OVERVIEW',
+      items: [{ name: 'Dashboard', path: '/admin/dashboard', icon3D: 'Dashboard' }],
     },
     {
-      label: 'Sales & Clients',
+      label: 'SALES & CLIENTS',
       items: [
-        { name: 'Customers', path: '/admin/customers', icon: 'Clients' },
-        { name: 'Sales Team', path: '/admin/sales-team', icon: 'SalesTeam' },
+        { name: 'Customers', path: '/admin/customers', icon3D: 'Customers' },
+        { name: 'Sales Team', path: '/admin/sales-team', icon3D: 'SalesTeam' },
       ],
     },
     {
-      label: 'Catalogue & Orders',
+      label: 'CATALOGUE & ORDERS',
       items: [
-        { name: 'Designs', path: '/admin/designs', icon: 'Designs' },
-        { name: 'Orders', path: '/admin/orders', icon: 'Orders' },
-        { name: 'Manufacturers', path: '/admin/manufacturers', icon: 'Manufacturers' },
+        { name: 'Orders', path: '/admin/orders', icon3D: 'Orders' },
+        { name: 'Designs', path: '/admin/designs', icon3D: 'Designs' },
+        { name: 'Manufacturers', path: '/admin/manufacturers', icon3D: 'Manufacturers' },
       ],
     },
     {
-      label: 'Finance',
+      label: 'FINANCE',
       items: [
-        { name: 'Payments & Amount Due', path: '/admin/payments', icon: 'Payments' },
+        { name: 'Payments & Amount Due', path: '/admin/payments', icon3D: 'Payments' },
       ],
     },
     {
-      label: 'Administration',
+      label: 'ADMINISTRATION',
       items: [
-        { name: 'Reports & Alerts', path: '/admin/reports', icon: 'Reports', badge: unreadAlerts },
-        { name: 'Audit Log', path: '/admin/audit-log', icon: 'AuditLog' },
-        { name: 'Settings', path: '/admin/settings', icon: 'Settings' },
+        { name: 'Reports & Alerts', path: '/admin/reports', icon3D: 'Reports', badge: unreadAlerts },
+        { name: 'Audit Log', path: '/admin/audit-log', icon3D: 'AuditLog' },
+        { name: 'Settings', path: '/admin/settings', icon3D: 'Settings' },
       ],
     },
   ];
 
   const salesNavGroups: NavGroupDef[] = [
     {
-      label: 'Overview',
-      items: [{ name: 'Dashboard', path: '/sales/dashboard', icon: 'Dashboard' }],
+      label: 'OVERVIEW',
+      items: [{ name: 'Dashboard', path: '/sales/dashboard', icon3D: 'Dashboard' }],
     },
     {
-      label: 'Sales & Visits',
+      label: 'SALES & CLIENTS',
       items: [
-        { name: 'My Customers', path: '/sales/customers', icon: 'Clients' },
-        { name: 'Follow-ups', path: '/sales/follow-ups', icon: 'FollowUps' },
-        { name: 'My Visits', path: '/sales/visits', icon: 'Visits' },
+        { name: 'My Customers', path: '/sales/customers', icon3D: 'Customers' },
+        { name: 'Follow-ups', path: '/sales/follow-ups', icon3D: 'FollowUps' },
+        { name: 'My Visits', path: '/sales/visits', icon3D: 'Visits' },
       ],
     },
     {
-      label: 'Catalogue & Orders',
+      label: 'CATALOGUE & ORDERS',
       items: [
-        { name: 'Design Catalogue', path: '/sales/designs', icon: 'Designs' },
-        { name: 'My Orders', path: '/sales/orders', icon: 'Orders' },
+        { name: 'My Orders', path: '/sales/orders', icon3D: 'Orders' },
+        { name: 'Designs', path: '/sales/designs', icon3D: 'Designs' },
       ],
     },
     {
-      label: 'Finance',
+      label: 'FINANCE',
       items: [
-        { name: 'Collections', path: '/sales/collections', icon: 'Collections' },
+        { name: 'Collections', path: '/sales/collections', icon3D: 'Payments' },
       ],
     },
     {
-      label: 'Account',
+      label: 'ACCOUNT',
       items: [
-        { name: 'Notifications', path: '/sales/notifications', icon: 'Notifications', badge: 2 },
-        { name: 'Profile', path: '/sales/profile', icon: 'SalesTeam' },
+        { name: 'Notifications', path: '/sales/notifications', icon3D: 'Reports', badge: 2 },
+        { name: 'Profile', path: '/sales/profile', icon3D: 'SalesTeam' },
       ],
     },
   ];
@@ -142,57 +172,83 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     }
   };
 
+  const render3DIcon = (key: Nav3DIconKey) => {
+    switch (key) {
+      case 'Dashboard':
+        return <NavDashboard3D className="w-9 h-9" />;
+      case 'Customers':
+        return <NavCustomers3D className="w-9 h-9" />;
+      case 'SalesTeam':
+        return <NavSalesTeam3D className="w-9 h-9" />;
+      case 'Orders':
+        return <NavOrders3D className="w-9 h-9" />;
+      case 'Designs':
+        return <NavDesigns3D className="w-9 h-9" />;
+      case 'Manufacturers':
+        return <NavManufacturers3D className="w-9 h-9" />;
+      case 'Payments':
+        return <NavPayments3D className="w-9 h-9" />;
+      case 'Reports':
+        return <NavReports3D className="w-9 h-9" />;
+      case 'AuditLog':
+        return <NavAuditLog3D className="w-9 h-9" />;
+      case 'Settings':
+        return <NavSettings3D className="w-9 h-9" />;
+      case 'FollowUps':
+        return <NavFollowUps3D className="w-9 h-9" />;
+      case 'Visits':
+        return <NavVisits3D className="w-9 h-9" />;
+      default:
+        return <NavDashboard3D className="w-9 h-9" />;
+    }
+  };
+
   const renderNavGroup = (group: NavGroupDef) => (
     <div key={group.label} className="mb-4">
       {!isSidebarCollapsed && (
-        <div className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-subtle-foreground select-none">
+        <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
           {group.label}
         </div>
       )}
       <div className="space-y-1 mt-1">
         {group.items.map((item) => {
-          const IconComp = Icons[item.icon] || Icons.Dashboard;
-          const isActive = currentPath === item.path;
+          const isActive = currentPath === item.path || (item.path !== '/admin/dashboard' && item.path !== '/sales/dashboard' && currentPath.startsWith(item.path));
 
           return (
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
               title={isSidebarCollapsed ? item.name : undefined}
-              className={`w-full flex items-center h-11 rounded-xl transition-colors duration-150 group relative select-none cursor-pointer ${
-                isSidebarCollapsed ? 'justify-center px-0' : 'px-3.5 gap-3.5'
+              className={`w-full flex items-center h-12 rounded-2xl transition-all duration-150 group relative select-none cursor-pointer ${
+                isSidebarCollapsed ? 'justify-center px-0' : 'px-2.5 gap-3'
               } ${
                 isActive
-                  ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground font-medium'
+                  ? 'bg-emerald-50/90 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 font-semibold shadow-2xs'
+                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 font-medium'
               }`}
             >
-              <div
-                className={`shrink-0 ${
-                  isActive ? 'text-primary-foreground' : 'text-subtle-foreground group-hover:text-foreground'
-                }`}
-              >
-                <IconComp size={19} strokeWidth={1.75} />
+              <div className="shrink-0 transition-transform group-hover:scale-105">
+                {render3DIcon(item.icon3D)}
               </div>
 
               {!isSidebarCollapsed && (
-                <span className="text-[14px] truncate flex-1 text-left">
+                <span className={`text-[13.5px] truncate flex-1 text-left ${isActive ? 'text-emerald-700 dark:text-emerald-300 font-bold' : 'text-slate-700 dark:text-slate-200'}`}>
                   {item.name}
                 </span>
               )}
 
               {!isSidebarCollapsed && item.badge && item.badge > 0 && (
-                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${
-                  isActive
-                    ? 'bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30'
-                    : 'bg-muted text-foreground border-border'
-                }`}>
+                <span className="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 shrink-0">
                   {item.badge}
                 </span>
               )}
 
+              {!isSidebarCollapsed && isActive && (
+                <Icons.ChevronRight size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              )}
+
               {isSidebarCollapsed && item.badge && item.badge > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
               )}
             </button>
           );
@@ -202,10 +258,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
   );
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-surface">
-      {/* Brand Block */}
-      <div className={`h-[72px] px-4 sm:px-5 border-b border-border flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center' : 'gap-3.5'}`}>
-        <div className="w-11 h-11 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden group">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900">
+      {/* Brand Header */}
+      <div className={`h-[68px] px-4 sm:px-5 border-b border-slate-100 dark:border-slate-800 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
+        <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden group">
           <img
             src={projectLogo}
             alt="ShoeConnect Logo"
@@ -214,73 +270,45 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
         </div>
         {!isSidebarCollapsed && (
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold text-foreground tracking-tight leading-tight truncate">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
               ShoeConnect
             </h2>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
               Step Towards Better Tomorrow
-            </p>
-            <p className="text-[10px] text-muted-foreground/80 truncate">
-              {currentUser.role === 'admin' ? 'Admin Workspace' : 'Sales Portal'} • 2026-2027
             </p>
           </div>
         )}
       </div>
 
       {/* Navigation Groups Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
         {navGroups.map(renderNavGroup)}
       </div>
 
-      {/* Sidebar Promo Card (from screenshot) */}
-      {!isSidebarCollapsed && (
-        <div className="px-3 pb-3">
-          <div className="p-3 rounded-2xl bg-surface hover:bg-muted/60 border border-border flex items-center justify-between gap-3 shadow-2xs transition-colors cursor-pointer group">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
-                <Icons.Designs size={18} strokeWidth={2} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs font-bold text-foreground leading-tight truncate">
-                  Better Footwear
-                </div>
-                <div className="text-[11px] font-semibold text-muted-foreground truncate">
-                  Bigger Opportunities
-                </div>
-                <div className="text-[10px] text-muted-foreground/80 truncate">
-                  Wholesale • Supply Chain • Growth
-                </div>
-              </div>
-            </div>
-            <Icons.ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
-          </div>
-        </div>
-      )}
-
-      {/* Bottom User Card */}
-      <div className="p-3 border-t border-border relative" ref={userMenuRef}>
+      {/* Bottom Profile Card */}
+      <div className="p-3 border-t border-slate-100 dark:border-slate-800 relative" ref={userMenuRef}>
         <div
           onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-          className={`rounded-2xl border border-border p-2.5 flex items-center gap-3 bg-surface hover:bg-muted cursor-pointer transition-colors ${
+          className={`rounded-2xl border border-slate-200/80 dark:border-slate-800 p-2.5 flex items-center gap-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-all shadow-2xs select-none ${
             isSidebarCollapsed ? 'justify-center' : ''
           }`}
         >
-          <Avatar name={currentUser.name} size="md" />
+          <NavUserAvatar3D className="w-10 h-10" />
 
           {!isSidebarCollapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-foreground truncate leading-tight">
+              <p className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">
                 {currentUser.name}
               </p>
-              <p className="text-xs text-muted-foreground capitalize truncate mt-0.5">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 capitalize truncate mt-0.5">
                 {currentUser.role === 'admin' ? 'Trader / Admin' : 'Sales Executive'}
               </p>
             </div>
           )}
 
           {!isSidebarCollapsed && (
-            <div className="text-subtle-foreground hover:text-foreground">
-              <Icons.More size={18} strokeWidth={1.75} />
+            <div className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
+              <Icons.ChevronDown size={17} strokeWidth={2} />
             </div>
           )}
         </div>
@@ -295,7 +323,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
             <button
               type="button"
               onClick={() => {
-                switchRole();
+                const nextRole = currentUser.role === 'admin' ? 'salesperson' : 'admin';
+                switchRole(nextRole);
+                onNavigate(nextRole === 'admin' ? '/admin/dashboard' : '/sales/dashboard');
                 setIsUserMenuOpen(false);
               }}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"

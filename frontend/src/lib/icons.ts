@@ -51,6 +51,7 @@ import {
   Trash2,
   KeyRound,
   ShieldCheck,
+  Percent,
 } from 'lucide-react';
 
 export const Icons = {
@@ -58,6 +59,7 @@ export const Icons = {
   Dashboard: LayoutDashboard,
   Clients: Users,
   Client: Users,
+  Users: Users,
   Store: Store,
   Designs: Footprints,
   Catalogue: Footprints,
@@ -90,15 +92,20 @@ export const Icons = {
   ChevronRight: ChevronRight,
   ChevronLeft: ChevronLeft,
   View: Eye,
+  Eye: Eye,
   Check: Check,
   Delete: Trash2,
   Refresh: RefreshCw,
   Download: Download,
+  ArrowLeft: ChevronLeft,
+  Back: ChevronLeft,
 
   // Status & Indicators
   Approved: CheckCircle2,
   Pending: Hourglass,
   Overdue: AlertTriangle,
+  Alert: AlertTriangle,
+  AlertCircle: AlertTriangle,
   Dispatched: Truck,
   Delivered: PackageCheck,
   Date: Calendar,
@@ -109,6 +116,8 @@ export const Icons = {
   Phone: Phone,
   Mail: Mail,
   Document: FileText,
+  FileText: FileText,
+  Percent: Percent,
   Logout: LogOut,
   Moon: Moon,
   Sun: Sun,
@@ -117,6 +126,7 @@ export const Icons = {
   TrendingDown: ArrowDownRight,
   Help: HelpCircle,
   Security: ShieldCheck,
+  Lock: ShieldCheck,
   Key: KeyRound,
 } as const;
 

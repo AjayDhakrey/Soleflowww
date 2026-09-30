@@ -21,6 +21,7 @@ import { SalesDashboard } from './pages/sales/SalesDashboard';
 import { FollowUpsPage } from './pages/sales/FollowUpsPage';
 import { VisitsPage } from './pages/sales/VisitsPage';
 import { CollectionsPage } from './pages/sales/CollectionsPage';
+import { ReceiptPage } from './pages/payments/ReceiptPage';
 import { LoginPage } from './pages/login/LoginPage';
 import { LandingPage } from './pages/landing/LandingPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
@@ -88,7 +89,12 @@ const AppContent: React.FC = () => {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
 
-      if (hash.startsWith('#s/')) {
+      if (hash.startsWith('#receipts/')) {
+        const pId = hash.replace('#receipts/', '');
+        setCurrentPath(`/receipts/${pId}`);
+      } else if (pathname.startsWith('/receipts/')) {
+        setCurrentPath(pathname);
+      } else if (hash.startsWith('#s/')) {
         const token = hash.replace('#s/', '');
         setActiveShareToken(token);
         setUnauthView('lookbook');
@@ -344,6 +350,17 @@ const AppContent: React.FC = () => {
     if (currentPath === '/sales/activity') {
       return <SalesTeamPage onNavigate={handleNavigate} />;
     }
+    if (currentPath.startsWith('/receipts/')) {
+      const match = currentPath.match(/\/receipts\/([^?#/]+)/);
+      const paymentId = match ? match[1] : undefined;
+      return (
+        <ReceiptPage
+          paymentId={paymentId}
+          onBack={() => handleNavigate(currentUser.role === 'admin' ? '/admin/payments' : '/sales/collections')}
+        />
+      );
+    }
+
     if (currentPath === '/sales/profile') {
       return <SettingsPage />;
     }

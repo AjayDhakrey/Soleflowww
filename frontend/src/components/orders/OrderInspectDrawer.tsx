@@ -19,9 +19,12 @@ import {
   Maximize2,
   ShieldCheck,
   Truck,
+  FileText,
 } from 'lucide-react';
 
 import { RequestDiscountModal } from '../discounts/RequestDiscountModal';
+import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from '../payments/ReceiptTemplate';
+import { PaymentReceipt } from '../../types';
 
 interface OrderInspectDrawerProps {
   order: Order | null;
@@ -36,12 +39,13 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
   onClose,
   onOpenFullDetail,
 }) => {
-  const { designs, showToast } = useApp();
+  const { designs, payments, customers, showToast } = useApp();
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isImgLoading, setIsImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+  const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -583,6 +587,43 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
                 </span>
               </div>
 
+              {/* Payments Linked to Order */}
+              {(() => {
+                const orderPayments = payments.filter(
+                  (p) => (p.orderId && p.orderId === order.id) || (p.orderNumber && p.orderNumber === order.id) || (p.customerId === order.customerId && (order.advanceDeposited || 0) > 0)
+                );
+                if (orderPayments.length === 0) return null;
+                return (
+                  <div className="pt-2.5 border-t border-border space-y-1.5">
+                    <span className="text-[11px] font-semibold text-muted-foreground block">
+                      Payment Receipts Linked ({orderPayments.length})
+                    </span>
+                    <div className="space-y-1.5">
+                      {orderPayments.map((p) => (
+                        <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border/60 text-xs">
+                          <div>
+                            <span className="font-mono font-bold text-foreground block">{p.receiptNumber || `SF-REC-${p.id.slice(-5)}`}</span>
+                            <span className="text-[10px] text-muted-foreground">{p.paymentDate} • {p.paymentMethod}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{p.paymentAmount.toLocaleString('en-IN')}</span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedReceiptPayment(p)}
+                              className="px-2 py-0.5 rounded bg-surface hover:bg-muted border border-border text-blue-600 dark:text-blue-400 font-semibold text-[11px] inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                              title="View Official Digital Receipt"
+                            >
+                              <FileText size={11} />
+                              <span>Receipt</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {['Draft', 'Submitted', 'Under Review'].includes(order.status) && (
                 <div className="pt-2.5 mt-2 border-t border-border flex justify-end">
                   <button
@@ -792,6 +833,26 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
             setIsDiscountModalOpen(false);
             showToast('Discount request submitted for Trader authorization.');
           }}
+        />
+      )}
+
+      {/* Standalone Receipt Preview Modal */}
+      {selectedReceiptPayment && (
+        <ReceiptPreviewModal
+          open={Boolean(selectedReceiptPayment)}
+          onClose={() => setSelectedReceiptPayment(null)}
+          receipt={selectedReceiptPayment}
+          customer={(() => {
+            const cust = customers.find((c) => c.id === selectedReceiptPayment.customerId || c.id === order.customerId);
+            if (!cust) return undefined;
+            return {
+              customerCode: cust.id,
+              gstin: cust.gstin,
+              phone: cust.phone,
+              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+            };
+          })()}
+          status={mapPaymentStatusToReceiptStatus(selectedReceiptPayment.status)}
         />
       )}
     </>

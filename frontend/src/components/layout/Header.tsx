@@ -211,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                               {d.name}
                             </p>
                             <p className="text-xs font-mono text-muted-foreground">
-                              {d.articleCode} • ₹{d.wholesalePrice}
+                              {d.articleCode} • ₹{d.price}
                             </p>
                           </div>
                         </div>
@@ -243,7 +243,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                               {o.id} — {o.customerName}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              ₹{o.totalAmount.toLocaleString('en-IN')} • {o.status}
+                              ₹{(o.netPayable || o.subtotal || 0).toLocaleString('en-IN')} • {o.status}
                             </p>
                           </div>
                         </div>
@@ -359,7 +359,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                       {n.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                      {n.message}
+                      {n.desc}
                     </p>
                   </div>
                 ))}
@@ -397,7 +397,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => {
-                  switchRole();
+                  const nextRole = currentUser.role === 'admin' ? 'salesperson' : 'admin';
+                  switchRole(nextRole);
+                  onNavigate(nextRole === 'admin' ? '/admin/dashboard' : '/sales/dashboard');
                   setIsProfileMenuOpen(false);
                 }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-foreground hover:bg-muted rounded-xl cursor-pointer mt-1"

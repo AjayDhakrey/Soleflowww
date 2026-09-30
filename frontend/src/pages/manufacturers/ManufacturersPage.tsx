@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Manufacturer } from '../../types';
+import ManufacturersKpiCards from '../../components/manufacturers/ManufacturersKpiCards';
 import {
   Users,
   TrendingUp,
@@ -186,83 +187,12 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
       </div>
 
       {/* 3. 4 KPI Summary Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Partner Foundries */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start justify-between">
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <Users size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Partner Foundries</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-                4 Units
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Agra, Kanpur &amp; Delhi hubs
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 mt-1" />
-        </div>
-
-        {/* Card 2: Cumulative Capacity */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start justify-between">
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
-              <TrendingUp size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Cumulative Capacity</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-                32K Prs/Mo
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Across all assembly lines
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 mt-1" />
-        </div>
-
-        {/* Card 3: Average On-Time Delivery */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start justify-between">
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <Truck size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Average On-Time Delivery</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-                95%
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Bilty dispatch punctuality
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 mt-1" />
-        </div>
-
-        {/* Card 4: Average QC Pass Ratio */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start justify-between">
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <ShieldCheck size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground">Average QC Pass Ratio</p>
-              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-                99.2%
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Zero-defect sole bonding
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground/50 mt-1" />
-        </div>
-      </div>
+      <ManufacturersKpiCards
+        totalUnitsCount="4 Units"
+        cumulativeCapacity="32K Prs/Mo"
+        onTimeRate="95%"
+        qcPassRate="99.2%"
+      />
 
       {/* 4. Plants 2x2 Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

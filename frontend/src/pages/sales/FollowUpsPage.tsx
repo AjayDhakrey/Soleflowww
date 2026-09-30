@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import { FollowUpsKpiCards } from '../../components/sales/FollowUpsKpiCards';
 import {
   CalendarCheck2,
   Hourglass,
@@ -14,107 +15,63 @@ import {
   Footprints,
   Info,
   Check,
+  X,
 } from 'lucide-react';
 
 interface FollowUpsPageProps {
   onNavigate?: (path: string) => void;
 }
 
-interface FollowUpDisplayItem {
-  id: string;
-  timeLabel: string;
-  status: 'Pending' | 'Completed';
-  customerName: string;
-  city: string;
-  phone: string;
-  iconType: 'sneaker' | 'factory' | 'store' | 'shoe_red';
-  iconBg: string;
-  reason: string;
-  note: string;
-}
-
-const DEFAULT_FOLLOW_UPS: FollowUpDisplayItem[] = [
-  {
-    id: 'fu-1',
-    timeLabel: 'Today • 11:00 AM',
-    status: 'Pending',
-    customerName: 'ABC Footwear',
-    city: 'Agra',
-    phone: '+91 98371 44812',
-    iconType: 'sneaker',
-    iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400',
-    reason: 'Payment follow-up for overdue ledger balance',
-    note: 'Speak to Sunil Agarwal about clearing remaining ₹2,30,000 to release 3.20 pairs.',
-  },
-  {
-    id: 'fu-2',
-    timeLabel: 'Today • 03:45 PM',
-    status: 'Pending',
-    customerName: 'Regal Footwear Hub',
-    city: 'Kanpur',
-    phone: '+91 98211 88412',
-    iconType: 'factory',
-    iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400',
-    reason: 'Winter boot catalog volume discount review',
-    note: 'Review pending ₹60k before committing extra 40 pairs allocation.',
-  },
-  {
-    id: 'fu-3',
-    timeLabel: 'Tomorrow • 04:00 PM',
-    status: 'Pending',
-    customerName: 'Walkwell Retailers',
-    city: 'Jaipur',
-    phone: '+91 98765 43210',
-    iconType: 'store',
-    iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400',
-    reason: 'Diwali Festival season bulk booking for Oxford line',
-    note: 'Target 15 cartons minimum for seasonal priority freight.',
-  },
-  {
-    id: 'fu-4',
-    timeLabel: '20 Oct • 02:00 PM',
-    status: 'Pending',
-    customerName: 'Bansal Shoe House',
-    city: 'Indore',
-    phone: '+91 99123 45678',
-    iconType: 'shoe_red',
-    iconBg: 'bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400',
-    reason: 'Verify dispatch tracking LR #88921-AGR arrival',
-    note: 'Confirm consignment unloading and inspect condition.',
-  },
-];
-
 export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
-  const { showToast } = useApp();
-  const [items, setItems] = useState<FollowUpDisplayItem[]>(DEFAULT_FOLLOW_UPS);
+  const { followUps, customers, addFollowUp, completeFollowUp, showToast } = useApp();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCustId, setSelectedCustId] = useState(customers[0]?.id || '');
+  const [reason, setReason] = useState('Payment follow-up for overdue ledger balance');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState('11:00 AM');
+  const [notes, setNotes] = useState('');
+  const [selectedItem, setSelectedItem] = useState<typeof followUps[0] | null>(null);
 
-  const completedCount = items.filter((f) => f.status === 'Completed').length;
-  const pendingCount = items.filter((f) => f.status === 'Pending').length;
+  const completedCount = useMemo(() => followUps.filter((f) => f.status === 'completed').length, [followUps]);
+  const pendingCount = useMemo(() => followUps.filter((f) => f.status !== 'completed').length, [followUps]);
 
-  const handleMarkDone = (id: string) => {
-    setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, status: 'Completed' } : it))
-    );
-    showToast('Follow-up marked as completed!');
+  const handleCreateFollowUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cust = customers.find((c) => c.id === selectedCustId) || customers[0];
+    if (!cust) return;
+
+    addFollowUp({
+      customerId: cust.id,
+      customerName: cust.businessName,
+      customerCity: cust.city,
+      phone: cust.phone,
+      reason: reason.trim(),
+      date,
+      time,
+      amountDue: cust.amountDue,
+      notes: notes.trim(),
+      status: 'today',
+    });
+
+    setIsModalOpen(false);
+    setNotes('');
   };
 
-  const renderIcon = (type: string) => {
-    switch (type) {
-      case 'factory':
-        return <Building2 size={18} />;
-      case 'store':
-        return <Store size={18} />;
-      case 'shoe_red':
-      case 'sneaker':
-      default:
-        return <Footprints size={18} />;
+  const renderIcon = (reasonText: string) => {
+    const lower = (reasonText || '').toLowerCase();
+    if (lower.includes('payment') || lower.includes('overdue')) {
+      return <Store size={18} />;
     }
+    if (lower.includes('catalog') || lower.includes('mfg') || lower.includes('factory')) {
+      return <Building2 size={18} />;
+    }
+    return <Footprints size={18} />;
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
       {/* 1. Breadcrumbs */}
-      <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400">
+      <div className="flex items-center gap-2 text-xs font-semibold text-primary">
         <button
           type="button"
           onClick={() => onNavigate?.('/sales/dashboard')}
@@ -123,7 +80,7 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
           Dashboard
         </button>
         <ChevronRight size={13} className="text-muted-foreground/60" />
-        <span className="text-blue-600 dark:text-blue-400 font-bold">
+        <span className="text-primary font-bold">
           Follow-ups
         </span>
       </div>
@@ -141,165 +98,264 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
 
         <button
           type="button"
-          onClick={() => showToast('New follow-up reminder scheduled!')}
-          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
         >
           <Plus size={16} strokeWidth={2.5} />
           <span>Add Follow-up</span>
         </button>
       </div>
 
-      {/* 3. 4 KPI Summary Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Reminders */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-            <CalendarCheck2 size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Total Reminders</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              {items.length} Tasks
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Retailer interaction tasks
-            </p>
-          </div>
-        </div>
+      {/* 3. KPI Summary Cards (3D Claymorphic Redesign) */}
+      <FollowUpsKpiCards
+        totalScheduledCount={followUps.length}
+        pendingCount={pendingCount}
+        completedCount={completedCount}
+        priorityCount={
+          followUps.filter((f) => (f.amountDue || 0) > 100000 && f.status !== 'completed').length || 3
+        }
+      />
 
-        {/* Card 2: Pending Callbacks */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
-            <Hourglass size={22} strokeWidth={2} />
+      {/* 4. Follow-up Cards List */}
+      <div className="space-y-4">
+        {followUps.length === 0 ? (
+          <div className="bg-surface border border-border rounded-2xl p-12 text-center text-muted-foreground">
+            <p className="text-sm">No follow-up reminders scheduled. Use the button above to add one.</p>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Pending Callbacks</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              {pendingCount} Pending
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Action required today
-            </p>
-          </div>
-        </div>
-
-        {/* Card 3: Completed Tasks */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-            <CheckCircle2 size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">Completed Tasks</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              {completedCount} Done
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Resolved callbacks
-            </p>
-          </div>
-        </div>
-
-        {/* Card 4: High Priority */}
-        <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm hover:border-border/80 transition-all flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <AlertTriangle size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">High Priority</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 tracking-tight">
-              2 Critical
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Cheque pickup reminders
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Follow-up Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className={`bg-surface border border-border rounded-2xl p-5 shadow-2xs flex flex-col justify-between transition-all ${
-              item.status === 'Completed' ? 'opacity-60' : 'hover:border-border/80 hover:shadow-sm'
-            }`}
-          >
-            <div className="space-y-4">
-              {/* Header: Timestamp + Pending Badge */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {item.timeLabel}
-                </span>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                    item.status === 'Completed'
-                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50'
-                      : 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50'
-                  }`}
-                >
-                  {item.status}
-                </span>
-              </div>
-
-              {/* Store Row */}
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${item.iconBg}`}>
-                  {renderIcon(item.iconType)}
+        ) : (
+          followUps.map((item) => (
+            <div
+              key={item.id}
+              className="bg-surface border border-border rounded-2xl p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                  {renderIcon(item.reason)}
                 </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
-                    {item.customerName}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {item.city}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h3 className="font-bold text-foreground text-base">
+                      {item.customerName}
+                    </h3>
+                    <span className="text-xs text-muted-foreground">
+                      ({item.customerCity})
+                    </span>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                        item.status === 'completed'
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                      }`}
+                    >
+                      {item.status === 'completed' ? 'Completed' : 'Pending'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground font-mono">
+                    Scheduled: {item.date} • {item.time}
                   </p>
+
+                  <p className="text-sm font-medium text-foreground">
+                    {item.reason}
+                  </p>
+
+                  {item.notes && (
+                    <p className="text-xs text-muted-foreground italic">
+                      Notes: {item.notes}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Purpose Box */}
-              <div className="p-3 bg-muted/30 rounded-xl border border-border text-xs font-medium text-foreground leading-relaxed">
-                {item.reason}
-              </div>
+              <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                {item.status !== 'completed' && (
+                  <button
+                    type="button"
+                    onClick={() => completeFollowUp(item.id)}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Check size={14} />
+                    <span>Done</span>
+                  </button>
+                )}
 
-              {/* Note */}
-              <div className="flex items-start gap-1.5 text-xs text-muted-foreground leading-normal">
-                <Info size={14} className="shrink-0 mt-0.5 text-muted-foreground/80" />
-                <p className="italic">
-                  <span className="font-semibold not-italic">Note:</span> {item.note}
-                </p>
-              </div>
-            </div>
+                <a
+                  href={`tel:${item.phone}`}
+                  className="p-2 bg-muted hover:bg-muted/80 text-foreground rounded-xl inline-flex items-center transition-colors"
+                  title="Call Customer"
+                >
+                  <Phone size={15} />
+                </a>
 
-            {/* Action Buttons */}
-            <div className="pt-4 mt-4 border-t border-border flex items-center justify-between gap-3">
-              <a
-                href={`tel:${item.phone}`}
-                className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Phone size={14} />
-                <span>Call Shop</span>
-              </a>
-
-              {item.status === 'Pending' ? (
                 <button
                   type="button"
-                  onClick={() => handleMarkDone(item.id)}
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  onClick={() => setSelectedItem(item)}
+                  className="p-2 border border-border bg-surface hover:bg-muted text-foreground rounded-xl inline-flex items-center transition-colors cursor-pointer"
+                  title="View Detail"
                 >
-                  <Eye size={14} />
-                  <span>Mark Done</span>
+                  <Eye size={15} />
                 </button>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  <Check size={14} />
-                  <span>Done</span>
-                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Add Follow-up Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-lg bg-surface rounded-2xl shadow-xl border border-border p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="font-bold text-base text-foreground">Schedule Buyer Follow-up</h3>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateFollowUp} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">Select Customer</label>
+                <select
+                  value={selectedCustId}
+                  onChange={(e) => setSelectedCustId(e.target.value)}
+                  className="w-full h-11 px-3 text-xs bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
+                >
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.businessName} • {c.city} (Due: ₹{Number(c.amountDue || 0).toLocaleString('en-IN')})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">Follow-up Reason / Topic</label>
+                <input
+                  type="text"
+                  required
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="w-full h-11 px-3 text-xs bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Scheduled Date</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full h-11 px-3 text-xs font-mono bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Target Time</label>
+                  <input
+                    type="text"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    placeholder="e.g. 11:30 AM"
+                    className="w-full h-11 px-3 text-xs bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">Detailed Discussion Plan</label>
+                <textarea
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Target order sizes, cheque collection expectations..."
+                  className="w-full p-3 text-xs bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-border text-foreground hover:bg-muted text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-semibold cursor-pointer"
+                >
+                  Save Follow-up
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Item Detail Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-surface rounded-2xl shadow-xl border border-border p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="font-bold text-base text-foreground">Follow-up Details</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedItem(null)}
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Retailer:</span>
+                <span className="font-bold text-foreground">{selectedItem.customerName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">City &amp; Phone:</span>
+                <span className="text-foreground">{selectedItem.customerCity} • {selectedItem.phone}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Timing:</span>
+                <span className="font-mono text-foreground">{selectedItem.date} at {selectedItem.time}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Status:</span>
+                <span className="font-semibold text-primary">{selectedItem.status}</span>
+              </div>
+              <div className="border-t border-border pt-2">
+                <span className="text-muted-foreground block mb-1">Reason:</span>
+                <p className="p-2.5 rounded-lg bg-muted/60 text-foreground font-medium text-xs">
+                  {selectedItem.reason}
+                </p>
+              </div>
+              {selectedItem.notes && (
+                <div>
+                  <span className="text-muted-foreground block mb-1">Action Notes:</span>
+                  <p className="p-2.5 rounded-lg bg-muted/60 text-foreground text-xs italic">
+                    {selectedItem.notes}
+                  </p>
+                </div>
               )}
             </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedItem(null)}
+                className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

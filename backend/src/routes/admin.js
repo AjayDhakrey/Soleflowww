@@ -44,29 +44,28 @@ adminRouter.post('/users/invite', async (req, res, next) => {
     }
 
     if (authUser?.user) {
-      // Upsert profile
+      // Upsert profile with real schema columns
       await supabaseAdmin.from('profiles').upsert({
         id: authUser.user.id,
         email,
-        name: name || email.split('@')[0],
+        full_name: name || email.split('@')[0],
         role,
-        role_label: role === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
-        phone,
-        zone,
-        cluster,
+        phone: phone || null,
         is_active: true,
       });
 
-      // If salesperson, upsert into salesmen table
+      // If salesperson, upsert into sales_team table
       if (role === 'salesperson') {
-        await supabaseAdmin.from('salesmen').upsert({
+        await supabaseAdmin.from('sales_team').upsert({
           id: authUser.user.id,
+          user_id: authUser.user.id,
           name: name || email.split('@')[0],
           phone: phone || '+91 98000 00000',
           email,
           zone: zone || 'North Zone',
           cluster: cluster || 'Agra & Kanpur Clusters',
           status: 'In Market',
+          roleTitle: 'Field Sales Rep',
         });
       }
     }

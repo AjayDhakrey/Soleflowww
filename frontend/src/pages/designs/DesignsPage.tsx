@@ -14,6 +14,7 @@ import {
   StatusBadge,
   EmptyState,
 } from '../../components/ui';
+import { DesignsKpiCards } from '../../components/designs/DesignsKpiCards';
 import { DesignSharesModal } from '../../components/designs/DesignSharesModal';
 
 interface DesignsPageProps {
@@ -101,37 +102,13 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         }
       />
 
-      {/* 2. KPI Summary Row with Violet Bubbles for Designs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <KpiCard
-          label="Total Active Articles"
-          value={`${designs.length} Models`}
-          icon={Icons.Designs}
-          bubbleColor="violet"
-          caption="Ready for factory booking"
-        />
-        <KpiCard
-          label="Popular Fast-Movers"
-          value={`${popularCount} Styles`}
-          icon={Icons.TrendingUp}
-          bubbleColor="amber"
-          caption="High wholesale repeat rates"
-        />
-        <KpiCard
-          label="High Margin Lines"
-          value={`${highMarginCount} SKUs`}
-          icon={Icons.Payments}
-          bubbleColor="green"
-          caption="35%–45% retailer markups"
-        />
-        <KpiCard
-          label="Selected for Sharing"
-          value={`${selectedDesignIds.length} Articles`}
-          icon={Icons.Share}
-          bubbleColor="zinc"
-          caption="Included in WhatsApp lookbook"
-        />
-      </div>
+      {/* 2. KPI Summary Row (3D Claymorphic Redesign) */}
+      <DesignsKpiCards
+        totalActiveModels={designs.length || 6}
+        popularStylesCount={popularCount || 2}
+        highMarginCount={highMarginCount || 4}
+        selectedCount={selectedDesignIds.length}
+      />
 
       {/* 3. Catalogue Grid Panel */}
       <Panel noPadding>
@@ -279,7 +256,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                           </p>
                         </div>
                         <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                          {shoe.cartonPack || '12 Prs/Ctn'}
+                          {shoe.pairsPerCarton ? `${shoe.pairsPerCarton} Prs/Ctn` : '12 Prs/Ctn'}
                         </span>
                       </div>
 
@@ -355,11 +332,11 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 </div>
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
                   <span className="text-xs text-slate-400 block">Carton Packing</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.cartonPack || '12 Pairs / Carton'}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.pairsPerCarton ? `${quickViewShoe.pairsPerCarton} Pairs / Carton` : '12 Pairs / Carton'}</span>
                 </div>
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
                   <span className="text-xs text-slate-400 block">Size Breakdown</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.sizeBreakdown || '6(2), 7(3), 8(3), 9(2), 10(2)'}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.sizes?.length ? quickViewShoe.sizes.join(', ') : '6, 7, 8, 9, 10'}</span>
                 </div>
               </div>
 

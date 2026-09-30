@@ -12,6 +12,8 @@
     "start": "node backend/server.js",
     "preview": "vite preview frontend --config frontend/vite.config.ts",
     "clean": "node scripts/clean.mjs",
+    "db:health": "node scripts/db-health.mjs",
+    "db:roundtrip": "node scripts/db-roundtrip.mjs",
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

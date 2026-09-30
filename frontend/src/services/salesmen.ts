@@ -4,33 +4,35 @@ import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
 import { MOCK_SALES_TEAM } from '../data/mockData';
 
-export type SalesmanRow = Database['public']['Tables']['salesmen']['Row'];
+// DEPRECATED: SalesmanRow reference maintained for backward compatibility
+export type SalesmanRow = any;
+export type SalesTeamRow = Database['public']['Tables']['sales_team']['Row'];
 export type SalesmanPerformanceRow = Database['public']['Views']['v_salesman_performance']['Row'];
 
-export function mapSalesmanRow(row: SalesmanRow, perf?: SalesmanPerformanceRow): Salesperson {
+export function mapSalesmanRow(row: any, perf?: any): Salesperson {
   return {
     id: row.id,
     name: row.name,
-    roleTitle: 'Senior Rep',
-    photo: row.photo_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+    roleTitle: row.roleTitle || 'Senior Rep',
+    photo: row.photo || row.photo_url || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
     zone: row.zone || 'North Zone',
     cluster: row.cluster || 'Agra & Kanpur Clusters',
-    phone: row.phone,
+    phone: row.phone || '',
     email: row.email || '',
-    empId: row.emp_id || 'SF-REP-01',
-    monthlyTarget: Number(row.monthly_target || 1500000),
-    bookedThisMonth: perf ? Number(perf.total_sales_value || 0) : Number(row.booked_this_month || 0),
-    commissionRate: Number(row.commission_rate || 4),
-    commissionAccrued: perf ? Number(perf.total_commission_accrued || 0) : 60000,
-    collectionDue: perf ? Number(perf.total_outstanding || 0) : Number(row.collection_due || 0),
-    assignedAccountsCount: perf ? Number(perf.assigned_clients_count || 0) : 30,
-    todayVisitsDone: perf ? Number(perf.today_visits_done || 0) : 4,
-    todayVisitsTotal: perf ? Number(perf.today_visits_total || 0) : 6,
-    chequesTodayAmount: 100000,
+    empId: row.empId || row.emp_id || 'SF-REP-01',
+    monthlyTarget: Number(row.monthlyTarget ?? row.monthly_target ?? 1500000),
+    bookedThisMonth: perf ? Number(perf.total_booked_value ?? perf.total_sales_value ?? 0) : Number(row.bookedThisMonth ?? row.booked_this_month ?? 0),
+    commissionRate: Number(row.commissionRate ?? row.commission_rate ?? 4),
+    commissionAccrued: Number(row.commissionAccrued ?? 60000),
+    collectionDue: perf ? Number(perf.total_collections ?? perf.total_outstanding ?? 0) : Number(row.collectionDue ?? row.collection_due ?? 0),
+    assignedAccountsCount: perf ? Number(perf.assigned_clients_count ?? 30) : (row.assignedAccountsCount ?? 30),
+    todayVisitsDone: Number(row.todayVisitsDone ?? 4),
+    todayVisitsTotal: Number(row.todayVisitsTotal ?? 6),
+    chequesTodayAmount: Number(row.chequesTodayAmount ?? 100000),
     status: (row.status || 'In Market') as Salesperson['status'],
-    assignedKit: row.assigned_kit || 'AW24 Sample Kit',
-    kitVerifiedDate: row.kit_verified_date || 'Today',
-    tasksChecklist: [],
+    assignedKit: row.assignedKit || row.assigned_kit || 'AW24 Sample Kit',
+    kitVerifiedDate: row.kitVerifiedDate || row.kit_verified_date || 'Today',
+    tasksChecklist: row.tasksChecklist || [],
   };
 }
 
@@ -40,7 +42,7 @@ export const salesmenService = {
 
     try {
       const { data, error } = await supabase
-        .from('salesmen')
+        .from('sales_team')
         .select('*')
         .is('archived_at', null)
         .order('created_at', { ascending: false });
@@ -52,21 +54,21 @@ export const salesmenService = {
       const { data: perfList } = await supabase.from('v_salesman_performance').select('*');
 
       return data.map((s) => {
-        const perf = (perfList || []).find((p) => p.salesperson_id === s.id);
+        const perf = (perfList || []).find((p: any) => p.salesman_id === s.id || p.salesperson_id === s.id);
         return mapSalesmanRow(s, perf);
       });
     } catch (err) {
-      console.warn('Error fetching salesmen from Supabase:', err);
+      console.warn('Error fetching sales team from Supabase:', err);
       return MOCK_SALES_TEAM;
     }
   },
 
-  async updateSalesman(id: string, updates: Partial<SalesmanRow>): Promise<{ success: boolean; error?: string }> {
+  async updateSalesman(id: string, updates: any): Promise<{ success: boolean; error?: string }> {
     if (!supabase) return { success: true };
 
     try {
       const { error } = await supabase
-        .from('salesmen')
+        .from('sales_team')
         .update(updates)
         .eq('id', id);
 
@@ -77,3 +79,4 @@ export const salesmenService = {
     }
   },
 };
+

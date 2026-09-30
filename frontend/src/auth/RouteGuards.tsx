@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from './AuthProvider';
+import { useApp } from '../context/AppContext';
 import { AccessDeniedPage } from '../pages/auth/AccessDeniedPage';
 import { UserRole } from '../types';
 import { Loader2 } from 'lucide-react';
@@ -10,7 +11,9 @@ interface RequireAuthProps {
 }
 
 export const RequireAuth: React.FC<RequireAuthProps> = ({ children, onRedirectToLogin }) => {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn: isAuthLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn: isAppLoggedIn } = useApp();
+  const isLoggedIn = isAuthLoggedIn || isAppLoggedIn;
 
   if (isLoading) {
     return (
@@ -39,6 +42,8 @@ interface RequireRoleProps {
 
 export const RequireRole: React.FC<RequireRoleProps> = ({ role, children, onReturnHome }) => {
   const { role: userRole, isLoading } = useAuth();
+  const { currentUser } = useApp();
+  const effectiveRole = currentUser?.role || userRole;
 
   if (isLoading) {
     return (
@@ -48,7 +53,7 @@ export const RequireRole: React.FC<RequireRoleProps> = ({ role, children, onRetu
     );
   }
 
-  if (userRole !== role) {
+  if (effectiveRole !== role) {
     return (
       <AccessDeniedPage
         onReturnHome={onReturnHome}

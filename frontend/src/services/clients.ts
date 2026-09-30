@@ -4,67 +4,124 @@ import { Database } from '../types/database.types';
 import { parseSupabaseError, AppError } from './apiError';
 import { MOCK_CUSTOMERS } from '../data/mockData';
 
-export type ClientRow = Database['public']['Tables']['clients']['Row'];
+// DEPRECATED: ClientRow reference maintained for backward compatibility
+export type ClientRow = any;
+export type CustomerRow = Database['public']['Tables']['customers']['Row'];
 export type ClientFinancialRow = Database['public']['Views']['v_client_financials']['Row'];
 
-export function mapClientFinancialToCustomer(row: ClientFinancialRow, rawClient?: ClientRow): Customer {
+/**
+ * Mapper: converts arbitrary input object (camelCase, snake_case, etc.) into
+ * the exact column schema used by public.customers in Supabase.
+ */
+export function toCustomerRow(input: any): Partial<CustomerRow> {
+  if (!input) return {};
+  const row: any = {};
+  if (input.id !== undefined) row.id = input.id;
+  if (input.businessName !== undefined || input.name !== undefined || input.business_name !== undefined) {
+    row.businessName = input.businessName ?? input.name ?? input.business_name;
+  }
+  if (input.propName !== undefined || input.contact_person !== undefined || input.prop_name !== undefined) {
+    row.propName = input.propName ?? input.contact_person ?? input.prop_name;
+  }
+  if (input.phone !== undefined) row.phone = input.phone;
+  if (input.whatsapp !== undefined) row.whatsapp = input.whatsapp;
+  if (input.email !== undefined) row.email = input.email;
+  if (input.city !== undefined) row.city = input.city;
+  if (input.state !== undefined) row.state = input.state;
+  if (input.cluster !== undefined) row.cluster = input.cluster;
+  if (input.address !== undefined) row.address = input.address;
+  if (input.gstin !== undefined) row.gstin = input.gstin;
+  if (input.salespersonId !== undefined || input.salesperson_id !== undefined || input.salesman_id !== undefined) {
+    row.salespersonId = input.salespersonId ?? input.salesperson_id ?? input.salesman_id;
+  }
+  if (input.salespersonName !== undefined || input.salesperson_name !== undefined || input.salesman_name !== undefined) {
+    row.salespersonName = input.salespersonName ?? input.salesperson_name ?? input.salesman_name;
+  }
+  if (input.paymentTerms !== undefined || input.payment_terms !== undefined) {
+    row.paymentTerms = input.paymentTerms ?? input.payment_terms;
+  }
+  if (input.creditLimit !== undefined || input.credit_limit !== undefined) {
+    row.creditLimit = Number(input.creditLimit ?? input.credit_limit);
+  }
+  if (input.totalBusiness !== undefined || input.total_business !== undefined) {
+    row.totalBusiness = Number(input.totalBusiness ?? input.total_business);
+  }
+  if (input.totalPaid !== undefined || input.total_paid !== undefined) {
+    row.totalPaid = Number(input.totalPaid ?? input.total_paid);
+  }
+  if (input.amountDue !== undefined || input.amount_due !== undefined || input.outstanding !== undefined) {
+    row.amountDue = Number(input.amountDue ?? input.amount_due ?? input.outstanding);
+  }
+  if (input.status !== undefined || input.client_status !== undefined || input.calculated_status !== undefined) {
+    row.status = input.status ?? input.client_status ?? input.calculated_status;
+  }
+  if (input.ordersCount !== undefined || input.orders_count !== undefined) {
+    row.ordersCount = Number(input.ordersCount ?? input.orders_count);
+  }
+  if (input.tier !== undefined) row.tier = input.tier;
+  if (input.notes !== undefined) row.notes = input.notes;
+  if (input.archived_at !== undefined) row.archived_at = input.archived_at;
+  return row;
+}
+
+export function mapClientFinancialToCustomer(row: any, rawClient?: any): Customer {
   return {
-    id: row.client_id,
-    businessName: row.name,
-    propName: row.contact_person || '',
-    phone: row.phone,
-    whatsapp: rawClient?.whatsapp || row.phone,
-    email: rawClient?.email || '',
-    city: row.city,
-    state: row.state,
-    cluster: row.cluster || '',
-    address: rawClient?.address || '',
-    gstin: rawClient?.gstin || '',
-    salespersonId: row.salesperson_id || '',
-    salespersonName: row.salesperson_name || 'Unassigned',
-    paymentTerms: row.payment_terms,
-    creditLimit: Number(row.credit_limit || 0),
-    totalBusiness: Number(row.total_business || 0),
-    totalPaid: Number(row.total_paid || 0),
-    amountDue: Number(row.amount_due || 0),
+    id: row.client_id || row.id,
+    businessName: row.business_name || row.name || rawClient?.businessName || 'Wholesale Client',
+    propName: row.prop_name || row.contact_person || rawClient?.propName || '',
+    phone: row.phone || rawClient?.phone || '',
+    whatsapp: rawClient?.whatsapp || row.whatsapp || row.phone || '',
+    email: rawClient?.email || row.email || '',
+    city: row.city || rawClient?.city || 'Agra',
+    state: row.state || rawClient?.state || 'Uttar Pradesh',
+    cluster: row.cluster || rawClient?.cluster || '',
+    address: rawClient?.address || row.address || '',
+    gstin: rawClient?.gstin || row.gstin || '',
+    salespersonId: row.salesman_id || row.salesperson_id || rawClient?.salespersonId || '',
+    salespersonName: row.salesman_name || row.salesperson_name || rawClient?.salespersonName || 'Unassigned',
+    paymentTerms: row.payment_terms || rawClient?.paymentTerms || '30% Advance + 70% Bilty',
+    creditLimit: Number(row.credit_limit ?? rawClient?.creditLimit ?? 500000),
+    totalBusiness: Number(row.total_business ?? rawClient?.totalBusiness ?? 0),
+    totalPaid: Number(row.total_paid ?? rawClient?.totalPaid ?? 0),
+    amountDue: Number(row.outstanding ?? row.amount_due ?? rawClient?.amountDue ?? 0),
     overdueDays: 0,
-    status: (row.calculated_status || 'active') as Customer['status'],
-    ordersCount: Number(row.orders_count || 0),
-    lastOrderDate: row.last_order_date || 'None',
-    lastPaymentDate: row.last_payment_date || 'None',
-    lastPaymentAmount: Number(row.last_payment_amount || 0),
-    tier: (row.tier || 'Standard Retail') as Customer['tier'],
+    status: (row.client_status || row.calculated_status || rawClient?.status || 'active') as Customer['status'],
+    ordersCount: Number(row.orders_count ?? rawClient?.ordersCount ?? 0),
+    lastOrderDate: row.last_order_at ? new Date(row.last_order_at).toLocaleDateString('en-IN') : (rawClient?.lastOrderDate || 'None'),
+    lastPaymentDate: row.last_payment_at ? new Date(row.last_payment_at).toLocaleDateString('en-IN') : (rawClient?.lastPaymentDate || 'None'),
+    lastPaymentAmount: Number(row.last_payment_amount ?? rawClient?.lastPaymentAmount ?? 0),
+    tier: (row.tier || rawClient?.tier || 'Standard Retail') as Customer['tier'],
     activityHistory: [],
     notes: rawClient?.notes || undefined,
   };
 }
 
-export function mapClientRowToCustomer(row: ClientRow): Customer {
+export function mapClientRowToCustomer(row: any): Customer {
   return {
     id: row.id,
-    businessName: row.name,
-    propName: row.contact_person || '',
-    phone: row.phone,
-    whatsapp: row.whatsapp || row.phone,
+    businessName: row.businessName || row.name || 'Wholesale Client',
+    propName: row.propName || row.contact_person || '',
+    phone: row.phone || '',
+    whatsapp: row.whatsapp || row.phone || '',
     email: row.email || '',
-    city: row.city,
-    state: row.state,
+    city: row.city || 'Agra',
+    state: row.state || 'Uttar Pradesh',
     cluster: row.cluster || '',
     address: row.address || '',
     gstin: row.gstin || '',
-    salespersonId: row.salesperson_id || '',
-    salespersonName: 'Assigned Rep',
-    paymentTerms: row.payment_terms,
-    creditLimit: Number(row.credit_limit || 0),
-    totalBusiness: 0,
-    totalPaid: 0,
-    amountDue: 0,
+    salespersonId: row.salespersonId || row.salesperson_id || '',
+    salespersonName: row.salespersonName || row.salesperson_name || 'Assigned Rep',
+    paymentTerms: row.paymentTerms || row.payment_terms || '30% Advance + 70% Bilty',
+    creditLimit: Number(row.creditLimit ?? row.credit_limit ?? 500000),
+    totalBusiness: Number(row.totalBusiness ?? 0),
+    totalPaid: Number(row.totalPaid ?? 0),
+    amountDue: Number(row.amountDue ?? 0),
     overdueDays: 0,
     status: (row.status || 'active') as Customer['status'],
-    ordersCount: 0,
-    lastOrderDate: 'None',
-    lastPaymentDate: 'None',
-    lastPaymentAmount: 0,
+    ordersCount: Number(row.ordersCount ?? 0),
+    lastOrderDate: row.lastOrderDate || 'None',
+    lastPaymentDate: row.lastPaymentDate || 'None',
+    lastPaymentAmount: Number(row.lastPaymentAmount ?? 0),
     tier: (row.tier || 'Standard Retail') as Customer['tier'],
     activityHistory: [],
     notes: row.notes || undefined,
@@ -79,16 +136,16 @@ export const clientsService = {
       let query = supabase.from('v_client_financials').select('*');
 
       if (filters?.status && filters.status !== 'all') {
-        query = query.eq('calculated_status', filters.status);
+        query = query.eq('client_status', filters.status);
       }
       if (filters?.tier && filters.tier !== 'all') {
         query = query.eq('tier', filters.tier);
       }
       if (filters?.salespersonId) {
-        query = query.eq('salesperson_id', filters.salespersonId);
+        query = query.eq('salesman_id', filters.salespersonId);
       }
       if (filters?.search) {
-        query = query.ilike('name', `%${filters.search}%`);
+        query = query.ilike('business_name', `%${filters.search}%`);
       }
 
       const { data, error } = await query;
@@ -117,7 +174,7 @@ export const clientsService = {
       if (finError) throw parseSupabaseError(finError);
 
       const { data: rawClient } = await supabase
-        .from('clients')
+        .from('customers')
         .select('*')
         .eq('id', clientId)
         .maybeSingle();
@@ -135,14 +192,27 @@ export const clientsService = {
     }
   },
 
-  async createClient(clientData: Partial<ClientRow>): Promise<{ success: boolean; data?: any; error?: string }> {
+  async createClient(clientData: any): Promise<{ success: boolean; data?: any; error?: string }> {
     if (!supabase) {
       return { success: true, data: { id: `cust-${Date.now()}`, ...clientData } };
     }
 
     try {
+      // Use transactional create_client RPC with explicit named arguments
       const { data, error } = await supabase.rpc('create_client', {
-        p_client: clientData as any,
+        p_business_name: clientData.businessName || clientData.name || clientData.business_name,
+        p_prop_name: clientData.propName || clientData.contact_person || clientData.prop_name || '',
+        p_phone: clientData.phone,
+        p_whatsapp: clientData.whatsapp || clientData.phone,
+        p_email: clientData.email || null,
+        p_city: clientData.city || 'Agra',
+        p_state: clientData.state || 'Uttar Pradesh',
+        p_cluster: clientData.cluster || 'Agra Footwear Cluster',
+        p_address: clientData.address || null,
+        p_gstin: clientData.gstin || null,
+        p_salesperson_id: clientData.salespersonId || clientData.salesperson_id || clientData.salesman_id || null,
+        p_credit_limit: Number(clientData.creditLimit || clientData.credit_limit || 500000),
+        p_payment_terms: clientData.paymentTerms || clientData.payment_terms || '30% Advance + 70% Bilty',
       });
 
       if (error) throw parseSupabaseError(error);
@@ -152,13 +222,14 @@ export const clientsService = {
     }
   },
 
-  async updateClient(clientId: string, updates: Partial<ClientRow>): Promise<{ success: boolean; error?: string }> {
+  async updateClient(clientId: string, updates: any): Promise<{ success: boolean; error?: string }> {
     if (!supabase) return { success: true };
 
     try {
+      const rowUpdates = toCustomerRow(updates);
       const { error } = await supabase
-        .from('clients')
-        .update(updates)
+        .from('customers')
+        .update(rowUpdates)
         .eq('id', clientId);
 
       if (error) throw parseSupabaseError(error);
@@ -189,7 +260,7 @@ export const clientsService = {
     try {
       const { error } = await supabase.rpc('assign_salesman', {
         p_client_id: clientId,
-        p_salesperson_id: salespersonId,
+        p_salesman_id: salespersonId,
       });
 
       if (error) throw parseSupabaseError(error);
@@ -235,3 +306,4 @@ export const clientsService = {
     }
   },
 };
+

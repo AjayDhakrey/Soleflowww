@@ -4,10 +4,6 @@ import {
   Mail,
   ArrowRight,
   ArrowLeft,
-  Play,
-  Pause,
-  Layers,
-  Footprints,
   Eye,
   EyeOff,
   User as UserIcon,
@@ -44,8 +40,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMotionActive, setIsMotionActive] = useState(true);
-  const [bgMode, setBgMode] = useState<'walking' | 'showcase'>('walking');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // Auto-switching background images
+  const bgImages = [walkingMotionBg, showcaseBannerBg];
+  const [bgIndex, setBgIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % bgImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [bgImages.length]);
 
   useEffect(() => {
     if (initialMode) {
@@ -126,45 +132,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   };
 
-  const promotionalShoes = [
-    {
-      code: 'SF-1024',
-      name: 'Runner Classic Pro',
-      type: 'Bespoke Injection Sneaker',
-      tag: '🔥 1,240 Pairs Booked',
-      image:
-        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80',
-      sole: 'Phylon & Molded Rubber Outsole',
-    },
-    {
-      code: 'SF-884',
-      name: 'Verona Crust Leather Derby',
-      type: 'Italian Tanned European Calfskin',
-      tag: '✨ Handcrafted Blake Stitched',
-      image:
-        'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=400&q=80',
-      sole: 'Argentine Vegetable Sole',
-    },
-    {
-      code: 'SF-512',
-      name: 'Artisan Chelsea Boot',
-      type: 'Goodyear Welted Pull-Up Leather',
-      tag: '⚡ High Demand Winterized',
-      image:
-        'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?auto=format&fit=crop&w=400&q=80',
-      sole: 'Commando Lugged Rubber',
-    },
-    {
-      code: 'SF-204',
-      name: 'AeroGlide Knit Runner',
-      type: 'Dual-Density Lightweight Phylon',
-      tag: '⭐ Master Carton Ready',
-      image:
-        'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=400&q=80',
-      sole: 'Air Cushion Injection',
-    },
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -211,20 +178,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   };
 
-  const activeBgImage = bgMode === 'walking' ? walkingMotionBg : showcaseBannerBg;
-
   return (
     <div className="relative min-h-[100dvh] w-full flex flex-col justify-between items-center p-3 sm:p-4 overflow-x-hidden overflow-y-auto select-none bg-slate-950 font-sans text-slate-100">
-      {/* 1. Cinematic Background Layer with Footwear Runway Motion */}
+      {/* 1. Cinematic Background Layer with Auto-switching Footwear Motion */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <img
-          src={activeBgImage}
-          alt="Footwear walking motion promotion"
-          referrerPolicy="no-referrer"
-          className={`w-full h-full object-cover object-center transition-transform duration-1000 ${
-            isMotionActive ? 'animate-walking-bg scale-105' : 'scale-100'
-          }`}
-        />
+        {bgImages.map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            alt="Footwear motion background"
+            referrerPolicy="no-referrer"
+            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+              i === bgIndex ? 'opacity-100' : 'opacity-0'
+            } ${isMotionActive ? 'animate-walking-bg scale-105' : 'scale-100'}`}
+          />
+        ))}
 
         {/* Dynamic lighting gradients & ambient overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-slate-900/70" />
@@ -256,55 +224,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <span className="font-extrabold text-sm sm:text-base tracking-tight text-white hidden xs:inline">
             SoleFlow
           </span>
-        </div>
-
-        {/* Ambient Controls */}
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-center bg-black/50 backdrop-blur-md rounded-xl p-0.5 border border-white/10 text-[10px] sm:text-xs">
-            <button
-              onClick={() => setBgMode('walking')}
-              className={`px-2 py-0.5 sm:py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer ${
-                bgMode === 'walking'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-white/70 hover:text-white'
-              }`}
-              title="Runway Walking Motion"
-            >
-              <Footprints className="w-3 h-3" />
-              <span className="hidden sm:inline">Runway</span>
-            </button>
-            <button
-              onClick={() => setBgMode('showcase')}
-              className={`px-2 py-0.5 sm:py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer ${
-                bgMode === 'showcase'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-white/70 hover:text-white'
-              }`}
-              title="3D Footwear Showcase"
-            >
-              <Layers className="w-3 h-3" />
-              <span className="hidden sm:inline">Showcase</span>
-            </button>
-          </div>
-
-          <button
-            onClick={() => setIsMotionActive(!isMotionActive)}
-            className="flex items-center gap-1 px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-[10px] sm:text-xs text-white transition-colors cursor-pointer"
-            title={isMotionActive ? 'Pause walking motion' : 'Resume walking motion'}
-            aria-label="Toggle background motion"
-          >
-            {isMotionActive ? (
-              <>
-                <Pause className="w-3 h-3 text-blue-300 shrink-0" />
-                <span className="hidden sm:inline">Motion</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3 h-3 text-emerald-400 shrink-0" />
-                <span className="hidden sm:inline">Play</span>
-              </>
-            )}
-          </button>
         </div>
       </header>
 
@@ -623,34 +542,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           )}
         </div>
       </main>
-
-      {/* 4. Bottom Footwear Design Promotional Marquee */}
-      <footer className="relative z-20 w-full max-w-5xl py-1 sm:py-2 overflow-hidden rounded-xl bg-slate-950/60 backdrop-blur-md border border-white/10 shrink-0">
-        <div className="animate-marquee items-center gap-3 sm:gap-6 text-xs text-white/80">
-          {[...promotionalShoes, ...promotionalShoes].map((shoe, idx) => (
-            <div
-              key={`${shoe.code}-${idx}`}
-              className="flex items-center gap-1.5 sm:gap-2.5 px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg bg-white/5 border border-white/10 shrink-0"
-            >
-              <img
-                src={shoe.image}
-                alt={shoe.name}
-                referrerPolicy="no-referrer"
-                className="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-cover ring-1 ring-white/20"
-              />
-              <span className="font-mono text-blue-400 font-bold text-[9px] sm:text-[11px]">
-                {shoe.code}
-              </span>
-              <span className="font-semibold text-white text-[9px] sm:text-[11px]">
-                {shoe.name}
-              </span>
-              <span className="text-[9px] text-emerald-400 font-medium hidden xs:inline">
-                {shoe.tag}
-              </span>
-            </div>
-          ))}
-        </div>
-      </footer>
     </div>
   );
 };

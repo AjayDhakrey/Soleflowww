@@ -27,7 +27,16 @@ export interface ReceiptCustomerExtras {
   address?: string;
 }
 
-export type ReceiptStatus = 'Received' | 'Verified' | 'Reversed';
+export type ReceiptStatus = 'Received' | 'Verified' | 'Cheque Pending' | 'Reversed';
+
+export function mapPaymentStatusToReceiptStatus(status?: string): ReceiptStatus {
+  if (!status) return 'Received';
+  const s = status.toLowerCase();
+  if (s === 'verified') return 'Verified';
+  if (s === 'pending_clearance' || s === 'cheque pending' || s === 'pending') return 'Cheque Pending';
+  if (s === 'bounced' || s === 'reversed') return 'Reversed';
+  return 'Received';
+}
 
 export interface ReceiptTemplateProps {
   receipt: PaymentReceipt;
@@ -140,6 +149,7 @@ export const RECEIPT_CSS = `
 .rcpt-status i{width:6px;height:6px;border-radius:50%;display:inline-block}
 .rcpt-status.received{background:#EFF6FF;color:#1D4ED8}.rcpt-status.received i{background:#3B82F6}
 .rcpt-status.verified{background:#ECFDF5;color:#047857}.rcpt-status.verified i{background:#10B981}
+.rcpt-status.cheque-pending,.rcpt-status.cheque_pending{background:#FEF3C7;color:#B45309}.rcpt-status.cheque-pending i,.rcpt-status.cheque_pending i{background:#F59E0B}
 .rcpt-status.reversed{background:#FEF2F2;color:#B91C1C}.rcpt-status.reversed i{background:#EF4444}
 .rcpt-rule{height:1px;background:var(--rc-line);margin:22px 0}
 .rcpt-label{font-size:11px;color:var(--rc-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500;margin-bottom:6px}
@@ -192,7 +202,7 @@ export const ReceiptTemplate: React.FC<ReceiptTemplateProps> = ({
   const co: ReceiptCompanyInfo = { ...DEFAULT_RECEIPT_COMPANY, ...company };
   const printedAt = generatedAt ?? new Date();
   const hasOrder = Boolean(receipt.orderNumber || receipt.orderId);
-  const statusClass = status.toLowerCase();
+  const statusClass = status.toLowerCase().replace(/\s+/g, '-');
 
   return (
     <div className="rcpt" role="document" aria-label={`Payment receipt ${receipt.receiptNumber}`}>

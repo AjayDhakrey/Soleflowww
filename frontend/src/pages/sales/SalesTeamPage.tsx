@@ -39,6 +39,7 @@ import {
   StatusBadge,
   Button,
 } from '../../components/ui';
+import { SalesTeamKpiCards } from '../../components/sales/SalesTeamKpiCards';
 import { Salesperson, SalespersonTask } from '../../types';
 
 interface SalesTeamPageProps {
@@ -156,37 +157,18 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
         }
       />
 
-      {/* 2. KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <KpiCard
-          label="Total Field Reps"
-          value={`${salesTeam.length} Executives`}
-          icon={Users}
-          bubbleColor="blue"
-          caption="Agra, Kanpur & Delhi routes"
-        />
-        <KpiCard
-          label="Total Booked (Month)"
-          value={`₹${(totalBooked / 100000).toFixed(1)}L`}
-          icon={TrendingUp}
-          bubbleColor="violet"
-          caption={`Target: ₹${(totalTarget / 100000).toFixed(1)}L (${Math.round((totalBooked / totalTarget) * 100)}%)`}
-        />
-        <KpiCard
-          label="Commission Accrued"
-          value={`₹${totalCommissions.toLocaleString('en-IN')}`}
-          icon={Wallet}
-          bubbleColor="green"
-          caption="Calculated on cleared invoices"
-        />
-        <KpiCard
-          label="Today's Field Visits"
-          value={`${totalVisitsDone} / ${totalVisitsGoal} Done`}
-          icon={MapPin}
-          bubbleColor="amber"
-          caption={`${visitsCompletionPct}% daily route completion`}
-        />
-      </div>
+      {/* 2. KPI Summary Cards (3D Claymorphic Redesign) */}
+      <SalesTeamKpiCards
+        totalReps={salesTeam.length}
+        repsCaption="Agra, Kanpur & Delhi routes"
+        totalBooked={totalBooked}
+        targetAmount={totalTarget}
+        commissionAccrued={totalCommissions}
+        commissionCaption="Calculated on cleared invoices"
+        visitsDone={totalVisitsDone}
+        visitsGoal={totalVisitsGoal}
+        visitsCompletionPct={visitsCompletionPct}
+      />
 
       {/* 3. Main Split Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

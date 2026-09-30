@@ -6,19 +6,20 @@ import { MOCK_FOLLOWUPS } from '../data/mockData';
 
 export type FollowUpRow = Database['public']['Tables']['follow_ups']['Row'];
 
-export function mapFollowUpRow(row: FollowUpRow): FollowUpItem {
+export function mapFollowUpRow(row: any): FollowUpItem {
+  const dueDate = row.due_at ? new Date(row.due_at) : new Date();
   return {
     id: row.id,
     customerId: row.client_id,
     customerName: 'Client Store',
     customerCity: 'Agra',
     phone: '+91 98000 00000',
-    reason: row.reason,
-    date: row.due_date,
-    time: row.due_time || '11:00 AM',
+    reason: row.type || row.reason || 'Payment Follow-up',
+    date: row.due_date || dueDate.toLocaleDateString('en-IN'),
+    time: row.due_time || dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     relatedOrder: row.order_id || undefined,
     amountDue: row.amount_due ? Number(row.amount_due) : undefined,
-    notes: row.notes || '',
+    notes: row.notes || row.outcome || '',
     status: (row.status || 'today') as FollowUpItem['status'],
   };
 }
@@ -31,13 +32,13 @@ export const followUpsService = {
       let query = supabase
         .from('follow_ups')
         .select('*')
-        .order('due_date', { ascending: true });
+        .order('due_at', { ascending: true });
 
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status);
       }
       if (filters?.salespersonId) {
-        query = query.eq('salesperson_id', filters.salespersonId);
+        query = query.eq('owner_id', filters.salespersonId);
       }
 
       const { data, error } = await query;

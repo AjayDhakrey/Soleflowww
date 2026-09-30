@@ -28,11 +28,15 @@ import {
   MOCK_DESIGN_SHARES,
 } from '../data/mockData';
 import { supabaseApi, isSupabaseConfigured } from '../lib/supabase';
+import { paymentsService } from '../services/payments';
+import { visitsService } from '../services/visits';
+import { followUpsService } from '../services/followUps';
+import { useAuth } from '../auth/AuthProvider';
 
 interface AppContextType {
   currentUser: User;
   setCurrentUser: (user: User) => void;
-  switchRole: (role: UserRole) => void;
+  switchRole: (role?: UserRole) => void;
   isLoggedIn: boolean;
   login: (email: string, pass: string) => boolean;
   register: (userData: {
@@ -62,8 +66,10 @@ interface AppContextType {
   notifications: NotificationItem[];
   markNotificationAsRead: (id: string) => void;
   followUps: FollowUpItem[];
+  addFollowUp: (item: Partial<FollowUpItem>) => void;
   completeFollowUp: (id: string) => void;
   fieldVisits: FieldVisitItem[];
+  addFieldVisit: (item: Partial<FieldVisitItem>) => void;
   completeFieldVisit: (id: string, outcome: FieldVisitItem['outcome'], notes: string) => void;
   payments: PaymentReceipt[];
   recordPayment: (payment: Partial<PaymentReceipt>) => void;
@@ -330,19 +336,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 3000);
   };
 
-  const switchRole = (role: UserRole) => {
-    const user = role === 'admin' ? MOCK_USERS.admin : MOCK_USERS.salesperson;
+  const auth = useAuth();
+
+  const switchRole = (role?: UserRole) => {
+    const targetRole: UserRole = role || (currentUser.role === 'admin' ? 'salesperson' : 'admin');
+    const user = targetRole === 'admin' ? MOCK_USERS.admin : MOCK_USERS.salesperson;
     setCurrentUser(user);
     setIsMobileSidebarOpen(false);
     try {
       localStorage.setItem(
         AUTH_STORAGE_KEY,
-        JSON.stringify({ isLoggedIn: true, role: user.role, email: user.email })
+        JSON.stringify({ isLoggedIn: true, role: user.role, email: user.email, user })
       );
     } catch (e) {
       console.error('Failed to update session:', e);
     }
-    if (role === 'admin') {
+    try {
+      auth?.switchDemoRole(targetRole);
+    } catch (e) {
+      // ignore
+    }
+    if (targetRole === 'admin') {
       showToast('Switched to Trader / Admin Mode (Full Business Visibility)');
     } else {
       showToast('Switched to Salesperson Portal (Rahul Sharma • North Zone)');
@@ -642,11 +656,90 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
+  const addFollowUp = (item: Partial<FollowUpItem>) => {
+    const newFollowUp: FollowUpItem = {
+      id: item.id || `fu-${Date.now()}`,
+      customerId: item.customerId || (customers[0]?.id ?? ''),
+      customerName: item.customerName || (customers[0]?.businessName ?? 'Client Store'),
+      customerCity: item.customerCity || (customers[0]?.city ?? 'Agra'),
+      phone: item.phone || (customers[0]?.phone ?? ''),
+      reason: item.reason || 'Follow-up for payment & orders',
+      date: item.date || new Date().toISOString().split('T')[0],
+      time: item.time || '11:00 AM',
+      relatedOrder: item.relatedOrder,
+      amountDue: item.amountDue,
+      notes: item.notes || '',
+      status: (item.status as any) || 'today',
+    };
+
+    setFollowUps((prev) => [newFollowUp, ...prev]);
+    if (isSupabaseActive) {
+      followUpsService.createFollowUp({
+        client_id: newFollowUp.customerId,
+        due_at: new Date().toISOString(),
+        type: 'collection',
+        status: 'pending',
+        priority: 'normal',
+      });
+    }
+
+    addAuditEvent({
+      action: 'Scheduled Follow-up',
+      recordType: 'Client',
+      recordId: newFollowUp.customerId,
+      recordTitle: `${newFollowUp.customerName} (${newFollowUp.reason})`,
+      newValue: `Scheduled for ${newFollowUp.date} at ${newFollowUp.time}`,
+    });
+
+    showToast(`Follow-up scheduled for ${newFollowUp.customerName}!`);
+  };
+
   const completeFollowUp = (id: string) => {
     setFollowUps((prev) =>
       prev.map((f) => (f.id === id ? { ...f, status: 'completed' } : f))
     );
+    if (isSupabaseActive) {
+      followUpsService.completeFollowUp(id);
+    }
     showToast('Follow-up marked as completed!');
+  };
+
+  const addFieldVisit = (item: Partial<FieldVisitItem>) => {
+    const newVisit: FieldVisitItem = {
+      id: item.id || `vis-${Date.now()}`,
+      customerId: item.customerId || (customers[0]?.id ?? ''),
+      customerName: item.customerName || (customers[0]?.businessName ?? 'Client Store'),
+      location: item.location || (customers[0]?.city ?? 'Agra Marketplace'),
+      time: item.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      purpose: item.purpose || 'Store check-in & order discussion',
+      status: (item.status as any) || 'completed',
+      outcome: item.outcome || 'Interested',
+      notes: item.notes || '',
+    };
+
+    setFieldVisits((prev) => [newVisit, ...prev]);
+    if (isSupabaseActive) {
+      visitsService.createVisit({
+        client_id: newVisit.customerId,
+        salesperson_id: currentUser.id,
+        salesperson_name: currentUser.name,
+        visit_date: new Date().toISOString().split('T')[0],
+        purpose: newVisit.purpose,
+        outcome: newVisit.outcome,
+        notes: newVisit.notes,
+        status: newVisit.status as any,
+      });
+    }
+
+    addAuditEvent({
+      action: 'Logged Field Visit',
+      recordType: 'Client',
+      recordId: newVisit.customerId,
+      recordTitle: `${newVisit.customerName} - ${newVisit.purpose}`,
+      newValue: `Outcome: ${newVisit.outcome || 'Check-in'} at ${newVisit.location}`,
+    });
+
+    showToast(`Store visit recorded for ${newVisit.customerName}!`);
   };
 
   const completeFieldVisit = (
@@ -659,33 +752,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         v.id === id ? { ...v, status: 'completed', outcome, notes } : v
       )
     );
+    if (isSupabaseActive) {
+      visitsService.completeVisit(id, outcome, notes);
+    }
     showToast(`Visit completed • Outcome: ${outcome}`);
   };
 
-  const recordPayment = (p: Partial<PaymentReceipt>) => {
-    const receiptNum = `SF-REC-${403 + payments.length}`;
+  const recordPayment = async (p: Partial<PaymentReceipt>) => {
+    const cust = customers.find((c) => c.id === p.customerId) || (p.customerId ? { id: p.customerId, businessName: p.customerName || 'Store', amountDue: p.amountDueBefore || 0, totalPaid: 0, city: p.customerCity || 'Agra' } as Customer : customers[0]);
+    const payAmount = Number(p.paymentAmount) || 0;
+    const beforeDue = cust ? cust.amountDue : (p.amountDueBefore ?? 0);
+    const afterDue = Math.max(0, beforeDue - payAmount);
+    const receiptNum = p.receiptNumber || `SF-REC-${Math.floor(10000 + Math.random() * 90000)}`;
+
     const newReceipt: PaymentReceipt = {
-      id: `pay-${Date.now()}`,
+      id: p.id || `pay-${Date.now()}`,
       receiptNumber: receiptNum,
-      customerId: p.customerId || customers[0].id,
-      customerName: p.customerName || customers[0].businessName,
-      customerCity: p.customerCity || customers[0].city,
-      orderId: p.orderId || 'ORD-0148',
-      orderNumber: p.orderNumber || 'ORD-0148',
-      amountDueBefore: p.amountDueBefore || 230000,
-      paymentAmount: p.paymentAmount || 100000,
-      amountDueAfter: Math.max(0, (p.amountDueBefore || 230000) - (p.paymentAmount || 100000)),
-      paymentDate: p.paymentDate || 'Today, 24 Oct 2024',
+      customerId: cust?.id || p.customerId || '',
+      customerName: cust?.businessName || p.customerName || 'Customer Store',
+      customerCity: cust?.city || p.customerCity || 'Agra',
+      orderId: p.orderId,
+      orderNumber: p.orderNumber,
+      amountDueBefore: beforeDue,
+      paymentAmount: payAmount,
+      amountDueAfter: afterDue,
+      paymentDate: p.paymentDate || new Date().toISOString().split('T')[0],
       paymentMethod: p.paymentMethod || 'UPI',
-      utrRef: p.utrRef || 'UPI/428901239841',
+      utrRef: p.utrRef || '',
       collectedBy: currentUser.name,
-      notes: p.notes || 'Recorded via Bill Allocation Mode',
+      notes: p.notes || '',
       sentSms: p.sentSms !== false,
+      status: p.paymentMethod === 'Cheque' ? 'pending_clearance' : 'verified',
+      chequeNo: p.chequeNo,
+      chequeBank: p.chequeBank,
+      chequeDate: p.chequeDate,
     };
 
     setPayments((prev) => [newReceipt, ...prev]);
-    if (isSupabaseActive) {
-      supabaseApi.insertPayment(newReceipt);
+
+    if (isSupabaseActive && cust?.id) {
+      try {
+        await paymentsService.recordPayment({
+          clientId: cust.id,
+          amount: payAmount,
+          method: newReceipt.paymentMethod,
+          reference: newReceipt.utrRef,
+          paymentDate: newReceipt.paymentDate,
+          notes: newReceipt.notes,
+          chequeNo: newReceipt.chequeNo,
+          chequeBank: newReceipt.chequeBank,
+          chequeDate: newReceipt.chequeDate,
+        });
+      } catch (err) {
+        console.error('Error saving payment to Supabase:', err);
+      }
     }
 
     addAuditEvent({
@@ -694,44 +814,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordId: newReceipt.receiptNumber,
       recordTitle: `${newReceipt.customerName} - ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} (${newReceipt.paymentMethod})`,
       oldValue: `Outstanding: ₹${newReceipt.amountDueBefore.toLocaleString('en-IN')}`,
-      newValue: `Outstanding: ₹${newReceipt.amountDueAfter.toLocaleString('en-IN')} (Ref: ${newReceipt.utrRef})`,
+      newValue: `Outstanding: ₹${newReceipt.amountDueAfter.toLocaleString('en-IN')} (Ref: ${newReceipt.utrRef || newReceipt.chequeNo || 'Realized'})`,
     });
 
-    // Update customer balances
-    setCustomers((prev) =>
-      prev.map((cust) => {
-        if (cust.id === newReceipt.customerId) {
-          const newDue = Math.max(0, cust.amountDue - newReceipt.paymentAmount);
-          const updatedCust = {
-            ...cust,
-            amountDue: newDue,
-            totalPaid: cust.totalPaid + newReceipt.paymentAmount,
-            lastPaymentDate: 'Today',
-            lastPaymentAmount: newReceipt.paymentAmount,
-            status: newDue === 0 ? ('active' as const) : cust.status,
-            overdueDays: newDue === 0 ? 0 : cust.overdueDays,
-            activityHistory: [
-              {
-                id: `act-pay-${Date.now()}`,
-                type: 'payment' as const,
-                title: `Received ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} payment via ${newReceipt.paymentMethod}`,
-                description: `Transaction Ref: ${newReceipt.utrRef}. Adjusted against balance. Remaining Due: ₹${newDue.toLocaleString('en-IN')}.`,
-                timestamp: 'Just now',
-                refNumber: newReceipt.utrRef,
-              },
-              ...cust.activityHistory,
-            ],
-          };
-          if (isSupabaseActive) {
-            supabaseApi.updateCustomer(updatedCust.id, updatedCust);
+    // Update customer balances locally if verified immediately
+    if (newReceipt.status === 'verified') {
+      setCustomers((prev) =>
+        prev.map((c) => {
+          if (c.id === newReceipt.customerId) {
+            const newDue = Math.max(0, c.amountDue - payAmount);
+            return {
+              ...c,
+              amountDue: newDue,
+              totalPaid: c.totalPaid + payAmount,
+              lastPaymentDate: 'Today',
+              lastPaymentAmount: payAmount,
+              status: newDue === 0 ? ('active' as const) : c.status,
+              overdueDays: newDue === 0 ? 0 : c.overdueDays,
+              activityHistory: [
+                {
+                  id: `act-pay-${Date.now()}`,
+                  type: 'payment' as const,
+                  title: `Received ₹${payAmount.toLocaleString('en-IN')} payment via ${newReceipt.paymentMethod}`,
+                  description: `Ref: ${newReceipt.utrRef || newReceipt.chequeNo || 'Direct'}. Remaining Due: ₹${newDue.toLocaleString('en-IN')}.`,
+                  timestamp: 'Just now',
+                  refNumber: newReceipt.utrRef || newReceipt.chequeNo,
+                },
+                ...c.activityHistory,
+              ],
+            };
           }
-          return updatedCust;
-        }
-        return cust;
-      })
-    );
+          return c;
+        })
+      );
+    }
 
-    showToast(`Payment of ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} recorded & WhatsApp receipt sent!`);
+    showToast(`Payment of ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} recorded successfully!`);
   };
 
   return (
@@ -761,8 +879,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         notifications,
         markNotificationAsRead,
         followUps,
+        addFollowUp,
         completeFollowUp,
         fieldVisits,
+        addFieldVisit,
         completeFieldVisit,
         payments,
         recordPayment,

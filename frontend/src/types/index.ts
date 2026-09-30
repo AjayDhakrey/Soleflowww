@@ -198,8 +198,8 @@ export interface PaymentReceipt {
   customerId: string;
   customerName: string;
   customerCity: string;
-  orderId: string;
-  orderNumber: string;
+  orderId?: string;
+  orderNumber?: string;
   amountDueBefore: number;
   paymentAmount: number;
   amountDueAfter: number;
@@ -209,6 +209,12 @@ export interface PaymentReceipt {
   collectedBy: string;
   notes: string;
   sentSms: boolean;
+  status?: 'recorded' | 'pending_clearance' | 'verified' | 'bounced' | 'reversed';
+  chequeNo?: string;
+  chequeBank?: string;
+  chequeDate?: string;
+  bounceReason?: string;
+  reversalReason?: string;
 }
 
 export interface FollowUpItem {
@@ -312,6 +318,18 @@ export interface DiscountRequestStats {
   approvedThisMonth: number;
   rejectedThisMonth: number;
   totalRequests: number;
+}
+
+export interface LedgerEntry {
+  id: string;
+  date: string;
+  type: 'payment' | 'invoice' | 'opening';
+  typeLabel: string;
+  refNo: string;
+  particulars: string;
+  debit: number;
+  credit: number;
+  runningBalance: number;
 }
 
 export * from './database.types';

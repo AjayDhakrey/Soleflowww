@@ -373,7 +373,7 @@ export const DiscountRequestDrawer: React.FC<DiscountRequestDrawerProps> = ({
                   Request {request.status}
                 </span>
                 {request.approvedPercent && (
-                  <Tag variant="green">{request.approvedPercent}% Final</Tag>
+                  <Tag variant="purple">{request.approvedPercent}% Final</Tag>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">

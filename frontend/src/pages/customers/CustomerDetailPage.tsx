@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Customer, LedgerEntry, Order, PaymentReceipt, FollowUpItem } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { formatIndianCurrency } from '../../hooks/useCustomerMetrics';
+import CustomerProfileKpiCards from '../../components/customers/CustomerProfileKpiCards';
 import {
   Users,
   ChevronLeft,
@@ -37,6 +38,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { CustomerRowActionMenu } from '../../components/customers/CustomerRowActionMenu';
+import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from '../../components/payments/ReceiptTemplate';
 
 interface CustomerDetailPageProps {
   customerId: string;
@@ -91,6 +93,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
   // Tab state synced with URL/initialTab
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'invoices' | 'payments'>('all');
+  const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
   const [localNotes, setLocalNotes] = useState<Array<{ id: string; author: string; text: string; date: string }>>([
     {
@@ -162,13 +165,13 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     customerPayments.forEach((pay) => {
       entries.push({
         id: `pay-${pay.id}`,
-        date: pay.date || pay.paymentDate || '2024-09-28',
+        date: pay.paymentDate || '2024-09-28',
         type: 'payment',
-        typeLabel: `Payment Realized (${pay.mode || pay.paymentMethod || 'Bank'})`,
-        refNo: pay.receiptNo || pay.utrRef || 'RCP-8821',
-        particulars: `Bank / Cheque credit realization via ${pay.bankName || 'HDFC Bank'}`,
+        typeLabel: `Payment Realized (${pay.paymentMethod || 'Bank'})`,
+        refNo: pay.receiptNumber || pay.utrRef || 'RCP-8821',
+        particulars: `Bank / Cheque credit realization via ${pay.chequeBank || 'HDFC Bank'}`,
         debit: 0,
-        credit: pay.amount || pay.paymentAmount || 0,
+        credit: pay.paymentAmount || 0,
         runningBalance: balance,
       });
     });
@@ -176,11 +179,11 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     customerOrders.forEach((ord) => {
       entries.push({
         id: `ord-${ord.id}`,
-        date: ord.date || '2024-09-25',
+        date: ord.orderDate || '2024-09-25',
         type: 'invoice',
         typeLabel: `Tax Invoice (${ord.items?.length || 1} Articles)`,
         refNo: ord.id,
-        particulars: `Consignment Bilty #${ord.biltyNumber || '88921-AGR'} • ${ord.pairsCount} Pairs`,
+        particulars: `Consignment Bilty #${ord.batchNumber || '88921-AGR'} • ${ord.pairsCount} Pairs`,
         debit: ord.netPayable || ord.subtotal || 0,
         credit: 0,
         runningBalance: balance,
@@ -423,64 +426,20 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
         </div>
       </div>
 
-      {/* 3. Summary Performance Cards (8 metrics) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Lifetime Business */}
-        <div className="bg-surface border border-border rounded-2xl p-4 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Lifetime Business</p>
-          <h3 className="text-xl sm:text-2xl font-bold text-foreground mt-1 tabular-nums">
-            {formatIndianCurrency(customer.totalBusiness || 0, true)}
-          </h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            {customer.ordersCount || 0} wholesale consignments
-          </p>
-        </div>
-
-        {/* Total Paid */}
-        <div className="bg-surface border border-border rounded-2xl p-4 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Total Realized</p>
-          <h3 className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
-            {formatIndianCurrency(customer.totalPaid || 0, true)}
-          </h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Cheques &amp; direct bank deposits
-          </p>
-        </div>
-
-        {/* Outstanding Due */}
-        <div className="bg-surface border border-border rounded-2xl p-4 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Outstanding Balance</p>
-          <h3 className={`text-xl sm:text-2xl font-bold mt-1 tabular-nums ${
-            isOverdue ? 'text-rose-600 dark:text-rose-400' : isCleared ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'
-          }`}>
-            {formatIndianCurrency(customer.amountDue || 0)}
-          </h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            {isOverdue ? `${customer.overdueDays} days overdue` : 'Ledger in good standing'}
-          </p>
-        </div>
-
-        {/* Credit Limit Usage */}
-        <div className="bg-surface border border-border rounded-2xl p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-muted-foreground">Credit Limit Usage</span>
-            <span className={`font-bold ${limitUsage > 100 ? 'text-rose-600 dark:text-rose-400' : limitUsage >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}>
-              {limitUsage}%
-            </span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-muted overflow-hidden my-1.5">
-            <div
-              style={{ width: `${Math.min(limitUsage, 100)}%` }}
-              className={`h-full rounded-full ${
-                limitUsage > 100 ? 'bg-rose-600' : limitUsage >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
-              }`}
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground truncate">
-            Limit: <strong>{formatIndianCurrency(customer.creditLimit || 500000, true)}</strong> ({customer.paymentTerms || '30% Adv + 70% Bilty'})
-          </p>
-        </div>
-      </div>
+      {/* 3. Summary Performance Cards (4 3D Claymorphic Cards) */}
+      <CustomerProfileKpiCards
+        lifetimeBusiness={formatIndianCurrency(customer.totalBusiness || 0, true)}
+        lifetimeCaption={`${customer.ordersCount || 0} wholesale consignments`}
+        totalPaid={formatIndianCurrency(customer.totalPaid || 0, true)}
+        paidCaption="Cheques & direct bank deposits"
+        outstandingDue={formatIndianCurrency(customer.amountDue || 0)}
+        isOverdue={isOverdue}
+        isCleared={isCleared}
+        dueCaption={isOverdue ? `${customer.overdueDays} days overdue` : 'Ledger in good standing'}
+        creditLimit={formatIndianCurrency(customer.creditLimit || 500000, true)}
+        limitUsage={limitUsage}
+        paymentTerms={customer.paymentTerms || '30% Adv + 70% Bilty'}
+      />
 
       {/* 4. Detail Navigation Tabs (9 Tabs, URL-synced) */}
       <div className="border-b border-border overflow-x-auto pb-px flex gap-2 sm:gap-6 scrollbar-none">
@@ -709,7 +668,37 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                   <tr key={entry.id} className="hover:bg-muted/30 transition-colors">
                     <td className="py-3.5 px-4 md:px-6 font-mono text-xs">{entry.date}</td>
                     <td className="py-3.5 px-4">
-                      <span className="font-bold text-foreground block">{entry.typeLabel}</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-foreground block">{entry.typeLabel}</span>
+                        {entry.type === 'payment' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cleanId = entry.id.replace('pay-', '');
+                              const matched = payments.find((p) => p.id === cleanId || p.receiptNumber === entry.refNo || p.utrRef === entry.refNo) || {
+                                id: cleanId || `pay-${Date.now()}`,
+                                receiptNumber: entry.refNo || `SF-REC-${Date.now().toString().slice(-5)}`,
+                                customerId: customer.id,
+                                customerName: customer.businessName,
+                                customerCity: customer.city,
+                                amountDueBefore: (customer.amountDue || 0) + (entry.credit || 0),
+                                paymentAmount: entry.credit,
+                                amountDueAfter: customer.amountDue || 0,
+                                paymentDate: entry.date,
+                                paymentMethod: 'UPI' as const,
+                                utrRef: entry.refNo,
+                                status: 'verified',
+                              } as PaymentReceipt;
+                              setSelectedReceiptPayment(matched);
+                            }}
+                            className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 text-blue-600 dark:text-blue-400 inline-flex items-center gap-1 text-[10px] font-semibold border border-blue-200 dark:border-blue-900/40 cursor-pointer"
+                            title="View official digital receipt slip"
+                          >
+                            <FileText size={11} />
+                            <span>Slip</span>
+                          </button>
+                        )}
+                      </div>
                       <span className="text-[11px] text-muted-foreground font-mono">Ref: {entry.refNo}</span>
                     </td>
                     <td className="py-3.5 px-4 text-muted-foreground text-xs">{entry.particulars}</td>
@@ -780,7 +769,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                       <td className="py-3.5 px-4 md:px-6 font-bold text-blue-600 dark:text-blue-400 font-mono">
                         {ord.id}
                       </td>
-                      <td className="py-3.5 px-4 text-muted-foreground text-xs">{ord.date || 'Recent'}</td>
+                      <td className="py-3.5 px-4 text-muted-foreground text-xs">{ord.orderDate || 'Recent'}</td>
                       <td className="py-3.5 px-4">
                         <span className="font-bold text-foreground block">{ord.pairsCount} Pairs</span>
                         <span className="text-[11px] text-muted-foreground">{ord.items?.length || 1} Footwear Articles</span>
@@ -850,12 +839,13 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                   <th className="py-3.5 px-4">Bank Ref / UTR</th>
                   <th className="py-3.5 px-4">Allocated Invoice</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 md:px-6 text-right">Receipt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {customerPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
                       <DollarSign size={36} className="mx-auto mb-2 text-muted-foreground/40" />
                       <p className="font-bold text-foreground">No payment records logged</p>
                       <p className="text-xs mt-1">Record a cheque or UPI collection to clear balance.</p>
@@ -865,19 +855,30 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                   customerPayments.map((pay) => (
                     <tr key={pay.id} className="hover:bg-muted/30 transition-colors">
                       <td className="py-3.5 px-4 md:px-6 font-mono font-bold text-foreground">
-                        {pay.receiptNo || `RCP-${pay.id}`}
+                        {pay.receiptNumber || `SF-REC-${pay.id.slice(-5)}`}
                       </td>
-                      <td className="py-3.5 px-4 text-muted-foreground text-xs">{pay.date || pay.paymentDate || 'Recent'}</td>
+                      <td className="py-3.5 px-4 text-muted-foreground text-xs">{pay.paymentDate || 'Recent'}</td>
                       <td className="py-3.5 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums text-sm">
-                        {formatIndianCurrency(pay.amount || pay.paymentAmount || 0)}
+                        {formatIndianCurrency(pay.paymentAmount || 0)}
                       </td>
-                      <td className="py-3.5 px-4 font-medium text-foreground">{pay.mode || pay.paymentMethod || 'UPI'}</td>
-                      <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{pay.utrRef || pay.bankRef || 'HDFC992144'}</td>
-                      <td className="py-3.5 px-4 text-xs font-medium text-blue-600 dark:text-blue-400">{pay.orderNumber || 'INV-0148'}</td>
+                      <td className="py-3.5 px-4 font-medium text-foreground">{pay.paymentMethod || 'UPI'}</td>
+                      <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{pay.utrRef || 'HDFC992144'}</td>
+                      <td className="py-3.5 px-4 text-xs font-medium text-blue-600 dark:text-blue-400">{pay.orderNumber || pay.orderId || 'General'}</td>
                       <td className="py-3.5 px-4 text-center">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50">
-                          Realized
+                          {pay.status === 'pending_clearance' ? 'Cheque Pending' : 'Realized'}
                         </span>
+                      </td>
+                      <td className="py-3.5 px-4 md:px-6 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReceiptPayment(pay)}
+                          className="px-2.5 py-1 rounded-lg border border-border hover:bg-muted text-blue-600 dark:text-blue-400 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="View Official Digital Receipt"
+                        >
+                          <FileText size={13} />
+                          <span>Receipt</span>
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -976,7 +977,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                 customerFollowUps.map((fu) => (
                   <div key={fu.id} className="py-3 text-xs space-y-1">
                     <div className="flex items-center justify-between font-bold text-foreground">
-                      <span>{fu.type === 'call' ? '📞 Phone Call' : '📍 Store Visit'}</span>
+                      <span>📍 Follow-up ({fu.reason || 'Client Check-in'})</span>
                       <span className="text-[11px] text-muted-foreground">{fu.date}</span>
                     </div>
                     <p className="text-muted-foreground">{fu.notes}</p>
@@ -1106,6 +1107,22 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             ))}
           </div>
         </div>
+      )}
+
+      {/* Standalone Receipt Preview Modal */}
+      {selectedReceiptPayment && (
+        <ReceiptPreviewModal
+          open={Boolean(selectedReceiptPayment)}
+          onClose={() => setSelectedReceiptPayment(null)}
+          receipt={selectedReceiptPayment}
+          customer={{
+            customerCode: customer?.id,
+            gstin: customer?.gstin,
+            phone: customer?.phone,
+            address: customer?.address ? `${customer.address}, ${customer.city}, ${customer.state}` : `${customer?.city || 'Agra'}, Uttar Pradesh`,
+          }}
+          status={mapPaymentStatusToReceiptStatus(selectedReceiptPayment.status)}
+        />
       )}
     </div>
   );
