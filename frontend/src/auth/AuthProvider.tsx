@@ -26,6 +26,8 @@ interface AuthContextType {
   isLoading: boolean;
   authError: string | null;
   isDemoMode: boolean;
+  allowDemo: boolean;
+  hasRealSession: boolean;
   canManageCatalog: boolean;
   signIn: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
@@ -41,7 +43,8 @@ const AUTH_STORAGE_KEY = 'soleflow_auth_session';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isConfigured = isSupabaseConfigured();
-  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || !isConfigured;
+  const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+  const isDemoMode = allowDemo || !isConfigured;
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -49,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<UserRole>('salesperson');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [hasRealSession, setHasRealSession] = useState<boolean>(false);
 
   // Helper to map DB profile to App User model
   const mapProfileToUser = (prof: UserProfile): User => ({
@@ -120,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
 
       // 1. If Supabase is active, check active Supabase Auth session
-      if (supabase && !isDemoMode) {
+      if (supabase && isConfigured) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
@@ -130,15 +134,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setProfile(prof);
               setRole(prof.role);
               setUser(mapProfileToUser(prof));
+              setHasRealSession(true);
             }
+          } else {
+            if (isMounted) setHasRealSession(false);
           }
         } catch (e) {
           console.error('Error initializing auth:', e);
+          if (isMounted) setHasRealSession(false);
         }
       }
 
-      // 2. Check local stored session fallback (for demo mode or cached login)
-      if (isMounted && !user) {
+      // 2. Check local stored session fallback (for demo mode only)
+      if (isMounted && !user && allowDemo) {
         try {
           const stored = localStorage.getItem(AUTH_STORAGE_KEY);
           if (stored) {
@@ -154,6 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: activeUser.name,
                 role: activeRole,
               });
+              setHasRealSession(false);
             }
           }
         } catch (err) {
@@ -177,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(prof);
           setRole(prof.role);
           setUser(mapProfileToUser(prof));
+          setHasRealSession(true);
           localStorage.setItem(
             AUTH_STORAGE_KEY,
             JSON.stringify({ isLoggedIn: true, role: prof.role, email: prof.email, userId: prof.id })
@@ -184,6 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
+          setHasRealSession(false);
           localStorage.removeItem(AUTH_STORAGE_KEY);
         }
       });
@@ -197,7 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       isMounted = false;
     };
-  }, [isDemoMode]);
+  }, [isDemoMode, isConfigured, allowDemo]);
 
   // Sign In implementation
   const signIn = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
@@ -206,17 +217,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       // 1. If real Supabase client is configured, attempt Supabase Auth
-      if (supabase && !isDemoMode) {
+      if (supabase && isConfigured) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: pass,
         });
 
         if (error) {
-          // If Supabase auth fails and demo credentials were typed, allow demo login with clear note
+          // If Supabase auth fails and demo mode is allowed with default demo credentials
           if (
-            (email === 'admin@soleflow.com' && pass === 'admin123') ||
-            (email === 'sales@soleflow.com' && pass === 'sales123')
+            allowDemo &&
+            ((email === 'admin@soleflow.com' && pass === 'admin123') ||
+              (email === 'sales@soleflow.com' && pass === 'sales123'))
           ) {
             console.warn('Supabase Auth error; falling back to demo session:', error.message);
             const demoRole: UserRole = email.includes('sales') ? 'salesperson' : 'admin';
@@ -229,6 +241,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               name: demoUser.name,
               role: demoRole,
             });
+            setHasRealSession(false);
             localStorage.setItem(
               AUTH_STORAGE_KEY,
               JSON.stringify({ isLoggedIn: true, role: demoRole, email: demoUser.email })
@@ -248,6 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(prof);
           setRole(prof.role);
           setUser(mapProfileToUser(prof));
+          setHasRealSession(true);
           localStorage.setItem(
             AUTH_STORAGE_KEY,
             JSON.stringify({ isLoggedIn: true, role: prof.role, email: prof.email, userId: prof.id })
@@ -257,7 +271,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Demo mode / Mock credentials authentication
+      // 2. Demo mode / Mock credentials authentication (ONLY when allowDemo is true)
+      if (!allowDemo) {
+        setAuthError('Authentication failed.');
+        setIsLoading(false);
+        return { success: false, error: 'Authentication failed. Please check your credentials.' };
+      }
+
       let assignedRole: UserRole = 'admin';
       if (email === 'sales@soleflow.com' || email.toLowerCase().includes('sales')) {
         assignedRole = 'salesperson';
@@ -272,6 +292,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: activeUser.name,
         role: assignedRole,
       });
+      setHasRealSession(false);
 
       localStorage.setItem(
         AUTH_STORAGE_KEY,
@@ -301,6 +322,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setUser(null);
     setProfile(null);
+    setHasRealSession(false);
     localStorage.removeItem(AUTH_STORAGE_KEY);
     setIsLoading(false);
   };
@@ -341,7 +363,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Demo role switch (strictly restricted to demo mode)
   const switchDemoRole = (newRole: UserRole) => {
-    if (!isDemoMode) {
+    if (!allowDemo) {
       console.warn('Role switching is only permitted in Demo Mode.');
       return;
     }
@@ -354,6 +376,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name: newUser.name,
       role: newRole,
     });
+    setHasRealSession(false);
     localStorage.setItem(
       AUTH_STORAGE_KEY,
       JSON.stringify({ isLoggedIn: true, role: newRole, email: newUser.email })
@@ -362,7 +385,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuthError = () => setAuthError(null);
 
-  const canManageCatalog = (role === 'admin' || profile?.role === 'admin') && !isLoading;
+  const canManageCatalog = (role === 'admin' || profile?.role === 'admin') && (hasRealSession || allowDemo);
 
   const value: AuthContextType = {
     user,
@@ -371,6 +394,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin: role === 'admin',
     isSalesperson: role === 'salesperson',
     canManageCatalog,
+    hasRealSession,
+    allowDemo,
     isLoggedIn: Boolean(user),
     isLoading,
     authError,

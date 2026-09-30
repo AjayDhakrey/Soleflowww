@@ -1,25 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../auth/AuthProvider';
 import { ShoeDesign } from '../../types';
 import { designsService } from '../../services/designs';
+import { useDesignCatalog } from '../../hooks/useDesignCatalog';
+import { useDesignsRealtime } from '../../hooks/useDesignsRealtime';
 import { Icons } from '../../lib/icons';
 import {
   PageHeader,
-  KpiCard,
   Panel,
   FilterBar,
   SearchInput,
   Select,
   Button,
   Tag,
-  StatusBadge,
   EmptyState,
 } from '../../components/ui';
 import { DesignsKpiCards } from '../../components/designs/DesignsKpiCards';
 import { DesignSharesModal } from '../../components/designs/DesignSharesModal';
 import { AddDesignModal } from '../../components/designs/AddDesignModal';
-import { Plus, Edit2, Archive, RotateCcw, AlertTriangle, Sparkles } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  Archive,
+  RotateCcw,
+  AlertTriangle,
+  Sparkles,
+  Trash2,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react';
 
 interface DesignsPageProps {
   onNavigate: (path: string) => void;
@@ -27,9 +39,6 @@ interface DesignsPageProps {
 
 export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const {
-    designs,
-    setDesigns,
-    refreshDesigns,
     selectedDesignIds,
     toggleSelectDesign,
     clearSelectedDesigns,
@@ -39,6 +48,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   } = useApp();
 
   const { canManageCatalog, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,16 +62,34 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const [archivingDesign, setArchivingDesign] = useState<ShoeDesign | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
 
-  // Archived designs state for admin
-  const [archivedDesigns, setArchivedDesigns] = useState<ShoeDesign[]>([]);
+  // Delete State
+  const [deletingDesign, setDeletingDesign] = useState<ShoeDesign | null>(null);
+  const [deleteCheckLoading, setDeleteCheckLoading] = useState(false);
+  const [deleteCheckResult, setDeleteCheckResult] = useState<{ canDelete: boolean; reason: string | null; orderCount: number } | null>(null);
+  const [deleteConfirmationCode, setDeleteConfirmationCode] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (canManageCatalog && activeCategory === 'Archived') {
-      designsService.fetchAllDesigns({ onlyArchived: true }).then((data) => {
-        setArchivedDesigns(data);
-      });
-    }
-  }, [canManageCatalog, activeCategory]);
+  // Realtime hook for live updates
+  useDesignsRealtime({
+    isSalesperson: !isAdmin,
+    onNewDesign: (name, code) => {
+      showToast(`New design published: ${name} (${code})`);
+    },
+  });
+
+  // Query Catalog
+  const {
+    data: rawDesigns = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useDesignCatalog({
+    includeArchived: activeCategory === 'Archived',
+    category: activeCategory !== 'All' && activeCategory !== 'Archived' ? activeCategory : undefined,
+    search: searchQuery ? searchQuery : undefined,
+  });
 
   const categories = [
     'All',
@@ -72,11 +100,12 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     ...(canManageCatalog ? ['Archived'] : []),
   ];
 
-  const currentList = activeCategory === 'Archived' ? archivedDesigns : designs;
-
   // Filtering
-  const filteredDesigns = currentList.filter((d) => {
-    const matchesCat = activeCategory === 'All' || activeCategory === 'Archived' || d.category === activeCategory;
+  const filteredDesigns = rawDesigns.filter((d) => {
+    const matchesCat =
+      activeCategory === 'All' ||
+      (activeCategory === 'Archived' && d.isArchived) ||
+      (!d.isArchived && d.category === activeCategory);
     const matchesSearch =
       d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.articleCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,8 +128,53 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     return popB - popA;
   });
 
-  const popularCount = designs.filter((d) => d.status === 'Popular').length;
-  const highMarginCount = designs.filter((d) => d.marginBadge?.includes('High') || d.marginBadge?.includes('40%')).length;
+  const activeCatalogCount = rawDesigns.filter((d) => !d.isArchived).length;
+  const popularCount = rawDesigns.filter((d) => !d.isArchived && d.status === 'Popular').length;
+  const highMarginCount = rawDesigns.filter(
+    (d) => !d.isArchived && (d.marginBadge?.includes('High') || d.marginBadge?.includes('40%'))
+  ).length;
+
+  // Open Delete Check Modal
+  const handleInitiateDelete = async (shoe: ShoeDesign) => {
+    setDeletingDesign(shoe);
+    setDeleteConfirmationCode('');
+    setDeleteError(null);
+    setDeleteCheckLoading(true);
+    setDeleteCheckResult(null);
+
+    const check = await designsService.checkDesignDeletable(shoe.id);
+    setDeleteCheckResult(check);
+    setDeleteCheckLoading(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingDesign) return;
+    if (deleteConfirmationCode.trim() !== deletingDesign.articleCode.trim()) {
+      setDeleteError(`Please type "${deletingDesign.articleCode}" to confirm deletion.`);
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    const res = await designsService.deleteDesignV2(deletingDesign.id);
+    setIsDeleting(false);
+
+    if (res.success) {
+      showToast(`Design ${deletingDesign.articleCode} permanently deleted.`);
+      queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
+        if (!old) return [];
+        return old.filter((d) => d.id !== deletingDesign.id);
+      });
+      queryClient.invalidateQueries({ queryKey: ['designs'] });
+      setDeletingDesign(null);
+      if (quickViewShoe?.id === deletingDesign.id) {
+        setQuickViewShoe(null);
+      }
+    } else {
+      setDeleteError(res.error || 'Failed to delete design.');
+    }
+  };
 
   const handleArchiveConfirm = async () => {
     if (!archivingDesign) return;
@@ -109,10 +183,14 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     setIsArchiving(false);
     if (res.success) {
       showToast(`Design ${archivingDesign.articleCode} archived successfully`);
+      queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
+        if (!old) return [];
+        return old.map((d) => (d.id === archivingDesign.id ? { ...d, isArchived: true } : d));
+      });
+      queryClient.invalidateQueries({ queryKey: ['designs'] });
       setArchivingDesign(null);
-      refreshDesigns();
-      if (activeCategory === 'Archived') {
-        designsService.fetchAllDesigns({ onlyArchived: true }).then(setArchivedDesigns);
+      if (quickViewShoe?.id === archivingDesign.id) {
+        setQuickViewShoe(null);
       }
     } else {
       showToast(res.error || 'Failed to archive design');
@@ -123,8 +201,11 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     const res = await designsService.restoreDesignV2(shoe.id);
     if (res.success) {
       showToast(`Design ${shoe.articleCode} restored to active catalog`);
-      refreshDesigns();
-      designsService.fetchAllDesigns({ onlyArchived: true }).then(setArchivedDesigns);
+      queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
+        if (!old) return [];
+        return old.map((d) => (d.id === shoe.id ? { ...d, isArchived: false } : d));
+      });
+      queryClient.invalidateQueries({ queryKey: ['designs'] });
     } else {
       showToast(res.error || 'Failed to restore design');
     }
@@ -183,9 +264,9 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
       {/* 2. KPI Summary Row */}
       <DesignsKpiCards
-        totalActiveModels={designs.length || 6}
-        popularStylesCount={popularCount || 2}
-        highMarginCount={highMarginCount || 4}
+        totalActiveModels={activeCatalogCount || rawDesigns.length || 0}
+        popularStylesCount={popularCount || 0}
+        highMarginCount={highMarginCount || 0}
         selectedCount={selectedDesignIds.length}
       />
 
@@ -238,198 +319,262 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                       : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                   }`}
                 >
-                  {cat === 'Archived' ? `Archived (${archivedDesigns.length})` : cat}
+                  {cat}
                 </button>
               );
             })}
           </div>
         </div>
 
+        {/* Error Banner */}
+        {isError && (
+          <div className="m-4 md:m-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-rose-900 dark:text-rose-200">Failed to load catalog designs</p>
+                <p className="text-xs text-rose-700 dark:text-rose-400">
+                  {(error as Error)?.message || 'Database connection error. Click retry to reload.'}
+                </p>
+              </div>
+            </div>
+            <Button variant="secondary" size="sm" icon={RefreshCw} onClick={() => refetch()}>
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {/* Loading Skeletons */}
+        {isLoading && (
+          <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              <div
+                key={n}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-4 animate-pulse"
+              >
+                <div className="w-full aspect-[4/3] bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3" />
+                  <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
+                  <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2" />
+                </div>
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between">
+                  <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-1/3" />
+                  <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-1/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Footwear Grid */}
-        <div className="p-4 md:p-6">
-          {sortedDesigns.length === 0 ? (
-            <EmptyState
-              icon={Icons.Designs}
-              title={activeCategory === 'Archived' ? 'No Archived Designs' : 'No Footwear Models Found'}
-              description={
-                activeCategory === 'Archived'
-                  ? 'There are currently no archived shoe designs in the database.'
-                  : `No articles match "${searchQuery}" in ${activeCategory}. Try adjusting your search query.`
-              }
-            />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedDesigns.map((shoe) => {
-                const isSelected = selectedDesignIds.includes(shoe.id);
-                const isNew = isRecentNew(shoe);
+        {!isLoading && !isError && (
+          <div className="p-4 md:p-6">
+            {sortedDesigns.length === 0 ? (
+              <EmptyState
+                icon={Icons.Designs}
+                title={activeCategory === 'Archived' ? 'No Archived Designs' : 'No Footwear Models Found'}
+                description={
+                  activeCategory === 'Archived'
+                    ? 'There are currently no archived shoe designs in the database.'
+                    : `No articles match "${searchQuery}" in ${activeCategory}. Try adjusting your search query.`
+                }
+              />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedDesigns.map((shoe) => {
+                  const isSelected = selectedDesignIds.includes(shoe.id);
+                  const isNew = isRecentNew(shoe);
 
-                return (
-                  <div
-                    key={shoe.id}
-                    className={`bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-150 flex flex-col justify-between shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${
-                      isSelected
-                        ? 'border-[#4F8EF7] ring-2 ring-[#4F8EF7]/20 dark:border-[#4F8EF7]'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                    }`}
-                  >
-                    {/* Image Area on Slate-50 */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 p-4 relative aspect-[4/3] flex items-center justify-center">
-                      <img
-                        src={shoe.image}
-                        alt={shoe.name}
-                        className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-200 hover:scale-105"
-                        onError={(e) => {
-                          (e.target as any).src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
-                        }}
-                      />
+                  return (
+                    <div
+                      key={shoe.id}
+                      className={`bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-150 flex flex-col justify-between shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${
+                        isSelected
+                          ? 'border-[#4F8EF7] ring-2 ring-[#4F8EF7]/20 dark:border-[#4F8EF7]'
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                      }`}
+                    >
+                      {/* Image Area on Slate-50 */}
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 relative aspect-[4/3] flex items-center justify-center">
+                        <img
+                          src={shoe.image}
+                          alt={shoe.name}
+                          className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-200 hover:scale-105"
+                          onError={(e) => {
+                            (e.target as any).src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
+                          }}
+                        />
 
-                      {/* Floating Selection Checkbox */}
-                      {!shoe.isArchived && (
-                        <button
-                          type="button"
-                          onClick={() => toggleSelectDesign(shoe.id)}
-                          className={`absolute top-3 left-3 w-7 h-7 rounded-lg flex items-center justify-center border transition-colors cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#3B82F6] border-[#3B82F6] text-white shadow-xs'
-                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-transparent hover:border-slate-400'
-                          }`}
-                          title={isSelected ? 'Deselect from Lookbook' : 'Select for Lookbook'}
-                        >
-                          <Icons.Check size={16} strokeWidth={2.5} />
-                        </button>
-                      )}
-
-                      {/* Top Right: New Badge & Quick View */}
-                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                        {isNew && !shoe.isArchived && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider shadow-sm flex items-center gap-1">
-                            <Sparkles className="w-2.5 h-2.5" /> New
-                          </span>
+                        {/* Floating Selection Checkbox */}
+                        {!shoe.isArchived && (
+                          <button
+                            type="button"
+                            onClick={() => toggleSelectDesign(shoe.id)}
+                            className={`absolute top-3 left-3 w-7 h-7 rounded-lg flex items-center justify-center border transition-colors cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#3B82F6] border-[#3B82F6] text-white shadow-xs'
+                                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-transparent hover:border-slate-400'
+                            }`}
+                            title={isSelected ? 'Deselect from Lookbook' : 'Select for Lookbook'}
+                          >
+                            <Icons.Check size={16} strokeWidth={2.5} />
+                          </button>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => setQuickViewShoe(shoe)}
-                          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
-                          title="Quick Specifications"
-                        >
-                          <Icons.View size={15} strokeWidth={1.75} />
-                        </button>
+
+                        {/* Top Right: New Badge & Quick View */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                          {isNew && !shoe.isArchived && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider shadow-sm flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5" /> New
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setQuickViewShoe(shoe)}
+                            className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                            title="Quick Specifications"
+                          >
+                            <Icons.View size={15} strokeWidth={1.75} />
+                          </button>
+                        </div>
+
+                        {/* Status / Margin Badge */}
+                        {shoe.marginBadge && !shoe.isArchived && (
+                          <div className="absolute bottom-3 left-3">
+                            <Tag variant="purple">{shoe.marginBadge}</Tag>
+                          </div>
+                        )}
+
+                        {shoe.isArchived && (
+                          <div className="absolute bottom-3 left-3">
+                            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                              Archived
+                            </span>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Status / Margin Badge */}
-                      {shoe.marginBadge && !shoe.isArchived && (
-                        <div className="absolute bottom-3 left-3">
-                          <Tag variant="purple">{shoe.marginBadge}</Tag>
-                        </div>
-                      )}
-
-                      {shoe.isArchived && (
-                        <div className="absolute bottom-3 left-3">
-                          <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-                            Archived
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card Content Body */}
-                    <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
-                            {shoe.articleCode}
-                          </span>
-                          <Tag variant="slate">{shoe.category.split(' ')[0]}</Tag>
-                        </div>
-
-                        <h3 className="font-bold text-base text-slate-900 dark:text-white tracking-tight mt-1 leading-snug">
-                          {shoe.name}
-                        </h3>
-
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
-                          {shoe.upperMaterial} • {shoe.soleType}
-                        </p>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between">
+                      {/* Card Content Body */}
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
                         <div>
-                          <span className="text-xs text-slate-400">Wholesale:</span>
-                          <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">
-                            ₹{shoe.price.toLocaleString('en-IN')}{' '}
-                            <span className="text-xs font-normal text-slate-400">/ pr</span>
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
+                              {shoe.articleCode}
+                            </span>
+                            <Tag variant="slate">{shoe.category.split(' ')[0]}</Tag>
+                          </div>
+
+                          <h3 className="font-bold text-base text-slate-900 dark:text-white tracking-tight mt-1 leading-snug">
+                            {shoe.name}
+                          </h3>
+
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                            {shoe.upperMaterial} • {shoe.soleType}
                           </p>
                         </div>
-                        <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                          {shoe.pairsPerCarton ? `${shoe.pairsPerCarton} Prs/Ctn` : '12 Prs/Ctn'}
-                        </span>
-                      </div>
 
-                      {/* Actions Area */}
-                      {canManageCatalog ? (
-                        <div className="pt-2 space-y-2">
-                          {shoe.isArchived ? (
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between">
+                          <div>
+                            <span className="text-xs text-slate-400">Wholesale:</span>
+                            <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">
+                              ₹{shoe.price.toLocaleString('en-IN')}{' '}
+                              <span className="text-xs font-normal text-slate-400">/ pr</span>
+                            </p>
+                          </div>
+                          <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                            {shoe.pairsPerCarton ? `${shoe.pairsPerCarton} Prs/Ctn` : '12 Prs/Ctn'}
+                          </span>
+                        </div>
+
+                        {/* Actions Area */}
+                        {canManageCatalog ? (
+                          <div className="pt-2 space-y-2">
+                            {shoe.isArchived ? (
+                              <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  icon={RotateCcw}
+                                  onClick={() => handleRestore(shoe)}
+                                  className="text-emerald-600 hover:text-emerald-700"
+                                >
+                                  Restore
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  icon={Trash2}
+                                  onClick={() => handleInitiateDelete(shoe)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  icon={Edit2}
+                                  onClick={() => {
+                                    setEditingDesign(shoe);
+                                    setIsAddModalOpen(true);
+                                  }}
+                                  className="flex-1"
+                                >
+                                  Edit Specs
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  icon={Archive}
+                                  onClick={() => setArchivingDesign(shoe)}
+                                  title="Archive Design"
+                                  className="text-amber-600 hover:text-amber-700"
+                                >
+                                  Archive
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  icon={Trash2}
+                                  onClick={() => handleInitiateDelete(shoe)}
+                                  title="Permanently Delete Design"
+                                  className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-2"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2 pt-1">
                             <Button
                               variant="secondary"
                               size="sm"
-                              icon={RotateCcw}
-                              onClick={() => handleRestore(shoe)}
-                              className="w-full text-emerald-600 hover:text-emerald-700"
+                              icon={Icons.View}
+                              onClick={() => setQuickViewShoe(shoe)}
                             >
-                              Restore to Catalog
+                              Specs
                             </Button>
-                          ) : (
-                            <div className="grid grid-cols-2 gap-2">
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                icon={Edit2}
-                                onClick={() => {
-                                  setEditingDesign(shoe);
-                                  setIsAddModalOpen(true);
-                                }}
-                              >
-                                Edit Specs
-                              </Button>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                icon={Archive}
-                                onClick={() => setArchivingDesign(shoe)}
-                              >
-                                Archive
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-2 pt-1">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            icon={Icons.View}
-                            onClick={() => setQuickViewShoe(shoe)}
-                          >
-                            Specs
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            icon={Icons.Orders}
-                            onClick={() => {
-                              setIsCreateOrderModalOpen(true);
-                            }}
-                          >
-                            Book Order
-                          </Button>
-                        </div>
-                      )}
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              icon={Icons.Orders}
+                              onClick={() => {
+                                setIsCreateOrderModalOpen(true);
+                              }}
+                            >
+                              Book Order
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </Panel>
 
       {/* 4. Quick Specs Modal */}
@@ -448,7 +593,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => setQuickViewShoe(null)}
-                className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl"
+                className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl cursor-pointer"
               >
                 <Icons.Close size={18} strokeWidth={1.75} />
               </button>
@@ -474,11 +619,15 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 </div>
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
                   <span className="text-xs text-slate-400 block">Carton Packing</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.pairsPerCarton ? `${quickViewShoe.pairsPerCarton} Pairs / Carton` : '12 Pairs / Carton'}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    {quickViewShoe.pairsPerCarton ? `${quickViewShoe.pairsPerCarton} Pairs / Carton` : '12 Pairs / Carton'}
+                  </span>
                 </div>
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
                   <span className="text-xs text-slate-400 block">Size Breakdown</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.sizes?.length ? quickViewShoe.sizes.join(', ') : '6, 7, 8, 9, 10'}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    {quickViewShoe.sizes?.length ? quickViewShoe.sizes.join(', ') : '6, 7, 8, 9, 10'}
+                  </span>
                 </div>
               </div>
 
@@ -489,16 +638,43 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                     ₹{quickViewShoe.price.toLocaleString('en-IN')} / Pair
                   </span>
                 </div>
-                <Button
-                  variant="primary"
-                  icon={Icons.Orders}
-                  onClick={() => {
-                    setQuickViewShoe(null);
-                    setIsCreateOrderModalOpen(true);
-                  }}
-                >
-                  Create Order
-                </Button>
+                {canManageCatalog ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={Edit2}
+                      onClick={() => {
+                        setEditingDesign(quickViewShoe);
+                        setIsAddModalOpen(true);
+                        setQuickViewShoe(null);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      icon={Trash2}
+                      onClick={() => {
+                        handleInitiateDelete(quickViewShoe);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="primary"
+                    icon={Icons.Orders}
+                    onClick={() => {
+                      setQuickViewShoe(null);
+                      setIsCreateOrderModalOpen(true);
+                    }}
+                  >
+                    Create Order
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -514,12 +690,14 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         }}
         designToEdit={editingDesign}
         onSaved={(saved) => {
-          if (editingDesign) {
-            setDesigns((prev) => prev.map((d) => (d.id === saved.id ? saved : d)));
-          } else {
-            setDesigns((prev) => [saved, ...prev.filter((d) => d.id !== saved.id && d.articleCode !== saved.articleCode)]);
-          }
-          refreshDesigns();
+          queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
+            if (!old) return [saved];
+            if (editingDesign) {
+              return old.map((d) => (d.id === saved.id ? saved : d));
+            }
+            return [saved, ...old.filter((d) => d.id !== saved.id && d.articleCode !== saved.articleCode)];
+          });
+          queryClient.invalidateQueries({ queryKey: ['designs'] });
           showToast(editingDesign ? 'Design specifications updated.' : 'New design published to catalog.');
         }}
       />
@@ -528,7 +706,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
       {archivingDesign && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -546,9 +724,10 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 Cancel
               </Button>
               <Button
-                variant="danger"
+                variant="primary"
                 onClick={handleArchiveConfirm}
                 disabled={isArchiving}
+                className="bg-amber-600 hover:bg-amber-700 text-white"
               >
                 {isArchiving ? 'Archiving...' : 'Yes, Archive Design'}
               </Button>
@@ -557,13 +736,134 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* 7. Lookbook Shares History Modal */}
+      {/* 7. Step 4B: Permanent Delete Confirmation Modal */}
+      {deletingDesign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn select-none">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeletingDesign(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+              >
+                <Icons.Close size={18} />
+              </button>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Delete Footwear Design
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
+                {deletingDesign.name} ({deletingDesign.articleCode})
+              </p>
+            </div>
+
+            {deleteCheckLoading ? (
+              <div className="py-6 flex flex-col items-center justify-center space-y-2 text-slate-500">
+                <RefreshCw className="w-6 h-6 animate-spin text-indigo-600" />
+                <span className="text-xs">Checking order relationships &amp; history...</span>
+              </div>
+            ) : deleteCheckResult?.canDelete === false ? (
+              /* Scenario A: Used in orders -> CANNOT delete, must archive */
+              <div className="space-y-4">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-300">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold">Cannot Permanently Delete</p>
+                      <p className="mt-0.5">{deleteCheckResult.reason}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-500">
+                  To remove this design from salesman lookbooks without breaking previous order records or invoice histories, you can archive it instead.
+                </p>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button variant="secondary" onClick={() => setDeletingDesign(null)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      const toArchive = deletingDesign;
+                      setDeletingDesign(null);
+                      setArchivingDesign(toArchive);
+                    }}
+                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    Archive Design Instead
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* Scenario B: Can be permanently deleted */
+              <div className="space-y-4">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-xs text-rose-800 dark:text-rose-300">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                    <div>
+                      <p className="font-bold">Irreversible Action</p>
+                      <p className="mt-0.5">
+                        This will permanently delete this model from the database, remove all lookbook share references, and delete its uploaded product image from storage.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Type <span className="font-mono text-rose-600 dark:text-rose-400 font-black select-all">{deletingDesign.articleCode}</span> to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteConfirmationCode}
+                    onChange={(e) => {
+                      setDeleteConfirmationCode(e.target.value);
+                      setDeleteError(null);
+                    }}
+                    placeholder={deletingDesign.articleCode}
+                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+
+                {deleteError && (
+                  <p className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                    {deleteError}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button variant="secondary" onClick={() => setDeletingDesign(null)} disabled={isDeleting}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting || deleteConfirmationCode.trim() !== deletingDesign.articleCode.trim()}
+                    className="bg-rose-600 hover:bg-rose-700 text-white"
+                  >
+                    {isDeleting ? 'Deleting...' : 'Permanently Delete'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 8. Lookbook Shares History Modal */}
       <DesignSharesModal
         isOpen={isShareHistoryOpen}
         onClose={() => setIsShareHistoryOpen(false)}
       />
 
-      {/* 8. Mobile Floating Action Button (Admin only) */}
+      {/* 9. Mobile Floating Action Button (Admin only) */}
       {canManageCatalog && (
         <button
           type="button"
@@ -571,7 +871,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
             setEditingDesign(null);
             setIsAddModalOpen(true);
           }}
-          className="fixed bottom-20 right-6 z-40 md:hidden w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all"
+          className="fixed bottom-20 right-6 z-40 md:hidden w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all cursor-pointer"
           title="Add New Design"
         >
           <Plus className="w-7 h-7" />

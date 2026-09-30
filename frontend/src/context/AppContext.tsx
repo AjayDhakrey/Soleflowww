@@ -223,7 +223,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       });
       designsService.fetchDesigns().then((data) => {
-        if (data && data.length > 0) setDesigns(data);
+        if (data) setDesigns(data);
+      }).catch((err) => {
+        console.warn('Initial designs fetch error:', err);
       });
       supabaseApi.getOrders().then((data) => {
         if (data && data.length > 0) setOrders(data);
@@ -249,7 +251,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const refreshDesigns = async () => {
     try {
       const live = await designsService.fetchDesigns();
-      if (live && live.length > 0) {
+      if (live) {
         setDesigns(live);
       }
     } catch (e) {

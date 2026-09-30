@@ -71,6 +71,12 @@ function formatDesignError(err: any): string {
   if (code === '23505' || message.includes('23505') || message.includes('already exists')) {
     return 'Article code already exists in the catalog.';
   }
+  if (code === '23503' || message.includes('23503') || message.includes('cannot be deleted')) {
+    return message;
+  }
+  if (code === 'P0002' || message.includes('not found')) {
+    return 'Design not found in catalog.';
+  }
   return message;
 }
 
@@ -80,37 +86,46 @@ export const designsService = {
    */
   async fetchDesigns(filters?: { category?: string; status?: string; search?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) return MOCK_DESIGNS;
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) throw new Error('Supabase database client is not configured.');
+      return MOCK_DESIGNS;
+    }
 
-    try {
-      let query = supabase
-        .from('designs')
-        .select('*')
-        .is('archived_at', null)
-        .order('created_at', { ascending: false });
+    let query = supabase
+      .from('designs')
+      .select('*')
+      .is('archived_at', null)
+      .order('created_at', { ascending: false });
 
-      if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
-        query = query.eq('category', filters.category);
+    if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
+      query = query.eq('category', filters.category);
+    }
+    if (filters?.status && filters.status !== 'All' && filters.status !== 'all') {
+      query = query.eq('status', filters.status);
+    }
+    if (filters?.search) {
+      query = query.or(`name.ilike.%${filters.search}%,articleCode.ilike.%${filters.search}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      if (allowDemo) {
+        console.warn('Error fetching designs from Supabase (falling back to mocks in demo mode):', error);
+        return MOCK_DESIGNS;
       }
-      if (filters?.status && filters.status !== 'All' && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
-      }
-      if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,articleCode.ilike.%${filters.search}%`);
-      }
+      throw parseSupabaseError(error);
+    }
 
-      const { data, error } = await query;
-      if (error) throw parseSupabaseError(error);
+    const liveList = (data || []).map(fromDesignRow);
 
-      const liveList = (data || []).map(fromDesignRow);
-      // Merge live Supabase records with MOCK_DESIGNS without duplicate articleCodes/IDs
+    // Only merge mocks if demo mode is explicitly enabled
+    if (allowDemo) {
       const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
       const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
-
       let combined = [...liveList, ...filteredMocks];
 
-      // Apply client-side filters if needed on mock records
       if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
         combined = combined.filter((d) => d.category === filters.category);
       }
@@ -121,12 +136,10 @@ export const designsService = {
         const q = filters.search.toLowerCase();
         combined = combined.filter((d) => d.name.toLowerCase().includes(q) || d.articleCode.toLowerCase().includes(q));
       }
-
       return combined;
-    } catch (err) {
-      console.warn('Error fetching designs from Supabase:', err);
-      return MOCK_DESIGNS;
     }
+
+    return liveList;
   },
 
   /**
@@ -134,44 +147,54 @@ export const designsService = {
    */
   async fetchAllDesigns(options?: { includeArchived?: boolean; onlyArchived?: boolean; search?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) return MOCK_DESIGNS;
-
-    try {
-      let query = supabase
-        .from('designs')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (options?.onlyArchived) {
-        query = query.not('archived_at', 'is', null);
-      } else if (!options?.includeArchived) {
-        query = query.is('archived_at', null);
-      }
-
-      if (options?.search) {
-        query = query.or(`name.ilike.%${options.search}%,articleCode.ilike.%${options.search}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw parseSupabaseError(error);
-
-      const liveList = (data || []).map(fromDesignRow);
-      const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
-      const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
-
-      return [...liveList, ...filteredMocks];
-    } catch (err) {
-      console.warn('Error fetching all designs from Supabase:', err);
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) throw new Error('Supabase database client is not configured.');
       return MOCK_DESIGNS;
     }
+
+    let query = supabase
+      .from('designs')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (options?.onlyArchived) {
+      query = query.not('archived_at', 'is', null);
+    } else if (!options?.includeArchived) {
+      query = query.is('archived_at', null);
+    }
+
+    if (options?.search) {
+      query = query.or(`name.ilike.%${options.search}%,articleCode.ilike.%${options.search}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      if (allowDemo) {
+        console.warn('Error fetching all designs from Supabase (falling back to mocks in demo mode):', error);
+        return MOCK_DESIGNS;
+      }
+      throw parseSupabaseError(error);
+    }
+
+    const liveList = (data || []).map(fromDesignRow);
+
+    if (allowDemo) {
+      const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
+      const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
+      return [...liveList, ...filteredMocks];
+    }
+
+    return liveList;
   },
 
   async fetchDesignById(id: string): Promise<ShoeDesign | null> {
     const isConfigured = isSupabaseConfigured();
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || !isConfigured;
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || isDemoMode) {
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) throw new Error('Supabase database client is not configured.');
       return MOCK_DESIGNS.find((d) => d.id === id) || null;
     }
 
@@ -186,8 +209,10 @@ export const designsService = {
       if (!data) return null;
       return fromDesignRow(data);
     } catch (err) {
-      console.error('Error fetching design by ID:', err);
-      return MOCK_DESIGNS.find((d) => d.id === id) || null;
+      if (allowDemo) {
+        return MOCK_DESIGNS.find((d) => d.id === id) || null;
+      }
+      throw err;
     }
   },
 
@@ -196,8 +221,12 @@ export const designsService = {
    */
   async createDesignV2(form: any): Promise<{ success: boolean; data?: ShoeDesign; error?: string }> {
     const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
     if (!supabase || !isConfigured) {
+      if (!allowDemo) {
+        return { success: false, error: 'Database connection is not configured.' };
+      }
       const dummyDesign: ShoeDesign = {
         id: `sf-${Date.now()}`,
         ...form,
@@ -230,33 +259,8 @@ export const designsService = {
       return { success: true, data: fromDesignRow(res) };
     } catch (err: any) {
       const userMsg = formatDesignError(err);
-      console.warn('Supabase create_design error, applying fallback:', err);
-      if (err.code === '23505' || String(err.message).includes('already exists')) {
-        return { success: false, error: userMsg };
-      }
-      // If error is permission or RLS related in demo/mock admin session, fallback to local creation
-      const localDesign: ShoeDesign = {
-        id: `sf-${Date.now()}`,
-        ...form,
-        articleCode: form.articleCode || 'SF-ART',
-        name: form.name || 'Footwear Model',
-        category: form.category || 'Formal Derby & Oxford',
-        price: Number(form.price || 1450),
-        moqPairs: Number(form.moqPairs || 24),
-        moqCartons: Number(form.moqCartons || 2),
-        sizes: form.sizes || [6, 7, 8, 9, 10],
-        colors: form.colors || ['Midnight Black'],
-        status: 'New Designs',
-        image: form.image || '',
-        soleType: form.soleType || 'TPR Lug Sole',
-        upperMaterial: form.upperMaterial || 'Full Grain Leather',
-        pairsPerCarton: Number(form.pairsPerCarton || 12),
-        subline: form.subline || `ART: ${form.articleCode}`,
-        marginBadge: 'High Margin',
-        velocityBadge: 'Trending',
-        createdAt: new Date().toISOString(),
-      };
-      return { success: true, data: localDesign };
+      console.error('Supabase create_design error:', err);
+      return { success: false, error: userMsg };
     }
   },
 
@@ -265,8 +269,10 @@ export const designsService = {
    */
   async updateDesignV2(id: string, changes: any): Promise<{ success: boolean; data?: ShoeDesign; error?: string }> {
     const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
     if (!supabase || !isConfigured) {
+      if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
       return { success: true };
     }
 
@@ -305,8 +311,10 @@ export const designsService = {
    */
   async archiveDesignV2(id: string): Promise<{ success: boolean; error?: string }> {
     const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
     if (!supabase || !isConfigured) {
+      if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
       return { success: true };
     }
 
@@ -326,8 +334,10 @@ export const designsService = {
    */
   async restoreDesignV2(id: string): Promise<{ success: boolean; error?: string }> {
     const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
     if (!supabase || !isConfigured) {
+      if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
       return { success: true };
     }
 
@@ -340,6 +350,86 @@ export const designsService = {
       console.error('Failed to restore design:', err);
       return { success: false, error: userMsg };
     }
+  },
+
+  /**
+   * Check if a design can be permanently deleted or if it must be archived
+   */
+  async checkDesignDeletable(id: string): Promise<{ canDelete: boolean; reason: string | null; orderCount: number; shareCount?: number }> {
+    const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) return { canDelete: false, reason: 'Database is not connected.', orderCount: 0 };
+      return { canDelete: true, reason: null, orderCount: 0 };
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('design_delete_check', { p_design_id: id });
+      if (error) throw error;
+      const res = typeof data === 'string' ? JSON.parse(data) : data;
+      const canDelete = Boolean(res?.can_delete);
+      const orderCount = Number(res?.order_count || 0);
+      const shareCount = Number(res?.share_count || 0);
+
+      return {
+        canDelete,
+        reason: canDelete ? null : `This design appears in ${orderCount} order(s). It cannot be permanently deleted to protect order history and ledger balances. Archive it instead.`,
+        orderCount,
+        shareCount,
+      };
+    } catch (err: any) {
+      console.error('Error checking if design is deletable:', err);
+      return { canDelete: false, reason: formatDesignError(err), orderCount: 0 };
+    }
+  },
+
+  /**
+   * Permanently delete design from catalog (Admin only)
+   */
+  async deleteDesignV2(id: string): Promise<{ success: boolean; error?: string }> {
+    const isConfigured = isSupabaseConfigured();
+    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) return { success: false, error: 'Database is not connected.' };
+      return { success: true };
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('delete_design', { p_design_id: id });
+      if (error) throw error;
+
+      // Best-effort storage cleanup
+      try {
+        const res = typeof data === 'string' ? JSON.parse(data) : data;
+        const imageUrl = res?.image;
+        if (imageUrl && typeof imageUrl === 'string') {
+          let storagePath = '';
+          if (imageUrl.includes('/design-images/')) {
+            storagePath = imageUrl.split('/design-images/')[1]?.split('?')[0];
+          } else if (imageUrl.startsWith('designs/')) {
+            storagePath = imageUrl;
+          }
+          if (storagePath) {
+            await supabase.storage.from('design-images').remove([storagePath]);
+          }
+        }
+      } catch (storageErr) {
+        console.warn('Storage image cleanup error (non-fatal):', storageErr);
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      const userMsg = formatDesignError(err);
+      console.error('Failed to delete design:', err);
+      return { success: false, error: userMsg };
+    }
+  },
+
+  // Backward-compatible alias
+  async deleteDesign(id: string): Promise<{ success: boolean; error?: string }> {
+    return this.deleteDesignV2(id);
   },
 
   /**
@@ -397,17 +487,17 @@ export const designsService = {
     }
   },
 
-  // // DEPRECATED: Old createDesign wrapper routing to createDesignV2
+  // DEPRECATED: Old createDesign wrapper routing to createDesignV2
   async createDesign(data: any): Promise<{ success: boolean; data?: any; error?: string }> {
     return this.createDesignV2(data);
   },
 
-  // // DEPRECATED: Old updateDesign wrapper routing to updateDesignV2
+  // DEPRECATED: Old updateDesign wrapper routing to updateDesignV2
   async updateDesign(id: string, updates: any): Promise<{ success: boolean; error?: string }> {
     return this.updateDesignV2(id, updates);
   },
 
-  // // DEPRECATED: Old archiveDesign wrapper routing to archiveDesignV2
+  // DEPRECATED: Old archiveDesign wrapper routing to archiveDesignV2
   async archiveDesign(id: string): Promise<{ success: boolean; error?: string }> {
     return this.archiveDesignV2(id);
   },

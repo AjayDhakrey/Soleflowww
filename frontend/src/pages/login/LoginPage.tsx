@@ -33,9 +33,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onForgotPassword,
 }) => {
   const { login: appLogin, register } = useApp();
-  const { signIn, isDemoMode } = useAuth();
+  const { signIn, isDemoMode, allowDemo, role: currentRole } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
-  const [email, setEmail] = useState('admin@soleflow.com');
+  const [email, setEmail] = useState('soleflow.admin@gmail.com');
   const [password, setPassword] = useState('admin123');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -138,43 +138,38 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setIsLoading(true);
 
     try {
-      if (isDemoMode) {
-        const role = email.includes('admin') ? 'admin' : 'salesperson';
-        appLogin(email, password);
-        setIsLoading(false);
-        onSuccess(role);
+      const res = await signIn(email, password);
+      setIsLoading(false);
+
+      if (!res.success) {
+        setError(res.error || 'Authentication failed. Please check your credentials.');
         return;
       }
 
-      await signIn(email, password);
-      const role = email.includes('admin') ? 'admin' : 'salesperson';
       appLogin(email, password);
-      setIsLoading(false);
-      onSuccess(role);
+      const determinedRole = email.toLowerCase().includes('sales') ? 'salesperson' : 'admin';
+      onSuccess(determinedRole);
     } catch (err: any) {
       setIsLoading(false);
-      // Fallback demo login
-      const role = email.includes('admin') ? 'admin' : 'salesperson';
-      const success = appLogin(email, password);
-      if (success) {
-        onSuccess(role);
-      } else {
-        setError(err?.message || 'Invalid credentials. Use demo credentials below.');
-      }
+      setError(err?.message || 'Login failed. Please check your credentials.');
     }
   };
 
-  const handleQuickLogin = (role: 'admin' | 'salesperson') => {
-    if (role === 'admin') {
-      setEmail('admin@soleflow.com');
-      setPassword('admin123');
-      appLogin('admin@soleflow.com', 'admin123');
-      onSuccess('admin');
+  const handleQuickLogin = async (role: 'admin' | 'salesperson') => {
+    const targetEmail = role === 'admin' ? 'soleflow.admin@gmail.com' : 'soleflow.sales@gmail.com';
+    const targetPass = role === 'admin' ? 'admin123' : 'sales123';
+    setEmail(targetEmail);
+    setPassword(targetPass);
+    setError('');
+    setIsLoading(true);
+
+    const res = await signIn(targetEmail, targetPass);
+    setIsLoading(false);
+    if (res.success) {
+      appLogin(targetEmail, targetPass);
+      onSuccess(role);
     } else {
-      setEmail('sales@soleflow.com');
-      setPassword('sales123');
-      appLogin('sales@soleflow.com', 'sales123');
-      onSuccess('salesperson');
+      setError(res.error || 'Could not log in with credentials.');
     }
   };
 
@@ -520,7 +515,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       Trader / Admin
                     </span>
                     <span className="text-[9px] font-mono block truncate text-blue-200/90">
-                      admin@soleflow.com
+                      soleflow.admin@gmail.com
                     </span>
                   </button>
 
@@ -533,7 +528,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       Salesperson
                     </span>
                     <span className="text-[9px] font-mono block truncate text-emerald-200/90">
-                      sales@soleflow.com
+                      soleflow.sales@gmail.com
                     </span>
                   </button>
                 </div>

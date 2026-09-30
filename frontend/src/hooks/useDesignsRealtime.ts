@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { fromDesignRow } from '../services/designs';
+import { ShoeDesign } from '../types';
 
 interface UseDesignsRealtimeOptions {
   isSalesperson?: boolean;
@@ -20,17 +21,39 @@ export function useDesignsRealtime(options?: UseDesignsRealtimeOptions) {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'designs' },
         (payload) => {
-          // Immediately invalidate all designs queries to pull freshest data
-          queryClient.invalidateQueries({ queryKey: ['designs'] });
-
           if (payload.eventType === 'INSERT') {
-            const newRow = payload.new;
+            const newDesign = fromDesignRow(payload.new);
+            queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
+              if (!old) return [newDesign];
+              if (old.some((d) => d.id === newDesign.id || (d.articleCode && d.articleCode.toLowerCase() === newDesign.articleCode.toLowerCase()))) {
+                return old.map((d) => (d.id === newDesign.id || (d.articleCode && d.articleCode.toLowerCase() === newDesign.articleCode.toLowerCase()) ? newDesign : d));
+              }
+              return [newDesign, ...old];
+            });
+
             if (options?.isSalesperson && options?.onNewDesign) {
-              const name = newRow.name || newRow.articleCode || 'New Design';
-              const articleCode = newRow.articleCode || '';
+              const name = newDesign.name || newDesign.articleCode || 'New Footwear Design';
+              const articleCode = newDesign.articleCode || '';
               options.onNewDesign(name, articleCode);
             }
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedDesign = fromDesignRow(payload.new);
+            queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
+              if (!old) return [updatedDesign];
+              return old.map((d) => (d.id === updatedDesign.id ? updatedDesign : d));
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as any)?.id;
+            if (deletedId) {
+              queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
+                if (!old) return [];
+                return old.filter((d) => d.id !== deletedId);
+              });
+            }
           }
+
+          // Invalidate to guarantee full sync with DB state
+          queryClient.invalidateQueries({ queryKey: ['designs'] });
         }
       )
       .subscribe();
