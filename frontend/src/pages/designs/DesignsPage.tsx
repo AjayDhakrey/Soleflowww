@@ -70,14 +70,6 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // Realtime hook for live updates
-  useDesignsRealtime({
-    isSalesperson: !isAdmin,
-    onNewDesign: (name, code) => {
-      showToast(`New design published: ${name} (${code})`);
-    },
-  });
-
   // Query Catalog
   const {
     data: rawDesigns = [],

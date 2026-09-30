@@ -15,8 +15,9 @@ export function useDesignsRealtime(options?: UseDesignsRealtimeOptions) {
   useEffect(() => {
     if (!supabase) return;
 
+    const channelName = `designs-realtime-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const designsChannel = supabase
-      .channel('designs-realtime-sync')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'designs' },
@@ -25,8 +26,19 @@ export function useDesignsRealtime(options?: UseDesignsRealtimeOptions) {
             const newDesign = fromDesignRow(payload.new);
             queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
               if (!old) return [newDesign];
-              if (old.some((d) => d.id === newDesign.id || (d.articleCode && d.articleCode.toLowerCase() === newDesign.articleCode.toLowerCase()))) {
-                return old.map((d) => (d.id === newDesign.id || (d.articleCode && d.articleCode.toLowerCase() === newDesign.articleCode.toLowerCase()) ? newDesign : d));
+              if (
+                old.some(
+                  (d) =>
+                    d.id === newDesign.id ||
+                    (d.articleCode && d.articleCode.toLowerCase() === newDesign.articleCode.toLowerCase())
+                )
+              ) {
+                return old.map((d) =>
+                  d.id === newDesign.id ||
+                  (d.articleCode && d.articleCode.toLowerCase() === newDesign.articleCode.toLowerCase())
+                    ? newDesign
+                    : d
+                );
               }
               return [newDesign, ...old];
             });
