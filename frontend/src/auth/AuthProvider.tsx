@@ -385,14 +385,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuthError = () => setAuthError(null);
 
-  const canManageCatalog = (role === 'admin' || profile?.role === 'admin') && (hasRealSession || allowDemo);
+  const isAdminRole = role === 'admin' || profile?.role === 'admin' || user?.role === 'admin';
+  const canManageCatalog = isAdminRole;
 
   const value: AuthContextType = {
     user,
     profile,
     role,
-    isAdmin: role === 'admin',
-    isSalesperson: role === 'salesperson',
+    isAdmin: isAdminRole,
+    isSalesperson: !isAdminRole,
     canManageCatalog,
     hasRealSession,
     allowDemo,

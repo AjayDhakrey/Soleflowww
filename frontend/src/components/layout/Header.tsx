@@ -283,6 +283,22 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 <Icons.Orders size={16} strokeWidth={1.75} className="text-primary" />
                 Create New Order
               </button>
+              {currentUser.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsNewMenuOpen(false);
+                    onNavigate('/designs');
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('open-add-design-modal'));
+                    }, 50);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted rounded-xl cursor-pointer"
+                >
+                  <Icons.Designs size={16} strokeWidth={1.75} className="text-indigo-600 dark:text-indigo-400" />
+                  Add Footwear Design
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {

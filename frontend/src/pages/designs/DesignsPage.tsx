@@ -39,6 +39,7 @@ interface DesignsPageProps {
 
 export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const {
+    currentUser,
     selectedDesignIds,
     toggleSelectDesign,
     clearSelectedDesigns,
@@ -47,8 +48,10 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     showToast,
   } = useApp();
 
-  const { canManageCatalog, isAdmin } = useAuth();
+  const { canManageCatalog, isAdmin, role: authRole } = useAuth();
   const queryClient = useQueryClient();
+
+  const isUserAdmin = canManageCatalog || isAdmin || authRole === 'admin' || currentUser?.role === 'admin';
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,6 +64,16 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const [editingDesign, setEditingDesign] = useState<ShoeDesign | null>(null);
   const [archivingDesign, setArchivingDesign] = useState<ShoeDesign | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
+
+  // Listen for global open-add-design-modal event
+  useEffect(() => {
+    const handleOpenAddModal = () => {
+      setEditingDesign(null);
+      setIsAddModalOpen(true);
+    };
+    window.addEventListener('open-add-design-modal', handleOpenAddModal);
+    return () => window.removeEventListener('open-add-design-modal', handleOpenAddModal);
+  }, []);
 
   // Delete State
   const [deletingDesign, setDeletingDesign] = useState<ShoeDesign | null>(null);
@@ -89,7 +102,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     'Formal Derby & Oxford',
     'Leather Boots',
     'Loafers & Casuals',
-    ...(canManageCatalog ? ['Archived'] : []),
+    ...(isUserAdmin ? ['Archived'] : []),
   ];
 
   // Filtering
@@ -237,7 +250,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
             >
               Share Lookbook ({selectedDesignIds.length})
             </Button>
-            {canManageCatalog && (
+            {isUserAdmin && (
               <Button
                 variant="primary"
                 icon={Plus}
@@ -480,7 +493,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         </div>
 
                         {/* Actions Area */}
-                        {canManageCatalog ? (
+                        {isUserAdmin ? (
                           <div className="pt-2 space-y-2">
                             {shoe.isArchived ? (
                               <div className="grid grid-cols-2 gap-2">
@@ -630,7 +643,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                     ₹{quickViewShoe.price.toLocaleString('en-IN')} / Pair
                   </span>
                 </div>
-                {canManageCatalog ? (
+                {isUserAdmin ? (
                   <div className="flex items-center gap-2">
                     <Button
                       variant="secondary"
@@ -856,7 +869,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
       />
 
       {/* 9. Mobile Floating Action Button (Admin only) */}
-      {canManageCatalog && (
+      {isUserAdmin && (
         <button
           type="button"
           onClick={() => {
