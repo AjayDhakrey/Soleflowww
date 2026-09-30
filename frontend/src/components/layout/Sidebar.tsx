@@ -1,35 +1,24 @@
-import React, { useEffect } from 'react';
-import {
-  LayoutDashboard,
-  Users,
-  Layers,
-  ShoppingBag,
-  UserCheck,
-  Factory,
-  CreditCard,
-  BarChart3,
-  Settings,
-  CalendarCheck,
-  MapPin,
-  Bell,
-  Briefcase,
-  User,
-  LogOut,
-  ArrowLeftRight,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Sparkles,
-  History,
-  PlayCircle,
-} from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
+import { Icons } from '../../lib/icons';
+import { Avatar } from '../ui/Avatar';
+import projectLogo from '../../assets/images/project_logo.png';
 
 interface SidebarProps {
   currentPath: string;
   onNavigate: (path: string) => void;
+}
+
+interface NavItemDef {
+  name: string;
+  path: string;
+  icon: keyof typeof Icons;
+  badge?: number;
+}
+
+interface NavGroupDef {
+  label: string;
+  items: NavItemDef[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => {
@@ -39,15 +28,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     logout,
     notifications,
     isSidebarCollapsed,
-    setIsSidebarCollapsed,
     toggleSidebar,
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
-    setIsWalkthroughOpen,
-    setWalkthroughStep,
   } = useApp();
 
-  // Keyboard shortcut: Ctrl+B or Cmd+B to toggle sidebar
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
@@ -59,40 +47,93 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const unreadAlerts =
     notifications.filter(
       (n) => !n.read && (n.category === 'alert' || n.category === 'order')
     ).length || 4;
 
-  const adminNav = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Customers', path: '/admin/customers', icon: Users },
-    { name: 'Designs', path: '/admin/designs', icon: Layers },
-    { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
-    { name: 'Sales Team', path: '/admin/sales-team', icon: UserCheck },
-    { name: 'Manufacturers', path: '/admin/manufacturers', icon: Factory },
-    { name: 'Payments & Amount Due', path: '/admin/payments', icon: CreditCard },
-    { name: 'Reports & Alerts', path: '/admin/reports', icon: BarChart3, badge: unreadAlerts },
-    { name: 'Audit Log', path: '/admin/audit-log', icon: History },
-    { name: 'Public Landing Page', path: '/landing', icon: Sparkles },
-    { name: 'Settings', path: '/admin/settings', icon: Settings },
+  const adminNavGroups: NavGroupDef[] = [
+    {
+      label: 'Overview',
+      items: [{ name: 'Dashboard', path: '/admin/dashboard', icon: 'Dashboard' }],
+    },
+    {
+      label: 'Sales & Clients',
+      items: [
+        { name: 'Customers', path: '/admin/customers', icon: 'Clients' },
+        { name: 'Sales Team', path: '/admin/sales-team', icon: 'SalesTeam' },
+      ],
+    },
+    {
+      label: 'Catalogue & Orders',
+      items: [
+        { name: 'Designs', path: '/admin/designs', icon: 'Designs' },
+        { name: 'Orders', path: '/admin/orders', icon: 'Orders' },
+        { name: 'Manufacturers', path: '/admin/manufacturers', icon: 'Manufacturers' },
+      ],
+    },
+    {
+      label: 'Finance',
+      items: [
+        { name: 'Payments & Amount Due', path: '/admin/payments', icon: 'Payments' },
+      ],
+    },
+    {
+      label: 'Administration',
+      items: [
+        { name: 'Reports & Alerts', path: '/admin/reports', icon: 'Reports', badge: unreadAlerts },
+        { name: 'Audit Log', path: '/admin/audit-log', icon: 'AuditLog' },
+        { name: 'Settings', path: '/admin/settings', icon: 'Settings' },
+      ],
+    },
   ];
 
-  const salesNav = [
-    { name: 'Dashboard', path: '/sales/dashboard', icon: LayoutDashboard },
-    { name: 'My Customers', path: '/sales/customers', icon: Users },
-    { name: 'Design Catalogue', path: '/sales/designs', icon: Layers },
-    { name: 'My Orders', path: '/sales/orders', icon: ShoppingBag },
-    { name: 'Collections', path: '/sales/collections', icon: CreditCard },
-    { name: 'Follow-ups', path: '/sales/follow-ups', icon: CalendarCheck },
-    { name: 'My Visits', path: '/sales/visits', icon: MapPin },
-    { name: 'Notifications', path: '/sales/notifications', icon: Bell, badge: 2 },
-    { name: 'My Activity', path: '/sales/activity', icon: Briefcase },
-    { name: 'Public Landing Page', path: '/landing', icon: Sparkles },
-    { name: 'Profile', path: '/sales/profile', icon: User },
+  const salesNavGroups: NavGroupDef[] = [
+    {
+      label: 'Overview',
+      items: [{ name: 'Dashboard', path: '/sales/dashboard', icon: 'Dashboard' }],
+    },
+    {
+      label: 'Sales & Visits',
+      items: [
+        { name: 'My Customers', path: '/sales/customers', icon: 'Clients' },
+        { name: 'Follow-ups', path: '/sales/follow-ups', icon: 'FollowUps' },
+        { name: 'My Visits', path: '/sales/visits', icon: 'Visits' },
+      ],
+    },
+    {
+      label: 'Catalogue & Orders',
+      items: [
+        { name: 'Design Catalogue', path: '/sales/designs', icon: 'Designs' },
+        { name: 'My Orders', path: '/sales/orders', icon: 'Orders' },
+      ],
+    },
+    {
+      label: 'Finance',
+      items: [
+        { name: 'Collections', path: '/sales/collections', icon: 'Collections' },
+      ],
+    },
+    {
+      label: 'Account',
+      items: [
+        { name: 'Notifications', path: '/sales/notifications', icon: 'Notifications', badge: 2 },
+        { name: 'Profile', path: '/sales/profile', icon: 'SalesTeam' },
+      ],
+    },
   ];
 
-  const currentNav = currentUser.role === 'admin' ? adminNav : salesNav;
+  const navGroups = currentUser.role === 'admin' ? adminNavGroups : salesNavGroups;
 
   const handleNavClick = (path: string) => {
     onNavigate(path);
@@ -101,444 +142,231 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     }
   };
 
-  return (
-    <>
-      {/* ========================================================================= */}
-      {/* 1. DEDICATED PHONE NAVIGATION DRAWER (Mobile-only < md)                   */}
-      {/* ========================================================================= */}
-      {isMobileSidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] flex">
-          {/* Full-screen Dark Frosted Touch-Dismiss Backdrop */}
-          <div
-            onClick={() => setIsMobileSidebarOpen(false)}
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-300"
-            aria-hidden="true"
-          />
+  const renderNavGroup = (group: NavGroupDef) => (
+    <div key={group.label} className="mb-4">
+      {!isSidebarCollapsed && (
+        <div className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-subtle-foreground select-none">
+          {group.label}
+        </div>
+      )}
+      <div className="space-y-1 mt-1">
+        {group.items.map((item) => {
+          const IconComp = Icons[item.icon] || Icons.Dashboard;
+          const isActive = currentPath === item.path;
 
-          {/* Phone Drawer Panel */}
-          <div className="relative w-[86vw] max-w-[320px] bg-white h-full shadow-2xl flex flex-col z-[101] animate-in slide-in-from-left duration-200">
-            {/* Phone Header with Large Close Button */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+          return (
+            <button
+              key={item.path}
+              onClick={() => handleNavClick(item.path)}
+              title={isSidebarCollapsed ? item.name : undefined}
+              className={`w-full flex items-center h-11 rounded-xl transition-colors duration-150 group relative select-none cursor-pointer ${
+                isSidebarCollapsed ? 'justify-center px-0' : 'px-3.5 gap-3.5'
+              } ${
+                isActive
+                  ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground font-medium'
+              }`}
+            >
               <div
-                className="flex items-center gap-2.5 cursor-pointer"
-                onClick={() => {
-                  handleNavClick(
-                    currentUser.role === 'admin'
-                      ? '/admin/dashboard'
-                      : '/sales/dashboard'
-                  );
-                }}
+                className={`shrink-0 ${
+                  isActive ? 'text-primary-foreground' : 'text-subtle-foreground group-hover:text-foreground'
+                }`}
               >
-                <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs shrink-0">
-                  <svg
-                    className="w-5 h-5 text-blue-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                    <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="font-extrabold text-base tracking-tight text-slate-900 leading-tight">
-                    SoleFlow
-                  </h2>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                    {currentUser.role === 'admin'
-                      ? 'Trader / Admin'
-                      : 'Sales Representative'}
-                  </span>
-                </div>
+                <IconComp size={19} strokeWidth={1.75} />
               </div>
 
-              {/* Close Button on Phone */}
-              <button
-                onClick={() => setIsMobileSidebarOpen(false)}
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all cursor-pointer"
-                aria-label="Close menu"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+              {!isSidebarCollapsed && (
+                <span className="text-[14px] truncate flex-1 text-left">
+                  {item.name}
+                </span>
+              )}
 
-            {/* Phone Role Switcher */}
-            <div className="p-3 bg-slate-50 border-b border-slate-100">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 px-1">
-                Portal Mode
+              {!isSidebarCollapsed && item.badge && item.badge > 0 && (
+                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${
+                  isActive
+                    ? 'bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30'
+                    : 'bg-muted text-foreground border-border'
+                }`}>
+                  {item.badge}
+                </span>
+              )}
+
+              {isSidebarCollapsed && item.badge && item.badge > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full bg-surface">
+      {/* Brand Block */}
+      <div className={`h-[72px] px-4 sm:px-5 border-b border-border flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center' : 'gap-3.5'}`}>
+        <div className="w-11 h-11 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden group">
+          <img
+            src={projectLogo}
+            alt="ShoeConnect Logo"
+            className="w-full h-full object-contain rounded-lg transition-transform group-hover:scale-105"
+          />
+        </div>
+        {!isSidebarCollapsed && (
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-bold text-foreground tracking-tight leading-tight truncate">
+              ShoeConnect
+            </h2>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">
+              Step Towards Better Tomorrow
+            </p>
+            <p className="text-[10px] text-muted-foreground/80 truncate">
+              {currentUser.role === 'admin' ? 'Admin Workspace' : 'Sales Portal'} • 2026-2027
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation Groups Scroll Area */}
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
+        {navGroups.map(renderNavGroup)}
+      </div>
+
+      {/* Sidebar Promo Card (from screenshot) */}
+      {!isSidebarCollapsed && (
+        <div className="px-3 pb-3">
+          <div className="p-3 rounded-2xl bg-surface hover:bg-muted/60 border border-border flex items-center justify-between gap-3 shadow-2xs transition-colors cursor-pointer group">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                <Icons.Designs size={18} strokeWidth={2} />
               </div>
-              <div className="grid grid-cols-2 gap-1.5 bg-slate-200/70 p-1 rounded-xl">
-                <button
-                  onClick={() => switchRole('admin')}
-                  className={`py-1.5 px-2 text-xs font-bold rounded-lg transition-all text-center ${
-                    currentUser.role === 'admin'
-                      ? 'bg-white text-blue-700 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Trader Admin
-                </button>
-                <button
-                  onClick={() => switchRole('salesperson')}
-                  className={`py-1.5 px-2 text-xs font-bold rounded-lg transition-all text-center ${
-                    currentUser.role === 'salesperson'
-                      ? 'bg-white text-emerald-700 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Sales Rep
-                </button>
-              </div>
-            </div>
-
-            {/* Phone Navigation Links */}
-            <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
-              {currentNav.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  currentPath === item.path ||
-                  (item.path !== '/admin/dashboard' &&
-                    item.path !== '/sales/dashboard' &&
-                    currentPath.startsWith(item.path));
-
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => handleNavClick(item.path)}
-                    className={`w-full min-h-[46px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70'
-                        : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200/80'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon
-                        className={`w-5 h-5 shrink-0 ${
-                          isActive ? 'text-blue-600' : 'text-slate-500'
-                        }`}
-                      />
-                      <span>{item.name}</span>
-                    </div>
-
-                    {item.badge !== undefined && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-600 border border-rose-200">
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* Phone User Profile Card with Sign Out */}
-            <div className="p-3.5 border-t border-slate-100 bg-white">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-300 shrink-0">
-                    {currentUser.initials}
-                  </div>
-                  <div className="truncate">
-                    <h4 className="text-xs font-bold text-slate-900 truncate leading-tight">
-                      {currentUser.name}
-                    </h4>
-                    <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                      {currentUser.roleLabel}
-                    </p>
-                  </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-foreground leading-tight truncate">
+                  Better Footwear
                 </div>
-
-                <button
-                  onClick={logout}
-                  className="px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors flex items-center gap-1 shrink-0 border border-rose-200/70 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Logout</span>
-                </button>
+                <div className="text-[11px] font-semibold text-muted-foreground truncate">
+                  Bigger Opportunities
+                </div>
+                <div className="text-[10px] text-muted-foreground/80 truncate">
+                  Wholesale • Supply Chain • Growth
+                </div>
               </div>
             </div>
+            <Icons.ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 2. DESKTOP PERMANENT SIDEBAR (Desktop-only md:flex)                       */}
-      {/* ========================================================================= */}
+      {/* Bottom User Card */}
+      <div className="p-3 border-t border-border relative" ref={userMenuRef}>
+        <div
+          onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+          className={`rounded-2xl border border-border p-2.5 flex items-center gap-3 bg-surface hover:bg-muted cursor-pointer transition-colors ${
+            isSidebarCollapsed ? 'justify-center' : ''
+          }`}
+        >
+          <Avatar name={currentUser.name} size="md" />
+
+          {!isSidebarCollapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground truncate leading-tight">
+                {currentUser.name}
+              </p>
+              <p className="text-xs text-muted-foreground capitalize truncate mt-0.5">
+                {currentUser.role === 'admin' ? 'Trader / Admin' : 'Sales Executive'}
+              </p>
+            </div>
+          )}
+
+          {!isSidebarCollapsed && (
+            <div className="text-subtle-foreground hover:text-foreground">
+              <Icons.More size={18} strokeWidth={1.75} />
+            </div>
+          )}
+        </div>
+
+        {/* User Popup Menu */}
+        {isUserMenuOpen && (
+          <div className="absolute bottom-full left-3 right-3 mb-2 bg-surface border border-border rounded-2xl shadow-lg p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+            <div className="px-3 py-2 border-b border-border text-xs text-muted-foreground">
+              Signed in as <span className="font-semibold text-foreground">{currentUser.email || currentUser.name}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                switchRole();
+                setIsUserMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
+            >
+              <Icons.Refresh size={16} strokeWidth={1.75} className="text-foreground" />
+              Switch to {currentUser.role === 'admin' ? 'Salesman View' : 'Admin View'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                handleNavClick(currentUser.role === 'admin' ? '/admin/settings' : '/sales/profile');
+                setIsUserMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
+            >
+              <Icons.Settings size={16} strokeWidth={1.75} />
+              Settings & Preferences
+            </button>
+
+            <div className="my-1 border-t border-border" />
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                logout();
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-colors cursor-pointer"
+            >
+              <Icons.Logout size={16} strokeWidth={1.75} />
+              Log Out
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Drawer */}
+      {isMobileSidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-[100] flex">
+          <div
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs transition-opacity"
+            aria-hidden="true"
+          />
+          <div className="relative w-[280px] bg-surface h-full shadow-2xl flex flex-col z-[101]">
+            <div className="absolute top-4 right-3">
+              <button
+                type="button"
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg"
+              >
+                <Icons.Close size={20} strokeWidth={1.75} />
+              </button>
+            </div>
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Persistent Sidebar */}
       <aside
-        className={`hidden md:flex bg-white border-r border-slate-200/90 flex-col shrink-0 min-h-screen select-none transition-all duration-300 ease-in-out relative ${
-          isSidebarCollapsed ? 'w-[72px]' : 'w-64'
+        className={`hidden md:flex flex-col bg-surface border-r border-border shrink-0 h-screen sticky top-0 transition-all duration-200 z-30 ${
+          isSidebarCollapsed ? 'w-20' : 'w-[280px]'
         }`}
       >
-        {/* Desktop Brand Header - Strictly h-16 to align seamlessly with navbar */}
-        <div className="h-16 px-3.5 border-b border-slate-200/90 flex items-center justify-between box-border">
-          {isSidebarCollapsed ? (
-            <div className="w-full flex items-center justify-center">
-              <button
-                onClick={toggleSidebar}
-                className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-white shadow-xs group transition-all"
-                title="Expand sidebar (Ctrl+B)"
-                aria-label="Expand sidebar"
-              >
-                <svg
-                  className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                  <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <>
-              <div
-                className="flex items-center gap-3 overflow-hidden cursor-pointer"
-                onClick={() =>
-                  onNavigate(
-                    currentUser.role === 'admin'
-                      ? '/admin/dashboard'
-                      : '/sales/dashboard'
-                  )
-                }
-              >
-                <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-xs shrink-0">
-                  <svg
-                    className="w-5 h-5 text-blue-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                    <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                  </svg>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-base tracking-tight text-slate-900 truncate">
-                      SoleFlow
-                    </span>
-                  </div>
-                  <p className="text-[10px] font-bold tracking-widest uppercase text-slate-500 truncate">
-                    {currentUser.role === 'admin'
-                      ? 'B2B FOOTWEAR'
-                      : 'FOOTWEAR TRADE • REP'}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={toggleSidebar}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                title="Collapse Sidebar (Ctrl+B)"
-                aria-label="Collapse Sidebar"
-              >
-                <PanelLeftClose className="w-4 h-4 text-slate-500 hover:text-slate-800" />
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Desktop Role Indicator */}
-        <div className="px-3 pt-3">
-          {!isSidebarCollapsed ? (
-            <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200/70 text-[11px]">
-              <span className="text-slate-700 font-medium">Mode:</span>
-              <div className="flex items-center gap-1.5 truncate">
-                <span
-                  className={`w-2 h-2 rounded-full shrink-0 ${
-                    currentUser.role === 'admin'
-                      ? 'bg-blue-600'
-                      : 'bg-emerald-500'
-                  }`}
-                />
-                <span className="font-bold text-slate-900 truncate">
-                  {currentUser.role === 'admin' ? 'Trader / Admin' : 'Sales Rep'}
-                </span>
-              </div>
-              <button
-                onClick={() =>
-                  switchRole(
-                    currentUser.role === 'admin' ? 'salesperson' : 'admin'
-                  )
-                }
-                title="Switch User Role"
-                className="p-1 hover:bg-slate-200 rounded text-slate-700 hover:text-slate-900 transition-colors shrink-0 cursor-pointer"
-              >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <button
-                onClick={() =>
-                  switchRole(
-                    currentUser.role === 'admin' ? 'salesperson' : 'admin'
-                  )
-                }
-                title={`Role: ${
-                  currentUser.role === 'admin' ? 'Trader' : 'Sales Rep'
-                }. Click to switch.`}
-                className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer"
-              >
-                <span
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    currentUser.role === 'admin'
-                      ? 'bg-blue-600'
-                      : 'bg-emerald-500'
-                  }`}
-                />
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Desktop Navigation Links */}
-        <nav className="flex-1 px-2.5 py-3 space-y-1 overflow-y-auto">
-          {currentNav.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              currentPath === item.path ||
-              (item.path !== '/admin/dashboard' &&
-                item.path !== '/sales/dashboard' &&
-                currentPath.startsWith(item.path));
-
-            return (
-              <button
-                key={item.path}
-                onClick={() => handleNavClick(item.path)}
-                title={isSidebarCollapsed ? item.name : undefined}
-                className={`w-full flex items-center ${
-                  isSidebarCollapsed
-                    ? 'justify-center p-2.5 relative'
-                    : 'justify-between px-3 py-2.5'
-                } rounded-xl text-[13px] font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-100/90 text-blue-900 font-semibold shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/80'
-                }`}
-              >
-                <div
-                  className={`flex items-center ${
-                    isSidebarCollapsed ? 'justify-center' : 'gap-3'
-                  }`}
-                >
-                  <Icon
-                    className={`w-4 h-4 shrink-0 ${
-                      isActive ? 'text-blue-700' : 'text-slate-500'
-                    }`}
-                  />
-                  {!isSidebarCollapsed && (
-                    <span className="truncate">{item.name}</span>
-                  )}
-                </div>
-
-                {item.badge !== undefined &&
-                  (!isSidebarCollapsed ? (
-                    <span
-                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                        isActive
-                          ? 'bg-blue-200 text-blue-800'
-                          : 'bg-rose-100 text-rose-600 border border-rose-200'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  ) : (
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
-                  ))}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Interactive Prototype Demo Tour Trigger (Section 21) */}
-        <div className="px-2.5 py-1.5 border-t border-slate-100">
-          {!isSidebarCollapsed ? (
-            <button
-              onClick={() => {
-                setWalkthroughStep(0);
-                setIsWalkthroughOpen(true);
-              }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 hover:bg-blue-100 hover:text-blue-900 transition-all border border-blue-200/80 cursor-pointer shadow-2xs"
-              title="Start End-to-End Stakeholder Demonstration Walkthrough"
-            >
-              <span className="flex items-center gap-2">
-                <PlayCircle className="w-4 h-4 text-blue-600" />
-                <span>Demo Storyline</span>
-              </span>
-              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-blue-600 text-white">
-                Live Tour
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setWalkthroughStep(0);
-                setIsWalkthroughOpen(true);
-              }}
-              className="w-full flex items-center justify-center p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-              title="Launch Demo Walkthrough"
-            >
-              <PlayCircle className="w-5 h-5 text-blue-600" />
-            </button>
-          )}
-        </div>
-
-
-
-        {/* Desktop User Profile Section */}
-        <div className="p-3 border-t border-slate-100">
-          {!isSidebarCollapsed ? (
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50/70 border border-blue-100/80">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-300 shrink-0">
-                  {currentUser.initials}
-                </div>
-                <div className="text-left truncate">
-                  <h4 className="text-xs font-bold text-slate-900 leading-tight truncate">
-                    {currentUser.name}
-                  </h4>
-                  <p className="text-[10px] text-slate-600 truncate">
-                    {currentUser.roleLabel}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={logout}
-                title="Sign Out"
-                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className="w-10 h-10 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center ring-2 ring-blue-300 cursor-pointer"
-                title={`${currentUser.name} (${currentUser.roleLabel})`}
-              >
-                {currentUser.initials}
-              </div>
-              <button
-                onClick={logout}
-                title="Sign Out"
-                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
+        {sidebarContent}
       </aside>
     </>
   );

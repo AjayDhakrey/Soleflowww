@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Send, Share2, Check, Smartphone } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { Icons } from '../../lib/icons';
+import { Button } from '../ui/Button';
 
 export const ShareLookbookModal: React.FC = () => {
   const {
@@ -26,7 +27,8 @@ export const ShareLookbookModal: React.FC = () => {
   const activeDesigns = chosenDesigns.length > 0 ? chosenDesigns : designs.slice(0, 3);
 
   const handleShare = () => {
-    // Add activity to customer
+    if (!currentCust) return;
+
     currentCust.activityHistory.unshift({
       id: `act-share-${Date.now()}`,
       type: 'shared_designs',
@@ -51,39 +53,37 @@ export const ShareLookbookModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in select-none">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-        {/* Header */}
-        <div className="p-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
+      <div className="relative w-full max-w-lg bg-surface rounded-2xl shadow-xl border border-border overflow-hidden">
+        {/* Modal Header */}
+        <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-              <Share2 className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <Icons.Share size={20} strokeWidth={1.75} />
             </div>
-            <div>
-              <h3 className="font-extrabold text-base text-slate-900">
-                Share WhatsApp Lookbook
-              </h3>
-            </div>
+            <h3 className="font-bold text-lg text-foreground tracking-tight">
+              Share WhatsApp Lookbook
+            </h3>
           </div>
           <button
+            type="button"
             onClick={() => setIsShareModalOpen(false)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <Icons.Close size={18} strokeWidth={1.75} />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Target Customer */}
+        {/* Form Body */}
+        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
+            <label className="text-sm font-medium text-foreground block mb-1.5">
               Select Recipient Retailer:
             </label>
             <select
               value={selectedCustId}
               onChange={(e) => setSelectedCustId(e.target.value)}
-              className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+              className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
             >
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -93,26 +93,25 @@ export const ShareLookbookModal: React.FC = () => {
             </select>
           </div>
 
-          {/* Selected Designs Preview */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5">
-              Included Designs ({activeDesigns.length} Selected):
+            <label className="text-sm font-medium text-foreground block mb-1.5">
+              Included Footwear Articles ({activeDesigns.length} Selected):
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
               {activeDesigns.map((d) => (
                 <div
                   key={d.id}
-                  className="p-2 rounded-xl bg-slate-50 border border-slate-200 text-center"
+                  className="p-2 rounded-xl bg-muted/50 border border-border text-center"
                 >
                   <img
                     src={d.image}
                     alt={d.name}
-                    className="w-full h-16 rounded-lg object-cover mb-1"
+                    className="w-full h-16 rounded-lg object-cover mb-1.5"
                   />
-                  <p className="text-[10px] font-bold text-slate-900 truncate">
+                  <p className="text-xs font-semibold text-foreground truncate">
                     {d.name}
                   </p>
-                  <p className="text-[9px] text-slate-500 font-mono">
+                  <p className="text-[11px] text-muted-foreground font-mono">
                     ₹{d.price.toLocaleString('en-IN')}/pr
                   </p>
                 </div>
@@ -120,28 +119,36 @@ export const ShareLookbookModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Custom Message */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
+            <label className="text-sm font-medium text-foreground block mb-1.5">
               WhatsApp Accompanying Message:
             </label>
             <textarea
               rows={3}
               value={customMsg}
               onChange={(e) => setCustomMsg(e.target.value)}
-              className="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+              className="w-full p-3.5 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
 
-          {/* Action */}
-          <div className="pt-2">
-            <button
-              onClick={handleShare}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+          {/* Footer Actions */}
+          <div className="pt-3 border-t border-border flex items-center justify-end gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsShareModalOpen(false)}
             >
-              <Smartphone className="w-4 h-4" />
-              <span>Send Lookbook to {currentCust.businessName}</span>
-            </button>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              icon={Icons.WhatsApp}
+              onClick={handleShare}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              Send on WhatsApp
+            </Button>
           </div>
         </div>
       </div>

@@ -1,14 +1,136 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --breakpoint-xs: 420px;
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+}
+
+:root {
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --muted: #F1F5F9;
+  --border: #E2E8F0;
+  --foreground: #1E293B;
+  --muted-foreground: #475569;
+  --subtle-foreground: #64748B;
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
+
+  /* Surfaces & Backgrounds */
+  --page-bg: #F8FAFC;
+  --surface-hover: #F1F5F9;
+  --border-color: #E2E8F0;
+  --divider-color: #F1F5F9;
+
+  /* Typography Colors */
+  --text-primary: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  /* Brand Primary */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-light: #EFF6FF;
+
+  /* Bubbles (Light) */
+  --bubble-blue-bg: #EFF6FF;
+  --bubble-blue-icon: #2563EB;
+  --bubble-green-bg: #ECFDF5;
+  --bubble-green-icon: #059669;
+  --bubble-red-bg: #FEF2F2;
+  --bubble-red-icon: #DC2626;
+  --bubble-amber-bg: #FFFBEB;
+  --bubble-amber-icon: #D97706;
+  --bubble-violet-bg: #F5F3FF;
+  --bubble-violet-icon: #7C3AED;
+
+  /* Status Badges */
+  --badge-info-bg: #EFF6FF;
+  --badge-info-text: #1E40AF;
+  --badge-success-bg: #ECFDF5;
+  --badge-success-text: #059669;
+  --badge-pending-bg: #FFFBEB;
+  --badge-pending-text: #D97706;
+  --badge-danger-bg: #FEF2F2;
+  --badge-danger-text: #DC2626;
+  --badge-neutral-bg: #F1F5F9;
+  --badge-neutral-text: #475569;
+
+  /* Radii & Shadows */
+  --radius-button: 12px;
+  --radius-input: 12px;
+  --radius-card: 16px;
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.dark {
+  --background: #0B1220;
+  --surface: #111827;
+  --muted: #1F2937;
+  --border: #334155;
+  --foreground: #E2E8F0;
+  --muted-foreground: #CBD5E1;
+  --subtle-foreground: #94A3B8;
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
+
+  /* Surfaces & Backgrounds */
+  --page-bg: #0B1220;
+  --surface-hover: #1F2937;
+  --border-color: #334155;
+  --divider-color: #1F2937;
+
+  /* Typography Colors */
+  --text-primary: #E2E8F0;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+
+  /* Brand Primary */
+  --color-primary: #3B82F6;
+  --color-primary-hover: #60A5FA;
+  --color-primary-light: rgba(59, 130, 246, 0.15);
+
+  /* Bubbles (Dark) */
+  --bubble-blue-bg: rgba(59, 130, 246, 0.15);
+  --bubble-blue-icon: #60A5FA;
+  --bubble-green-bg: rgba(5, 150, 105, 0.15);
+  --bubble-green-icon: #34D399;
+  --bubble-red-bg: rgba(220, 38, 38, 0.15);
+  --bubble-red-icon: #F87171;
+  --bubble-amber-bg: rgba(217, 119, 6, 0.15);
+  --bubble-amber-icon: #FBBF24;
+  --bubble-violet-bg: rgba(124, 58, 237, 0.15);
+  --bubble-violet-icon: #A78BFA;
+
+  /* Status Badges */
+  --badge-info-bg: rgba(59, 130, 246, 0.18);
+  --badge-info-text: #93C5FD;
+  --badge-success-bg: rgba(5, 150, 105, 0.18);
+  --badge-success-text: #6EE7B7;
+  --badge-pending-bg: rgba(217, 119, 6, 0.18);
+  --badge-pending-text: #FDE68A;
+  --badge-danger-bg: rgba(220, 38, 38, 0.18);
+  --badge-danger-text: #FCA5A5;
+  --badge-neutral-bg: rgba(255, 255, 255, 0.08);
+  --badge-neutral-text: #D4D4D8;
 }
 
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #0f172a;
-    background-color: #f8fafc;
+    color: var(--text-primary);
+    background-color: var(--page-bg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -395,80 +517,5 @@
   }
 }
 
-/* App-wide dark theme. Scope overrides to the authenticated workspace so the
-   public landing and sign-in pages retain their intentional light design. */
-.dark-theme {
-  color-scheme: dark;
-  background-color: #0b1220 !important;
-  color: #e2e8f0 !important;
-}
 
-.dark-theme main,
-.dark-theme .app-content {
-  background-color: #0b1220;
-}
-
-.dark-theme :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-white\/70) {
-  background-color: #111c2e !important;
-}
-
-.dark-theme :is(.bg-slate-50, .bg-slate-50\/80, .bg-slate-50\/50) {
-  background-color: #172338 !important;
-}
-
-.dark-theme :is(.bg-slate-100, .bg-slate-100\/80, .bg-slate-200, .bg-slate-200\/70) {
-  background-color: #1e2b40 !important;
-}
-
-.dark-theme :is(.text-slate-900, .text-slate-800, .text-slate-700) {
-  color: #e2e8f0 !important;
-}
-
-.dark-theme :is(.text-slate-600, .text-slate-500) {
-  color: #a3b1c6 !important;
-}
-
-.dark-theme .text-slate-400 {
-  color: #8291a8 !important;
-}
-
-.dark-theme :is([class*="border-slate-100"], [class*="border-slate-200"], [class*="border-slate-300"]) {
-  border-color: #2a3a52 !important;
-}
-
-.dark-theme :is([class*="divide-slate-100"], [class*="divide-slate-200"]) > :not([hidden]) ~ :not([hidden]) {
-  border-color: #2a3a52 !important;
-}
-
-.dark-theme input,
-.dark-theme select,
-.dark-theme textarea {
-  color: #e2e8f0;
-  background-color: #172338;
-  border-color: #34445d;
-}
-
-.dark-theme input::placeholder,
-.dark-theme textarea::placeholder {
-  color: #8291a8;
-}
-
-.dark-theme input:focus,
-.dark-theme select:focus,
-.dark-theme textarea:focus {
-  background-color: #1e2b40;
-}
-
-.dark-theme .bg-diamond-pattern,
-.dark-theme .bg-diamond-pattern-subtle {
-  background-color: #0b1220;
-}
-
-.dark-theme ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.28);
-}
-
-.dark-theme ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.48);
-}
 

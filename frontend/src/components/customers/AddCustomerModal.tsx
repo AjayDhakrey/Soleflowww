@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Building, Phone, MapPin, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { Icons } from '../../lib/icons';
+import { Button } from '../ui/Button';
 
 export const AddCustomerModal: React.FC = () => {
   const { isAddCustomerModalOpen, setIsAddCustomerModalOpen, addCustomer } = useApp();
@@ -19,16 +20,16 @@ export const AddCustomerModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!businessName) return;
+    if (!businessName.trim()) return;
     addCustomer({
-      businessName,
-      propName,
-      phone: phone || '+91 98000 12345',
-      whatsapp: phone || '+91 98000 12345',
-      city,
-      state,
-      address: address || `${city} Wholesale Footwear Market`,
-      gstin: gstin || '09AAACA9999F1Z0',
+      businessName: businessName.trim(),
+      propName: propName.trim(),
+      phone: phone.trim() || '+91 98000 12345',
+      whatsapp: phone.trim() || '+91 98000 12345',
+      city: city.trim(),
+      state: state.trim(),
+      address: address.trim() || `${city} Wholesale Footwear Market`,
+      gstin: gstin.trim() || '09AAACA9999F1Z0',
       creditLimit: Number(creditLimit),
       paymentTerms,
     });
@@ -36,87 +37,86 @@ export const AddCustomerModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in select-none">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-        {/* Header */}
-        <div className="p-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
+      <div className="relative w-full max-w-lg bg-surface rounded-2xl shadow-xl border border-border overflow-hidden">
+        {/* Modal Header */}
+        <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
-              <UserPlus className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+              <Icons.Clients size={20} strokeWidth={1.75} />
             </div>
-            <div>
-              <h3 className="font-extrabold text-base text-slate-900">
-                Add Wholesale Customer Account
-              </h3>
-            </div>
+            <h3 className="font-bold text-lg text-foreground tracking-tight">
+              Add Retailer Client Account
+            </h3>
           </div>
           <button
+            type="button"
             onClick={() => setIsAddCustomerModalOpen(false)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <Icons.Close size={18} strokeWidth={1.75} />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-3 max-h-[75vh] overflow-y-auto">
+        {/* Modal Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
-              Retail Store / Business Name *
+            <label className="text-sm font-medium text-foreground block mb-1.5">
+              Store / Business Name *
             </label>
             <input
               type="text"
               required
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
-              placeholder="e.g. Royal Shoe Emporium"
-              className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+              placeholder="e.g. Royal Footwear Emporium"
+              className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Proprietor / Contact Name
+              <label className="text-sm font-medium text-foreground block mb-1.5">
+                Proprietor Name
               </label>
               <input
                 type="text"
                 value={propName}
                 onChange={(e) => setPropName(e.target.value)}
                 placeholder="e.g. Arvind Singhania"
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+                className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                WhatsApp Phone *
+              <label className="text-sm font-medium text-foreground block mb-1.5">
+                Phone Number *
               </label>
               <input
                 type="text"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 98..."
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-mono"
+                placeholder="+91 98000 00000"
+                className="w-full h-12 px-4 text-sm font-mono bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
+              <label className="text-sm font-medium text-foreground block mb-1.5">
                 City / Market Hub
               </label>
               <input
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Agra / Kanpur / Delhi"
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+                placeholder="e.g. Agra"
+                className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
+              <label className="text-sm font-medium text-foreground block mb-1.5">
                 State
               </label>
               <input
@@ -124,74 +124,79 @@ export const AddCustomerModal: React.FC = () => {
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 placeholder="e.g. Uttar Pradesh"
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+                className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
-              Shop / Godown Delivery Address
+            <label className="text-sm font-medium text-foreground block mb-1.5">
+              Market / Godown Address
             </label>
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. Shop 24, Footwear Market, Hing Ki Mandi"
-              className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+              placeholder="e.g. Shop 24, Hing Ki Mandi Footwear Market"
+              className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                GSTIN / Trade Tax ID
+              <label className="text-sm font-medium text-foreground block mb-1.5">
+                GSTIN Number
               </label>
               <input
                 type="text"
                 value={gstin}
-                onChange={(e) => setGstin(e.target.value)}
-                placeholder="09AAACB1234F1Z8"
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-mono uppercase"
+                onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                placeholder="09AAACA9999F1Z0"
+                className="w-full h-12 px-4 text-sm font-mono bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors uppercase"
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
-                Credit Cap (₹)
+              <label className="text-sm font-medium text-foreground block mb-1.5">
+                Credit Limit (₹)
               </label>
               <input
                 type="number"
                 value={creditLimit}
                 onChange={(e) => setCreditLimit(Number(e.target.value))}
-                className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-mono"
+                className="w-full h-12 px-4 text-sm font-mono bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
-              Default Wholesale Terms
+            <label className="text-sm font-medium text-foreground block mb-1.5">
+              Wholesale Payment Terms
             </label>
             <select
               value={paymentTerms}
               onChange={(e) => setPaymentTerms(e.target.value)}
-              className="w-full h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+              className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
             >
-              <option value="30% Advance + 70% Bilty">30% Advance + 70% on Transport Bilty</option>
-              <option value="100% on Bilty Delivery">100% on Bilty Delivery</option>
-              <option value="21 Days Net Bilty">21 Days Net Bilty</option>
-              <option value="15 Days Bank Transfer">15 Days Bank Transfer</option>
+              <option value="30% Advance + 70% Bilty">30% Advance + 70% Bilty</option>
+              <option value="100% Against Dispatch/Lorry Receipt">100% Against Dispatch/Lorry Receipt</option>
+              <option value="15 Days Net Wholesale Credit">15 Days Net Wholesale Credit</option>
+              <option value="30 Days Net Wholesale Credit">30 Days Net Wholesale Credit</option>
+              <option value="100% Advance Payment (Immediate)">100% Advance Payment (Immediate)</option>
             </select>
           </div>
 
-          <div className="pt-3">
-            <button
-              type="submit"
-              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+          {/* Modal Footer */}
+          <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsAddCustomerModalOpen(false)}
             >
-              <Check className="w-4 h-4" />
-              <span>Register Customer Account</span>
-            </button>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" icon={Icons.Check}>
+              Save Client
+            </Button>
           </div>
         </form>
       </div>

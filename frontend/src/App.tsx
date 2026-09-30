@@ -26,6 +26,12 @@ import { LandingPage } from './pages/landing/LandingPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { PublicLookbookPage } from './pages/public/PublicLookbookPage';
+import {
+  TotalCustomersInsightPage,
+  TotalReceivablesInsightPage,
+  OverdueAccountsInsightPage,
+  ClearedAccountsInsightPage,
+} from './pages/customers/insights';
 import { RecordPaymentModal } from './components/payments/RecordPaymentModal';
 import { CreateOrderWizardModal } from './components/orders/CreateOrderWizardModal';
 import { AddCustomerModal } from './components/customers/AddCustomerModal';
@@ -67,6 +73,14 @@ const AppContent: React.FC = () => {
   useRealtimeSubscriptions(authUser?.id, (msg) => {
     showToast(msg);
   });
+
+  // Sync theme mode to documentElement
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', isDarkMode);
+      document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
+    }
+  }, [isDarkMode]);
 
   // URL hash and path routing for direct link access
   useEffect(() => {
@@ -216,6 +230,29 @@ const AppContent: React.FC = () => {
       );
     }
 
+    // Helper to extract return referrer path
+    const getFromPath = (path: string) => {
+      if (path.includes('from=')) {
+        const match = path.match(/from=([^&]+)/);
+        if (match) return decodeURIComponent(match[1]);
+      }
+      return currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
+    };
+
+    // Customer Insight Detail Pages (Accessible to both Admin & Sales with role-based filtering)
+    if (currentPath.includes('/customers/insights/total')) {
+      return <TotalCustomersInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
+    }
+    if (currentPath.includes('/customers/insights/receivables')) {
+      return <TotalReceivablesInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
+    }
+    if (currentPath.includes('/customers/insights/overdue')) {
+      return <OverdueAccountsInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
+    }
+    if (currentPath.includes('/customers/insights/cleared')) {
+      return <ClearedAccountsInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
+    }
+
     // Admin routes guarded by RequireRole
     if (currentPath === '/admin/dashboard') {
       return (
@@ -225,7 +262,9 @@ const AppContent: React.FC = () => {
       );
     }
     if (currentPath === '/admin/customers' || currentPath.startsWith('/admin/customers/')) {
-      return <CustomersPage onNavigate={handleNavigate} />;
+      const match = currentPath.match(/\/admin\/customers\/([^?#/]+)/);
+      const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
+      return <CustomersPage onNavigate={handleNavigate} customerId={customerId} fromPath="/admin/customers" />;
     }
     if (currentPath === '/admin/designs') {
       return <DesignsPage onNavigate={handleNavigate} />;
@@ -279,8 +318,10 @@ const AppContent: React.FC = () => {
     if (currentPath === '/sales/dashboard') {
       return <SalesDashboard onNavigate={handleNavigate} />;
     }
-    if (currentPath === '/sales/customers') {
-      return <CustomersPage onNavigate={handleNavigate} />;
+    if (currentPath === '/sales/customers' || currentPath.startsWith('/sales/customers/')) {
+      const match = currentPath.match(/\/sales\/customers\/([^?#/]+)/);
+      const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
+      return <CustomersPage onNavigate={handleNavigate} customerId={customerId} fromPath="/sales/customers" />;
     }
     if (currentPath === '/sales/designs') {
       return <DesignsPage onNavigate={handleNavigate} />;
@@ -316,17 +357,17 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className={`app-shell flex h-screen bg-[#f8fafc] text-slate-800 overflow-hidden font-sans${isDarkMode ? ' dark-theme' : ''}`}>
+    <div className="app-shell flex h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* 1. Left Persistent Sidebar */}
       <Sidebar currentPath={currentPath} onNavigate={handleNavigate} />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
         {/* Top Header */}
         <Header onNavigate={handleNavigate} />
 
         {/* Dynamic Page Body with smooth scroll */}
-        <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-0 bg-background">
           {renderPage()}
         </main>
       </div>

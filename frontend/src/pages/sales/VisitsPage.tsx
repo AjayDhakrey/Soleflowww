@@ -1,43 +1,81 @@
 import React, { useState } from 'react';
-import { MapPin, Plus, CheckCircle2, Clock, Calendar, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { Icons } from '../../lib/icons';
+import {
+  PageHeader,
+  KpiCard,
+  Panel,
+  Button,
+  StatusBadge,
+  Tag,
+  EmptyState,
+} from '../../components/ui';
 
 export const VisitsPage: React.FC = () => {
-  const { fieldVisits, customers, completeFieldVisit, showToast } = useApp();
+  const { fieldVisits, customers, showToast } = useApp();
   const [selectedCust, setSelectedCust] = useState(customers[0]?.businessName || '');
   const [purpose, setPurpose] = useState('');
 
   const handleAddVisit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCust) return;
-    showToast(`Visit logged for ${selectedCust}`);
+    showToast(`Store check-in recorded for ${selectedCust}!`);
     setPurpose('');
   };
 
+  const completedVisits = fieldVisits.filter((v) => v.status === 'completed').length;
+
   return (
-    <div className="p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto select-none pb-20 md:pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 inline-block">
-            Field Store Visits
-          </span>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1.5">
-            My Retail Store Visits &amp; Routes
-          </h1>
-        </div>
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12">
+      {/* 1. Page Header */}
+      <PageHeader
+        breadcrumbs={[{ label: 'Dashboard', href: '/sales/dashboard' }, { label: 'Store Visits' }]}
+        title="My Retail Store Visits & Routes"
+        subtitle="Log physical buyer showroom check-ins, record order negotiations, and sample showings."
+      />
+
+      {/* 2. KPI Summary Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <KpiCard
+          label="Total Route Stops"
+          value={`${fieldVisits.length} Stores`}
+          icon={Icons.Visits}
+          bubbleColor="zinc"
+          caption="Daily assigned route"
+        />
+        <KpiCard
+          label="Completed Visits"
+          value={`${completedVisits} Done`}
+          icon={Icons.Approved}
+          bubbleColor="green"
+          caption="Physical store visits"
+        />
+        <KpiCard
+          label="Pending Stops"
+          value={`${fieldVisits.length - completedVisits} Pending`}
+          icon={Icons.Pending}
+          bubbleColor="amber"
+          caption="Hing Ki Mandi market"
+        />
+        <KpiCard
+          label="Orders Booked on Route"
+          value="₹3.80L"
+          icon={Icons.Orders}
+          bubbleColor="violet"
+          caption="Same-day orders captured"
+        />
       </div>
 
-      {/* Log Visit Quick Form */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
-        <h3 className="text-sm font-extrabold text-slate-900">
-          Quick Log New Field Visit
-        </h3>
-        <form onSubmit={handleAddVisit} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* 3. Quick Check-in Panel */}
+      <Panel
+        title="Quick Log New Field Visit"
+        subtitle="Check-in at retail store location to log notes or sample feedback"
+      >
+        <form onSubmit={handleAddVisit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <select
             value={selectedCust}
             onChange={(e) => setSelectedCust(e.target.value)}
-            className="h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+            className="h-12 px-4 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/15 focus:border-zinc-900"
           >
             {customers.map((c) => (
               <option key={c.id} value={c.businessName}>
@@ -50,78 +88,78 @@ export const VisitsPage: React.FC = () => {
             required
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
-            placeholder="Purpose (e.g. Sample showing, ledger collection)..."
-            className="h-10 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+            placeholder="Visit purpose (e.g. Sample showing, cheque collection)..."
+            className="h-12 px-4 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/15 focus:border-zinc-900"
           />
-          <button
+          <Button
             type="submit"
-            className="h-10 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2"
+            variant="primary"
+            icon={Icons.Visits}
           >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>Check-in at Store</span>
-          </button>
+            Check-in at Store
+          </Button>
         </form>
-      </div>
+      </Panel>
 
-      {/* Visits List */}
-      <div className="space-y-3">
-        {fieldVisits.map((v) => (
-          <div
-            key={v.id}
-            className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-          >
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-sm text-slate-900">
-                  {v.customerName}
-                </h3>
-                <span
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    v.status === 'completed'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-blue-100 text-blue-800'
-                  }`}
-                >
-                  {v.status === 'completed' ? 'Completed' : 'Scheduled Today'}
-                </span>
-                {v.outcome && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800">
-                    {v.outcome}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                <MapPin className="w-3 h-3 inline mr-1 text-slate-400" />
-                {v.location} • Time: <strong>{v.time}</strong>
-              </p>
-              <p className="text-xs text-slate-700 mt-2 font-medium">
-                {v.purpose}
-              </p>
-              {v.notes && (
-                <p className="text-[11px] text-slate-500 mt-1 italic">
-                  Note: {v.notes}
-                </p>
-              )}
-            </div>
+      {/* 4. Visits Timeline List */}
+      <div className="space-y-4">
+        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+          Today's Field Route History
+        </h3>
 
-            {v.status !== 'completed' && (
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => completeFieldVisit(v.id, 'Order Created', 'Took fresh wholesale order')}
-                  className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs"
-                >
-                  Mark Order Taken
-                </button>
-                <button
-                  onClick={() => completeFieldVisit(v.id, 'Follow-up Needed', 'Owner requested quote')}
-                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
-                >
-                  Follow-up Needed
-                </button>
-              </div>
-            )}
+        {fieldVisits.length === 0 ? (
+          <Panel>
+            <EmptyState
+              icon={Icons.Visits}
+              title="No Visits Logged Yet"
+              description="You have not logged any store visits today. Use the check-in form above to start your route."
+            />
+          </Panel>
+        ) : (
+          <div className="space-y-4">
+            {fieldVisits.map((v) => (
+              <Panel key={v.id}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2.5">
+                      <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                        {v.customerName}
+                      </h4>
+                      <StatusBadge status={v.status === 'completed' ? 'active' : 'pending'}>
+                        {v.status === 'completed' ? 'Completed' : 'Scheduled Today'}
+                      </StatusBadge>
+                      {v.outcome && <Tag variant="purple">{v.outcome}</Tag>}
+                    </div>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <Icons.Visits size={14} className="text-slate-400" />
+                      <span>{v.location} • Time: <strong>{v.time}</strong></span>
+                    </p>
+
+                    <p className="text-sm text-slate-700 dark:text-slate-300 pt-1 font-medium">
+                      {v.purpose}
+                    </p>
+
+                    {v.notes && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 italic">
+                        Feedback: {v.notes}
+                      </p>
+                    )}
+                  </div>
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={Icons.Approved}
+                    onClick={() => showToast(`Visit details saved for ${v.customerName}`)}
+                  >
+                    View Record
+                  </Button>
+                </div>
+              </Panel>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

@@ -96,22 +96,42 @@ interface AppContextType {
   toggleMobileSidebar: () => void;
   toastMessage: string | null;
   showToast: (msg: string) => void;
+  themePreference: 'light' | 'dark' | 'system';
+  setThemePreference: (pref: 'light' | 'dark' | 'system') => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   isSupabaseActive: boolean;
 }
 
+export type ThemePreference = 'light' | 'dark' | 'system';
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'soleflow_auth_session';
-const THEME_STORAGE_KEY = 'soleflow_dark_mode';
+const THEME_PREF_STORAGE_KEY = 'soleflow_theme';
+const OLD_DARK_STORAGE_KEY = 'soleflow_dark_mode';
 
-const getInitialDarkMode = () => {
+const getInitialThemePreference = (): ThemePreference => {
   try {
-    return typeof window !== 'undefined' && localStorage.getItem(THEME_STORAGE_KEY) === 'true';
-  } catch {
-    return false;
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(THEME_PREF_STORAGE_KEY) as ThemePreference | null;
+      if (stored && (stored === 'light' || stored === 'dark' || stored === 'system')) {
+        return stored;
+      }
+      // Migrate old soleflow_dark_mode value once ('true' -> 'dark', otherwise 'light')
+      const oldDark = localStorage.getItem(OLD_DARK_STORAGE_KEY);
+      if (oldDark === 'true') {
+        localStorage.setItem(THEME_PREF_STORAGE_KEY, 'dark');
+        return 'dark';
+      } else if (oldDark === 'false') {
+        localStorage.setItem(THEME_PREF_STORAGE_KEY, 'light');
+        return 'light';
+      }
+    }
+  } catch (e) {
+    console.error('Failed to read theme preference:', e);
   }
+  return 'light';
 };
 
 const getInitialAuth = (): { isLoggedIn: boolean; user: User } => {
@@ -141,7 +161,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const initialAuth = getInitialAuth();
   const [currentUser, setCurrentUser] = useState<User>(initialAuth.user);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(initialAuth.isLoggedIn);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(getInitialDarkMode);
+  const [themePreference, setThemePreferenceState] = useState<ThemePreference>(getInitialThemePreference);
+  const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  // Listen to OS prefers-color-scheme changes live
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemPrefersDark(e.matches);
+    };
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  const isDarkMode = themePreference === 'dark' || (themePreference === 'system' && systemPrefersDark);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', isDarkMode);
+      document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
+    }
+  }, [isDarkMode]);
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(MOCK_CUSTOMERS[0]);
   const [designs] = useState<ShoeDesign[]>(MOCK_DESIGNS);
@@ -261,16 +307,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsMobileSidebarOpen((prev) => !prev);
   };
 
+  const setThemePreference = (pref: ThemePreference) => {
+    setThemePreferenceState(pref);
+    try {
+      localStorage.setItem(THEME_PREF_STORAGE_KEY, pref);
+      const willBeDark = pref === 'dark' || (pref === 'system' && systemPrefersDark);
+      localStorage.setItem(OLD_DARK_STORAGE_KEY, String(willBeDark));
+    } catch (e) {
+      console.error('Failed to save theme preference:', e);
+    }
+  };
+
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(THEME_STORAGE_KEY, String(next));
-      } catch (e) {
-        console.error('Failed to save theme preference:', e);
-      }
-      return next;
-    });
+    const nextPref: ThemePreference = isDarkMode ? 'light' : 'dark';
+    setThemePreference(nextPref);
   };
 
   const showToast = (msg: string) => {
@@ -740,6 +790,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleMobileSidebar,
         toastMessage,
         showToast,
+        themePreference,
+        setThemePreference,
         isDarkMode,
         toggleDarkMode,
         isSupabaseActive,

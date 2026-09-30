@@ -1,9 +1,29 @@
-import React from 'react';
-import { CreditCard, CheckCircle2, AlertTriangle, Phone, MessageCircle } from 'lucide-react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { Icons } from '../../lib/icons';
+import {
+  PageHeader,
+  KpiCard,
+  Panel,
+  FilterBar,
+  SearchInput,
+  Button,
+  StatusBadge,
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableAvatarCell,
+  TableMoneyCell,
+  EmptyState,
+} from '../../components/ui';
 
 export const CollectionsPage: React.FC = () => {
-  const { customers, setIsPaymentModalOpen, setSelectedCustomer, showToast, currentUser } = useApp();
+  const { customers, setIsPaymentModalOpen, setSelectedCustomer, currentUser } = useApp();
+
+  const [search, setSearch] = useState('');
 
   const assignedCusts = customers.filter(
     (c) => c.salespersonId === currentUser.id || c.salespersonName.includes(currentUser.name)
@@ -11,91 +31,166 @@ export const CollectionsPage: React.FC = () => {
   const overdueOnly = assignedCusts.filter((c) => c.amountDue > 0);
   const totalAssignedDue = overdueOnly.reduce((acc, c) => acc + c.amountDue, 0);
 
+  const filtered = overdueOnly.filter(
+    (c) =>
+      c.businessName.toLowerCase().includes(search.toLowerCase()) ||
+      c.city.toLowerCase().includes(search.toLowerCase()) ||
+      c.propName.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto select-none pb-20 md:pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-200 inline-block">
-            Territory Receivables
-          </span>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1.5">
-            My Territory Collections &amp; Cheques
-          </h1>
-        </div>
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12">
+      {/* 1. Page Header */}
+      <PageHeader
+        breadcrumbs={[{ label: 'Dashboard', href: '/sales/dashboard' }, { label: 'Collections' }]}
+        title="Territory Collections & Cheques"
+        subtitle="Manage assigned retailer outstanding dues, collect cheques, and record realizations."
+        actions={
+          <Button
+            variant="primary"
+            icon={Icons.Payments}
+            onClick={() => setIsPaymentModalOpen(true)}
+          >
+            Record Cheque / Payment
+          </Button>
+        }
+      />
 
-        <button
-          onClick={() => setIsPaymentModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
-        >
-          <CreditCard className="w-4 h-4" />
-          <span>Record Cheque / Payment</span>
-        </button>
+      {/* 2. KPI Summary Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <KpiCard
+          label="Total Assigned Receivables"
+          value={`₹${(totalAssignedDue / 100000).toFixed(2)}L`}
+          icon={Icons.Receivables}
+          bubbleColor="red"
+          caption="Pending balance across stores"
+        />
+        <KpiCard
+          label="Overdue Stores"
+          value={`${overdueOnly.length} Accounts`}
+          icon={Icons.Overdue}
+          bubbleColor="amber"
+          caption="Need field collection visits"
+        />
+        <KpiCard
+          label="Collected This Month"
+          value="₹8.40L"
+          icon={Icons.Approved}
+          bubbleColor="green"
+          caption="Realized in bank"
+        />
+        <KpiCard
+          label="Cheques in Clearing"
+          value="₹1.50L"
+          icon={Icons.Collections}
+          bubbleColor="zinc"
+          caption="Expected credit 24-48 hrs"
+        />
       </div>
 
-      {/* Accounts List */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-900">
-            Accounts with Pending Balance ({overdueOnly.length})
+      {/* 3. Assigned Accounts Table Panel */}
+      <Panel
+        title="Accounts with Pending Balance"
+        subtitle={`Showing ${filtered.length} client stores with outstanding balance`}
+        headerAction={
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <Icons.Calendar size={14} className="text-slate-500" />
+            Today: {new Date().toISOString().split('T')[0]}
           </span>
+        }
+        noPadding
+      >
+        <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800">
+          <FilterBar>
+            <SearchInput
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onClear={() => setSearch('')}
+              placeholder="Search assigned store name, proprietor, city..."
+              containerClassName="max-w-md"
+            />
+          </FilterBar>
         </div>
 
-        <div className="divide-y divide-slate-100">
-          {overdueOnly.map((cust) => (
-            <div
-              key={cust.id}
-              className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-sm text-slate-900">
-                    {cust.businessName}
-                  </h3>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
-                    {cust.overdueDays} Days Overdue
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Prop: {cust.propName} • {cust.city}, {cust.state} • Phone: {cust.phone}
-                </p>
-                <p className="text-xs text-slate-600 mt-1.5 font-medium">
-                  Terms: {cust.paymentTerms} • Last payment: ₹{(cust.lastPaymentAmount / 100000).toFixed(1)}L ({cust.lastPaymentDate})
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                    Amount Due
-                  </span>
-                  <span className="text-base font-black text-rose-700 font-mono">
-                    ₹{cust.amountDue.toLocaleString('en-IN')}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => {
-                      setSelectedCustomer(cust);
-                      setIsPaymentModalOpen(true);
-                    }}
-                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
-                  >
-                    Collect Cheque
-                  </button>
-                  <a
-                    href={`tel:${cust.phone}`}
-                    className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl"
-                  >
-                    <Phone className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+        {filtered.length === 0 ? (
+          <EmptyState
+            icon={Icons.Approved}
+            title="All Territory Accounts Settled"
+            description="No pending balances or overdue collections for your territory."
+          />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Store & Proprietor</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Overdue</TableHead>
+                <TableHead>Terms & History</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Balance Due</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((cust) => (
+                <TableRow key={cust.id}>
+                  <TableCell>
+                    <TableAvatarCell
+                      name={cust.businessName}
+                      subtext={`${cust.city}, ${cust.state} • ${cust.propName}`}
+                    />
+                  </TableCell>
+                  <TableCell className="font-mono text-slate-600 dark:text-slate-300">
+                    {cust.phone}
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400">
+                      {cust.overdueDays || 12} Days
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-500 max-w-[200px] truncate">
+                    {cust.paymentTerms}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status="overdue">
+                      Pending
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <TableMoneyCell
+                      amount={cust.amountDue}
+                      isBold
+                      className="text-rose-600 dark:text-rose-400"
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon={Icons.Payments}
+                        onClick={() => {
+                          setSelectedCustomer(cust);
+                          setIsPaymentModalOpen(true);
+                        }}
+                      >
+                        Collect
+                      </Button>
+                      <a
+                        href={`tel:${cust.phone}`}
+                        className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl inline-flex items-center"
+                        title="Call Proprietor"
+                      >
+                        <Icons.Phone size={15} />
+                      </a>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
     </div>
   );
 };

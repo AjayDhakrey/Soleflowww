@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
-import {
-  CreditCard,
-  Plus,
-  Search,
-  Filter,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Send,
-  Download,
-  Phone,
-  MessageCircle,
-} from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useReceivables } from '../../hooks/usePayments';
+import { Icons } from '../../lib/icons';
+import {
+  PageHeader,
+  KpiCard,
+  Panel,
+  FilterBar,
+  SearchInput,
+  Select,
+  Button,
+  StatusBadge,
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableAvatarCell,
+  TableMoneyCell,
+  EmptyState,
+} from '../../components/ui';
 
 interface PaymentsPageProps {
   onNavigate: (path: string) => void;
@@ -29,237 +36,194 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
   } = useApp();
 
   const { data: receivablesList } = useReceivables();
-
   const [search, setSearch] = useState('');
+  const [agingFilter, setAgingFilter] = useState<string>('all');
 
   const dbOutstanding = (receivablesList || []).reduce((sum, r: any) => sum + Number(r.total_outstanding || 0), 0);
   const totalOutstanding = dbOutstanding > 0 ? dbOutstanding : customers.reduce((sum, c) => sum + (c.amountDue || 0), 0);
   const overdueCustomers = customers.filter((c) => c.amountDue > 0);
 
-  const filteredOverdue = overdueCustomers.filter(
-    (c) =>
-      c.businessName.toLowerCase().includes(search.toLowerCase()) ||
-      c.city.toLowerCase().includes(search.toLowerCase()) ||
-      c.propName.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredOverdue = overdueCustomers.filter((c) => {
+    const q = search.toLowerCase();
+    const matchesSearch =
+      c.businessName.toLowerCase().includes(q) ||
+      c.city.toLowerCase().includes(q) ||
+      c.propName.toLowerCase().includes(q);
+
+    const matchesAging =
+      agingFilter === 'all'
+        ? true
+        : agingFilter === 'critical'
+        ? (c.overdueDays || 0) > 30
+        : agingFilter === 'overdue'
+        ? (c.overdueDays || 0) > 15
+        : true;
+
+    return matchesSearch && matchesAging;
+  });
 
   return (
-    <div className="p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto select-none pb-20 md:pb-8">
-      {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 inline-block">
-            Commercial Ledger
-          </span>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1.5">
-            Payments &amp; Amount Due Ledger
-          </h1>
-        </div>
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12">
+      {/* 1. Page Header */}
+      <PageHeader
+        breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Finance & Payments' }]}
+        title="Commercial Payments & Receivables"
+        subtitle="Ledger settlements, overdue aging buckets, and cheque collections."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              icon={Icons.Export}
+              onClick={() => showToast('Outstanding aging balance sheet exported as PDF!')}
+            >
+              Export PDF
+            </Button>
+            <Button
+              variant="primary"
+              icon={Icons.Payments}
+              onClick={() => setIsPaymentModalOpen(true)}
+            >
+              Record Payment
+            </Button>
+          </>
+        }
+      />
 
-        <button
-          onClick={() => setIsPaymentModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
-        >
-          <CreditCard className="w-4 h-4" />
-          <span>Record Customer Payment</span>
-        </button>
+      {/* 2. KPI Summary Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <KpiCard
+          label="Total Receivables"
+          value={`₹${(totalOutstanding / 100000).toFixed(2)}L`}
+          icon={Icons.Receivables}
+          bubbleColor="red"
+          caption={`Across ${overdueCustomers.length} active wholesale stores`}
+        />
+        <KpiCard
+          label="Due This Week"
+          value="₹4.20L"
+          icon={Icons.Pending}
+          bubbleColor="amber"
+          caption="3 buyers promised settlement"
+        />
+        <KpiCard
+          label="Critical (> 30 Days)"
+          value="₹0.80L"
+          icon={Icons.Overdue}
+          bubbleColor="violet"
+          caption="Priority legal reminder queue"
+        />
+        <KpiCard
+          label="Collected (This Month)"
+          value="₹21.40L"
+          icon={Icons.Approved}
+          bubbleColor="green"
+          caption="92% on-time realization rate"
+        />
       </div>
 
-      {/* 2. Receivables & Aging Matrix (Section 8.5) */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
-        <div className="bg-rose-50/90 p-4 rounded-3xl border border-rose-200/80">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
-            TOTAL RECEIVABLES
+      {/* 3. Outstanding Accounts Table Panel */}
+      <Panel
+        title="Outstanding Accounts Requiring Settlement"
+        subtitle="Retailers with pending commercial balances exceeding agreed credit cycle"
+        headerAction={
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <Icons.Calendar size={14} className="text-slate-500" />
+            Fiscal Cycle: 2026–2027
           </span>
-          <span className="text-2xl font-black text-rose-700 font-display block mt-1 font-mono">
-            ₹{(totalOutstanding / 100000).toFixed(2)}L
-          </span>
-          <span className="text-[10px] text-rose-600 font-bold block mt-0.5">Across {overdueCustomers.length} active stores</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            DUE THIS WEEK
-          </span>
-          <span className="text-2xl font-black text-amber-600 font-display block mt-1 font-mono">
-            ₹4.20L
-          </span>
-          <span className="text-[10px] text-amber-600 font-bold block mt-0.5">3 buyers promise to pay</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            OVERDUE (&gt; 15 DAYS)
-          </span>
-          <span className="text-2xl font-black text-rose-600 font-display block mt-1 font-mono">
-            ₹3.45L
-          </span>
-          <span className="text-[10px] text-rose-500 font-bold block mt-0.5">Priority collection queue</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            CRITICAL (&gt; 30 DAYS)
-          </span>
-          <span className="text-2xl font-black text-purple-700 font-display block mt-1 font-mono">
-            ₹0.80L
-          </span>
-          <span className="text-[10px] text-purple-600 font-bold block mt-0.5">Legal reminder sent</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-xs col-span-2 md:col-span-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            COLLECTED (MONTH)
-          </span>
-          <span className="text-2xl font-black text-emerald-700 font-display block mt-1 font-mono">
-            ₹21.40L
-          </span>
-          <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">92% on-time rate</span>
-        </div>
-      </div>
-
-      {/* 3. Overdue Accounts Action Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
-        <div className="p-5 pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h3 className="text-base font-extrabold text-slate-900">
-            Outstanding Accounts Requiring Settlement
-          </h3>
-
-          <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
+        }
+        noPadding
+      >
+        <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800">
+          <FilterBar>
+            <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search store name..."
-              className="w-full h-8 pl-8 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
+              onClear={() => setSearch('')}
+              placeholder="Search store name, proprietor, city..."
+              containerClassName="max-w-md"
             />
-          </div>
+            <Select
+              value={agingFilter}
+              onChange={(e) => setAgingFilter(e.target.value)}
+              options={[
+                { label: 'All Aging Buckets', value: 'all' },
+                { label: 'Overdue > 15 Days', value: 'overdue' },
+                { label: 'Critical > 30 Days', value: 'critical' },
+              ]}
+            />
+          </FilterBar>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="py-3 px-5">Customer Account</th>
-                <th className="py-3 px-4">Market / City</th>
-                <th className="py-3 px-4">Credit Terms</th>
-                <th className="py-3 px-4">Overdue Days</th>
-                <th className="py-3 px-4">Amount Due</th>
-                <th className="py-3 px-4">Last Payment</th>
-                <th className="py-3 px-5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+        {filteredOverdue.length === 0 ? (
+          <EmptyState
+            icon={Icons.Approved}
+            title="All Retailer Accounts Cleared"
+            description="There are currently no overdue accounts matching your filter."
+          />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Store & Proprietor</TableHead>
+                <TableHead>Phone / WhatsApp</TableHead>
+                <TableHead>Overdue Aging</TableHead>
+                <TableHead>Wholesale Terms</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Amount Due</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filteredOverdue.map((cust) => (
-                <tr key={cust.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3.5 px-5">
-                    <span className="font-bold text-slate-900 block">
-                      {cust.businessName}
+                <TableRow key={cust.id}>
+                  <TableCell>
+                    <TableAvatarCell
+                      name={cust.businessName}
+                      subtext={`${cust.city}, ${cust.state} • ${cust.propName}`}
+                    />
+                  </TableCell>
+                  <TableCell className="font-mono text-slate-600 dark:text-slate-300">
+                    {cust.phone}
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400">
+                      {cust.overdueDays || 18} Days Overdue
                     </span>
-                    <span className="text-[10px] text-slate-500 font-medium">
-                      Prop: {cust.propName} • {cust.phone}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 font-medium text-slate-700">
-                    {cust.city}, {cust.state}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600">
-                    {cust.paymentTerms}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        cust.overdueDays > 10
-                          ? 'bg-rose-100 text-rose-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}
-                    >
-                      {cust.overdueDays} Days
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 font-mono font-bold text-rose-700">
-                    ₹{cust.amountDue.toLocaleString('en-IN')}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600 font-mono">
-                    ₹{(cust.lastPaymentAmount / 100000).toFixed(1)}L ({cust.lastPaymentDate})
-                  </td>
-                  <td className="py-3.5 px-5 text-right space-x-1.5">
-                    <button
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-600 dark:text-slate-300 max-w-[180px] truncate">
+                    {cust.paymentTerms || '30% Adv + 70% Bilty'}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status="overdue">
+                      Overdue
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <TableMoneyCell
+                      amount={cust.amountDue}
+                      isBold
+                      className="text-rose-600 dark:text-rose-400"
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={Icons.Payments}
                       onClick={() => {
                         setSelectedCustomer(cust);
                         setIsPaymentModalOpen(true);
                       }}
-                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-xs"
                     >
-                      Record Payment
-                    </button>
-                    <button
-                      onClick={() => {
-                        showToast(`WhatsApp payment reminder dispatched to ${cust.phone}`);
-                      }}
-                      className="p-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg inline-flex items-center"
-                      title="Send WhatsApp Reminder"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                    </button>
-                  </td>
-                </tr>
+                      Collect
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* 4. Recent Recorded Receipts Log */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-extrabold text-slate-900">
-            Recent Payment Receipts Log ({payments.length > 0 ? payments.length : 3})
-          </h3>
-        </div>
-
-        <div className="space-y-2">
-          {payments.length > 0 ? (
-            payments.map((p) => (
-              <div
-                key={p.id}
-                className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-slate-900">
-                      {p.receiptNumber}
-                    </span>
-                    <span className="font-bold text-slate-800">
-                      {p.customerName} ({p.customerCity})
-                    </span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-200 text-slate-700">
-                      {p.paymentMethod}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 font-mono">
-                    Ref: {p.utrRef} • Collected by {p.collectedBy}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <span className="text-sm font-black text-emerald-700 font-mono block">
-                    +₹{p.paymentAmount.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    {p.paymentDate}
-                  </span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-4 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl">
-              Latest: ₹1,00,000 received from ABC Footwear via HDFC Bank Transfer (Ref: HDFC99823614) on 28 Sep.
-            </div>
-          )}
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
     </div>
   );
 };

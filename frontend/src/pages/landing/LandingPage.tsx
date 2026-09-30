@@ -61,6 +61,7 @@ import leatherCraftImg from '../../assets/images/leather_craft_detail_1790321180
 import outdoorBootImg from '../../assets/images/outdoor_technical_boot_1790321192724.jpg';
 import walkingMotionBg from '../../assets/images/footwear_walking_motion_1790245134535.jpg';
 import footwearShowcaseBanner from '../../assets/images/footwear_showcase_banner_1790245146976.jpg';
+import projectLogo from '../../assets/images/project_logo.png';
 
 // =========================================================================
 // MEMOIZED HARDWARE-ACCELERATED BACKGROUND VIDEO PLAYER
@@ -357,20 +358,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="sticky top-2 sm:top-3 z-50 px-3 sm:px-6">
           <header className="max-w-6xl mx-auto h-12 sm:h-14 bg-white/95 backdrop-blur-md px-4 sm:px-6 rounded-full border border-slate-200/90 shadow-md flex items-center justify-between transition-all">
             {/* Logo */}
-            <a href="#hero" className="flex items-center gap-2 text-sm sm:text-base font-black tracking-tight text-slate-900 shrink-0">
-              <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
-                <svg
-                  className="w-4 h-4 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                  <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-                </svg>
+            <a href="#hero" className="flex items-center gap-2.5 text-sm sm:text-base font-black tracking-tight text-slate-900 shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                <img src={projectLogo} alt="SoleFlow Logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-extrabold tracking-tight text-slate-900">SoleFlow</span>
             </a>
@@ -1322,11 +1312,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-6 gap-6 text-left text-xs">
               {/* Brand Description (2 cols) */}
               <div className="col-span-2 space-y-3">
-                <div className="flex items-center gap-2 text-base font-black tracking-tight text-white">
-                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                    </svg>
+                <div className="flex items-center gap-2.5 text-base font-black tracking-tight text-white">
+                  <div className="w-8 h-8 rounded-xl bg-white border border-slate-700/80 p-0.5 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+                    <img src={projectLogo} alt="SoleFlow Logo" className="w-full h-full object-contain" />
                   </div>
                   <span>SoleFlow</span>
                 </div>

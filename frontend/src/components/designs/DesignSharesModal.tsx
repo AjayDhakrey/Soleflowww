@@ -1,6 +1,8 @@
 import React from 'react';
-import { X, Share2, CheckCircle2, Clock, Smartphone, ExternalLink, Eye, ShoppingBag } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { Icons } from '../../lib/icons';
+import { Button } from '../ui/Button';
+import { Tag } from '../ui/Tag';
 
 interface DesignSharesModalProps {
   isOpen: boolean;
@@ -8,60 +10,59 @@ interface DesignSharesModalProps {
 }
 
 export const DesignSharesModal: React.FC<DesignSharesModalProps> = ({ isOpen, onClose }) => {
-  const { designShares, customers } = useApp();
+  const { designShares } = useApp();
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-in fade-in select-none">
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
-        {/* Header */}
-        <div className="p-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
+      <div className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-xl border border-border overflow-hidden flex flex-col max-h-[85vh]">
+        {/* Modal Header */}
+        <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-              <Share2 className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <Icons.Share size={20} strokeWidth={1.75} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-base text-slate-900">
-                  Design Sharing &amp; Lookbook History
+                <h3 className="font-bold text-lg text-foreground tracking-tight">
+                  Design Sharing & Lookbook History
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                  {designShares.length} Shares Logged
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
+                  {designShares.length} Shares
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Measurable tracking of catalogue lookbooks shared with wholesale buyers.
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <Icons.Close size={18} strokeWidth={1.75} />
           </button>
         </div>
 
         {/* List of Shares */}
-        <div className="p-5 overflow-y-auto divide-y divide-slate-100 space-y-3">
+        <div className="p-6 overflow-y-auto divide-y divide-border space-y-4">
           {designShares.map((share) => (
-            <div key={share.id} className="pt-3 first:pt-0 space-y-2">
+            <div key={share.id} className="pt-4 first:pt-0 space-y-2.5">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-sm text-slate-900">
+                    <h4 className="font-semibold text-sm md:text-base text-foreground">
                       {share.targetClientName}
                     </h4>
-                    <span className="px-2 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
-                      {share.channel}
-                    </span>
+                    <Tag variant="blue">{share.channel}</Tag>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Recipient: {share.targetPhone} • Shared by <strong className="text-slate-700">{share.sharedBy}</strong> ({share.sharedByRole})
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Phone: {share.targetPhone} • Shared by <strong className="text-foreground">{share.sharedBy}</strong> ({share.sharedByRole})
                   </p>
                 </div>
-                <span className="text-[11px] text-slate-400 font-mono shrink-0">
+                <span className="text-xs text-muted-foreground font-mono shrink-0">
                   {share.timestamp}
                 </span>
               </div>
@@ -71,7 +72,7 @@ export const DesignSharesModal: React.FC<DesignSharesModalProps> = ({ isOpen, on
                 {share.designNames.map((name, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-0.5 rounded-lg bg-blue-50 border border-blue-200/80 text-blue-900 text-xs font-semibold"
+                    className="px-2.5 py-1 rounded-lg bg-muted/60 border border-border text-foreground text-xs font-medium"
                   >
                     👟 {name}
                   </span>
@@ -79,20 +80,27 @@ export const DesignSharesModal: React.FC<DesignSharesModalProps> = ({ isOpen, on
               </div>
 
               {/* Engagement Status */}
-              <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+              <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground bg-muted/40 p-3 rounded-xl border border-border">
                 <div className="flex items-center gap-1.5">
-                  <Eye className="w-3.5 h-3.5 text-blue-600" />
+                  <Icons.View size={15} className="text-primary" />
                   <span>Viewed: {share.wasViewed ? `Yes (${share.viewCount} times)` : 'Pending Open'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <ShoppingBag className="w-3.5 h-3.5 text-emerald-600" />
+                  <Icons.Orders size={15} className="text-emerald-600 dark:text-emerald-400" />
                   <span>
-                    Converted to Order: {share.wasOrdered ? `Yes (${share.orderId})` : 'In Negotiation'}
+                    Order Status: {share.wasOrdered ? `Converted (${share.orderId})` : 'In Discussion'}
                   </span>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Modal Footer */}
+        <div className="px-6 py-4 border-t border-border flex justify-end">
+          <Button variant="secondary" onClick={onClose}>
+            Close
+          </Button>
         </div>
       </div>
     </div>

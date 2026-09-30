@@ -21,6 +21,7 @@ import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../auth/AuthProvider';
 import walkingMotionBg from '../../assets/images/footwear_walking_motion_1790245134535.jpg';
 import showcaseBannerBg from '../../assets/images/footwear_showcase_banner_1790245146976.jpg';
+import projectLogo from '../../assets/images/project_logo.png';
 
 interface LoginPageProps {
   onSuccess: (role: 'admin' | 'salesperson') => void;
@@ -41,9 +42,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [email, setEmail] = useState('admin@soleflow.com');
   const [password, setPassword] = useState('admin123');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isMotionActive, setIsMotionActive] = useState(true);
   const [bgMode, setBgMode] = useState<'walking' | 'showcase'>('walking');
-  const [isUltraTransparent, setIsUltraTransparent] = useState(true);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   useEffect(() => {
     if (initialMode) {
@@ -61,7 +63,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [signupZone, setSignupZone] = useState('Delhi-NCR & Western UP Hub');
   const [signupError, setSignupError] = useState('');
   const [isSubmittingSignup, setIsSubmittingSignup] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
 
   const prefillSignup = (role: 'admin' | 'salesperson') => {
     setSignupRole(role);
@@ -83,7 +85,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   };
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
 
@@ -101,7 +103,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
 
     setIsSubmittingSignup(true);
-    setTimeout(() => {
+    try {
       const success = register({
         name: signupName,
         email: signupEmail,
@@ -118,7 +120,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       } else {
         setSignupError('Failed to create account. Please try again.');
       }
-    }, 400);
+    } catch {
+      setIsSubmittingSignup(false);
+      setSignupError('Failed to create account. Please try again.');
+    }
   };
 
   const promotionalShoes = [
@@ -160,54 +165,57 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     },
   ];
 
-  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsSubmittingLogin(true);
+    setIsLoading(true);
 
     try {
-      const res = await signIn(email, password);
-      if (res.success) {
+      if (isDemoMode) {
+        const role = email.includes('admin') ? 'admin' : 'salesperson';
         appLogin(email, password);
-        onSuccess(email.includes('sales') ? 'salesperson' : 'admin');
-      } else {
-        setError(res.error || 'Invalid credentials. Use demo credentials below.');
+        setIsLoading(false);
+        onSuccess(role);
+        return;
       }
+
+      await signIn(email, password);
+      const role = email.includes('admin') ? 'admin' : 'salesperson';
+      appLogin(email, password);
+      setIsLoading(false);
+      onSuccess(role);
     } catch (err: any) {
-      setError(err?.message || 'Login failed.');
-    } finally {
-      setIsSubmittingLogin(false);
+      setIsLoading(false);
+      // Fallback demo login
+      const role = email.includes('admin') ? 'admin' : 'salesperson';
+      const success = appLogin(email, password);
+      if (success) {
+        onSuccess(role);
+      } else {
+        setError(err?.message || 'Invalid credentials. Use demo credentials below.');
+      }
     }
   };
 
-  const handleQuickLogin = async (role: 'admin' | 'salesperson') => {
-    setError('');
-    setIsSubmittingLogin(true);
-    const targetEmail = role === 'admin' ? 'admin@soleflow.com' : 'sales@soleflow.com';
-    const targetPass = role === 'admin' ? 'admin123' : 'sales123';
-
-    setEmail(targetEmail);
-    setPassword(targetPass);
-
-    try {
-      await signIn(targetEmail, targetPass);
-      appLogin(targetEmail, targetPass);
-      onSuccess(role);
-    } catch (e) {
-      appLogin(targetEmail, targetPass);
-      onSuccess(role);
-    } finally {
-      setIsSubmittingLogin(false);
+  const handleQuickLogin = (role: 'admin' | 'salesperson') => {
+    if (role === 'admin') {
+      setEmail('admin@soleflow.com');
+      setPassword('admin123');
+      appLogin('admin@soleflow.com', 'admin123');
+      onSuccess('admin');
+    } else {
+      setEmail('sales@soleflow.com');
+      setPassword('sales123');
+      appLogin('sales@soleflow.com', 'sales123');
+      onSuccess('salesperson');
     }
   };
 
   const activeBgImage = bgMode === 'walking' ? walkingMotionBg : showcaseBannerBg;
 
   return (
-    <div className="relative min-h-[100dvh] w-full flex flex-col justify-between items-center p-3 sm:p-4 overflow-x-hidden overflow-y-auto select-none bg-slate-950 font-sans">
-      {/* 1. Cinematic Background Layer with Walking Motion (Fixed for smooth scroll) */}
+    <div className="relative min-h-[100dvh] w-full flex flex-col justify-between items-center p-3 sm:p-4 overflow-x-hidden overflow-y-auto select-none bg-slate-950 font-sans text-slate-100">
+      {/* 1. Cinematic Background Layer with Footwear Runway Motion */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <img
           src={activeBgImage}
@@ -219,12 +227,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         />
 
         {/* Dynamic lighting gradients & ambient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-slate-900/60" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-slate-950/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-slate-900/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/30 via-transparent to-slate-950/80" />
 
         {/* Animated Walking Cadence Spotlight / Floor glow */}
         {isMotionActive && (
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-72 bg-blue-500/10 blur-3xl rounded-full animate-step-pulse" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-72 bg-blue-500/15 blur-3xl rounded-full animate-step-pulse" />
         )}
       </div>
 
@@ -242,21 +250,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <span className="hidden xs:inline font-medium">Back to Home</span>
             </button>
           )}
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-600/90 backdrop-blur-md flex items-center justify-center text-white shadow-md ring-1 ring-white/20 shrink-0">
-            <svg
-              className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-              <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-            </svg>
+          <div className="w-8 h-8 rounded-xl bg-white border border-white/30 p-0.5 flex items-center justify-center shadow-lg shadow-blue-900/30 ring-1 ring-white/20 shrink-0 overflow-hidden">
+            <img src={projectLogo} alt="SoleFlow Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="font-extrabold text-sm tracking-tight text-white hidden xs:inline">
+          <span className="font-extrabold text-sm sm:text-base tracking-tight text-white hidden xs:inline">
             SoleFlow
           </span>
         </div>
@@ -266,7 +263,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <div className="flex items-center bg-black/50 backdrop-blur-md rounded-xl p-0.5 border border-white/10 text-[10px] sm:text-xs">
             <button
               onClick={() => setBgMode('walking')}
-              className={`px-2 py-0.5 sm:py-1 rounded-lg font-medium transition-all flex items-center gap-1 ${
+              className={`px-2 py-0.5 sm:py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer ${
                 bgMode === 'walking'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-white/70 hover:text-white'
@@ -278,7 +275,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </button>
             <button
               onClick={() => setBgMode('showcase')}
-              className={`px-2 py-0.5 sm:py-1 rounded-lg font-medium transition-all flex items-center gap-1 ${
+              className={`px-2 py-0.5 sm:py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer ${
                 bgMode === 'showcase'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-white/70 hover:text-white'
@@ -292,7 +289,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           <button
             onClick={() => setIsMotionActive(!isMotionActive)}
-            className="flex items-center gap-1 px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-[10px] sm:text-xs text-white transition-colors"
+            className="flex items-center gap-1 px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-[10px] sm:text-xs text-white transition-colors cursor-pointer"
             title={isMotionActive ? 'Pause walking motion' : 'Resume walking motion'}
             aria-label="Toggle background motion"
           >
@@ -311,51 +308,23 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         </div>
       </header>
 
-      {/* 3. Center Glassmorphic Login Card (Transparent on Mobile view) */}
+      {/* 3. Center Glassmorphic Login Card (Blue Theme) */}
       <main className="relative z-10 w-full max-w-md my-auto py-2">
-        <div
-          className={`transition-all duration-300 rounded-2xl sm:rounded-3xl shadow-2xl border overflow-hidden ${
-            /* Mobile transparent glass vs desktop frosted glass */
-            isUltraTransparent
-              ? 'bg-slate-950/35 sm:bg-slate-950/60 backdrop-blur-xl border-white/20 sm:border-white/25 shadow-black/60'
-              : 'bg-white/94 backdrop-blur-2xl border-white/60 text-slate-900'
-          }`}
-        >
+        <div className="transition-all duration-300 rounded-2xl sm:rounded-3xl shadow-2xl border bg-slate-950/60 backdrop-blur-2xl border-white/20 shadow-black/80 overflow-hidden">
           {/* Brand Header */}
-          <div
-            className={`px-4 py-3 sm:px-6 sm:py-5 text-center border-b transition-colors ${
-              isUltraTransparent
-                ? 'border-white/10 bg-white/5'
-                : 'border-slate-100/80 bg-slate-50/60'
-            }`}
-          >
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-blue-600/90 mx-auto flex items-center justify-center text-white shadow-md mb-1.5 ring-2 ring-white/20">
-              <svg
-                className="w-4 h-4 sm:w-6 sm:h-6 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 14.5L7 12l3 2.5 3-2.5 3 2.5 4-3.5v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-3.5z" />
-                <path d="M4 9c0-1.1.9-2 2-2h4l4 4h4a2 2 0 0 1 2 2v1.5" />
-              </svg>
+          <div className="px-4 py-3 sm:px-6 sm:py-5 text-center border-b border-white/10 bg-white/5">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white mx-auto flex items-center justify-center p-1 shadow-xl shadow-blue-900/40 mb-2.5 ring-2 ring-blue-500/40 border border-white/40 overflow-hidden">
+              <img src={projectLogo} alt="SoleFlow Logo" className="w-full h-full object-contain" />
             </div>
-            <h1
-              className={`text-lg sm:text-2xl font-black tracking-tight leading-tight ${
-                isUltraTransparent ? 'text-white' : 'text-slate-900'
-              }`}
-            >
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight text-white">
               SoleFlow
             </h1>
-            <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-blue-400 mt-0.5">
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-400 mt-0.5">
               B2B Footwear Trade &amp; CRM
             </p>
 
             {/* Mode Switcher */}
-            <div className="mt-3 grid grid-cols-2 p-1 bg-black/30 rounded-xl gap-1 max-w-xs mx-auto border border-white/10">
+            <div className="mt-3.5 grid grid-cols-2 p-1 bg-black/40 rounded-xl gap-1 max-w-xs mx-auto border border-white/10">
               <button
                 type="button"
                 onClick={() => {
@@ -363,9 +332,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   setError('');
                   setSignupError('');
                 }}
-                className={`py-1 text-xs font-bold rounded-lg transition-all ${
+                className={`py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   authMode === 'login'
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
                     : 'text-white/70 hover:text-white'
                 }`}
               >
@@ -378,9 +347,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   setError('');
                   setSignupError('');
                 }}
-                className={`py-1 text-xs font-bold rounded-lg transition-all ${
+                className={`py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   authMode === 'signup'
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
                     : 'text-white/70 hover:text-white'
                 }`}
               >
@@ -406,14 +375,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     <button
                       type="button"
                       onClick={() => prefillSignup('admin')}
-                      className="text-[9px] font-bold text-blue-300 bg-blue-900/40 px-1.5 py-0.5 rounded border border-blue-500/30 hover:bg-blue-800/50"
+                      className="text-[9px] font-bold text-blue-300 bg-blue-900/40 px-1.5 py-0.5 rounded border border-blue-500/30 hover:bg-blue-800/50 cursor-pointer"
                     >
                       ✨ Trader
                     </button>
                     <button
                       type="button"
                       onClick={() => prefillSignup('salesperson')}
-                      className="text-[9px] font-bold text-emerald-300 bg-emerald-900/40 px-1.5 py-0.5 rounded border border-emerald-500/30 hover:bg-emerald-800/50"
+                      className="text-[9px] font-bold text-emerald-300 bg-emerald-900/40 px-1.5 py-0.5 rounded border border-emerald-500/30 hover:bg-emerald-800/50 cursor-pointer"
                     >
                       ✨ Rep
                     </button>
@@ -425,8 +394,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     onClick={() => setSignupRole('admin')}
                     className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
                       signupRole === 'admin'
-                        ? 'bg-blue-950/60 border-blue-400 text-white ring-1 ring-blue-400'
-                        : 'bg-black/25 border-white/10 text-white/70 hover:border-white/20'
+                        ? 'bg-blue-950/70 border-blue-400 text-white ring-1 ring-blue-400'
+                        : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
                     }`}
                   >
                     <div className="text-[11px] font-black flex items-center justify-between">
@@ -440,8 +409,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     onClick={() => setSignupRole('salesperson')}
                     className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
                       signupRole === 'salesperson'
-                        ? 'bg-emerald-950/60 border-emerald-400 text-white ring-1 ring-emerald-400'
-                        : 'bg-black/25 border-white/10 text-white/70 hover:border-white/20'
+                        ? 'bg-emerald-950/70 border-emerald-400 text-white ring-1 ring-emerald-400'
+                        : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
                     }`}
                   >
                     <div className="text-[11px] font-black flex items-center justify-between">
@@ -463,7 +432,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     value={signupName}
                     onChange={(e) => setSignupName(e.target.value)}
                     placeholder="Vikram Malhotra"
-                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-black/35 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400"
+                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-black/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all"
                   />
                 </div>
               </div>
@@ -478,7 +447,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     value={signupBusinessName}
                     onChange={(e) => setSignupBusinessName(e.target.value)}
                     placeholder="Apex Footwear Wholesale"
-                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-black/35 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400"
+                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-black/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all"
                   />
                 </div>
               </div>
@@ -493,7 +462,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
                     placeholder="vikram@apexfootwear.com"
-                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-black/35 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400"
+                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-black/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all"
                   />
                 </div>
               </div>
@@ -503,19 +472,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <div className="relative">
                   <Lock className="w-3.5 h-3.5 absolute left-3 top-2.5 text-white/60" />
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showSignupPassword ? 'text' : 'password'}
                     required
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-9 pl-9 pr-8 text-xs rounded-xl bg-black/35 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400"
+                    className="w-full h-9 pl-9 pr-8 text-xs rounded-xl bg-black/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50 transition-all"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2.5 top-2.5 text-white/60 hover:text-white"
+                    onClick={() => setShowSignupPassword(!showSignupPassword)}
+                    className="absolute right-2.5 top-2.5 text-white/60 hover:text-white cursor-pointer"
                   >
-                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    {showSignupPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
               </div>
@@ -523,7 +492,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <button
                 type="submit"
                 disabled={isSubmittingSignup}
-                className="w-full h-9 sm:h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] mt-2"
+                className="w-full h-9 sm:h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] mt-2"
               >
                 {isSubmittingSignup ? (
                   <>
@@ -548,84 +517,63 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               )}
 
               <div>
-                <label
-                  className={`text-[10px] sm:text-xs font-bold block mb-1 ${
-                    isUltraTransparent ? 'text-slate-200' : 'text-slate-700'
-                  }`}
-                >
+                <label className="text-[10px] sm:text-xs font-bold block mb-1 text-slate-200">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail
-                    className={`w-3.5 h-3.5 absolute left-3 top-2.5 sm:top-3 ${
-                      isUltraTransparent ? 'text-white/60' : 'text-slate-400'
-                    }`}
-                  />
+                  <Mail className="w-3.5 h-3.5 absolute left-3 top-2.5 sm:top-3 text-white/60" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@soleflow.com"
-                    className={`w-full h-9 sm:h-10 pl-9 pr-3 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all ${
-                      isUltraTransparent
-                        ? 'bg-black/35 border border-white/20 text-white placeholder-white/40 focus:bg-black/50 focus:border-blue-400'
-                        : 'bg-slate-50/80 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-500'
-                    }`}
+                    className="w-full h-9 sm:h-10 pl-9 pr-3 text-xs rounded-xl bg-black/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition-all"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label
-                    className={`text-[10px] sm:text-xs font-bold block ${
-                      isUltraTransparent ? 'text-slate-200' : 'text-slate-700'
-                    }`}
-                  >
+                  <label className="text-[10px] sm:text-xs font-bold text-slate-200">
                     Password
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onForgotPassword) {
-                        onForgotPassword();
-                      } else {
-                        window.location.hash = '#auth/forgot-password';
-                      }
-                    }}
-                    className="text-[10px] font-semibold text-blue-300 hover:text-blue-200 transition-colors"
-                  >
-                    Forgot password?
-                  </button>
+                  {onForgotPassword && (
+                    <button
+                      type="button"
+                      onClick={onForgotPassword}
+                      className="text-[10px] text-blue-300 hover:text-blue-200 hover:underline cursor-pointer"
+                    >
+                      Forgot?
+                    </button>
+                  )}
                 </div>
                 <div className="relative">
-                  <Lock
-                    className={`w-3.5 h-3.5 absolute left-3 top-2.5 sm:top-3 ${
-                      isUltraTransparent ? 'text-white/60' : 'text-slate-400'
-                    }`}
-                  />
+                  <Lock className="w-3.5 h-3.5 absolute left-3 top-2.5 sm:top-3 text-white/60" />
                   <input
-                    type="password"
+                    type={showLoginPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className={`w-full h-9 sm:h-10 pl-9 pr-3 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all ${
-                      isUltraTransparent
-                        ? 'bg-black/35 border border-white/20 text-white placeholder-white/40 focus:bg-black/50 focus:border-blue-400'
-                        : 'bg-slate-50/80 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-500'
-                    }`}
+                    className="w-full h-9 sm:h-10 pl-9 pr-8 text-xs rounded-xl bg-black/40 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-2.5 top-2.5 sm:top-3 text-white/60 hover:text-white cursor-pointer"
+                  >
+                    {showLoginPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
                 </div>
               </div>
 
               <button
                 type="submit"
-                disabled={isSubmittingLogin}
-                className="w-full h-9 sm:h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] mt-1 disabled:opacity-60"
+                disabled={isLoading}
+                className="w-full h-9 sm:h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] mt-1"
               >
-                {isSubmittingLogin ? (
+                {isLoading ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5 animate-spin" />
                     <span>Signing In...</span>
@@ -638,41 +586,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 )}
               </button>
 
-              {/* Quick Demo Role Picker Buttons (Transparent Frosted Glass) */}
-              <div
-                className={`pt-2.5 sm:pt-3.5 border-t ${
-                  isUltraTransparent ? 'border-white/10' : 'border-slate-100'
-                }`}
-              >
-                <span
-                  className={`text-[9px] uppercase font-bold block text-center mb-1.5 tracking-wider ${
-                    isUltraTransparent ? 'text-white/60' : 'text-slate-400'
-                  }`}
-                >
+              {/* Quick Demo Role Picker Buttons (Frosted Blue Glass) */}
+              <div className="pt-2.5 sm:pt-3.5 border-t border-white/10">
+                <span className="text-[9px] uppercase font-bold block text-center mb-1.5 tracking-wider text-blue-300">
                   Instant 1-Click Demo Login
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('admin')}
-                    className={`p-2 sm:p-2.5 rounded-xl text-left transition-all hover:scale-[1.01] active:scale-[0.98] cursor-pointer ${
-                      isUltraTransparent
-                        ? 'bg-blue-950/40 hover:bg-blue-900/50 border border-blue-400/30 backdrop-blur-md'
-                        : 'bg-blue-50/90 hover:bg-blue-100 border border-blue-200'
-                    }`}
+                    className="p-2 sm:p-2.5 rounded-xl text-left transition-all hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-blue-950/50 hover:bg-blue-900/60 border border-blue-400/40 backdrop-blur-md"
                   >
-                    <span
-                      className={`text-[11px] sm:text-xs font-black block truncate ${
-                        isUltraTransparent ? 'text-blue-300' : 'text-blue-900'
-                      }`}
-                    >
+                    <span className="text-[11px] sm:text-xs font-black block truncate text-blue-300">
                       Trader / Admin
                     </span>
-                    <span
-                      className={`text-[9px] font-mono block truncate ${
-                        isUltraTransparent ? 'text-blue-200/90' : 'text-blue-700'
-                      }`}
-                    >
+                    <span className="text-[9px] font-mono block truncate text-blue-200/90">
                       admin@soleflow.com
                     </span>
                   </button>
@@ -680,24 +608,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('salesperson')}
-                    className={`p-2 sm:p-2.5 rounded-xl text-left transition-all hover:scale-[1.01] active:scale-[0.98] cursor-pointer ${
-                      isUltraTransparent
-                        ? 'bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-400/30 backdrop-blur-md'
-                        : 'bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-200'
-                    }`}
+                    className="p-2 sm:p-2.5 rounded-xl text-left transition-all hover:scale-[1.01] active:scale-[0.98] cursor-pointer bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-400/40 backdrop-blur-md"
                   >
-                    <span
-                      className={`text-[11px] sm:text-xs font-black block truncate ${
-                        isUltraTransparent ? 'text-emerald-300' : 'text-emerald-900'
-                      }`}
-                    >
+                    <span className="text-[11px] sm:text-xs font-black block truncate text-emerald-300">
                       Salesperson
                     </span>
-                    <span
-                      className={`text-[9px] font-mono block truncate ${
-                        isUltraTransparent ? 'text-emerald-200/90' : 'text-emerald-700'
-                      }`}
-                    >
+                    <span className="text-[9px] font-mono block truncate text-emerald-200/90">
                       sales@soleflow.com
                     </span>
                   </button>
@@ -709,7 +625,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       </main>
 
       {/* 4. Bottom Footwear Design Promotional Marquee */}
-      <footer className="relative z-20 w-full max-w-5xl py-1 sm:py-2 overflow-hidden rounded-xl bg-slate-950/50 backdrop-blur-md border border-white/10 shrink-0">
+      <footer className="relative z-20 w-full max-w-5xl py-1 sm:py-2 overflow-hidden rounded-xl bg-slate-950/60 backdrop-blur-md border border-white/10 shrink-0">
         <div className="animate-marquee items-center gap-3 sm:gap-6 text-xs text-white/80">
           {[...promotionalShoes, ...promotionalShoes].map((shoe, idx) => (
             <div

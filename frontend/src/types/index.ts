@@ -280,5 +280,40 @@ export interface DesignShareRecord {
   orderId?: string;
 }
 
+export interface DiscountRequest {
+  id: string;
+  orderId: string;
+  clientId: string;
+  clientName?: string;
+  clientCity?: string;
+  requestedBy: string;
+  salesmanId?: string;
+  salesmanName?: string;
+  defaultPercent: number;
+  requestedPercent: number;
+  approvedPercent?: number | null;
+  orderSubtotal: number;
+  pairs: number;
+  productSummary?: string;
+  marginConcession: number;
+  projectedMarginPercent?: number | null;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled' | 'expired';
+  decidedBy?: string | null;
+  decidedAt?: string | null;
+  decisionNote?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DiscountRequestStats {
+  pendingCount: number;
+  pendingConcessionTotal: number;
+  approvedThisMonth: number;
+  rejectedThisMonth: number;
+  totalRequests: number;
+}
+
 export * from './database.types';
+
 
