@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { AppProvider, useApp } from './context/AppContext';
 import { RequireAuth, RequireRole } from './auth/RouteGuards';
 import { useRealtimeSubscriptions } from './hooks/useRealtime';
+import { useDesignsRealtime } from './hooks/useDesignsRealtime';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -73,6 +74,14 @@ const AppContent: React.FC = () => {
   // Live Supabase Realtime subscriptions for orders and notifications
   useRealtimeSubscriptions(authUser?.id, (msg) => {
     showToast(msg);
+  });
+
+  // Live Supabase Realtime synchronization for shoe designs catalog
+  useDesignsRealtime({
+    isSalesperson: authRole === 'salesperson',
+    onNewDesign: (name, articleCode) => {
+      showToast(`New design added: ${name}${articleCode ? ` (${articleCode})` : ''}`);
+    },
   });
 
   // Sync theme mode to documentElement

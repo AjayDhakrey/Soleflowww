@@ -73,6 +73,11 @@ export const NotificationsPage: React.FC = () => {
                 n.desc.toLowerCase().includes('receipt') ||
                 n.desc.toLowerCase().includes('cheque');
 
+              const isDesignNotification =
+                n.title.toLowerCase().includes('design') ||
+                n.desc.toLowerCase().includes('design') ||
+                n.category === 'design';
+
               return (
                 <div
                   key={n.id}
@@ -85,6 +90,8 @@ export const NotificationsPage: React.FC = () => {
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                       isPaymentNotification
                         ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600'
+                        : isDesignNotification
+                        ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600'
                         : n.category === 'alert'
                         ? 'bg-red-50 dark:bg-red-950/50 text-red-600'
                         : n.category === 'factory'
@@ -94,6 +101,8 @@ export const NotificationsPage: React.FC = () => {
                   >
                     {isPaymentNotification ? (
                       <Icons.Payments size={20} strokeWidth={1.75} />
+                    ) : isDesignNotification ? (
+                      <Icons.Designs size={20} strokeWidth={1.75} />
                     ) : n.category === 'alert' ? (
                       <Icons.Overdue size={20} strokeWidth={1.75} />
                     ) : n.category === 'factory' ? (
@@ -119,6 +128,12 @@ export const NotificationsPage: React.FC = () => {
                       <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-semibold">
                         <Icons.FileText size={13} />
                         <span>Click to view official receipt</span>
+                      </div>
+                    )}
+                    {isDesignNotification && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                        <Icons.Designs size={13} />
+                        <span>Available in wholesale catalog</span>
                       </div>
                     )}
                   </div>

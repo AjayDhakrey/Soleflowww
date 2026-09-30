@@ -26,6 +26,7 @@ interface AuthContextType {
   isLoading: boolean;
   authError: string | null;
   isDemoMode: boolean;
+  canManageCatalog: boolean;
   signIn: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   resetPasswordForEmail: (email: string) => Promise<{ success: boolean; message: string }>;
@@ -44,7 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [role, setRole] = useState<UserRole>('admin');
+  // DEPRECATED: const [role, setRole] = useState<UserRole>('admin');
+  const [role, setRole] = useState<UserRole>('salesperson');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -337,8 +339,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true, message: 'Demo mode: Password updated successfully.' };
   };
 
-  // Demo role switch
+  // Demo role switch (strictly restricted to demo mode)
   const switchDemoRole = (newRole: UserRole) => {
+    if (!isDemoMode) {
+      console.warn('Role switching is only permitted in Demo Mode.');
+      return;
+    }
     const newUser = newRole === 'admin' ? MOCK_USERS.admin : MOCK_USERS.salesperson;
     setUser(newUser);
     setRole(newRole);
@@ -356,12 +362,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuthError = () => setAuthError(null);
 
+  const canManageCatalog = (role === 'admin' || profile?.role === 'admin') && !isLoading;
+
   const value: AuthContextType = {
     user,
     profile,
     role,
     isAdmin: role === 'admin',
     isSalesperson: role === 'salesperson',
+    canManageCatalog,
     isLoggedIn: Boolean(user),
     isLoading,
     authError,

@@ -14,6 +14,7 @@
     "clean": "node scripts/clean.mjs",
     "db:health": "node scripts/db-health.mjs",
     "db:roundtrip": "node scripts/db-roundtrip.mjs",
+    "test:designs": "node scripts/design-permissions.mjs",
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

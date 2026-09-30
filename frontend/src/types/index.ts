@@ -72,6 +72,8 @@ export interface ShoeDesign {
   upperMaterial: string;
   marginBadge?: string;
   velocityBadge?: string;
+  isArchived?: boolean;
+  createdAt?: string;
 }
 
 export interface OrderSizeMatrix {
@@ -249,7 +251,7 @@ export interface NotificationItem {
   title: string;
   time: string;
   desc: string;
-  category: 'order' | 'payment' | 'factory' | 'alert' | 'visit';
+  category: 'order' | 'payment' | 'factory' | 'alert' | 'visit' | 'design';
   read: boolean;
   linkTab?: string;
 }

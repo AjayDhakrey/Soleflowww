@@ -31,6 +31,7 @@ import { supabaseApi, isSupabaseConfigured } from '../lib/supabase';
 import { paymentsService } from '../services/payments';
 import { visitsService } from '../services/visits';
 import { followUpsService } from '../services/followUps';
+import { designsService } from '../services/designs';
 import { useAuth } from '../auth/AuthProvider';
 
 interface AppContextType {
@@ -54,6 +55,8 @@ interface AppContextType {
   setSelectedCustomer: (cust: Customer | null) => void;
   addCustomer: (cust: Partial<Customer>) => void;
   designs: ShoeDesign[];
+  setDesigns: React.Dispatch<React.SetStateAction<ShoeDesign[]>>;
+  refreshDesigns: () => Promise<void>;
   selectedDesignIds: string[];
   toggleSelectDesign: (id: string) => void;
   clearSelectedDesigns: () => void;
@@ -196,7 +199,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [isDarkMode]);
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(MOCK_CUSTOMERS[0]);
-  const [designs] = useState<ShoeDesign[]>(MOCK_DESIGNS);
+  const [designs, setDesigns] = useState<ShoeDesign[]>(MOCK_DESIGNS);
   const [selectedDesignIds, setSelectedDesignIds] = useState<string[]>(['sf-1024', 'sf-884', 'sf-512']);
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>(MOCK_MANUFACTURERS);
@@ -219,6 +222,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setSelectedCustomer(data[0]);
         }
       });
+      designsService.fetchDesigns().then((data) => {
+        if (data && data.length > 0) setDesigns(data);
+      });
       supabaseApi.getOrders().then((data) => {
         if (data && data.length > 0) setOrders(data);
       });
@@ -239,6 +245,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     }
   }, [isSupabaseActive]);
+
+  const refreshDesigns = async () => {
+    try {
+      const live = await designsService.fetchDesigns();
+      if (live && live.length > 0) {
+        setDesigns(live);
+      }
+    } catch (e) {
+      console.warn('Failed to refresh designs:', e);
+    }
+  };
 
   // Interactive Demonstration Walkthrough State
   const [isWalkthroughOpen, setIsWalkthroughOpen] = useState(false);
@@ -867,6 +884,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedCustomer,
         addCustomer,
         designs,
+        setDesigns,
+        refreshDesigns,
         selectedDesignIds,
         toggleSelectDesign,
         clearSelectedDesigns,

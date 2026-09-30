@@ -80,6 +80,19 @@ async function runSuite() {
   let shareToken = null;
 
   try {
+    // Authenticate with admin credentials
+    const adminEmail = process.env.AUDIT_ADMIN_EMAIL || process.env.AUDIT_EMAIL || 'soleflow.admin@gmail.com';
+    const adminPass = process.env.AUDIT_ADMIN_PASSWORD || process.env.AUDIT_PASSWORD || 'Password123!';
+    const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+      email: adminEmail,
+      password: adminPass,
+    });
+    if (authErr) {
+      console.warn(`  ⚠️ Admin sign-in warning (${authErr.message})`);
+    } else {
+      console.log(`  🔑 Authenticated as admin: ${authData.user?.email}`);
+    }
+
     // -------------------------------------------------------------
     // PREREQUISITE: Salesman Preparation
     // -------------------------------------------------------------

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../auth/AuthProvider';
 import { ShoeDesign } from '../../types';
+import { designsService } from '../../services/designs';
 import { Icons } from '../../lib/icons';
 import {
   PageHeader,
@@ -16,6 +18,8 @@ import {
 } from '../../components/ui';
 import { DesignsKpiCards } from '../../components/designs/DesignsKpiCards';
 import { DesignSharesModal } from '../../components/designs/DesignSharesModal';
+import { AddDesignModal } from '../../components/designs/AddDesignModal';
+import { Plus, Edit2, Archive, RotateCcw, AlertTriangle, Sparkles } from 'lucide-react';
 
 interface DesignsPageProps {
   onNavigate: (path: string) => void;
@@ -24,6 +28,8 @@ interface DesignsPageProps {
 export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const {
     designs,
+    setDesigns,
+    refreshDesigns,
     selectedDesignIds,
     toggleSelectDesign,
     clearSelectedDesigns,
@@ -32,11 +38,30 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     showToast,
   } = useApp();
 
+  const { canManageCatalog, isAdmin } = useAuth();
+
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'popular' | 'price_low' | 'price_high' | 'margin'>('popular');
   const [quickViewShoe, setQuickViewShoe] = useState<ShoeDesign | null>(null);
   const [isShareHistoryOpen, setIsShareHistoryOpen] = useState(false);
+
+  // Admin Catalog Management States
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingDesign, setEditingDesign] = useState<ShoeDesign | null>(null);
+  const [archivingDesign, setArchivingDesign] = useState<ShoeDesign | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
+
+  // Archived designs state for admin
+  const [archivedDesigns, setArchivedDesigns] = useState<ShoeDesign[]>([]);
+
+  useEffect(() => {
+    if (canManageCatalog && activeCategory === 'Archived') {
+      designsService.fetchAllDesigns({ onlyArchived: true }).then((data) => {
+        setArchivedDesigns(data);
+      });
+    }
+  }, [canManageCatalog, activeCategory]);
 
   const categories = [
     'All',
@@ -44,11 +69,14 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     'Formal Derby & Oxford',
     'Leather Boots',
     'Loafers & Casuals',
+    ...(canManageCatalog ? ['Archived'] : []),
   ];
 
+  const currentList = activeCategory === 'Archived' ? archivedDesigns : designs;
+
   // Filtering
-  const filteredDesigns = designs.filter((d) => {
-    const matchesCat = activeCategory === 'All' || d.category === activeCategory;
+  const filteredDesigns = currentList.filter((d) => {
+    const matchesCat = activeCategory === 'All' || activeCategory === 'Archived' || d.category === activeCategory;
     const matchesSearch =
       d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.articleCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -74,6 +102,44 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   const popularCount = designs.filter((d) => d.status === 'Popular').length;
   const highMarginCount = designs.filter((d) => d.marginBadge?.includes('High') || d.marginBadge?.includes('40%')).length;
 
+  const handleArchiveConfirm = async () => {
+    if (!archivingDesign) return;
+    setIsArchiving(true);
+    const res = await designsService.archiveDesignV2(archivingDesign.id);
+    setIsArchiving(false);
+    if (res.success) {
+      showToast(`Design ${archivingDesign.articleCode} archived successfully`);
+      setArchivingDesign(null);
+      refreshDesigns();
+      if (activeCategory === 'Archived') {
+        designsService.fetchAllDesigns({ onlyArchived: true }).then(setArchivedDesigns);
+      }
+    } else {
+      showToast(res.error || 'Failed to archive design');
+    }
+  };
+
+  const handleRestore = async (shoe: ShoeDesign) => {
+    const res = await designsService.restoreDesignV2(shoe.id);
+    if (res.success) {
+      showToast(`Design ${shoe.articleCode} restored to active catalog`);
+      refreshDesigns();
+      designsService.fetchAllDesigns({ onlyArchived: true }).then(setArchivedDesigns);
+    } else {
+      showToast(res.error || 'Failed to restore design');
+    }
+  };
+
+  const isRecentNew = (shoe: ShoeDesign) => {
+    if (shoe.status === 'New Designs') return true;
+    if (shoe.createdAt) {
+      const createdDate = new Date(shoe.createdAt).getTime();
+      const sevenDaysAgo = Date.now() - 7 * 86400000;
+      return createdDate > sevenDaysAgo;
+    }
+    return false;
+  };
+
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12">
       {/* 1. Page Header */}
@@ -91,18 +157,31 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
               Sharing History
             </Button>
             <Button
-              variant="primary"
+              variant="secondary"
               icon={Icons.WhatsApp}
               onClick={() => setIsShareModalOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="text-emerald-700 dark:text-emerald-400"
             >
               Share Lookbook ({selectedDesignIds.length})
             </Button>
+            {canManageCatalog && (
+              <Button
+                variant="primary"
+                icon={Plus}
+                onClick={() => {
+                  setEditingDesign(null);
+                  setIsAddModalOpen(true);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20"
+              >
+                Add Design
+              </Button>
+            )}
           </>
         }
       />
 
-      {/* 2. KPI Summary Row (3D Claymorphic Redesign) */}
+      {/* 2. KPI Summary Row */}
       <DesignsKpiCards
         totalActiveModels={designs.length || 6}
         popularStylesCount={popularCount || 2}
@@ -159,7 +238,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                       : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                   }`}
                 >
-                  {cat}
+                  {cat === 'Archived' ? `Archived (${archivedDesigns.length})` : cat}
                 </button>
               );
             })}
@@ -171,13 +250,18 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
           {sortedDesigns.length === 0 ? (
             <EmptyState
               icon={Icons.Designs}
-              title="No Footwear Models Found"
-              description={`No articles match "${searchQuery}" in ${activeCategory}. Try adjusting your search query.`}
+              title={activeCategory === 'Archived' ? 'No Archived Designs' : 'No Footwear Models Found'}
+              description={
+                activeCategory === 'Archived'
+                  ? 'There are currently no archived shoe designs in the database.'
+                  : `No articles match "${searchQuery}" in ${activeCategory}. Try adjusting your search query.`
+              }
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {sortedDesigns.map((shoe) => {
                 const isSelected = selectedDesignIds.includes(shoe.id);
+                const isNew = isRecentNew(shoe);
 
                 return (
                   <div
@@ -194,36 +278,56 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         src={shoe.image}
                         alt={shoe.name}
                         className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-200 hover:scale-105"
+                        onError={(e) => {
+                          (e.target as any).src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
+                        }}
                       />
 
                       {/* Floating Selection Checkbox */}
-                      <button
-                        type="button"
-                        onClick={() => toggleSelectDesign(shoe.id)}
-                        className={`absolute top-3 left-3 w-7 h-7 rounded-lg flex items-center justify-center border transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#3B82F6] border-[#3B82F6] text-white shadow-xs'
-                            : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-transparent hover:border-slate-400'
-                        }`}
-                        title={isSelected ? 'Deselect from Lookbook' : 'Select for Lookbook'}
-                      >
-                        <Icons.Check size={16} strokeWidth={2.5} />
-                      </button>
+                      {!shoe.isArchived && (
+                        <button
+                          type="button"
+                          onClick={() => toggleSelectDesign(shoe.id)}
+                          className={`absolute top-3 left-3 w-7 h-7 rounded-lg flex items-center justify-center border transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#3B82F6] border-[#3B82F6] text-white shadow-xs'
+                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-transparent hover:border-slate-400'
+                          }`}
+                          title={isSelected ? 'Deselect from Lookbook' : 'Select for Lookbook'}
+                        >
+                          <Icons.Check size={16} strokeWidth={2.5} />
+                        </button>
+                      )}
 
-                      {/* Quick View Button */}
-                      <button
-                        type="button"
-                        onClick={() => setQuickViewShoe(shoe)}
-                        className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                        title="Quick Specifications"
-                      >
-                        <Icons.View size={15} strokeWidth={1.75} />
-                      </button>
+                      {/* Top Right: New Badge & Quick View */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        {isNew && !shoe.isArchived && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider shadow-sm flex items-center gap-1">
+                            <Sparkles className="w-2.5 h-2.5" /> New
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setQuickViewShoe(shoe)}
+                          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                          title="Quick Specifications"
+                        >
+                          <Icons.View size={15} strokeWidth={1.75} />
+                        </button>
+                      </div>
 
                       {/* Status / Margin Badge */}
-                      {shoe.marginBadge && (
+                      {shoe.marginBadge && !shoe.isArchived && (
                         <div className="absolute bottom-3 left-3">
                           <Tag variant="purple">{shoe.marginBadge}</Tag>
+                        </div>
+                      )}
+
+                      {shoe.isArchived && (
+                        <div className="absolute bottom-3 left-3">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                            Archived
+                          </span>
                         </div>
                       )}
                     </div>
@@ -260,27 +364,65 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         </span>
                       </div>
 
-                      {/* Actions */}
-                      <div className="grid grid-cols-2 gap-2 pt-1">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          icon={Icons.View}
-                          onClick={() => setQuickViewShoe(shoe)}
-                        >
-                          Specs
-                        </Button>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          icon={Icons.Orders}
-                          onClick={() => {
-                            setIsCreateOrderModalOpen(true);
-                          }}
-                        >
-                          Book Order
-                        </Button>
-                      </div>
+                      {/* Actions Area */}
+                      {canManageCatalog ? (
+                        <div className="pt-2 space-y-2">
+                          {shoe.isArchived ? (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              icon={RotateCcw}
+                              onClick={() => handleRestore(shoe)}
+                              className="w-full text-emerald-600 hover:text-emerald-700"
+                            >
+                              Restore to Catalog
+                            </Button>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                icon={Edit2}
+                                onClick={() => {
+                                  setEditingDesign(shoe);
+                                  setIsAddModalOpen(true);
+                                }}
+                              >
+                                Edit Specs
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                icon={Archive}
+                                onClick={() => setArchivingDesign(shoe)}
+                              >
+                                Archive
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            icon={Icons.View}
+                            onClick={() => setQuickViewShoe(shoe)}
+                          >
+                            Specs
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon={Icons.Orders}
+                            onClick={() => {
+                              setIsCreateOrderModalOpen(true);
+                            }}
+                          >
+                            Book Order
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -363,11 +505,73 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* 5. Lookbook Shares History Modal */}
+      {/* 5. Add / Edit Design Modal */}
+      <AddDesignModal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingDesign(null);
+        }}
+        designToEdit={editingDesign}
+        onSaved={() => {
+          refreshDesigns();
+          showToast(editingDesign ? 'Design specifications updated.' : 'New design published to catalog.');
+        }}
+      />
+
+      {/* 6. Archive Confirmation Dialog */}
+      {archivingDesign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Archive Footwear Design?</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Are you sure you want to archive <strong>{archivingDesign.name}</strong> ({archivingDesign.articleCode})? It will be hidden from all salespeople lookbooks and order booking.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                variant="secondary"
+                onClick={() => setArchivingDesign(null)}
+                disabled={isArchiving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleArchiveConfirm}
+                disabled={isArchiving}
+              >
+                {isArchiving ? 'Archiving...' : 'Yes, Archive Design'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. Lookbook Shares History Modal */}
       <DesignSharesModal
         isOpen={isShareHistoryOpen}
         onClose={() => setIsShareHistoryOpen(false)}
       />
+
+      {/* 8. Mobile Floating Action Button (Admin only) */}
+      {canManageCatalog && (
+        <button
+          type="button"
+          onClick={() => {
+            setEditingDesign(null);
+            setIsAddModalOpen(true);
+          }}
+          className="fixed bottom-20 right-6 z-40 md:hidden w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all"
+          title="Add New Design"
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+      )}
     </div>
   );
 };
