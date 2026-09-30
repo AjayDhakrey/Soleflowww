@@ -5,16 +5,11 @@ import { useAuth } from '../../auth/AuthProvider';
 import { ShoeDesign } from '../../types';
 import { designsService } from '../../services/designs';
 import { useDesignCatalog } from '../../hooks/useDesignCatalog';
-import { useDesignsRealtime } from '../../hooks/useDesignsRealtime';
 import { Icons } from '../../lib/icons';
 import {
   PageHeader,
-  Panel,
-  FilterBar,
-  SearchInput,
   Select,
   Button,
-  Tag,
   EmptyState,
 } from '../../components/ui';
 import { DesignsKpiCards } from '../../components/designs/DesignsKpiCards';
@@ -30,7 +25,13 @@ import {
   Trash2,
   RefreshCw,
   AlertCircle,
-  CheckCircle2,
+  Eye,
+  Check,
+  Search,
+  Package,
+  Layers,
+  ArrowUpDown,
+  ShoppingBag,
 } from 'lucide-react';
 
 interface DesignsPageProps {
@@ -97,13 +98,23 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   });
 
   const categories = [
-    'All',
-    'Athletic Sneakers',
-    'Formal Derby & Oxford',
-    'Leather Boots',
-    'Loafers & Casuals',
-    ...(isUserAdmin ? ['Archived'] : []),
+    { label: 'All', value: 'All' },
+    { label: 'Athletic Sneakers', value: 'Athletic Sneakers' },
+    { label: 'Formal Derby & Oxford', value: 'Formal Derby & Oxford' },
+    { label: 'Leather Boots', value: 'Leather Boots' },
+    { label: 'Loafers & Casuals', value: 'Loafers & Casuals' },
+    ...(isUserAdmin ? [{ label: 'Archived', value: 'Archived' }] : []),
   ];
+
+  // Category counts
+  const counts: Record<string, number> = {
+    All: rawDesigns.filter((d) => !d.isArchived).length,
+    'Athletic Sneakers': rawDesigns.filter((d) => !d.isArchived && d.category === 'Athletic Sneakers').length,
+    'Formal Derby & Oxford': rawDesigns.filter((d) => !d.isArchived && d.category === 'Formal Derby & Oxford').length,
+    'Leather Boots': rawDesigns.filter((d) => !d.isArchived && d.category === 'Leather Boots').length,
+    'Loafers & Casuals': rawDesigns.filter((d) => !d.isArchived && d.category === 'Loafers & Casuals').length,
+    Archived: rawDesigns.filter((d) => d.isArchived).length,
+  };
 
   // Filtering
   const filteredDesigns = rawDesigns.filter((d) => {
@@ -227,18 +238,19 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto pb-24 md:pb-12 font-sans">
       {/* 1. Page Header */}
       <PageHeader
         breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Catalogue' }]}
         title="Footwear Catalogue & Lookbook"
         subtitle="Curated B2B wholesale designs, material specs, and WhatsApp shareable lookbooks."
         actions={
-          <>
+          <div className="flex items-center gap-2.5">
             <Button
               variant="secondary"
               icon={Icons.AuditLog}
               onClick={() => setIsShareHistoryOpen(true)}
+              className="rounded-xl"
             >
               Sharing History
             </Button>
@@ -246,7 +258,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
               variant="secondary"
               icon={Icons.WhatsApp}
               onClick={() => setIsShareModalOpen(true)}
-              className="text-emerald-700 dark:text-emerald-400"
+              className="text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 hover:bg-emerald-100/70 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-800 rounded-xl"
             >
               Share Lookbook ({selectedDesignIds.length})
             </Button>
@@ -258,12 +270,12 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                   setEditingDesign(null);
                   setIsAddModalOpen(true);
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20"
+                className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/25 rounded-xl font-bold"
               >
                 Add Design
               </Button>
             )}
-          </>
+          </div>
         }
       />
 
@@ -275,56 +287,89 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         selectedCount={selectedDesignIds.length}
       />
 
-      {/* 3. Catalogue Grid Panel */}
-      <Panel noPadding>
-        {/* Filter Bar */}
-        <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 space-y-4">
-          <FilterBar>
-            <SearchInput
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onClear={() => setSearchQuery('')}
-              placeholder="Search by article code (e.g. SF-104), model name, material..."
-              containerClassName="max-w-md"
-            />
-            <Select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              options={[
-                { label: 'Sort: Most Popular', value: 'popular' },
-                { label: 'Price: Low to High', value: 'price_low' },
-                { label: 'Price: High to Low', value: 'price_high' },
-                { label: 'Highest Margin', value: 'margin' },
-              ]}
-            />
-            {selectedDesignIds.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={Icons.Close}
-                onClick={clearSelectedDesigns}
-              >
-                Clear Selection ({selectedDesignIds.length})
-              </Button>
-            )}
-          </FilterBar>
+      {/* 3. Sleek Redesigned Catalogue Container */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/90 rounded-2xl sm:rounded-3xl shadow-xs overflow-hidden transition-all">
+        {/* Search & Sort Top Toolbar */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 space-y-3.5 bg-slate-50/50 dark:bg-slate-900/40">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-xl">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by article code (e.g. SF-ART-104), model name, material..."
+                className="w-full h-10 pl-10 pr-9 text-xs sm:text-sm rounded-xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all shadow-xs"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-1"
+                >
+                  <Icons.Close size={14} />
+                </button>
+              )}
+            </div>
 
-          {/* Category Chips */}
-          <div className="flex flex-wrap gap-2 pt-1">
+            {/* Sort & Quick Filters */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-xs">
+                <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sort:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1"
+                >
+                  <option value="popular">Most Popular</option>
+                  <option value="price_low">Price: Low to High</option>
+                  <option value="price_high">Price: High to Low</option>
+                  <option value="margin">Highest Margin</option>
+                </select>
+              </div>
+
+              {selectedDesignIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearSelectedDesigns}
+                  className="px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 border border-rose-200/80 dark:border-rose-900 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Icons.Close size={13} />
+                  <span>Clear Selection ({selectedDesignIds.length})</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             {categories.map((cat) => {
-              const isSelected = activeCategory === cat;
+              const isSelected = activeCategory === cat.value;
+              const count = counts[cat.value] ?? 0;
+
               return (
                 <button
-                  key={cat}
+                  key={cat.value}
                   type="button"
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-medium transition-colors cursor-pointer ${
+                  onClick={() => setActiveCategory(cat.value)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 select-none ${
                     isSelected
-                      ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold shadow-xs'
-                      : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm shadow-slate-900/20 scale-[1.02]'
+                      : 'bg-white dark:bg-slate-850 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300'
                   }`}
                 >
-                  {cat}
+                  <span>{cat.label}</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                      isSelected
+                        ? 'bg-white/20 dark:bg-slate-900/20 text-white dark:text-slate-900'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'
+                    }`}
+                  >
+                    {count}
+                  </span>
                 </button>
               );
             })}
@@ -333,7 +378,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
         {/* Error Banner */}
         {isError && (
-          <div className="m-4 md:m-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 flex items-center justify-between">
+          <div className="m-4 md:m-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
               <div>
@@ -351,11 +396,11 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
         {/* Loading Skeletons */}
         {isLoading && (
-          <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
               <div
                 key={n}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-4 animate-pulse"
+                className="bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-4 animate-pulse"
               >
                 <div className="w-full aspect-[4/3] bg-slate-200 dark:bg-slate-800 rounded-xl" />
                 <div className="space-y-2">
@@ -374,7 +419,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
         {/* Footwear Grid */}
         {!isLoading && !isError && (
-          <div className="p-4 md:p-6">
+          <div className="p-4 sm:p-6">
             {sortedDesigns.length === 0 ? (
               <EmptyState
                 icon={Icons.Designs}
@@ -386,123 +431,147 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 }
               />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
                 {sortedDesigns.map((shoe) => {
                   const isSelected = selectedDesignIds.includes(shoe.id);
                   const isNew = isRecentNew(shoe);
+                  const cartonUnits = shoe.pairsPerCarton || 12;
+                  const cartonWholesaleTotal = shoe.price * cartonUnits;
 
                   return (
                     <div
                       key={shoe.id}
-                      className={`bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-150 flex flex-col justify-between shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${
+                      className={`group relative bg-white dark:bg-slate-850 rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden ${
                         isSelected
-                          ? 'border-[#4F8EF7] ring-2 ring-[#4F8EF7]/20 dark:border-[#4F8EF7]'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                          ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md shadow-blue-500/10 dark:border-blue-400'
+                          : 'border-slate-200/80 dark:border-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg hover:-translate-y-0.5'
                       }`}
                     >
-                      {/* Image Area on Slate-50 */}
-                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 relative aspect-[4/3] flex items-center justify-center">
+                      {/* Top Image Showcase Area */}
+                      <div className="relative aspect-[4/3] bg-gradient-to-b from-slate-50 via-slate-100/50 to-slate-100/80 dark:from-slate-900/80 dark:via-slate-900/50 dark:to-slate-900 p-4 flex items-center justify-center overflow-hidden">
                         <img
                           src={shoe.image}
                           alt={shoe.name}
-                          className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-200 hover:scale-105"
+                          className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-300 group-hover:scale-105 select-none"
                           onError={(e) => {
                             (e.target as any).src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
                           }}
                         />
 
-                        {/* Floating Selection Checkbox */}
+                        {/* Top Left: Selection Checkbox */}
                         {!shoe.isArchived && (
                           <button
                             type="button"
                             onClick={() => toggleSelectDesign(shoe.id)}
-                            className={`absolute top-3 left-3 w-7 h-7 rounded-lg flex items-center justify-center border transition-colors cursor-pointer ${
+                            className={`absolute top-3 left-3 w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer backdrop-blur-md shadow-xs ${
                               isSelected
-                                ? 'bg-[#3B82F6] border-[#3B82F6] text-white shadow-xs'
-                                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-transparent hover:border-slate-400'
+                                ? 'bg-blue-600 border-blue-600 text-white ring-2 ring-blue-500/30'
+                                : 'bg-white/90 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700 text-transparent hover:border-slate-400 hover:text-slate-300'
                             }`}
-                            title={isSelected ? 'Deselect from Lookbook' : 'Select for Lookbook'}
+                            title={isSelected ? 'Remove from Lookbook' : 'Select for Lookbook'}
                           >
-                            <Icons.Check size={16} strokeWidth={2.5} />
+                            <Check className="w-4 h-4 stroke-[3]" />
                           </button>
                         )}
 
-                        {/* Top Right: New Badge & Quick View */}
+                        {/* Top Right: Status Badges & Quick View Eye */}
                         <div className="absolute top-3 right-3 flex items-center gap-1.5">
                           {isNew && !shoe.isArchived && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider shadow-sm flex items-center gap-1">
-                              <Sparkles className="w-2.5 h-2.5" /> New
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/95 text-white tracking-wider shadow-sm flex items-center gap-1 backdrop-blur-xs">
+                              <Sparkles className="w-2.5 h-2.5" /> NEW
                             </span>
                           )}
+
                           <button
                             type="button"
                             onClick={() => setQuickViewShoe(shoe)}
-                            className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                            className="w-8 h-8 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white flex items-center justify-center transition-all cursor-pointer shadow-xs backdrop-blur-md"
                             title="Quick Specifications"
                           >
-                            <Icons.View size={15} strokeWidth={1.75} />
+                            <Eye className="w-4 h-4" />
                           </button>
                         </div>
 
-                        {/* Status / Margin Badge */}
-                        {shoe.marginBadge && !shoe.isArchived && (
-                          <div className="absolute bottom-3 left-3">
-                            <Tag variant="purple">{shoe.marginBadge}</Tag>
-                          </div>
-                        )}
-
-                        {shoe.isArchived && (
-                          <div className="absolute bottom-3 left-3">
-                            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                        {/* Bottom Left Badges */}
+                        <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5">
+                          {shoe.isArchived ? (
+                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
                               Archived
                             </span>
-                          </div>
-                        )}
+                          ) : shoe.marginBadge ? (
+                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80">
+                              {shoe.marginBadge}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
 
-                      {/* Card Content Body */}
-                      <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {/* Card Body Information */}
+                      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
+                        <div className="space-y-2">
+                          {/* Article Code & Category Tag */}
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
                               {shoe.articleCode}
                             </span>
-                            <Tag variant="slate">{shoe.category.split(' ')[0]}</Tag>
+                            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                              {shoe.category.split(' ')[0]}
+                            </span>
                           </div>
 
-                          <h3 className="font-bold text-base text-slate-900 dark:text-white tracking-tight mt-1 leading-snug">
+                          {/* Shoe Name */}
+                          <h3 className="font-bold text-base text-slate-900 dark:text-white tracking-tight leading-snug line-clamp-1">
                             {shoe.name}
                           </h3>
 
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
-                            {shoe.upperMaterial} • {shoe.soleType}
-                          </p>
-                        </div>
-
-                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-baseline justify-between">
-                          <div>
-                            <span className="text-xs text-slate-400">Wholesale:</span>
-                            <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">
-                              ₹{shoe.price.toLocaleString('en-IN')}{' '}
-                              <span className="text-xs font-normal text-slate-400">/ pr</span>
-                            </p>
+                          {/* Material Micro-specs Chips */}
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                              <Layers className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate max-w-[130px]">{shoe.upperMaterial}</span>
+                            </span>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                              <Package className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate max-w-[90px]">{shoe.soleType}</span>
+                            </span>
                           </div>
-                          <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                            {shoe.pairsPerCarton ? `${shoe.pairsPerCarton} Prs/Ctn` : '12 Prs/Ctn'}
-                          </span>
                         </div>
 
-                        {/* Actions Area */}
-                        {isUserAdmin ? (
-                          <div className="pt-2 space-y-2">
-                            {shoe.isArchived ? (
+                        {/* Pricing & Packaging Bar */}
+                        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+                              Wholesale Ex-Factory
+                            </span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white tabular-nums">
+                                ₹{shoe.price.toLocaleString('en-IN')}
+                              </span>
+                              <span className="text-[10px] font-medium text-slate-400">/ pair</span>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <span className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 inline-block">
+                              {cartonUnits} Prs/Ctn
+                            </span>
+                            <span className="block text-[10px] font-mono text-slate-400 mt-0.5">
+                              ₹{cartonWholesaleTotal.toLocaleString('en-IN')}/ctn
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons Row */}
+                        <div className="pt-1">
+                          {isUserAdmin ? (
+                            shoe.isArchived ? (
                               <div className="grid grid-cols-2 gap-2">
                                 <Button
                                   variant="secondary"
                                   size="sm"
                                   icon={RotateCcw}
                                   onClick={() => handleRestore(shoe)}
-                                  className="text-emerald-600 hover:text-emerald-700"
+                                  className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 rounded-xl"
                                 >
                                   Restore
                                 </Button>
@@ -511,67 +580,63 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                                   size="sm"
                                   icon={Trash2}
                                   onClick={() => handleInitiateDelete(shoe)}
+                                  className="rounded-xl"
                                 >
                                   Delete
                                 </Button>
                               </div>
                             ) : (
                               <div className="flex items-center gap-1.5">
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  icon={Edit2}
+                                <button
+                                  type="button"
                                   onClick={() => {
                                     setEditingDesign(shoe);
                                     setIsAddModalOpen(true);
                                   }}
-                                  className="flex-1"
+                                  className="flex-1 h-8 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                                 >
-                                  Edit Specs
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  icon={Archive}
+                                  <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                                  <span>Edit Specs</span>
+                                </button>
+                                <button
+                                  type="button"
                                   onClick={() => setArchivingDesign(shoe)}
                                   title="Archive Design"
-                                  className="text-amber-600 hover:text-amber-700"
+                                  className="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-slate-600 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-amber-200"
                                 >
-                                  Archive
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  icon={Trash2}
+                                  <Archive className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
                                   onClick={() => handleInitiateDelete(shoe)}
                                   title="Permanently Delete Design"
-                                  className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-2"
-                                />
+                                  className="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-rose-200"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
                               </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-2 gap-2 pt-1">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              icon={Icons.View}
-                              onClick={() => setQuickViewShoe(shoe)}
-                            >
-                              Specs
-                            </Button>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              icon={Icons.Orders}
-                              onClick={() => {
-                                setIsCreateOrderModalOpen(true);
-                              }}
-                            >
-                              Book Order
-                            </Button>
-                          </div>
-                        )}
+                            )
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setQuickViewShoe(shoe)}
+                                className="h-8 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Specs</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setIsCreateOrderModalOpen(true)}
+                                className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-blue-600/30"
+                              >
+                                <ShoppingBag className="w-3.5 h-3.5" />
+                                <span>Book Order</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -580,105 +645,106 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
             )}
           </div>
         )}
-      </Panel>
+      </div>
 
       {/* 4. Quick Specs Modal */}
       {quickViewShoe && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs select-none animate-in fade-in duration-150">
-          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs select-none animate-in fade-in duration-150 font-sans">
+          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
               <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white tracking-tight">
+                <h3 className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
                   {quickViewShoe.name}
                 </h3>
-                <p className="text-xs font-mono text-slate-500">
+                <p className="text-xs font-mono text-slate-500 mt-0.5">
                   Article Code: {quickViewShoe.articleCode} • {quickViewShoe.category}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setQuickViewShoe(null)}
-                className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
               >
-                <Icons.Close size={18} strokeWidth={1.75} />
+                <Icons.Close size={16} strokeWidth={2} />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 flex items-center justify-center">
+            <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+              <div className="bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/20 rounded-2xl p-6 flex items-center justify-center border border-slate-100 dark:border-slate-800">
                 <img
                   src={quickViewShoe.image}
                   alt={quickViewShoe.name}
-                  className="max-h-48 object-contain mix-blend-multiply dark:mix-blend-normal"
+                  className="max-h-52 object-contain mix-blend-multiply dark:mix-blend-normal"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Upper Material</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.upperMaterial}</span>
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Upper Material</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{quickViewShoe.upperMaterial}</span>
                 </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Sole Construction</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{quickViewShoe.soleType}</span>
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Sole Construction</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{quickViewShoe.soleType}</span>
                 </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Carton Packing</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Carton Packing</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
                     {quickViewShoe.pairsPerCarton ? `${quickViewShoe.pairsPerCarton} Pairs / Carton` : '12 Pairs / Carton'}
                   </span>
                 </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Size Breakdown</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Size Breakdown</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
                     {quickViewShoe.sizes?.length ? quickViewShoe.sizes.join(', ') : '6, 7, 8, 9, 10'}
                   </span>
                 </div>
               </div>
 
-              <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+              <div className="p-4 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl flex items-center justify-between shadow-lg">
                 <div>
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold block">Wholesale Ex-Factory Rate</span>
-                  <span className="text-xl font-bold text-zinc-900 dark:text-white tabular-nums">
+                  <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Wholesale Ex-Factory Rate</span>
+                  <span className="text-xl font-black tabular-nums">
                     ₹{quickViewShoe.price.toLocaleString('en-IN')} / Pair
                   </span>
                 </div>
                 {isUserAdmin ? (
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      icon={Edit2}
+                    <button
+                      type="button"
                       onClick={() => {
                         setEditingDesign(quickViewShoe);
                         setIsAddModalOpen(true);
                         setQuickViewShoe(null);
                       }}
+                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      icon={Trash2}
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         handleInitiateDelete(quickViewShoe);
                       }}
+                      className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                     >
-                      Delete
-                    </Button>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
+                    </button>
                   </div>
                 ) : (
-                  <Button
-                    variant="primary"
-                    icon={Icons.Orders}
+                  <button
+                    type="button"
                     onClick={() => {
                       setQuickViewShoe(null);
                       setIsCreateOrderModalOpen(true);
                     }}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-blue-600/40"
                   >
-                    Create Order
-                  </Button>
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Create Order</span>
+                  </button>
                 )}
               </div>
             </div>
@@ -709,9 +775,9 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
       {/* 6. Archive Confirmation Dialog */}
       {archivingDesign && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn font-sans">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -725,6 +791,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 variant="secondary"
                 onClick={() => setArchivingDesign(null)}
                 disabled={isArchiving}
+                className="rounded-xl"
               >
                 Cancel
               </Button>
@@ -732,7 +799,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 variant="primary"
                 onClick={handleArchiveConfirm}
                 disabled={isArchiving}
-                className="bg-amber-600 hover:bg-amber-700 text-white"
+                className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl"
               >
                 {isArchiving ? 'Archiving...' : 'Yes, Archive Design'}
               </Button>
@@ -743,18 +810,18 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
       {/* 7. Step 4B: Permanent Delete Confirmation Modal */}
       {deletingDesign && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn select-none">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn select-none font-sans">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                 <Trash2 className="w-6 h-6" />
               </div>
               <button
                 type="button"
                 onClick={() => setDeletingDesign(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center cursor-pointer"
               >
-                <Icons.Close size={18} />
+                <Icons.Close size={16} />
               </button>
             </div>
 
@@ -769,14 +836,14 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
             {deleteCheckLoading ? (
               <div className="py-6 flex flex-col items-center justify-center space-y-2 text-slate-500">
-                <RefreshCw className="w-6 h-6 animate-spin text-indigo-600" />
+                <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
                 <span className="text-xs">Checking order relationships &amp; history...</span>
               </div>
             ) : deleteCheckResult?.canDelete === false ? (
               /* Scenario A: Used in orders -> CANNOT delete, must archive */
               <div className="space-y-4">
-                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-300">
-                  <div className="flex items-start gap-2">
+                <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl text-xs text-amber-800 dark:text-amber-300">
+                  <div className="flex items-start gap-2.5">
                     <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold">Cannot Permanently Delete</p>
@@ -790,7 +857,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 </p>
 
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  <Button variant="secondary" onClick={() => setDeletingDesign(null)}>
+                  <Button variant="secondary" onClick={() => setDeletingDesign(null)} className="rounded-xl">
                     Cancel
                   </Button>
                   <Button
@@ -800,7 +867,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                       setDeletingDesign(null);
                       setArchivingDesign(toArchive);
                     }}
-                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                    className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl"
                   >
                     Archive Design Instead
                   </Button>
@@ -809,8 +876,8 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
             ) : (
               /* Scenario B: Can be permanently deleted */
               <div className="space-y-4">
-                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-xs text-rose-800 dark:text-rose-300">
-                  <div className="flex items-start gap-2">
+                <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-2xl text-xs text-rose-800 dark:text-rose-300">
+                  <div className="flex items-start gap-2.5">
                     <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                     <div>
                       <p className="font-bold">Irreversible Action</p>
@@ -833,7 +900,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                       setDeleteError(null);
                     }}
                     placeholder={deletingDesign.articleCode}
-                    className="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    className="w-full h-10 px-3 text-xs font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
                   />
                 </div>
 
@@ -844,14 +911,14 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 )}
 
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  <Button variant="secondary" onClick={() => setDeletingDesign(null)} disabled={isDeleting}>
+                  <Button variant="secondary" onClick={() => setDeletingDesign(null)} disabled={isDeleting} className="rounded-xl">
                     Cancel
                   </Button>
                   <Button
                     variant="danger"
                     onClick={handleConfirmDelete}
                     disabled={isDeleting || deleteConfirmationCode.trim() !== deletingDesign.articleCode.trim()}
-                    className="bg-rose-600 hover:bg-rose-700 text-white"
+                    className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl"
                   >
                     {isDeleting ? 'Deleting...' : 'Permanently Delete'}
                   </Button>
@@ -876,7 +943,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
             setEditingDesign(null);
             setIsAddModalOpen(true);
           }}
-          className="fixed bottom-20 right-6 z-40 md:hidden w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all cursor-pointer"
+          className="fixed bottom-20 right-6 z-40 md:hidden w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
           title="Add New Design"
         >
           <Plus className="w-7 h-7" />
