@@ -36,7 +36,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const { signIn, isDemoMode, allowDemo, role: currentRole } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('soleflow.admin@gmail.com');
-  const [password, setPassword] = useState('admin123');
+  const [password, setPassword] = useState('Password123!');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMotionActive, setIsMotionActive] = useState(true);
@@ -157,7 +157,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   const handleQuickLogin = async (role: 'admin' | 'salesperson') => {
     const targetEmail = role === 'admin' ? 'soleflow.admin@gmail.com' : 'soleflow.sales@gmail.com';
-    const targetPass = role === 'admin' ? 'admin123' : 'sales123';
+    const targetPass = 'Password123!';
     setEmail(targetEmail);
     setPassword(targetPass);
     setError('');
