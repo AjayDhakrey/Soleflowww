@@ -55,31 +55,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [hasRealSession, setHasRealSession] = useState<boolean>(false);
 
   // Helper to map DB profile to App User model
-  const mapProfileToUser = (prof: UserProfile): User => ({
-    id: prof.id,
-    name: prof.name,
-    email: prof.email,
-    role: prof.role,
-    avatar: prof.avatar_url || (prof.role === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar),
-    initials: prof.name
+  const mapProfileToUser = (prof: UserProfile): User => {
+    const rawName = prof.name || (prof.email ? prof.email.split('@')[0] : '') || (prof.role === 'admin' ? 'Trader Admin' : 'Field Sales Rep');
+    const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    const initials = displayName
       .split(' ')
+      .filter(Boolean)
       .map((n) => n[0])
       .join('')
       .substring(0, 2)
-      .toUpperCase(),
-    roleLabel: prof.role_label || (prof.role === 'admin' ? 'Trader Admin' : 'Field Sales Rep'),
-    phone: prof.phone || undefined,
-    zone: prof.zone || undefined,
-  });
+      .toUpperCase() || 'SF';
+
+    return {
+      id: prof.id,
+      name: displayName,
+      email: prof.email || `${prof.role || 'user'}@soleflow.com`,
+      role: prof.role || 'salesperson',
+      avatar: prof.avatar_url || (prof.role === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar),
+      initials,
+      roleLabel: prof.role_label || (prof.role === 'admin' ? 'Trader Admin' : 'Field Sales Rep'),
+      phone: prof.phone || undefined,
+      zone: prof.zone || undefined,
+    };
+  };
 
   // Load profile from Supabase profiles table
   const fetchUserProfile = async (userId: string, email: string): Promise<UserProfile> => {
+    const fallbackRole: UserRole =
+      email.toLowerCase().includes('admin') || email === 'soleflow.admin@gmail.com' ? 'admin' : 'salesperson';
+    const fallbackName = fallbackRole === 'admin' ? 'Vikram Malhotra' : 'Rahul Sharma';
+
     if (!supabase) {
-      const fallbackRole: UserRole = email.includes('sales') ? 'salesperson' : 'admin';
       return {
         id: userId,
         email,
-        name: email.split('@')[0],
+        name: fallbackName,
         role: fallbackRole,
       };
     }
@@ -92,26 +102,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (error || !data) {
-        // Fallback: check email prefix or metadata
-        const determinedRole: UserRole =
-          email.toLowerCase().includes('sales') || email === 'sales@soleflow.com' ? 'salesperson' : 'admin';
         return {
           id: userId,
           email,
-          name: email.split('@')[0],
-          role: determinedRole,
+          name: fallbackName,
+          role: fallbackRole,
         };
       }
 
-      return data as UserProfile;
+      const assignedRole: UserRole = (data.role as UserRole) || fallbackRole;
+      const assignedName = (data as any).name || (data as any).full_name || fallbackName;
+
+      return {
+        id: data.id || userId,
+        email: email || (data as any).email,
+        name: assignedName,
+        role: assignedRole,
+        role_label: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
+        phone: data.phone,
+        zone: data.zone,
+        avatar_url: (data as any).avatar_url,
+      };
     } catch (err) {
       console.error('Error loading profile from Supabase:', err);
-      const determinedRole: UserRole = email.includes('sales') ? 'salesperson' : 'admin';
       return {
         id: userId,
         email,
-        name: email.split('@')[0],
-        role: determinedRole,
+        name: fallbackName,
+        role: fallbackRole,
       };
     }
   };
