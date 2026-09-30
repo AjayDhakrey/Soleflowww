@@ -320,6 +320,26 @@ export const MOCK_CUSTOMERS: Customer[] = [
 
 export const MOCK_DESIGNS: ShoeDesign[] = [
   {
+    id: 'DSG-0128',
+    articleCode: 'SF-MNK-701',
+    name: 'Cognac Double Monk Brogue',
+    category: 'Formal Derby & Oxford',
+    price: 1950,
+    moqPairs: 24,
+    moqCartons: 2,
+    sizes: [6, 7, 8, 9, 10, 11],
+    colors: ['Cognac Tan', 'Mahogany Brown', 'Midnight Black'],
+    status: 'New Designs',
+    tags: ['Italian Crust', 'Double Monk Strap', 'Hand-Burnished'],
+    subline: 'ART: SF-MNK-701 (Hand-Burnished Italian Crust Leather with Brogue Medallion)',
+    image: 'https://jpcaptmmcbuqlgrdetde.supabase.co/storage/v1/object/public/design-images/designs/monk-strap-cognac-1790766953814.jpg',
+    soleType: 'Hand-Finished Argentine Sheet Sole',
+    pairsPerCarton: 12,
+    upperMaterial: 'Full Grain Burnished Calf Leather',
+    marginBadge: 'High Margin',
+    velocityBadge: 'Trending',
+  },
+  {
     id: 'sf-1024',
     articleCode: 'SF-1024',
     name: 'Runner Classic',

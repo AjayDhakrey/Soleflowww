@@ -80,9 +80,8 @@ export const designsService = {
    */
   async fetchDesigns(filters?: { category?: string; status?: string; search?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || !isConfigured;
 
-    if (!supabase || isDemoMode) return MOCK_DESIGNS;
+    if (!supabase || !isConfigured) return MOCK_DESIGNS;
 
     try {
       let query = supabase
@@ -104,8 +103,26 @@ export const designsService = {
       const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
 
-      if (!data || data.length === 0) return [];
-      return data.map(fromDesignRow);
+      const liveList = (data || []).map(fromDesignRow);
+      // Merge live Supabase records with MOCK_DESIGNS without duplicate articleCodes/IDs
+      const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
+      const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
+
+      let combined = [...liveList, ...filteredMocks];
+
+      // Apply client-side filters if needed on mock records
+      if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
+        combined = combined.filter((d) => d.category === filters.category);
+      }
+      if (filters?.status && filters.status !== 'All' && filters.status !== 'all') {
+        combined = combined.filter((d) => d.status === filters.status);
+      }
+      if (filters?.search) {
+        const q = filters.search.toLowerCase();
+        combined = combined.filter((d) => d.name.toLowerCase().includes(q) || d.articleCode.toLowerCase().includes(q));
+      }
+
+      return combined;
     } catch (err) {
       console.warn('Error fetching designs from Supabase:', err);
       return MOCK_DESIGNS;
@@ -117,9 +134,8 @@ export const designsService = {
    */
   async fetchAllDesigns(options?: { includeArchived?: boolean; onlyArchived?: boolean; search?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || !isConfigured;
 
-    if (!supabase || isDemoMode) return MOCK_DESIGNS;
+    if (!supabase || !isConfigured) return MOCK_DESIGNS;
 
     try {
       let query = supabase
@@ -140,8 +156,11 @@ export const designsService = {
       const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
 
-      if (!data || data.length === 0) return [];
-      return data.map(fromDesignRow);
+      const liveList = (data || []).map(fromDesignRow);
+      const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
+      const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
+
+      return [...liveList, ...filteredMocks];
     } catch (err) {
       console.warn('Error fetching all designs from Supabase:', err);
       return MOCK_DESIGNS;

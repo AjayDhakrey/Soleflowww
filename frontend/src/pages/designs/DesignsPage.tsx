@@ -513,7 +513,12 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
           setEditingDesign(null);
         }}
         designToEdit={editingDesign}
-        onSaved={() => {
+        onSaved={(saved) => {
+          if (editingDesign) {
+            setDesigns((prev) => prev.map((d) => (d.id === saved.id ? saved : d)));
+          } else {
+            setDesigns((prev) => [saved, ...prev.filter((d) => d.id !== saved.id && d.articleCode !== saved.articleCode)]);
+          }
           refreshDesigns();
           showToast(editingDesign ? 'Design specifications updated.' : 'New design published to catalog.');
         }}
