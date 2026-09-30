@@ -3,7 +3,7 @@ import { ShoeDesign } from '../../types';
 import { designsService } from '../../services/designs';
 import { Icons } from '../../lib/icons';
 import { Button } from '../ui';
-import { X, Upload, Image as ImageIcon, Check, Plus, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Upload, Image as ImageIcon, Check, Plus, AlertCircle, Loader2, Trash2 } from 'lucide-react';
 
 interface AddDesignModalProps {
   isOpen: boolean;
@@ -53,6 +53,7 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
   const [subline, setSubline] = useState('');
   const [status, setStatus] = useState<ShoeDesign['status']>('New Designs');
   const [imageUrl, setImageUrl] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -77,7 +78,7 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         setStatus(designToEdit.status || 'Available');
         setImageUrl(designToEdit.image || '');
       } else {
-        // Reset form for fresh design creation
+        // Reset form for fresh design creation — do NOT prefill any mock image
         const randId = Math.floor(1000 + Math.random() * 9000);
         setArticleCode(`SF-ART-${randId}`);
         setName('');
@@ -92,11 +93,12 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         setUpperMaterial('Full Grain Leather');
         setSubline('Heritage Executive Series');
         setStatus('New Designs');
-        setImageUrl('https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80');
+        setImageUrl('');
       }
       setErrorMessage(null);
       setArticleError(null);
       setCustomColorInput('');
+      setIsDragOver(false);
     }
   }, [isOpen, designToEdit]);
 
@@ -120,6 +122,33 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
     if (trimmed && !colors.includes(trimmed)) {
       setColors((prev) => [...prev, trimmed]);
       setCustomColorInput('');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      setErrorMessage(null);
+      const uploadRes = await designsService.uploadDesignImage(file);
+      setIsUploading(false);
+      if (uploadRes.success && uploadRes.url) {
+        setImageUrl(uploadRes.url);
+      } else {
+        setErrorMessage(uploadRes.error || 'Failed to upload design image.');
+      }
     }
   };
 
@@ -267,58 +296,90 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {/* Left: Image Upload & Preview Box (5 cols) */}
             <div className="md:col-span-5 space-y-3">
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Article Image <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Article Shoe Image <span className="text-slate-400 font-normal">(Required)</span>
+                </label>
+                {imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setImageUrl('')}
+                    className="text-[11px] text-rose-500 hover:text-rose-600 flex items-center gap-1 font-medium transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3 h-3" /> Remove Photo
+                  </button>
+                )}
+              </div>
 
-              <div className="relative group border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-2 bg-slate-50 dark:bg-slate-800/50 flex flex-col items-center justify-center min-h-[190px] overflow-hidden">
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`relative group border-2 border-dashed rounded-2xl p-3 flex flex-col items-center justify-center min-h-[210px] overflow-hidden transition-all ${
+                  isDragOver
+                    ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-400'
+                    : 'border-slate-300 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/40 hover:border-slate-400'
+                }`}
+              >
                 {imageUrl ? (
-                  <div className="relative w-full h-44 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-xs border border-slate-200/60 dark:border-slate-700/60">
                     <img
                       src={imageUrl}
                       alt="Design Preview"
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as any).src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
-                      }}
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3">
                       <Button
                         type="button"
                         size="sm"
                         variant="secondary"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploading}
-                        className="bg-white/90 text-slate-800 text-xs shadow-lg"
+                        icon={Upload}
+                        className="bg-white/95 text-slate-900 text-xs shadow-md"
                       >
-                        {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Change Image'}
+                        {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Change Photo'}
                       </Button>
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl('')}
+                        className="p-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs shadow-md transition-colors cursor-pointer"
+                        title="Remove Image"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center p-4">
-                    <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-400 flex items-center justify-center mx-auto mb-2">
-                      {isUploading ? <Loader2 className="w-6 h-6 animate-spin text-indigo-600" /> : <Upload className="w-6 h-6" />}
+                  <div className="text-center p-4 w-full flex flex-col items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3 shadow-xs">
+                      {isUploading ? <Loader2 className="w-7 h-7 animate-spin text-indigo-600" /> : <Upload className="w-7 h-7" />}
                     </div>
-                    <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Drag and drop or{' '}
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="text-indigo-600 hover:underline font-semibold"
-                        disabled={isUploading}
-                      >
-                        browse
-                      </button>
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                      Upload Shoe Image
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-1">PNG, JPG, WebP up to 5 MB</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-[200px] leading-relaxed">
+                      Drag & drop your product photo or click below
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="primary"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      icon={Upload}
+                      className="mt-3 text-xs"
+                    >
+                      {isUploading ? 'Uploading...' : 'Choose Shoe Image'}
+                    </Button>
+                    <p className="text-[10px] text-slate-400 mt-2">PNG, JPG, WebP up to 10 MB</p>
                   </div>
                 )}
 
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/png, image/jpeg, image/webp"
+                  accept="image/png, image/jpeg, image/webp, image/jpg"
                   onChange={handleImageFileChange}
                   className="hidden"
                 />
@@ -326,12 +387,12 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
 
               {/* Direct URL Input fallback */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-1">Image URL (Optional Fallback)</label>
+                <label className="block text-[11px] font-medium text-slate-500 mb-1">Or Paste Image URL (Optional)</label>
                 <input
                   type="text"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://... (e.g. Supabase or CDN link)"
                   className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
