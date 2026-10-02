@@ -324,7 +324,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
                 </div>
                 <div className="text-right shrink-0">
                   <span className="font-bold text-sm text-foreground">
-                    ₹{activeItem.ratePerPair.toLocaleString('en-IN')}
+                    ₹{Number(activeItem.ratePerPair || 0).toLocaleString('en-IN')}
                   </span>
                   <span className="text-[11px] text-muted-foreground block">
                     per pair
@@ -505,12 +505,12 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
 
                         {/* Rate */}
                         <td className="py-3 px-3 text-right font-mono text-muted-foreground">
-                          ₹{item.ratePerPair.toLocaleString('en-IN')}
+                          ₹{Number(item.ratePerPair || 0).toLocaleString('en-IN')}
                         </td>
 
                         {/* Subtotal */}
                         <td className="py-3 px-3 text-right font-mono font-bold text-foreground tabular-nums">
-                          ₹{item.itemSubtotal.toLocaleString('en-IN')}
+                          ₹{Number(item.itemSubtotal || 0).toLocaleString('en-IN')}
                         </td>
                       </tr>
                     );
@@ -530,14 +530,14 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Gross Wholesale Subtotal</span>
                 <span className="font-mono tabular-nums text-foreground">
-                  ₹{order.subtotal.toLocaleString('en-IN')}
+                  ₹{Number(order.subtotal || 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
-              {order.tradeDiscountAmount > 0 && (
+              {Number(order.tradeDiscountAmount || 0) > 0 && (
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span className="flex items-center gap-1.5">
-                    <span>Trade Discount ({order.tradeDiscountPercent}%)</span>
+                    <span>Trade Discount ({order.tradeDiscountPercent || 0}%)</span>
                     {order.status === 'Under Review' && (
                       <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 font-semibold border border-amber-200 dark:border-amber-800">
                         Authorization Pending
@@ -545,7 +545,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
                     )}
                   </span>
                   <span className="font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
-                    -₹{order.tradeDiscountAmount.toLocaleString('en-IN')}
+                    -₹{Number(order.tradeDiscountAmount || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
               )}
@@ -553,44 +553,44 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Taxable Amount</span>
                 <span className="font-mono tabular-nums text-foreground">
-                  ₹{(order.taxableSubtotal || order.subtotal).toLocaleString('en-IN')}
+                  ₹{Number(order.taxableSubtotal ?? order.subtotal ?? 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>GST ({order.gstPercent || 12}%)</span>
                 <span className="font-mono tabular-nums text-foreground">
-                  +₹{(order.gstAmount || 0).toLocaleString('en-IN')}
+                  +₹{Number(order.gstAmount || 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className="pt-2 border-t border-border flex items-center justify-between text-sm font-bold text-foreground">
                 <span>Net Payable Invoice</span>
                 <span className="font-mono text-base tabular-nums">
-                  ₹{order.netPayable.toLocaleString('en-IN')}
+                  ₹{Number(order.netPayable || 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs font-medium pt-1">
                 <span className="text-emerald-600 dark:text-emerald-400">Advance Deposited</span>
                 <span className="font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
-                  ₹{(order.advanceDeposited || 0).toLocaleString('en-IN')}
+                  ₹{Number(order.advanceDeposited || 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-xs font-bold">
-                <span className={order.balanceDue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}>
+                <span className={Number(order.balanceDue || 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}>
                   Balance Due Ledger
                 </span>
-                <span className={`font-mono tabular-nums ${order.balanceDue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
-                  ₹{(order.balanceDue || 0).toLocaleString('en-IN')}
+                <span className={`font-mono tabular-nums ${Number(order.balanceDue || 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
+                  ₹{Number(order.balanceDue || 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
               {/* Payments Linked to Order */}
               {(() => {
                 const orderPayments = payments.filter(
-                  (p) => (p.orderId && p.orderId === order.id) || (p.orderNumber && p.orderNumber === order.id) || (p.customerId === order.customerId && (order.advanceDeposited || 0) > 0)
+                  (p) => (p.orderId && p.orderId === order.id) || (p.orderNumber && p.orderNumber === order.id) || (p.customerId === order.customerId && Number(order.advanceDeposited || 0) > 0)
                 );
                 if (orderPayments.length === 0) return null;
                 return (
@@ -606,7 +606,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
                             <span className="text-[10px] text-muted-foreground">{p.paymentDate} • {p.paymentMethod}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{p.paymentAmount.toLocaleString('en-IN')}</span>
+                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{Number(p.paymentAmount || 0).toLocaleString('en-IN')}</span>
                             <button
                               type="button"
                               onClick={() => setSelectedReceiptPayment(p)}

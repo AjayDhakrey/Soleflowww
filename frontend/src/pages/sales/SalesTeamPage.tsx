@@ -386,7 +386,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Wallet className="w-3 h-3 text-emerald-500" />
-                  Commission: <strong className="text-foreground font-mono">₹{activeRep.commissionAccrued?.toLocaleString('en-IN')}</strong> ({activeRep.commissionRate}%)
+                  Commission: <strong className="text-foreground font-mono">₹{Number(activeRep.commissionAccrued || 0).toLocaleString('en-IN')}</strong> ({activeRep.commissionRate || 0}%)
                 </span>
               </div>
             }

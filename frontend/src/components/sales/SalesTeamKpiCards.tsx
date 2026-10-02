@@ -331,8 +331,8 @@ export const SalesTeamKpiCards: React.FC<SalesTeamKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Commission Accrued">
             Commission Accrued
           </span>
-          <p className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate" title={`₹${commissionAccrued.toLocaleString('en-IN')}`}>
-            ₹{commissionAccrued.toLocaleString('en-IN')}
+          <p className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate" title={`₹${Number(commissionAccrued || 0).toLocaleString('en-IN')}`}>
+            ₹{Number(commissionAccrued || 0).toLocaleString('en-IN')}
           </p>
           <div className="flex items-center gap-2 mt-1 text-xs">
             <span className="font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">

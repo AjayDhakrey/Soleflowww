@@ -120,10 +120,10 @@ export const CollectionsPage: React.FC = () => {
     const phoneWithCode = phone.length === 10 ? `91${phone}` : phone;
     const msg = `*Payment Receipt — SoleFlow Footwear*\n\n` +
       `Receipt No: *${p.receiptNumber}*\n` +
-      `Amount: *₹${p.paymentAmount.toLocaleString('en-IN')}*\n` +
+      `Amount: *₹${Number(p.paymentAmount || 0).toLocaleString('en-IN')}*\n` +
       `Mode: *${p.paymentMethod}*\n` +
       `Date: ${p.paymentDate}\n` +
-      `Remaining Due: *₹${p.amountDueAfter.toLocaleString('en-IN')}*\n\n` +
+      `Remaining Due: *₹${Number(p.amountDueAfter || 0).toLocaleString('en-IN')}*\n\n` +
       `Thank you for your timely settlement!`;
 
     window.open(`https://wa.me/${phoneWithCode}?text=${encodeURIComponent(msg)}`, '_blank');

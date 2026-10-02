@@ -545,7 +545,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                             </span>
                             <div className="flex items-baseline gap-1">
                               <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white tabular-nums">
-                                ₹{shoe.price.toLocaleString('en-IN')}
+                                ₹{Number(shoe.price || 0).toLocaleString('en-IN')}
                               </span>
                               <span className="text-[10px] font-medium text-slate-400">/ pair</span>
                             </div>
@@ -556,7 +556,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                               {cartonUnits} Prs/Ctn
                             </span>
                             <span className="block text-[10px] font-mono text-slate-400 mt-0.5">
-                              ₹{cartonWholesaleTotal.toLocaleString('en-IN')}/ctn
+                              ₹{Number(cartonWholesaleTotal || 0).toLocaleString('en-IN')}/ctn
                             </span>
                           </div>
                         </div>
@@ -705,7 +705,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 <div>
                   <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Wholesale Ex-Factory Rate</span>
                   <span className="text-xl font-black tabular-nums">
-                    ₹{quickViewShoe.price.toLocaleString('en-IN')} / Pair
+                    ₹{Number(quickViewShoe.price || 0).toLocaleString('en-IN')} / Pair
                   </span>
                 </div>
                 {isUserAdmin ? (

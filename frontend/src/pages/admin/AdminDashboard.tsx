@@ -529,7 +529,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     {m.activeOrdersCount} Active Batches • {m.onTimeRate}% On-Time
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {m.pairsInProduction.toLocaleString('en-IN')} Pairs in Production
+                    {Number(m.pairsInProduction || 0).toLocaleString('en-IN')} Pairs in Production
                   </span>
                 </div>
               </div>
@@ -702,7 +702,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Order #{d.orderId} • Rep: {d.salesmanName} • Concession: ₹{d.marginConcession.toLocaleString('en-IN')}
+                        Order #{d.orderId} • Rep: {d.salesmanName} • Concession: ₹{Number(d.marginConcession || 0).toLocaleString('en-IN')}
                       </p>
                     </div>
                   </div>

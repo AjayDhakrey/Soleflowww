@@ -316,7 +316,7 @@ export const ReportsPage: React.FC = () => {
                         </p>
 
                         <p className="text-xs text-muted-foreground">
-                          Impact: ₹{req.marginConcession.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} margin concession
+                          Impact: ₹{Number(req.marginConcession || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} margin concession
                           {req.projectedMarginPercent ? (
                             <>
                               {' '}• Profitability{' '}
