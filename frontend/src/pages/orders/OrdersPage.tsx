@@ -153,23 +153,28 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
     if (orders && orders.length > 0) {
       return orders.map((o) => {
         const initials = (o.customerName || 'CU')
+          .replace(/__AUDIT_TEST__/g, '')
+          .trim()
           .split(' ')
+          .filter(Boolean)
           .map((n) => n[0])
           .slice(0, 2)
           .join('')
-          .toUpperCase();
+          .toUpperCase() || 'CU';
 
         const colorClasses = [
-          'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50',
-          'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50',
-          'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-900/50',
-          'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-900/50',
+          'bg-blue-50 text-blue-600 border-blue-200/80 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50',
+          'bg-purple-50 text-purple-600 border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50',
+          'bg-emerald-50 text-emerald-600 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-900/50',
+          'bg-amber-50 text-amber-600 border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-900/50',
         ];
         const colorIdx = Math.abs(o.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colorClasses.length;
 
-        const articlesStr = o.items && o.items.length > 0
-          ? o.items.map((it) => it.designName || it.articleCode).join(', ')
-          : '—';
+        const totalItemsCount = o.items?.length || 0;
+        const firstItem = o.items?.[0];
+        const articlesStr = totalItemsCount > 0
+          ? `${firstItem?.designName || firstItem?.articleCode || 'Footwear Model'}${totalItemsCount > 1 ? ` (+${totalItemsCount - 1} more)` : ''}`
+          : `Batch Article (${Number(o.pairsCount || 24)} Pairs)`;
 
         const statusMap: Record<string, { status: OrderDisplayItem['status']; statusType: OrderDisplayItem['statusType'] }> = {
           'In Production': { status: 'In Production', statusType: 'in_production' },
@@ -188,22 +193,25 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
           statusType: 'under_review' as const,
         };
 
+        const totalPairs = Number(o.pairsCount || o.items?.reduce((s, it) => s + (it.totalPairs || 0), 0) || 0);
+        const totalCartons = Number(o.cartonsCount || o.items?.reduce((s, it) => s + (it.totalCartons || 0), 0) || Math.ceil(totalPairs / 12));
+
         return {
           id: o.id,
           initials: initials || 'OR',
           initialsColor: colorClasses[colorIdx],
           customerStore: o.customerName || 'Customer Store',
-          proprietorAndCity: `${o.customerCity || 'Agra'} • ${o.propName || 'Proprietor'}`,
+          proprietorAndCity: `${o.customerCity || 'Agra'} • ${o.propName || 'Store Owner'}`,
           date: o.orderDate || '—',
           articles: articlesStr,
-          volumePairs: `${o.pairsCount || o.items?.reduce((s, it) => s + (it.totalPairs || 0), 0) || 0} Pairs`,
-          volumeCartons: `(${o.cartonsCount || o.items?.reduce((s, it) => s + (it.totalCartons || 0), 0) || 0} Ctns)`,
+          volumePairs: `${totalPairs.toLocaleString('en-IN')} Pairs`,
+          volumeCartons: `${totalCartons} Cartons`,
           factoryName: o.manufacturerName || 'Apex Footwear Works',
-          factoryPlant: o.manufacturerPlant || 'Agra Unit',
+          factoryPlant: o.manufacturerPlant || 'Agra Unit 2',
           status: mappedStatus.status,
           statusType: mappedStatus.statusType,
-          netPayable: `₹${(o.netPayable || 0).toLocaleString('en-IN')}`,
-          balanceDueText: (o.balanceDue || 0) > 0 ? `₹${(o.balanceDue || 0).toLocaleString('en-IN')} Bal` : 'Cleared',
+          netPayable: `₹${Number(o.netPayable || 0).toLocaleString('en-IN')}`,
+          balanceDueText: Number(o.balanceDue || 0) > 0 ? `₹${Number(o.balanceDue).toLocaleString('en-IN')} Bal` : 'Cleared',
           rawOrder: o,
         };
       });
@@ -211,47 +219,58 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
     return DEFAULT_ORDERS_DISPLAY;
   }, [orders]);
 
-  const filteredOrders = displayOrders.filter((ord) => {
-    const q = search.toLowerCase();
-    const matchesSearch =
-      ord.id.toLowerCase().includes(q) ||
-      ord.customerStore.toLowerCase().includes(q) ||
-      ord.proprietorAndCity.toLowerCase().includes(q) ||
-      ord.articles.toLowerCase().includes(q) ||
-      ord.factoryName.toLowerCase().includes(q);
+  const filteredOrders = useMemo(() => {
+    return displayOrders.filter((ord) => {
+      const q = search.toLowerCase();
+      const matchesSearch =
+        ord.id.toLowerCase().includes(q) ||
+        ord.customerStore.toLowerCase().includes(q) ||
+        ord.proprietorAndCity.toLowerCase().includes(q) ||
+        ord.articles.toLowerCase().includes(q) ||
+        ord.factoryName.toLowerCase().includes(q);
 
-    const matchesStatus = statusFilter === 'All' || ord.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+      const matchesStatus = statusFilter === 'All' || ord.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [displayOrders, search, statusFilter]);
+
+  const statusCounts = useMemo(() => {
+    const total = displayOrders.length;
+    const inProd = displayOrders.filter((o) => o.status === 'In Production').length;
+    const readyDispatch = displayOrders.filter((o) => o.status === 'Ready to Dispatch').length;
+    const delivered = displayOrders.filter((o) => o.status === 'Delivered').length;
+    const underReview = displayOrders.filter((o) => o.status === 'Under Review').length;
+    return { total, inProd, readyDispatch, delivered, underReview };
+  }, [displayOrders]);
 
   const getStatusBadge = (statusType: string, label: string) => {
     switch (statusType) {
       case 'in_production':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/60 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
             <span>{label}</span>
           </span>
         );
       case 'ready_dispatch':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-900/60 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
             <span>{label}</span>
           </span>
         );
       case 'delivered':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/60 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             <span>{label}</span>
           </span>
         );
       case 'under_review':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-900/60 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-            <span>Discount Pending Approval</span>
+            <span>Discount Review</span>
           </span>
         );
       default:
@@ -312,7 +331,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
           <button
             type="button"
             onClick={() => setIsCreateOrderModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
+            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md self-start sm:self-auto hover:-translate-y-0.5"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>New Wholesale Order</span>
@@ -338,7 +357,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
         )}
       </div>
 
-      {/* 3. 4 KPI Summary Cards Row (3D Claymorphic Redesign) */}
+      {/* 3. 4 KPI Summary Cards Row */}
       {viewMode === 'list' && (
         <OrdersKpiCards
           totalOrdersCount={orders.length > 0 ? orders.length : 4}
@@ -371,152 +390,235 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
 
       {/* 4. Table / Main Panel */}
       {viewMode === 'list' ? (
-        <div className="bg-surface border border-border rounded-2xl shadow-2xs overflow-hidden">
-          {/* Filter Bar */}
-          <div className="p-4 md:px-6 bg-surface border-b border-border flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative flex-1 w-full">
-              <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search order ID (ORD-0148), customer, articles..."
-                className="w-full h-10 pl-10 pr-4 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              />
+        <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden">
+          {/* Top Filter & Segmented Tabs Bar */}
+          <div className="p-4 md:p-5 bg-surface border-b border-border space-y-3.5">
+            {/* Horizontal Filter Tabs */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
+              {[
+                { id: 'All', label: 'All Consignments', count: statusCounts.total },
+                { id: 'In Production', label: 'In Production', count: statusCounts.inProd },
+                { id: 'Ready to Dispatch', label: 'Ready Dispatch', count: statusCounts.readyDispatch },
+                { id: 'Delivered', label: 'Delivered', count: statusCounts.delivered },
+                { id: 'Under Review', label: 'Discount Review', count: statusCounts.underReview },
+              ].map((tab) => {
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center gap-2 border ${
+                      isActive
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border-border/80'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                        isActive
+                          ? 'bg-white/20 text-white'
+                          : 'bg-muted text-muted-foreground border border-border/50'
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="w-full sm:w-48 shrink-0">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full h-10 px-3 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-              >
-                <option value="All">All Statuses</option>
-                <option value="In Production">In Production</option>
-                <option value="Ready to Dispatch">Ready to Dispatch</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Under Review">Under Review</option>
-              </select>
+            {/* Search Input and Quick Actions */}
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="relative flex-1 w-full">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by order ID (ORD-0148), customer name, city, article..."
+                  className="w-full h-10 pl-10 pr-9 bg-muted/30 hover:bg-muted/50 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+                <span className="text-xs text-muted-foreground font-medium hidden sm:inline-block">
+                  Showing <strong className="text-foreground">{filteredOrders.length}</strong> of {displayOrders.length} orders
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Orders Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
+            <table className="w-full text-left text-xs sm:text-sm border-collapse">
               <thead>
-                <tr className="border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider bg-muted/25">
-                  <th className="py-3.5 px-4 md:px-6">Order ID</th>
-                  <th className="py-3.5 px-4">Customer Store</th>
-                  <th className="py-3.5 px-4 text-center">Date</th>
-                  <th className="py-3.5 px-4">Articles &amp; SKU</th>
-                  <th className="py-3.5 px-4">Volume</th>
-                  <th className="py-3.5 px-4">Factory Plant</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Net Payable</th>
-                  <th className="py-3.5 px-4 md:px-6 text-right">Actions</th>
+                <tr className="border-b border-border text-muted-foreground font-bold uppercase text-[10px] tracking-wider bg-muted/30">
+                  <th className="py-3 px-4 md:px-5">Order ID</th>
+                  <th className="py-3 px-4">Customer Store</th>
+                  <th className="py-3 px-4 text-center">Booked Date</th>
+                  <th className="py-3 px-4">Article &amp; Line</th>
+                  <th className="py-3 px-4">Volume</th>
+                  <th className="py-3 px-4">Factory Allocation</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Net Payable / Due</th>
+                  <th className="py-3 px-4 md:px-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredOrders.map((ord) => (
-                  <tr
-                    key={ord.id}
-                    onClick={() => handleInspect(ord)}
-                    className="hover:bg-muted/40 transition-colors cursor-pointer"
-                  >
-                    {/* Order ID */}
-                    <td className="py-3.5 px-4 md:px-6 font-bold font-mono text-foreground text-xs sm:text-sm whitespace-nowrap">
-                      {ord.id}
-                    </td>
-
-                    {/* Customer Store */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${ord.initialsColor}`}>
-                          {ord.initials}
-                        </div>
-                        <div>
-                          <div className="font-bold text-foreground text-xs sm:text-sm leading-tight">
-                            {ord.customerStore}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground mt-0.5">
-                            {ord.proprietorAndCity}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Date */}
-                    <td className="py-3.5 px-4 text-center text-muted-foreground">
-                      {ord.date}
-                    </td>
-
-                    {/* Articles & SKU */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-medium text-foreground text-xs sm:text-sm">
-                        {ord.articles}
-                      </span>
-                    </td>
-
-                    {/* Volume */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-foreground text-xs sm:text-sm leading-tight">
-                        {ord.volumePairs}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">
-                        {ord.volumeCartons}
-                      </div>
-                    </td>
-
-                    {/* Factory Plant */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-foreground text-xs sm:text-sm leading-tight">
-                        {ord.factoryName}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">
-                        {ord.factoryPlant}
-                      </div>
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3.5 px-4">
-                      {getStatusBadge(ord.statusType, ord.status)}
-                    </td>
-
-                    {/* Net Payable */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="font-bold font-mono text-foreground text-xs sm:text-sm leading-tight">
-                        {ord.netPayable}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                        {ord.balanceDueText}
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 md:px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleInspect(ord)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                        >
-                          <Eye size={14} />
-                          <span>Inspect</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => showToast(`Actions for ${ord.id}`)}
-                          className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                        >
-                          <MoreVertical size={16} />
-                        </button>
+                {filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-12 text-center text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Package size={28} className="text-muted-foreground/40" />
+                        <p className="font-semibold text-foreground text-sm">No wholesale orders found</p>
+                        <p className="text-xs text-muted-foreground">Try adjusting your search terms or filters.</p>
+                        {search && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearch('');
+                              setStatusFilter('All');
+                            }}
+                            className="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                          >
+                            Clear filters
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredOrders.map((ord) => (
+                    <tr
+                      key={ord.id}
+                      onClick={() => handleInspect(ord)}
+                      className="hover:bg-muted/40 transition-colors cursor-pointer group"
+                    >
+                      {/* Order ID */}
+                      <td className="py-3.5 px-4 md:px-5 whitespace-nowrap">
+                        <span className="font-mono font-bold text-foreground text-xs sm:text-sm bg-muted/60 px-2.5 py-1 rounded-lg border border-border/70 group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
+                          {ord.id}
+                        </span>
+                      </td>
+
+                      {/* Customer Store */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 border shadow-2xs ${ord.initialsColor}`}>
+                            {ord.initials}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-foreground text-xs sm:text-sm leading-tight truncate max-w-[200px]" title={ord.customerStore}>
+                              {ord.customerStore}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]" title={ord.proprietorAndCity}>
+                              {ord.proprietorAndCity}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Date */}
+                      <td className="py-3.5 px-4 text-center text-xs text-muted-foreground whitespace-nowrap font-medium">
+                        {ord.date}
+                      </td>
+
+                      {/* Articles & SKU */}
+                      <td className="py-3.5 px-4">
+                        <span className="font-medium text-foreground text-xs leading-snug line-clamp-1" title={ord.articles}>
+                          {ord.articles}
+                        </span>
+                      </td>
+
+                      {/* Volume */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="font-bold text-foreground text-xs leading-tight">
+                          {ord.volumePairs}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          {ord.volumeCartons}
+                        </div>
+                      </td>
+
+                      {/* Factory Plant */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-foreground text-xs leading-tight truncate max-w-[170px]" title={ord.factoryName}>
+                          {ord.factoryName}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[170px]" title={ord.factoryPlant}>
+                          {ord.factoryPlant}
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {getStatusBadge(ord.statusType, ord.status)}
+                      </td>
+
+                      {/* Net Payable */}
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="font-bold font-mono text-foreground text-xs sm:text-sm leading-tight">
+                          {ord.netPayable}
+                        </div>
+                        <div className="mt-0.5">
+                          {ord.balanceDueText.includes('Bal') ? (
+                            <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40">
+                              {ord.balanceDueText}
+                            </span>
+                          ) : (
+                            <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
+                              Cleared
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 md:px-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleInspect(ord)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/70 dark:border-blue-900/50 transition-colors cursor-pointer shadow-2xs"
+                          >
+                            <Eye size={13} />
+                            <span>Inspect</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => showToast(`Consignment ${ord.id} ready for dispatch action`)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                            title="More actions"
+                          >
+                            <MoreVertical size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Table Footer */}
+          {filteredOrders.length > 0 && (
+            <div className="p-3.5 md:px-5 border-t border-border bg-muted/15 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Showing {filteredOrders.length} wholesale orders</span>
+              <span className="font-mono text-[11px]">SoleFlow Order Engine • Live</span>
+            </div>
+          )}
         </div>
       ) : selectedOrder ? (
         /* Order Detail View */
