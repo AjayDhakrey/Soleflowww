@@ -269,28 +269,31 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
   onNavigateCheques,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Assigned Receivables */}
       <div
         role="button"
         tabIndex={0}
         onClick={onNavigatePending}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <AssignedReceivables3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Assigned Receivables">
               Total Assigned Receivables
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate"
+            title={`₹${(totalAssignedDue / 100000).toFixed(2)}L`}
+          >
             ₹{(totalAssignedDue / 100000).toFixed(2)}L
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={`Across ${pendingStoresCount} pending stores`}>
             Across {pendingStoresCount} pending stores
           </p>
         </div>
@@ -301,22 +304,26 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateOverdue}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <OverdueCalendar3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Overdue Stores">
               Overdue Stores
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans">
-            {pendingStoresCount} Accounts
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${pendingStoresCount} Accounts`}
+          >
+            <span className="tabular-nums">{pendingStoresCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 tracking-normal">Accounts</span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Need field collection visits">
             Need field collection visits
           </p>
         </div>
@@ -327,22 +334,25 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateCollected}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <MoneySackCoins3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Collected This Month">
               Collected This Month
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate"
+            title={`₹${(collectedThisMonth / 100000).toFixed(2)}L`}
+          >
             ₹{(collectedThisMonth / 100000).toFixed(2)}L
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Realized in bank">
             Realized in bank
           </p>
         </div>
@@ -353,22 +363,25 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateCheques}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <ChequePen3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Cheques in Clearing">
               Cheques in Clearing
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate"
+            title={`₹${(chequesInClearingAmount / 100000).toFixed(2)}L`}
+          >
             ₹{(chequesInClearingAmount / 100000).toFixed(2)}L
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={`${pendingChequesCount} pending realization`}>
             {pendingChequesCount} pending realization
           </p>
         </div>

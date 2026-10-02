@@ -342,66 +342,78 @@ export const AuditKpiCards: React.FC<AuditKpiCardsProps> = ({
   automatedCaption = 'MTD bank verified realizations',
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Audit Events */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <TotalAuditEvents3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Audit Events">
             Total Audit Events
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans truncate"
+            title={String(totalEvents)}
+          >
             {totalEvents}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={totalCaption}>
             {totalCaption}
           </p>
         </div>
       </div>
 
       {/* 2. Trader Authorizations */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <TraderAuthorizations3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Trader Authorizations">
             Trader Authorizations
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans truncate"
+            title={String(traderCount)}
+          >
             {traderCount}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={traderCaption}>
             {traderCaption}
           </p>
         </div>
       </div>
 
       {/* 3. Field Rep Entries */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <FieldRepEntries3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Field Rep Entries">
             Field Rep Entries
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans truncate"
+            title={String(fieldRepCount)}
+          >
             {fieldRepCount}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={fieldRepCaption}>
             {fieldRepCaption}
           </p>
         </div>
       </div>
 
       {/* 4. Automated Triggers */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <AutomatedTriggers3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Automated Triggers">
             Automated Triggers
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5 font-sans truncate"
+            title={String(automatedCount)}
+          >
             {automatedCount}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={automatedCaption}>
             {automatedCaption}
           </p>
         </div>

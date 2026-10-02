@@ -193,60 +193,60 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Overdue Accounts */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Overdue Accounts</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Accounts">Overdue Accounts</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums truncate">
               {metrics.overdueAccounts}
             </h3>
             {metrics.trends.overdueAccounts && (
-              <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 shrink-0">
                 {metrics.trends.overdueAccounts.value}
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Retailers with unpaid invoices past due date">
             Retailers with unpaid invoices past due date
           </p>
         </div>
 
         {/* Total Overdue Amount */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Overdue Amount</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Amount">Overdue Amount</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums truncate">
               {formatIndianCurrency(metrics.overdueAmount, true)}
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title={`Full exact: ${formatIndianCurrency(metrics.overdueAmount)}`}>
             Full exact: <strong className="text-foreground">{formatIndianCurrency(metrics.overdueAmount)}</strong>
           </p>
         </div>
 
         {/* Avg Days Overdue */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Avg Days Overdue</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Avg Days Overdue">Avg Days Overdue</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums truncate">
               {metrics.avgDaysOverdue || 18} Days
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Average delay across delinquent accounts">
             Average delay across delinquent accounts
           </p>
         </div>
 
         {/* Over Credit Limit */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Credit Limit Breaches</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Credit Limit Breaches">Credit Limit Breaches</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums truncate">
               {overLimitCount} Stores
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Outstanding exceeds sanctioned limit">
             Outstanding exceeds sanctioned limit
           </p>
         </div>

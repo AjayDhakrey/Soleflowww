@@ -301,29 +301,32 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
   isSalesperson = false,
 }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3.5 sm:gap-4">
       {/* 1. SALES BOOKED */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-blue-50/70 via-blue-50/30 to-white dark:from-blue-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-blue-200/80 dark:border-blue-900/50 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-lg hover:-translate-y-1"
+        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-blue-50/70 via-blue-50/30 to-white dark:from-blue-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-blue-200/80 dark:border-blue-900/50 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
           <SalesBooked3D />
         </div>
 
-        <div className="w-full space-y-1 my-1">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300">
+        <div className="w-full space-y-1 my-1 min-w-0">
+          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300 truncate" title="Sales Booked">
             Sales Booked
           </p>
-          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-[#0B2A63] dark:text-blue-200 font-mono leading-none">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#0B2A63] dark:text-blue-200 font-mono leading-none truncate max-w-full"
+            title={salesValue}
+          >
             {salesValue}
           </p>
         </div>
 
-        <div className="mt-3 w-full flex justify-center">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 shadow-2xs">
+        <div className="mt-3 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 shadow-2xs max-w-full truncate">
             <span className="font-bold">↑ {salesGrowth}%</span>
-            <span className="text-[11px] opacity-80">vs prev period</span>
+            <span className="text-[11px] opacity-80 truncate">vs prev period</span>
           </span>
         </div>
       </div>
@@ -331,25 +334,28 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 2. COLLECTIONS */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-emerald-50/70 via-emerald-50/30 to-white dark:from-emerald-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-emerald-200/80 dark:border-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1"
+        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-emerald-50/70 via-emerald-50/30 to-white dark:from-emerald-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-emerald-200/80 dark:border-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1 overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
           <Collections3D />
         </div>
 
-        <div className="w-full space-y-1 my-1">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+        <div className="w-full space-y-1 my-1 min-w-0">
+          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300 truncate" title="Collections">
             Collections
           </p>
-          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-[#064E3B] dark:text-emerald-200 font-mono leading-none">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#064E3B] dark:text-emerald-200 font-mono leading-none truncate max-w-full"
+            title={collectionsValue}
+          >
             {collectionsValue}
           </p>
         </div>
 
-        <div className="mt-3 w-full flex justify-center">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 shadow-2xs">
+        <div className="mt-3 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 shadow-2xs max-w-full truncate">
             <span className="font-bold">↑ {collectionsGrowth}%</span>
-            <span className="text-[11px] opacity-80">bank verified</span>
+            <span className="text-[11px] opacity-80 truncate">bank verified</span>
           </span>
         </div>
       </div>
@@ -357,23 +363,26 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 3. RECEIVABLES */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-rose-50/70 via-rose-50/30 to-white dark:from-rose-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-rose-200/80 dark:border-rose-900/50 hover:border-rose-400 dark:hover:border-rose-500 hover:shadow-lg hover:-translate-y-1"
+        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-rose-50/70 via-rose-50/30 to-white dark:from-rose-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-rose-200/80 dark:border-rose-900/50 hover:border-rose-400 dark:hover:border-rose-500 hover:shadow-lg hover:-translate-y-1 overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
           <Receivables3D />
         </div>
 
-        <div className="w-full space-y-1 my-1">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-rose-900 dark:text-rose-300">
+        <div className="w-full space-y-1 my-1 min-w-0">
+          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-rose-900 dark:text-rose-300 truncate" title="Receivables">
             Receivables
           </p>
-          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-[#9F1239] dark:text-rose-200 font-mono leading-none">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#9F1239] dark:text-rose-200 font-mono leading-none truncate max-w-full"
+            title={receivablesValue}
+          >
             {receivablesValue}
           </p>
         </div>
 
-        <div className="mt-3 w-full flex justify-center">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 shadow-2xs truncate">
+        <div className="mt-3 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 shadow-2xs truncate max-w-full">
             <Icons.FileText size={12} className="shrink-0 opacity-75" />
             <span className="truncate">Across {receivablesAccountsCount} accounts</span>
           </span>
@@ -383,25 +392,28 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 4. OPEN ORDERS */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-amber-50/70 via-amber-50/30 to-white dark:from-amber-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-amber-200/80 dark:border-amber-900/50 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-lg hover:-translate-y-1"
+        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-amber-50/70 via-amber-50/30 to-white dark:from-amber-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-amber-200/80 dark:border-amber-900/50 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-lg hover:-translate-y-1 overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
           <OpenOrders3D count={openOrdersCount} />
         </div>
 
-        <div className="w-full space-y-1 my-1">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300">
+        <div className="w-full space-y-1 my-1 min-w-0">
+          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 truncate" title="Open Orders">
             Open Orders
           </p>
-          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-[#78350F] dark:text-amber-200 font-mono leading-none">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#78350F] dark:text-amber-200 font-mono leading-none truncate max-w-full"
+            title={`${openOrdersCount} Orders`}
+          >
             {openOrdersCount} Orders
           </p>
         </div>
 
-        <div className="mt-3 w-full flex justify-center">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 shadow-2xs truncate">
+        <div className="mt-3 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 shadow-2xs truncate max-w-full">
             <Icons.TrendingUp size={12} className="shrink-0 opacity-75" />
-            <span className="truncate">{openOrdersValue} active pipeline</span>
+            <span className="truncate">{openOrdersValue} pipeline</span>
           </span>
         </div>
       </div>
@@ -409,25 +421,28 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 5. ACTIVE STORES */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-purple-50/70 via-purple-50/30 to-white dark:from-purple-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-purple-200/80 dark:border-purple-900/50 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-lg hover:-translate-y-1"
+        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-purple-50/70 via-purple-50/30 to-white dark:from-purple-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-purple-200/80 dark:border-purple-900/50 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
           <ActiveStores3D />
         </div>
 
-        <div className="w-full space-y-1 my-1">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300">
+        <div className="w-full space-y-1 my-1 min-w-0">
+          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300 truncate" title="Active Stores">
             Active Stores
           </p>
-          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-[#581C87] dark:text-purple-200 font-mono leading-none">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#581C87] dark:text-purple-200 font-mono leading-none truncate max-w-full"
+            title={`${activeStoresCount} Accounts`}
+          >
             {activeStoresCount} Accounts
           </p>
         </div>
 
-        <div className="mt-3 w-full flex justify-center">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 shadow-2xs truncate">
+        <div className="mt-3 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 shadow-2xs truncate max-w-full">
             <Icons.Clients size={12} className="shrink-0 opacity-75" />
-            <span className="truncate">{totalRegisteredBuyers} registered buyers</span>
+            <span className="truncate">{totalRegisteredBuyers} buyers</span>
           </span>
         </div>
       </div>
@@ -435,25 +450,28 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 6. PAIRS BOOKED */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-cyan-50/70 via-cyan-50/30 to-white dark:from-cyan-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-cyan-200/80 dark:border-cyan-900/50 hover:border-cyan-400 dark:hover:border-cyan-500 hover:shadow-lg hover:-translate-y-1"
+        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-gradient-to-b from-cyan-50/70 via-cyan-50/30 to-white dark:from-cyan-950/40 dark:via-slate-900/40 dark:to-slate-900/60 border border-cyan-200/80 dark:border-cyan-900/50 hover:border-cyan-400 dark:hover:border-cyan-500 hover:shadow-lg hover:-translate-y-1 overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
           <PairsBooked3D />
         </div>
 
-        <div className="w-full space-y-1 my-1">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-cyan-900 dark:text-cyan-300">
+        <div className="w-full space-y-1 my-1 min-w-0">
+          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 truncate" title="Pairs Booked">
             Pairs Booked
           </p>
-          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-[#0E7490] dark:text-cyan-200 font-mono leading-none">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#0E7490] dark:text-cyan-200 font-mono leading-none truncate max-w-full"
+            title={typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
+          >
             {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
           </p>
         </div>
 
-        <div className="mt-3 w-full flex justify-center">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-200/80 dark:border-cyan-800/60 text-cyan-800 dark:text-cyan-300 shadow-2xs">
+        <div className="mt-3 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-200/80 dark:border-cyan-800/60 text-cyan-800 dark:text-cyan-300 shadow-2xs max-w-full truncate">
             <span className="font-bold">↑ {pairsBookedGrowth}%</span>
-            <span className="text-[11px] opacity-80">production vol</span>
+            <span className="text-[11px] opacity-80 truncate">production vol</span>
           </span>
         </div>
       </div>

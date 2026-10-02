@@ -216,89 +216,98 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
   paymentTerms = '30% Adv + 70% Bilty',
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Lifetime Business */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfileLifetime3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Lifetime Business">
               Lifetime Business
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-sans truncate"
+            title={lifetimeBusiness}
+          >
             {lifetimeBusiness}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={lifetimeCaption}>
             {lifetimeCaption}
           </p>
         </div>
       </div>
 
       {/* 2. Total Realized */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfilePaid3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Realized">
               Total Realized
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-sans">
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-sans truncate"
+            title={totalPaid}
+          >
             {totalPaid}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={paidCaption}>
             {paidCaption}
           </p>
         </div>
       </div>
 
       {/* 3. Outstanding Due */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfileDue3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Outstanding Balance">
               Outstanding Balance
             </span>
-            <span className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shrink-0 ${
+            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all shrink-0 ${
               isOverdue
                 ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 group-hover:bg-rose-600 group-hover:text-white'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-slate-600 group-hover:text-white'
             }`}>
-              <Icons.ChevronRight size={15} />
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className={`text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5 font-sans ${
-            isOverdue
-              ? 'text-rose-800 dark:text-rose-300'
-              : isCleared
-              ? 'text-emerald-800 dark:text-emerald-300'
-              : 'text-slate-800 dark:text-slate-100'
-          }`}>
+          <p
+            className={`text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight mt-0.5 font-sans truncate ${
+              isOverdue
+                ? 'text-rose-800 dark:text-rose-300'
+                : isCleared
+                ? 'text-emerald-800 dark:text-emerald-300'
+                : 'text-slate-800 dark:text-slate-100'
+            }`}
+            title={outstandingDue}
+          >
             {outstandingDue}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={dueCaption}>
             {dueCaption}
           </p>
         </div>
       </div>
 
       {/* 4. Credit Limit Usage */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfileCredit3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Credit Limit Usage">
               Credit Limit Usage
             </span>
-            <span className={`text-xs font-bold font-mono px-1.5 py-0.5 rounded-md ${
+            <span className={`text-xs font-bold font-mono px-1.5 py-0.5 rounded-md shrink-0 ${
               limitUsage > 100
                 ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
                 : limitUsage >= 80
@@ -316,7 +325,7 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
               }`}
             />
           </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate" title={`Limit: ${creditLimit} • ${paymentTerms}`}>
             Limit: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{creditLimit}</strong> • {paymentTerms}
           </p>
         </div>

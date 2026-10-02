@@ -246,66 +246,90 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
   selectedCount,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Active Articles */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ActiveArticles3D count={totalActiveModels} />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Active Articles">
             Total Active Articles
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans">
-            {totalActiveModels} Models
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${totalActiveModels} Models`}
+          >
+            <span className="tabular-nums">{totalActiveModels}</span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
+              Models
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Ready for factory booking">
             Ready for factory booking
           </p>
         </div>
       </div>
 
       {/* 2. Popular Fast-Movers */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <FastMovers3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Popular Fast-Movers">
             Popular Fast-Movers
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-sans">
-            {popularStylesCount} Styles
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${popularStylesCount} Styles`}
+          >
+            <span className="tabular-nums">{popularStylesCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-blue-600/90 dark:text-blue-400/90 tracking-normal">
+              Styles
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="High wholesale repeat rates">
             High wholesale repeat rates
           </p>
         </div>
       </div>
 
       {/* 3. High Margin Lines */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <HighMargin3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="High Margin Lines">
             High Margin Lines
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-sans">
-            {highMarginCount} SKUs
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${highMarginCount} SKUs`}
+          >
+            <span className="tabular-nums">{highMarginCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
+              SKUs
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="35%–45% retailer markups">
             35%–45% retailer markups
           </p>
         </div>
       </div>
 
       {/* 4. Selected for Sharing */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <SelectedShare3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Selected for Sharing">
             Selected for Sharing
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-sans">
-            {selectedCount} Articles
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${selectedCount} Articles`}
+          >
+            <span className="tabular-nums">{selectedCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
+              Articles
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Included in WhatsApp lookbook">
             Included in WhatsApp lookbook
           </p>
         </div>

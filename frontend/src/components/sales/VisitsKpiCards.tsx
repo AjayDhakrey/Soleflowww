@@ -288,88 +288,105 @@ export const VisitsKpiCards: React.FC<VisitsKpiCardsProps> = ({
   ordersBookedAmount,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Route Stops */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <RouteMap3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Route Stops">
               Total Route Stops
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans">
-            {totalStopsCount} Stores
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${totalStopsCount} Stores`}
+          >
+            <span className="tabular-nums">{totalStopsCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 tracking-normal">Stores</span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Assigned route itinerary">
             Assigned route itinerary
           </p>
         </div>
       </div>
 
       {/* 2. Completed Visits */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <StorefrontVisited3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Completed Visits">
               Completed Visits
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-sans">
-            {completedVisitsCount} Done
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${completedVisitsCount} Done`}
+          >
+            <span className="tabular-nums">{completedVisitsCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">Done</span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Physical store visits">
             Physical store visits
           </p>
         </div>
       </div>
 
       {/* 3. Pending Stops */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <PendingStops3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Pending Stops">
               Pending Stops
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-sans">
-            {pendingStopsCount} Pending
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${pendingStopsCount} Pending`}
+          >
+            <span className="tabular-nums">{pendingStopsCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-amber-600/90 dark:text-amber-400/90 tracking-normal">Pending</span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Remaining market queue">
             Remaining market queue
           </p>
         </div>
       </div>
 
       {/* 4. Orders Booked on Route */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <RouteOrders3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Orders Booked on Route">
               Orders Booked on Route
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-sans">
-            {typeof ordersBookedAmount === 'number'
-              ? `₹${(ordersBookedAmount / 100000).toFixed(2)}L`
-              : ordersBookedAmount}
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-sans truncate"
+            title={typeof ordersBookedAmount === 'number' ? `₹${(ordersBookedAmount / 100000).toFixed(2)}L` : String(ordersBookedAmount)}
+          >
+            <span className="tabular-nums">
+              {typeof ordersBookedAmount === 'number'
+                ? `₹${(ordersBookedAmount / 100000).toFixed(2)}L`
+                : ordersBookedAmount}
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Territory orders captured">
             Territory orders captured
           </p>
         </div>

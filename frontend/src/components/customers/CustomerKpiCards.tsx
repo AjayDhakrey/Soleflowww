@@ -321,7 +321,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
   totalReceivables,
   totalReceivablesGrowth = 8,
   overdueAccounts,
-  overdueGrowth = 6,
+  overdueGrowth = 5,
   clearedAccounts,
   clearedGrowth = 12,
   onNavigateTotal,
@@ -330,7 +330,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
   onNavigateCleared,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Customers */}
       <div
         role="button"
@@ -342,29 +342,32 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateTotal();
           }
         }}
-        className="group relative rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3.5">
+        <div className="flex items-start justify-between gap-2.5">
+          <div className="flex items-center gap-3 min-w-0">
             <TotalCustomers3D />
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug">
-              Total<br />Customers
+            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Customers">
+              Total Customers
             </span>
           </div>
-          <Icons.ChevronRight size={18} className="text-slate-400 dark:text-slate-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all mt-1 shrink-0" />
+          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
         </div>
 
-        <div className="my-3 sm:my-4">
-          <p className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans">
+        <div className="my-2.5 sm:my-3">
+          <p
+            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            title={typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : String(totalCustomers)}
+          >
             {typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : totalCustomers}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
             ↑ {totalCustomersGrowth}%
           </span>
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
             vs prev period
           </span>
         </div>
@@ -381,29 +384,32 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateReceivables();
           }
         }}
-        className="group relative rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3.5">
+        <div className="flex items-start justify-between gap-2.5">
+          <div className="flex items-center gap-3 min-w-0">
             <TotalReceivables3D />
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug">
-              Total<br />Receivables
+            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Receivables">
+              Total Receivables
             </span>
           </div>
-          <Icons.ChevronRight size={18} className="text-slate-400 dark:text-slate-500 group-hover:text-rose-600 dark:group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all mt-1 shrink-0" />
+          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-rose-600 dark:group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
         </div>
 
-        <div className="my-3 sm:my-4">
-          <p className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans">
+        <div className="my-2.5 sm:my-3">
+          <p
+            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            title={totalReceivables}
+          >
             {totalReceivables}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
             ↑ {totalReceivablesGrowth}%
           </span>
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
             vs prev period
           </span>
         </div>
@@ -420,29 +426,32 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateOverdue();
           }
         }}
-        className="group relative rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3.5">
+        <div className="flex items-start justify-between gap-2.5">
+          <div className="flex items-center gap-3 min-w-0">
             <OverdueAccounts3D />
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug">
-              Overdue<br />Accounts
+            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Overdue Accounts">
+              Overdue Accounts
             </span>
           </div>
-          <Icons.ChevronRight size={18} className="text-slate-400 dark:text-slate-500 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all mt-1 shrink-0" />
+          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
         </div>
 
-        <div className="my-3 sm:my-4">
-          <p className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans">
+        <div className="my-2.5 sm:my-3">
+          <p
+            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            title={typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : String(overdueAccounts)}
+          >
             {typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : overdueAccounts}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 text-rose-600 dark:text-rose-400">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 shrink-0">
             ↑ {overdueGrowth}%
           </span>
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
             vs prev period
           </span>
         </div>
@@ -459,29 +468,32 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateCleared();
           }
         }}
-        className="group relative rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3.5">
+        <div className="flex items-start justify-between gap-2.5">
+          <div className="flex items-center gap-3 min-w-0">
             <ClearedAccounts3D />
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug">
-              Cleared<br />Accounts
+            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Cleared Accounts">
+              Cleared Accounts
             </span>
           </div>
-          <Icons.ChevronRight size={18} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all mt-1 shrink-0" />
+          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
         </div>
 
-        <div className="my-3 sm:my-4">
-          <p className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans">
+        <div className="my-2.5 sm:my-3">
+          <p
+            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            title={typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : String(clearedAccounts)}
+          >
             {typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : clearedAccounts}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
             ↑ {clearedGrowth}%
           </span>
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
             vs prev period
           </span>
         </div>

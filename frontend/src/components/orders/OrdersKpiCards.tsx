@@ -250,28 +250,34 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
   onNavigateValue,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Orders */}
       <div
         role="button"
         tabIndex={0}
         onClick={onNavigateAll}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <TotalOrders3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Orders">
               Total Orders
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-sans">
-            {totalOrdersCount} Batches
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${totalOrdersCount} Batches`}
+          >
+            <span className="tabular-nums">{totalOrdersCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
+              Batches
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="All active consignments">
             All active consignments
           </p>
         </div>
@@ -282,22 +288,28 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateProduction}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <InProduction3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="In Production">
               In Production
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-sans">
-            {inProductionCount} Batches
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${inProductionCount} Batches`}
+          >
+            <span className="tabular-nums">{inProductionCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
+              Batches
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Active on factory lines">
             Active on factory lines
           </p>
         </div>
@@ -308,22 +320,28 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateDispatch}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <ReadyDispatch3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Ready to Dispatch">
               Ready to Dispatch
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:bg-amber-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:bg-amber-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-sans">
-            {readyDispatchCount} Batches
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            title={`${readyDispatchCount} Batches`}
+          >
+            <span className="tabular-nums">{readyDispatchCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
+              Batches
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Awaiting transport loading">
             Awaiting transport loading
           </p>
         </div>
@@ -334,24 +352,29 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateValue}
-        className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none"
+        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
         <ConsignmentValue3D />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
+            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Consignment Value">
               Total Consignment Value
             </span>
-            <span className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={15} />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
+              <Icons.ChevronRight size={14} />
             </span>
           </div>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans">
-            {typeof totalConsignmentValue === 'number'
-              ? `₹${(totalConsignmentValue / 100000).toFixed(2)}L`
-              : totalConsignmentValue}
+          <p
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate"
+            title={typeof totalConsignmentValue === 'number' ? `₹${(totalConsignmentValue / 100000).toFixed(2)}L` : String(totalConsignmentValue)}
+          >
+            <span className="tabular-nums">
+              {typeof totalConsignmentValue === 'number'
+                ? `₹${(totalConsignmentValue / 100000).toFixed(2)}L`
+                : totalConsignmentValue}
+            </span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Gross wholesale value">
             Gross wholesale value
           </p>
         </div>

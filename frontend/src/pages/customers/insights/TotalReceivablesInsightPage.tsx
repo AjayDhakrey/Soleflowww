@@ -214,67 +214,67 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Total Outstanding */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Total Outstanding</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Total Outstanding">Total Outstanding</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums truncate">
               {formatIndianCurrency(metrics.totalReceivables, true)}
             </h3>
             {metrics.trends.totalReceivables && (
-              <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 shrink-0">
                 {metrics.trends.totalReceivables.value}
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title={`Full exact: ${formatIndianCurrency(metrics.totalReceivables)}`}>
             Full exact: <strong className="text-foreground">{formatIndianCurrency(metrics.totalReceivables)}</strong>
           </p>
         </div>
 
         {/* Due This Week */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Due This Week</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Due This Week">Due This Week</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums truncate">
               {formatIndianCurrency(metrics.dueThisWeek, true)}
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Approaching credit period threshold">
             Approaching credit period threshold
           </p>
         </div>
 
         {/* Overdue */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Overdue Amount</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Amount">Overdue Amount</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums truncate">
               {formatIndianCurrency(metrics.overdueAmount, true)}
             </h3>
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 shrink-0">
               ({metrics.overdueAccounts} Stores)
             </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Exceeded agreed credit duration">
             Exceeded agreed credit duration
           </p>
         </div>
 
         {/* Collected This Month */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs">
-          <p className="text-xs font-semibold text-muted-foreground">Collected This Month</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
+          <p className="text-xs font-semibold text-muted-foreground truncate" title="Collected This Month">Collected This Month</p>
+          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums truncate">
               {formatIndianCurrency(metrics.collectedThisMonth || 350000, true)}
             </h3>
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
               Realized
             </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Bank credits & UPI clearances
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Bank credits & UPI clearances">
+            Bank credits &amp; UPI clearances
           </p>
         </div>
       </div>
