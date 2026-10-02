@@ -279,14 +279,9 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <AssignedReceivables3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Assigned Receivables">
-              Total Assigned Receivables
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Assigned Receivables">
+            Total Assigned Receivables
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate"
             title={`₹${(totalAssignedDue / 100000).toFixed(2)}L`}
@@ -308,14 +303,9 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <OverdueCalendar3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Overdue Stores">
-              Overdue Stores
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Overdue Stores">
+            Overdue Stores
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate flex items-baseline gap-1.5"
             title={`${pendingStoresCount} Accounts`}
@@ -338,14 +328,9 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <MoneySackCoins3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Collected This Month">
-              Collected This Month
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Collected This Month">
+            Collected This Month
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate"
             title={`₹${(collectedThisMonth / 100000).toFixed(2)}L`}
@@ -367,14 +352,9 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <ChequePen3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Cheques in Clearing">
-              Cheques in Clearing
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Cheques in Clearing">
+            Cheques in Clearing
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate"
             title={`₹${(chequesInClearingAmount / 100000).toFixed(2)}L`}

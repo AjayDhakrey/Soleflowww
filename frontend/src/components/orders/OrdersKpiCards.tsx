@@ -260,14 +260,9 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <TotalOrders3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Orders">
-              Total Orders
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Orders">
+            Total Orders
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
             title={`${totalOrdersCount} Batches`}
@@ -292,14 +287,9 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <InProduction3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="In Production">
-              In Production
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="In Production">
+            In Production
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
             title={`${inProductionCount} Batches`}
@@ -324,14 +314,9 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <ReadyDispatch3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Ready to Dispatch">
-              Ready to Dispatch
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:bg-amber-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Ready to Dispatch">
+            Ready to Dispatch
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
             title={`${readyDispatchCount} Batches`}
@@ -356,14 +341,9 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <ConsignmentValue3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Consignment Value">
-              Total Consignment Value
-            </span>
-            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all shrink-0">
-              <Icons.ChevronRight size={14} />
-            </span>
-          </div>
+          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Consignment Value">
+            Total Consignment Value
+          </span>
           <p
             className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate"
             title={typeof totalConsignmentValue === 'number' ? `₹${(totalConsignmentValue / 100000).toFixed(2)}L` : String(totalConsignmentValue)}

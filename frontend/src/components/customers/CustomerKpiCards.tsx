@@ -344,14 +344,11 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         }}
         className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-2.5">
-          <div className="flex items-center gap-3 min-w-0">
-            <TotalCustomers3D />
-            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Customers">
-              Total Customers
-            </span>
-          </div>
-          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
+        <div className="flex items-center gap-3 min-w-0">
+          <TotalCustomers3D />
+          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Customers">
+            Total Customers
+          </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
@@ -386,14 +383,11 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         }}
         className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-2.5">
-          <div className="flex items-center gap-3 min-w-0">
-            <TotalReceivables3D />
-            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Receivables">
-              Total Receivables
-            </span>
-          </div>
-          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-rose-600 dark:group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
+        <div className="flex items-center gap-3 min-w-0">
+          <TotalReceivables3D />
+          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Receivables">
+            Total Receivables
+          </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
@@ -428,14 +422,11 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         }}
         className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-2.5">
-          <div className="flex items-center gap-3 min-w-0">
-            <OverdueAccounts3D />
-            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Overdue Accounts">
-              Overdue Accounts
-            </span>
-          </div>
-          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
+        <div className="flex items-center gap-3 min-w-0">
+          <OverdueAccounts3D />
+          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Overdue Accounts">
+            Overdue Accounts
+          </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
@@ -470,14 +461,11 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         }}
         className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-start justify-between gap-2.5">
-          <div className="flex items-center gap-3 min-w-0">
-            <ClearedAccounts3D />
-            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Cleared Accounts">
-              Cleared Accounts
-            </span>
-          </div>
-          <Icons.ChevronRight size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all mt-0.5 shrink-0" />
+        <div className="flex items-center gap-3 min-w-0">
+          <ClearedAccounts3D />
+          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Cleared Accounts">
+            Cleared Accounts
+          </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
