@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useReceiptData } from '../../hooks/useReceiptData';
-import { ReceiptTemplate, generateReceiptFileName } from '../../components/payments/ReceiptTemplate';
+import { ReceiptTemplate, generateReceiptFileName, exportReceiptToWord } from '../../components/payments/ReceiptTemplate';
 import { Icons } from '../../lib/icons';
 import { Button } from '../../components/ui';
 
@@ -26,6 +26,8 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
   const searchParams = new URLSearchParams(window.location.search);
   const autoPrint = searchParams.get('print') === '1' || window.location.hash.includes('print=1');
   const [copied, setCopied] = useState(false);
+  const [fileFormat, setFileFormat] = useState<'pdf' | 'word'>('pdf');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const {
     receipt,
@@ -58,15 +60,20 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
     }
   }, [receipt, customer, autoPrint]);
 
-  const [isDownloading, setIsDownloading] = useState(false);
+  const handleDownload = async () => {
+    if (!receipt) return;
+    const suggestedFileName = generateReceiptFileName(receipt, customer);
 
-  const handleDownloadPDF = async () => {
+    if (fileFormat === 'word') {
+      exportReceiptToWord(receipt, company, customer, status, suggestedFileName);
+      return;
+    }
+
     const element = document.getElementById('rcpt-print-root');
-    if (!element || !receipt) return;
+    if (!element) return;
 
     setIsDownloading(true);
     try {
-      const suggestedFileName = generateReceiptFileName(receipt, customer);
       // @ts-ignore
       const html2pdfModule = (await import('html2pdf.js')).default || (await import('html2pdf.js'));
       const opt = {
@@ -209,23 +216,50 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
           >
             Send on WhatsApp
           </Button>
+          {/* Format Selector: PDF or Word */}
+          <div className="inline-flex items-center bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">
+            <button
+              type="button"
+              onClick={() => setFileFormat('pdf')}
+              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                fileFormat === 'pdf'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              PDF (Default)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFileFormat('word')}
+              className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                fileFormat === 'word'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              Word (.doc)
+            </button>
+          </div>
+
           <Button
             variant="primary"
             size="sm"
             disabled={isDownloading}
             icon={Icons.Receipt}
-            onClick={handleDownloadPDF}
+            onClick={handleDownload}
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
           >
-            {isDownloading ? 'Generating PDF...' : '💾 Print / Save as PDF'}
+            {isDownloading ? 'Generating...' : '⬇️ Download'}
           </Button>
+
           <Button
             variant="secondary"
             size="sm"
             icon={Icons.Payments}
             onClick={handlePrint}
           >
-            🖨️ Printer
+            🖨️ Print
           </Button>
         </div>
       </div>

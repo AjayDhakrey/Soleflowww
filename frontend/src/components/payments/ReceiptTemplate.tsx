@@ -211,6 +211,178 @@ export function generateInvoiceFileName(order?: { id?: string; customerName?: st
   return ['Invoice', orderNo, cleanCustomer, amountStr, dateStr].filter(Boolean).join('_');
 }
 
+/**
+ * Exports the receipt as a formatted Microsoft Word document (.doc) with pregenerated filename
+ */
+export function exportReceiptToWord(
+  receipt: PaymentReceipt,
+  company?: Partial<ReceiptCompanyInfo>,
+  customer?: ReceiptCustomerExtras,
+  status?: ReceiptStatus,
+  fileName?: string
+) {
+  const co = { ...DEFAULT_RECEIPT_COMPANY, ...(company || {}) };
+  const st = status || mapPaymentStatusToReceiptStatus(receipt.status);
+  const nameToSave = fileName || generateReceiptFileName(receipt, customer);
+  const hasOrder = Boolean(receipt.orderId || receipt.orderNumber);
+
+  const wordHtml = `
+  <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head>
+    <meta charset="utf-8">
+    <title>${nameToSave}</title>
+    <!--[if gte mso 9]>
+    <xml>
+      <w:WordDocument>
+        <w:View>Print</w:View>
+        <w:Zoom>100</w:Zoom>
+        <w:DoNotOptimizeForBrowser/>
+      </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 20mm 20mm 20mm 20mm;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 10.5pt;
+        color: #1E293B;
+        line-height: 1.5;
+        background: #FFFFFF;
+      }
+      .head-table { width: 100%; border-bottom: 2pt solid #0B2A5B; padding-bottom: 12pt; margin-bottom: 15pt; }
+      .brand-title { font-size: 18pt; font-weight: bold; color: #0B2A5B; }
+      .brand-tag { font-size: 10pt; color: #C98E1A; font-weight: bold; }
+      .doc-title { font-size: 16pt; font-weight: bold; color: #0B2A5B; text-align: right; }
+      .meta-text { font-size: 9.5pt; color: #64748B; text-align: right; }
+      .status-badge { display: inline-block; padding: 3pt 8pt; background: #EFF6FF; color: #1D5FD1; font-weight: bold; border-radius: 4pt; font-size: 9pt; }
+      .parties-table { width: 100%; margin-bottom: 15pt; }
+      .party-box { width: 50%; vertical-align: top; padding: 8pt; background: #F8FAFC; border: 1pt solid #E2E8F0; }
+      .party-label { font-size: 8.5pt; font-weight: bold; color: #64748B; text-transform: uppercase; }
+      .party-name { font-size: 12pt; font-weight: bold; color: #0F172A; margin: 3pt 0; }
+      .line-table { width: 100%; border-collapse: collapse; margin-bottom: 15pt; }
+      .line-table th { background: #0B2A5B; color: #FFFFFF; padding: 7pt; font-size: 9.5pt; text-align: left; }
+      .line-table td { padding: 8pt 7pt; border-bottom: 1pt solid #E2E8F0; font-size: 10pt; }
+      .amount-banner { background: #0B2A5B; color: #FFFFFF; padding: 12pt; text-align: right; margin-bottom: 15pt; border-radius: 4pt; }
+      .amount-words { font-size: 9pt; color: #CBD5E1; font-style: italic; text-align: left; float: left; width: 60%; }
+      .amount-val { font-size: 18pt; font-weight: bold; color: #FFFFFF; }
+      .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 15pt; }
+      .summary-table td { padding: 5pt 8pt; border-bottom: 1pt solid #F1F5F9; font-size: 10pt; }
+      .footer-note { font-size: 8.5pt; color: #64748B; margin-top: 20pt; border-top: 1pt solid #E2E8F0; padding-top: 8pt; }
+    </style>
+  </head>
+  <body>
+    <table class="head-table">
+      <tr>
+        <td style="vertical-align: top;">
+          <div class="brand-title">${co.brandName}</div>
+          <div class="brand-tag">${co.tagline || 'Footwear Wholesale Trading'}</div>
+          <div style="font-size: 9pt; color: #64748B; margin-top: 4pt;">
+            ${co.legalName || ''}<br/>
+            ${co.address || ''}<br/>
+            ${co.gstin ? `GSTIN: ${co.gstin}` : ''}
+          </div>
+        </td>
+        <td style="vertical-align: top; text-align: right;">
+          <div class="doc-title">PAYMENT RECEIPT</div>
+          <div class="meta-text" style="margin-top: 4pt;">
+            Receipt No: <strong>${receipt.receiptNumber}</strong><br/>
+            Date: <strong>${receipt.paymentDate || 'Today'}</strong><br/>
+            <span class="status-badge">${st}</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table class="parties-table">
+      <tr>
+        <td class="party-box" style="margin-right: 8pt;">
+          <div class="party-label">Received From</div>
+          <div class="party-name">${receipt.customerName}</div>
+          <div style="font-size: 9pt; color: #475569;">
+            ${customer?.address || receipt.customerCity || 'Agra'}<br/>
+            ${customer?.customerCode || receipt.customerId ? `Account: ${customer?.customerCode || receipt.customerId}<br/>` : ''}
+            ${customer?.gstin ? `GSTIN: ${customer.gstin}<br/>` : ''}
+            ${customer?.phone ? `Phone: ${customer.phone}` : ''}
+          </div>
+        </td>
+        <td class="party-box">
+          <div class="party-label">Payment Breakdown</div>
+          <div style="font-size: 9.5pt; margin-top: 4pt;">
+            Payment Method: <strong>${receipt.paymentMethod}</strong><br/>
+            Ref / UTR: <strong>${receipt.utrRef || receipt.chequeNo || 'Realized Direct'}</strong><br/>
+            Collected By: <strong>${receipt.collectedBy || 'Field Rep'}</strong>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table class="line-table">
+      <thead>
+        <tr>
+          <th style="width: 30pt;">#</th>
+          <th>Description</th>
+          <th style="width: 80pt;">Mode</th>
+          <th style="width: 90pt; text-align: right;">Amount (INR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>
+            ${hasOrder
+              ? `Payment received against wholesale consignment ${receipt.orderNumber || receipt.orderId}`
+              : 'Payment received on account settlement'}
+          </td>
+          <td>${receipt.paymentMethod}</td>
+          <td style="text-align: right; font-weight: bold;">₹${Number(receipt.paymentAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="amount-banner">
+      <div class="amount-words">${amountInWordsINR(receipt.paymentAmount)}</div>
+      <div class="amount-val">₹${Number(receipt.paymentAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+      <div style="clear: both;"></div>
+    </div>
+
+    <table class="summary-table">
+      <tr>
+        <td>Balance Due Before Payment</td>
+        <td style="text-align: right; font-weight: 500;">₹${Number(receipt.amountDueBefore || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+      </tr>
+      <tr style="color: #059669; font-weight: bold;">
+        <td>Amount Credited / Received</td>
+        <td style="text-align: right;">- ₹${Number(receipt.paymentAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+      </tr>
+      <tr style="font-weight: bold; background: #F8FAFC;">
+        <td>Remaining Balance Outstanding</td>
+        <td style="text-align: right; color: ${receipt.amountDueAfter > 0 ? '#DC2626' : '#059669'};">₹${Number(receipt.amountDueAfter || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+      </tr>
+    </table>
+
+    ${receipt.notes ? `<p style="font-size: 9pt; color: #475569; background: #FFFBEB; padding: 6pt 10pt; border-left: 3pt solid #F59E0B; margin: 10pt 0;"><strong>Note:</strong> ${receipt.notes}</p>` : ''}
+
+    <div class="footer-note">
+      This is a digitally generated official receipt issued by SoleFlow Footwear. Cheque instruments are subject to realization.
+    </div>
+  </body>
+  </html>
+  `;
+
+  const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${nameToSave}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /* --------------------------- Scoped styles ------------------------------ */
 /* Plain CSS (not Tailwind) so the receipt looks identical in light/dark
    mode, on screen and on paper. All classes are prefixed with "rcpt-". */
@@ -436,22 +608,32 @@ export interface ReceiptPreviewModalProps extends ReceiptTemplateProps {
 }
 
 export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, onClose, ...props }) => {
-  const suggestedFileName = generateReceiptFileName(props.receipt, props.customer);
+  const [fileFormat, setFileFormat] = React.useState<'pdf' | 'word'>('pdf');
   const [isDownloading, setIsDownloading] = React.useState(false);
+
+  const suggestedBaseName = generateReceiptFileName(props.receipt, props.customer);
+  const currentExtension = fileFormat === 'pdf' ? 'pdf' : 'doc';
+  const fullFileName = `${suggestedBaseName}.${currentExtension}`;
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     const prevTitle = document.title;
-    document.title = suggestedFileName; // becomes the default PDF file name when saving via print
+    document.title = suggestedBaseName; // becomes the default PDF file name when saving via print
     return () => {
       window.removeEventListener('keydown', onKey);
       document.title = prevTitle;
     };
-  }, [open, onClose, suggestedFileName]);
+  }, [open, onClose, suggestedBaseName]);
 
-  const handleDownloadPDF = async () => {
+  const handleDownload = async () => {
+    if (fileFormat === 'word') {
+      exportReceiptToWord(props.receipt, props.company, props.customer, props.status, suggestedBaseName);
+      return;
+    }
+
+    // Default: PDF download
     const element = document.getElementById('rcpt-print-root');
     if (!element) return;
 
@@ -461,7 +643,7 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
       const html2pdfModule = (await import('html2pdf.js')).default || (await import('html2pdf.js'));
       const opt = {
         margin: [8, 8, 8, 8],
-        filename: `${suggestedFileName}.pdf`,
+        filename: `${suggestedBaseName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -489,32 +671,74 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
         <div className="rcpt-noprint" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
           {/* Pregenerated File Name Chip */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'rgba(255,255,255,0.95)', borderRadius: 10, border: '1px solid rgba(226,232,240,0.8)', fontSize: 12, color: '#334155' }}>
-            <span style={{ fontWeight: 600, color: '#0B2A5B' }}>📄 Preset Name:</span>
-            <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#1D5FD1' }}>{suggestedFileName}.pdf</span>
+            <span style={{ fontWeight: 600, color: '#0B2A5B' }}>📄 Preset:</span>
+            <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#1D5FD1' }}>{fullFileName}</span>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {/* Primary Button: Directly downloads PDF so Windows File Explorer has the prefilled name */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+            {/* Format Selector: PDF (Default) or Word */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.9)', padding: '2px', borderRadius: 8, border: '1px solid #CBD5E1' }}>
+              <button
+                type="button"
+                onClick={() => setFileFormat('pdf')}
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: 6,
+                  border: 0,
+                  fontSize: 12,
+                  fontWeight: fileFormat === 'pdf' ? 700 : 500,
+                  background: fileFormat === 'pdf' ? '#1D5FD1' : 'transparent',
+                  color: fileFormat === 'pdf' ? '#fff' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                PDF (Default)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFileFormat('word')}
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: 6,
+                  border: 0,
+                  fontSize: 12,
+                  fontWeight: fileFormat === 'word' ? 700 : 500,
+                  background: fileFormat === 'word' ? '#2563EB' : 'transparent',
+                  color: fileFormat === 'word' ? '#fff' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Word (.doc)
+              </button>
+            </div>
+
+            {/* Primary Action Button: "Download" */}
             <button
               type="button"
               disabled={isDownloading}
-              onClick={handleDownloadPDF}
+              onClick={handleDownload}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 10, background: '#1D5FD1', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: isDownloading ? 'wait' : 'pointer', boxShadow: '0 2px 6px rgba(29,95,209,0.35)', opacity: isDownloading ? 0.85 : 1 }}
-              title="Saves PDF directly with pre-generated filename auto-filled"
+              title={`Download receipt as ${fileFormat.toUpperCase()} with pre-filled filename`}
             >
-              <span>{isDownloading ? '⏳ Generating PDF...' : '💾 Print / Save as PDF'}</span>
+              <span>{isDownloading ? '⏳ Generating...' : '⬇️ Download'}</span>
             </button>
+
+            {/* Printer Button */}
             <button
               type="button"
               onClick={() => {
-                document.title = suggestedFileName;
+                document.title = suggestedBaseName;
                 window.print();
               }}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, background: '#F1F5F9', color: '#334155', fontWeight: 600, fontSize: 13, border: '1px solid #CBD5E1', cursor: 'pointer' }}
-              title="Send to physical printer or system print dialog"
+              title="Send to physical printer"
             >
-              <span>🖨️ Printer</span>
+              <span>🖨️ Print</span>
             </button>
+
+            {/* Close */}
             <button
               type="button"
               onClick={onClose}
