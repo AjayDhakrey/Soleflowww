@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Order } from '../../types';
 import { OrderInspectDrawer } from '../../components/orders/OrderInspectDrawer';
 import { OrdersKpiCards } from '../../components/orders/OrdersKpiCards';
+import { InvoicePreviewModal } from '../../components/orders/OrderInvoiceTemplate';
 import {
   ShoppingBag,
   Factory,
@@ -11,6 +12,7 @@ import {
   Plus,
   Search,
   Eye,
+  Printer,
   MoreVertical,
   ChevronRight,
   ChevronLeft,
@@ -119,6 +121,7 @@ const DEFAULT_ORDERS_DISPLAY: OrderDisplayItem[] = [
 export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
   const {
     orders,
+    customers,
     setIsCreateOrderModalOpen,
     setIsPaymentModalOpen,
     updateOrderStatus,
@@ -129,6 +132,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(orders[0] || null);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   // Inspect Drawer State
   const [inspectOrder, setInspectOrder] = useState<Order | null>(null);
@@ -345,6 +349,14 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
             >
               <ChevronLeft size={16} />
               <span>Back to Orders</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsInvoiceModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Printer size={15} />
+              <span>Print Invoice</span>
             </button>
             <button
               type="button"
@@ -688,6 +700,25 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
           setIsInspectOpen(false);
         }}
       />
+
+      {/* Standalone Wholesale Order Invoice Preview Modal */}
+      {isInvoiceModalOpen && selectedOrder && (
+        <InvoicePreviewModal
+          open={isInvoiceModalOpen}
+          onClose={() => setIsInvoiceModalOpen(false)}
+          order={selectedOrder}
+          customer={(() => {
+            const cust = customers.find((c) => c.id === selectedOrder.customerId);
+            if (!cust) return undefined;
+            return {
+              customerCode: cust.id,
+              gstin: cust.gstin,
+              phone: cust.phone,
+              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+            };
+          })()}
+        />
+      )}
     </div>
   );
 };

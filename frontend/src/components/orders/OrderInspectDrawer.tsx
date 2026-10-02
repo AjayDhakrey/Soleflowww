@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 
 import { RequestDiscountModal } from '../discounts/RequestDiscountModal';
-import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus, generateInvoiceFileName } from '../payments/ReceiptTemplate';
+import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from '../payments/ReceiptTemplate';
+import { InvoicePreviewModal, generateInvoiceFileName } from './OrderInvoiceTemplate';
 import { PaymentReceipt } from '../../types';
 
 interface OrderInspectDrawerProps {
@@ -45,6 +46,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
   const [isImgLoading, setIsImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -200,12 +202,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
   };
 
   const handlePrint = () => {
-    const prevTitle = document.title;
-    document.title = generateInvoiceFileName(order);
-    window.print();
-    setTimeout(() => {
-      document.title = prevTitle;
-    }, 1000);
+    setIsInvoiceModalOpen(true);
   };
 
   return (
@@ -858,6 +855,25 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
             };
           })()}
           status={mapPaymentStatusToReceiptStatus(selectedReceiptPayment.status)}
+        />
+      )}
+
+      {/* Wholesale Order Tax Invoice & Consignment Receipt Preview Modal */}
+      {isInvoiceModalOpen && order && (
+        <InvoicePreviewModal
+          open={isInvoiceModalOpen}
+          onClose={() => setIsInvoiceModalOpen(false)}
+          order={order}
+          customer={(() => {
+            const cust = customers.find((c) => c.id === order.customerId);
+            if (!cust) return undefined;
+            return {
+              customerCode: cust.id,
+              gstin: cust.gstin,
+              phone: cust.phone,
+              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+            };
+          })()}
         />
       )}
     </>
