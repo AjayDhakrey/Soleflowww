@@ -437,18 +437,43 @@ export interface ReceiptPreviewModalProps extends ReceiptTemplateProps {
 
 export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, onClose, ...props }) => {
   const suggestedFileName = generateReceiptFileName(props.receipt, props.customer);
+  const [isDownloading, setIsDownloading] = React.useState(false);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     const prevTitle = document.title;
-    document.title = suggestedFileName; // becomes the default PDF file name when saving
+    document.title = suggestedFileName; // becomes the default PDF file name when saving via print
     return () => {
       window.removeEventListener('keydown', onKey);
       document.title = prevTitle;
     };
   }, [open, onClose, suggestedFileName]);
+
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById('rcpt-print-root');
+    if (!element) return;
+
+    setIsDownloading(true);
+    try {
+      // @ts-ignore
+      const html2pdfModule = (await import('html2pdf.js')).default || (await import('html2pdf.js'));
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `${suggestedFileName}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+      await html2pdfModule().set(opt).from(element).save();
+    } catch (err) {
+      console.warn('html2pdf direct download fallback to window.print():', err);
+      window.print();
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (!open || typeof document === 'undefined') return null;
 
@@ -463,18 +488,27 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
       <div style={{ maxWidth: 820, margin: '0 auto' }} onClick={(e) => e.stopPropagation()}>
         <div className="rcpt-noprint" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
           {/* Pregenerated File Name Chip */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'rgba(255,255,255,0.9)', borderRadius: 10, border: '1px solid rgba(226,232,240,0.8)', fontSize: 12, color: '#334155' }}>
-            <span style={{ fontWeight: 600, color: '#0B2A5B' }}>📄 File:</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'rgba(255,255,255,0.95)', borderRadius: 10, border: '1px solid rgba(226,232,240,0.8)', fontSize: 12, color: '#334155' }}>
+            <span style={{ fontWeight: 600, color: '#0B2A5B' }}>📄 Preset Name:</span>
             <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#1D5FD1' }}>{suggestedFileName}.pdf</span>
           </div>
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <button
+              type="button"
+              disabled={isDownloading}
+              onClick={handleDownloadPDF}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 10, background: '#059669', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: isDownloading ? 'wait' : 'pointer', boxShadow: '0 2px 4px rgba(5,150,105,0.3)', opacity: isDownloading ? 0.8 : 1 }}
+              title="Directly download PDF with the pre-filled name"
+            >
+              <span>{isDownloading ? '⏳ Generating PDF...' : '⬇️ Download PDF'}</span>
+            </button>
             <button
               type="button"
               onClick={() => window.print()}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 10, background: '#1D5FD1', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: 'pointer', boxShadow: '0 2px 4px rgba(29,95,209,0.3)' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, background: '#1D5FD1', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: 'pointer', boxShadow: '0 2px 4px rgba(29,95,209,0.3)' }}
             >
-              <span>🖨️ Print / Save as PDF</span>
+              <span>🖨️ Print</span>
             </button>
             <button
               type="button"

@@ -58,6 +58,33 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
     }
   }, [receipt, customer, autoPrint]);
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById('rcpt-print-root');
+    if (!element || !receipt) return;
+
+    setIsDownloading(true);
+    try {
+      const suggestedFileName = generateReceiptFileName(receipt, customer);
+      // @ts-ignore
+      const html2pdfModule = (await import('html2pdf.js')).default || (await import('html2pdf.js'));
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `${suggestedFileName}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+      await html2pdfModule().set(opt).from(element).save();
+    } catch (err) {
+      console.warn('html2pdf fallback to window.print():', err);
+      window.print();
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -183,13 +210,23 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
             Send on WhatsApp
           </Button>
           <Button
+            variant="secondary"
+            size="sm"
+            disabled={isDownloading}
+            icon={Icons.Receipt}
+            onClick={handleDownloadPDF}
+            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+          >
+            {isDownloading ? 'Downloading...' : '⬇️ Download PDF'}
+          </Button>
+          <Button
             variant="primary"
             size="sm"
             icon={Icons.Payments}
             onClick={handlePrint}
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
           >
-            Print / Save as PDF
+            🖨️ Print
           </Button>
         </div>
       </div>
