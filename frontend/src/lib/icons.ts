@@ -52,11 +52,15 @@ import {
   KeyRound,
   ShieldCheck,
   Percent,
+  ExternalLink,
+  Globe,
 } from 'lucide-react';
 
 export const Icons = {
   // Navigation & Core Entities
   Dashboard: LayoutDashboard,
+  ExternalLink: ExternalLink,
+  Globe: Globe,
   Clients: Users,
   Client: Users,
   Users: Users,

@@ -260,7 +260,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900">
       {/* Brand Header */}
-      <div className={`h-[68px] px-4 sm:px-5 border-b border-slate-100 dark:border-slate-800 flex items-center shrink-0 ${isSidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
+      <div
+        onClick={() => {
+          window.location.hash = '#landing';
+        }}
+        title="View SoleFlow Landing Page"
+        className={`h-[68px] px-4 sm:px-5 border-b border-slate-100 dark:border-slate-800 flex items-center shrink-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-850/60 transition-colors ${
+          isSidebarCollapsed ? 'justify-center' : 'gap-3'
+        }`}
+      >
         <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden group">
           <img
             src={projectLogo}
@@ -344,6 +352,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
             >
               <Icons.Settings size={16} strokeWidth={1.75} />
               Settings & Preferences
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                window.location.hash = '#landing';
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-xl transition-colors cursor-pointer"
+            >
+              <Icons.ExternalLink size={16} strokeWidth={1.75} />
+              View Landing Page
             </button>
 
             <div className="my-1 border-t border-border" />

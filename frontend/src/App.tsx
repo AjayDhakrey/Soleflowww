@@ -101,8 +101,10 @@ const AppContent: React.FC = () => {
       if (hash.startsWith('#receipts/')) {
         const pId = hash.replace('#receipts/', '');
         setCurrentPath(`/receipts/${pId}`);
+        setUnauthView('app' as any);
       } else if (pathname.startsWith('/receipts/')) {
         setCurrentPath(pathname);
+        setUnauthView('app' as any);
       } else if (hash.startsWith('#s/')) {
         const token = hash.replace('#s/', '');
         setActiveShareToken(token);
@@ -119,8 +121,22 @@ const AppContent: React.FC = () => {
         setUnauthView('login');
       } else if (hash === '#signup') {
         setUnauthView('signup');
-      } else if (hash === '#landing' || hash === '#home') {
+      } else if (
+        hash === '#landing' ||
+        hash === '#home' ||
+        hash === '' ||
+        pathname === '/' ||
+        pathname === '/landing' ||
+        pathname === '/home'
+      ) {
         setUnauthView('landing');
+      } else if (
+        hash.startsWith('#app') ||
+        hash.startsWith('#admin') ||
+        hash.startsWith('#sales') ||
+        hash.startsWith('#dashboard')
+      ) {
+        setUnauthView('app' as any);
       }
     };
 
@@ -164,61 +180,72 @@ const AppContent: React.FC = () => {
         shareToken={activeShareToken || 'token-abc-001'}
         onReturnToApp={() => {
           window.location.hash = '';
-          setUnauthView(isLoggedIn ? 'landing' : 'landing');
+          setUnauthView('landing');
         }}
       />
     );
   }
 
-  // 2. Unauthenticated Auth Routes
-  if (!isLoggedIn) {
-    if (unauthView === 'forgot_password') {
-      return (
-        <ForgotPasswordPage
-          onBackToLogin={() => {
-            window.location.hash = '#login';
-            setUnauthView('login');
-          }}
-        />
-      );
-    }
+  // 2. Forgot / Reset Password
+  if (unauthView === 'forgot_password') {
+    return (
+      <ForgotPasswordPage
+        onBackToLogin={() => {
+          window.location.hash = '#login';
+          setUnauthView('login');
+        }}
+      />
+    );
+  }
 
-    if (unauthView === 'reset_password') {
-      return (
-        <ResetPasswordPage
-          onSuccess={() => {
-            window.location.hash = '#login';
-            setUnauthView('login');
-          }}
-        />
-      );
-    }
+  if (unauthView === 'reset_password') {
+    return (
+      <ResetPasswordPage
+        onSuccess={() => {
+          window.location.hash = '#login';
+          setUnauthView('login');
+        }}
+      />
+    );
+  }
 
-    if (unauthView === 'login' || unauthView === 'signup') {
-      return (
-        <LoginPage
-          initialMode={unauthView}
-          onSuccess={(role) => {
-            setIsMobileSidebarOpen(false);
-            setCurrentPath(role === 'admin' ? '/admin/dashboard' : '/sales/dashboard');
-          }}
-          onBackToLanding={() => {
-            window.location.hash = '';
-            setUnauthView('landing');
-          }}
-          onForgotPassword={() => {
-            window.location.hash = '#auth/forgot-password';
-            setUnauthView('forgot_password');
-          }}
-        />
-      );
-    }
+  // 3. Login / Signup Page
+  if (unauthView === 'login' || unauthView === 'signup') {
+    return (
+      <LoginPage
+        initialMode={unauthView}
+        onSuccess={(role) => {
+          setIsMobileSidebarOpen(false);
+          setCurrentPath(role === 'admin' ? '/admin/dashboard' : '/sales/dashboard');
+          setUnauthView('app' as any);
+          window.location.hash = '#app';
+        }}
+        onBackToLanding={() => {
+          window.location.hash = '';
+          setUnauthView('landing');
+        }}
+        onForgotPassword={() => {
+          window.location.hash = '#auth/forgot-password';
+          setUnauthView('forgot_password');
+        }}
+      />
+    );
+  }
 
+  // 4. Landing Page at Root URL (https://soleflowww.vercel.app/ or #landing or #home)
+  if (unauthView === 'landing' || (!isLoggedIn && (unauthView as string) !== 'app')) {
     return (
       <LandingPage
+        isAlreadyLoggedIn={isLoggedIn}
+        onReturnToDashboard={() => {
+          setUnauthView('app' as any);
+          window.location.hash = '#app';
+        }}
         onLoginSuccess={(role) => {
           setIsMobileSidebarOpen(false);
           setCurrentPath(role === 'admin' ? '/admin/dashboard' : '/sales/dashboard');
+          setUnauthView('app' as any);
+          window.location.hash = '#app';
         }}
         onNavigateToLogin={(mode = 'login') => {
           window.location.hash = mode;
