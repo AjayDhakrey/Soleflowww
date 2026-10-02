@@ -210,23 +210,22 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
             Send on WhatsApp
           </Button>
           <Button
-            variant="secondary"
+            variant="primary"
             size="sm"
             disabled={isDownloading}
             icon={Icons.Receipt}
             onClick={handleDownloadPDF}
-            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
           >
-            {isDownloading ? 'Downloading...' : '⬇️ Download PDF'}
+            {isDownloading ? 'Generating PDF...' : '💾 Print / Save as PDF'}
           </Button>
           <Button
-            variant="primary"
+            variant="secondary"
             size="sm"
             icon={Icons.Payments}
             onClick={handlePrint}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
           >
-            🖨️ Print
+            🖨️ Printer
           </Button>
         </div>
       </div>

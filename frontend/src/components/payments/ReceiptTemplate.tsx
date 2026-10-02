@@ -494,21 +494,26 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {/* Primary Button: Directly downloads PDF so Windows File Explorer has the prefilled name */}
             <button
               type="button"
               disabled={isDownloading}
               onClick={handleDownloadPDF}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 10, background: '#059669', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: isDownloading ? 'wait' : 'pointer', boxShadow: '0 2px 4px rgba(5,150,105,0.3)', opacity: isDownloading ? 0.8 : 1 }}
-              title="Directly download PDF with the pre-filled name"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 10, background: '#1D5FD1', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: isDownloading ? 'wait' : 'pointer', boxShadow: '0 2px 6px rgba(29,95,209,0.35)', opacity: isDownloading ? 0.85 : 1 }}
+              title="Saves PDF directly with pre-generated filename auto-filled"
             >
-              <span>{isDownloading ? '⏳ Generating PDF...' : '⬇️ Download PDF'}</span>
+              <span>{isDownloading ? '⏳ Generating PDF...' : '💾 Print / Save as PDF'}</span>
             </button>
             <button
               type="button"
-              onClick={() => window.print()}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, background: '#1D5FD1', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: 'pointer', boxShadow: '0 2px 4px rgba(29,95,209,0.3)' }}
+              onClick={() => {
+                document.title = suggestedFileName;
+                window.print();
+              }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, background: '#F1F5F9', color: '#334155', fontWeight: 600, fontSize: 13, border: '1px solid #CBD5E1', cursor: 'pointer' }}
+              title="Send to physical printer or system print dialog"
             >
-              <span>🖨️ Print</span>
+              <span>🖨️ Printer</span>
             </button>
             <button
               type="button"
