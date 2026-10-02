@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useReceiptData } from '../../hooks/useReceiptData';
-import { ReceiptTemplate } from '../../components/payments/ReceiptTemplate';
+import { ReceiptTemplate, generateReceiptFileName } from '../../components/payments/ReceiptTemplate';
 import { Icons } from '../../lib/icons';
 import { Button } from '../../components/ui';
 
@@ -40,7 +40,8 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
   useEffect(() => {
     if (receipt) {
       const prevTitle = document.title;
-      document.title = `Receipt-${receipt.receiptNumber}`;
+      const suggestedFileName = generateReceiptFileName(receipt, customer);
+      document.title = suggestedFileName;
       if (autoPrint) {
         // Wait briefly for logo and styles to render before triggering print dialog
         const timer = setTimeout(() => {
@@ -55,7 +56,7 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
         document.title = prevTitle;
       };
     }
-  }, [receipt, autoPrint]);
+  }, [receipt, customer, autoPrint]);
 
   const handlePrint = () => {
     window.print();

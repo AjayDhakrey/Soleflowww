@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 
 import { RequestDiscountModal } from '../discounts/RequestDiscountModal';
-import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from '../payments/ReceiptTemplate';
+import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus, generateInvoiceFileName } from '../payments/ReceiptTemplate';
 import { PaymentReceipt } from '../../types';
 
 interface OrderInspectDrawerProps {
@@ -200,7 +200,12 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
   };
 
   const handlePrint = () => {
+    const prevTitle = document.title;
+    document.title = generateInvoiceFileName(order);
     window.print();
+    setTimeout(() => {
+      document.title = prevTitle;
+    }, 1000);
   };
 
   return (

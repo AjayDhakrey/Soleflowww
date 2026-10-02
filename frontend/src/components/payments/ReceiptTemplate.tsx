@@ -122,6 +122,95 @@ function formatDateTime(d: Date): string {
   });
 }
 
+/**
+ * Generates an informative, clean, filesystem-safe filename for downloading/printing receipts.
+ * Format: Receipt_[ReceiptNo]_[StoreName]_[Amount]_[Date]
+ * Example: "Receipt_SF-REC-1049_ABC-Footwear_Rs1.5L_30Sep2026"
+ */
+export function generateReceiptFileName(receipt?: PaymentReceipt | null, customer?: ReceiptCustomerExtras): string {
+  if (!receipt) return 'SoleFlow_Payment_Receipt';
+
+  // 1. Clean Receipt Number
+  const recNo = (receipt.receiptNumber || `REC-${(receipt.id || '').slice(-5)}`)
+    .replace(/[^a-zA-Z0-9_-]/g, '');
+
+  // 2. Clean Customer / Store Name (max 18 chars)
+  const rawCustomer = receipt.customerName || 'Customer';
+  const cleanCustomer = rawCustomer
+    .replace(/__AUDIT_TEST__/g, '')
+    .trim()
+    .replace(/[^a-zA-Z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 18) || 'Store';
+
+  // 3. Compact Amount (e.g. Rs1.5L, Rs35K, or Rs5000)
+  const amountNum = Number(receipt.paymentAmount || 0);
+  let amountStr = 'Rs0';
+  if (amountNum >= 100000) {
+    const inLakh = amountNum / 100000;
+    amountStr = `Rs${inLakh % 1 === 0 ? inLakh : inLakh.toFixed(2).replace(/\.?0+$/, '')}L`;
+  } else if (amountNum >= 1000) {
+    const inK = amountNum / 1000;
+    amountStr = `Rs${inK % 1 === 0 ? inK : inK.toFixed(1).replace(/\.?0+$/, '')}K`;
+  } else if (amountNum > 0) {
+    amountStr = `Rs${Math.round(amountNum)}`;
+  }
+
+  // 4. Compact Date (e.g. 30Sep2026 or from Date object)
+  let dateStr = '';
+  if (receipt.paymentDate && receipt.paymentDate !== 'Today') {
+    const d = new Date(receipt.paymentDate);
+    if (!Number.isNaN(d.getTime())) {
+      dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '');
+    } else {
+      dateStr = receipt.paymentDate.replace(/[^a-zA-Z0-9]/g, '');
+    }
+  }
+  if (!dateStr) {
+    const now = new Date();
+    dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '');
+  }
+
+  const parts = ['Receipt', recNo, cleanCustomer, amountStr, dateStr].filter(Boolean);
+  return parts.join('_');
+}
+
+/**
+ * Generates an informative, clean, filesystem-safe filename for order invoices.
+ * Format: Invoice_[OrderId]_[StoreName]_[Amount]_[Date]
+ * Example: "Invoice_ORD-0148_ABC-Footwear_Rs2.66L_12Oct2026"
+ */
+export function generateInvoiceFileName(order?: { id?: string; customerName?: string; netPayable?: number; subtotal?: number } | null): string {
+  if (!order) return 'SoleFlow_Wholesale_Invoice';
+
+  const orderNo = (order.id || 'ORD').replace(/[^a-zA-Z0-9_-]/g, '');
+  const cleanCustomer = (order.customerName || 'Store')
+    .replace(/__AUDIT_TEST__/g, '')
+    .trim()
+    .replace(/[^a-zA-Z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 18) || 'Store';
+
+  const amountNum = Number(order.netPayable ?? order.subtotal ?? 0);
+  let amountStr = 'Rs0';
+  if (amountNum >= 100000) {
+    const inLakh = amountNum / 100000;
+    amountStr = `Rs${inLakh % 1 === 0 ? inLakh : inLakh.toFixed(2).replace(/\.?0+$/, '')}L`;
+  } else if (amountNum >= 1000) {
+    const inK = amountNum / 1000;
+    amountStr = `Rs${inK % 1 === 0 ? inK : inK.toFixed(1).replace(/\.?0+$/, '')}K`;
+  } else if (amountNum > 0) {
+    amountStr = `Rs${Math.round(amountNum)}`;
+  }
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '');
+
+  return ['Invoice', orderNo, cleanCustomer, amountStr, dateStr].filter(Boolean).join('_');
+}
+
 /* --------------------------- Scoped styles ------------------------------ */
 /* Plain CSS (not Tailwind) so the receipt looks identical in light/dark
    mode, on screen and on paper. All classes are prefixed with "rcpt-". */
@@ -347,17 +436,19 @@ export interface ReceiptPreviewModalProps extends ReceiptTemplateProps {
 }
 
 export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, onClose, ...props }) => {
+  const suggestedFileName = generateReceiptFileName(props.receipt, props.customer);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     const prevTitle = document.title;
-    document.title = `Receipt-${props.receipt.receiptNumber}`; // becomes the default PDF file name
+    document.title = suggestedFileName; // becomes the default PDF file name when saving
     return () => {
       window.removeEventListener('keydown', onKey);
       document.title = prevTitle;
     };
-  }, [open, onClose, props.receipt.receiptNumber]);
+  }, [open, onClose, suggestedFileName]);
 
   if (!open || typeof document === 'undefined') return null;
 
@@ -366,25 +457,33 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
       role="dialog"
       aria-modal="true"
       aria-label={`Receipt ${props.receipt.receiptNumber}`}
-      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(15,23,42,.55)', overflowY: 'auto', padding: '24px 12px' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(15,23,42,.65)', backdropFilter: 'blur(4px)', overflowY: 'auto', padding: '24px 12px' }}
       onClick={onClose}
     >
       <div style={{ maxWidth: 820, margin: '0 auto' }} onClick={(e) => e.stopPropagation()}>
-        <div className="rcpt-noprint" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 12 }}>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            style={{ padding: '8px 16px', borderRadius: 10, background: '#1D5FD1', color: '#fff', fontWeight: 500, fontSize: 14, border: 0, cursor: 'pointer' }}
-          >
-            Print / Save as PDF
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ padding: '8px 16px', borderRadius: 10, background: '#fff', color: '#1E293B', fontWeight: 500, fontSize: 14, border: '1px solid #E2E8F0', cursor: 'pointer' }}
-          >
-            Close
-          </button>
+        <div className="rcpt-noprint" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+          {/* Pregenerated File Name Chip */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'rgba(255,255,255,0.9)', borderRadius: 10, border: '1px solid rgba(226,232,240,0.8)', fontSize: 12, color: '#334155' }}>
+            <span style={{ fontWeight: 600, color: '#0B2A5B' }}>📄 File:</span>
+            <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#1D5FD1' }}>{suggestedFileName}.pdf</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 10, background: '#1D5FD1', color: '#fff', fontWeight: 600, fontSize: 13, border: 0, cursor: 'pointer', boxShadow: '0 2px 4px rgba(29,95,209,0.3)' }}
+            >
+              <span>🖨️ Print / Save as PDF</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ padding: '8px 16px', borderRadius: 10, background: '#fff', color: '#1E293B', fontWeight: 600, fontSize: 13, border: '1px solid #E2E8F0', cursor: 'pointer' }}
+            >
+              Close
+            </button>
+          </div>
         </div>
         <div id="rcpt-print-root">
           <ReceiptTemplate {...props} />
