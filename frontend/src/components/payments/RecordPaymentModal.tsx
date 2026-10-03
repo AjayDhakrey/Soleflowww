@@ -34,7 +34,7 @@ export const RecordPaymentModal: React.FC = () => {
   const [createdPayment, setCreatedPayment] = useState<PaymentReceipt | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
-  // Sync selected customer on modal open
+  // Sync selected customer & reset fields on modal open
   useEffect(() => {
     if (isPaymentModalOpen) {
       setCreatedPayment(null);
@@ -43,12 +43,20 @@ export const RecordPaymentModal: React.FC = () => {
       if (initialCust) {
         setSelectedCustId(initialCust.id);
         const due = initialCust.amountDue || 0;
-        setPaymentAmount(due > 0 ? due : 50000);
+        setPaymentAmount(due > 0 ? due : 0);
+      } else {
+        setSelectedCustId('');
+        setPaymentAmount(0);
       }
+      setPaymentMethod('UPI');
+      setPaymentDate(new Date().toISOString().split('T')[0]);
       setUtrRef('');
       setChequeNo('');
       setChequeBank('');
+      setChequeDate(new Date().toISOString().split('T')[0]);
       setNotes('');
+      setTargetOrderId('auto_fifo');
+      setIsSubmitting(false);
     }
   }, [isPaymentModalOpen, selectedCustomer, customers]);
 

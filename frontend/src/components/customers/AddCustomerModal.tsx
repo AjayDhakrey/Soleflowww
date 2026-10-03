@@ -9,12 +9,27 @@ export const AddCustomerModal: React.FC = () => {
   const [businessName, setBusinessName] = useState('');
   const [propName, setPropName] = useState('');
   const [phone, setPhone] = useState('');
-  const [city, setCity] = useState('Agra');
-  const [state, setState] = useState('Uttar Pradesh');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const [address, setAddress] = useState('');
   const [gstin, setGstin] = useState('');
-  const [creditLimit, setCreditLimit] = useState(500000);
+  const [creditLimit, setCreditLimit] = useState<number | string>(500000);
   const [paymentTerms, setPaymentTerms] = useState('30% Advance + 70% Bilty');
+
+  // Reset form to clean fresh state whenever modal opens
+  React.useEffect(() => {
+    if (isAddCustomerModalOpen) {
+      setBusinessName('');
+      setPropName('');
+      setPhone('');
+      setCity('');
+      setState('');
+      setAddress('');
+      setGstin('');
+      setCreditLimit(500000);
+      setPaymentTerms('30% Advance + 70% Bilty');
+    }
+  }, [isAddCustomerModalOpen]);
 
   if (!isAddCustomerModalOpen) return null;
 
@@ -26,13 +41,20 @@ export const AddCustomerModal: React.FC = () => {
       propName: propName.trim(),
       phone: phone.trim() || '+91 98000 12345',
       whatsapp: phone.trim() || '+91 98000 12345',
-      city: city.trim(),
-      state: state.trim(),
-      address: address.trim() || `${city} Wholesale Footwear Market`,
+      city: city.trim() || 'Agra',
+      state: state.trim() || 'Uttar Pradesh',
+      address: address.trim() || `${city.trim() || 'Agra'} Wholesale Footwear Market`,
       gstin: gstin.trim() || '09AAACA9999F1Z0',
-      creditLimit: Number(creditLimit),
+      creditLimit: Number(creditLimit) || 500000,
       paymentTerms,
     });
+    setBusinessName('');
+    setPropName('');
+    setPhone('');
+    setCity('');
+    setState('');
+    setAddress('');
+    setGstin('');
     setIsAddCustomerModalOpen(false);
   };
 

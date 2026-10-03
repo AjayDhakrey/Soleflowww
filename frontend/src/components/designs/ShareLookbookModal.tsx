@@ -20,6 +20,17 @@ export const ShareLookbookModal: React.FC = () => {
     'Namaste! Here is the latest SoleFlow AW24 Footwear Collection lookbook with wholesale ex-factory rates and carton packing details. Please review and let us know your booking requirements.'
   );
 
+  React.useEffect(() => {
+    if (isShareModalOpen) {
+      if (customers.length > 0) {
+        setSelectedCustId(customers[0].id);
+      }
+      setCustomMsg(
+        'Namaste! Here is the latest SoleFlow AW24 Footwear Collection lookbook with wholesale ex-factory rates and carton packing details. Please review and let us know your booking requirements.'
+      );
+    }
+  }, [isShareModalOpen, customers]);
+
   if (!isShareModalOpen) return null;
 
   const currentCust = customers.find((c) => c.id === selectedCustId) || customers[0];

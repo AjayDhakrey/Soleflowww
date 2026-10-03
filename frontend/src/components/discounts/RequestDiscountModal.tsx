@@ -43,13 +43,18 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (preselectedOrderId) {
-      setSelectedOrderId(preselectedOrderId);
-    } else {
-      const eligible = orders.find((o) => ['Draft', 'Submitted', 'Under Review'].includes(o.status));
-      if (eligible) setSelectedOrderId(eligible.id);
+    if (isOpen) {
+      if (preselectedOrderId) {
+        setSelectedOrderId(preselectedOrderId);
+      } else {
+        const eligible = orders.find((o) => ['Draft', 'Submitted', 'Under Review'].includes(o.status));
+        if (eligible) setSelectedOrderId(eligible.id);
+      }
+      setRequestedPercent(9.5);
+      setReason('');
+      setIsSubmitting(false);
     }
-  }, [preselectedOrderId, orders]);
+  }, [isOpen, preselectedOrderId, orders]);
 
   if (!isOpen) return null;
 

@@ -78,7 +78,7 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         setStatus(designToEdit.status || 'Available');
         setImageUrl(designToEdit.image || '');
       } else {
-        // Reset form for fresh design creation — do NOT prefill any mock image
+        // Reset form for fresh design creation — do NOT prefill any mock image or leftover data
         const randId = Math.floor(1000 + Math.random() * 9000);
         setArticleCode(`SF-ART-${randId}`);
         setName('');
@@ -89,9 +89,9 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         setPairsPerCarton(12);
         setSelectedSizes([6, 7, 8, 9, 10]);
         setColors(['Midnight Black', 'Classic Tan']);
-        setSoleType('TPR Lug Sole');
-        setUpperMaterial('Full Grain Leather');
-        setSubline('Heritage Executive Series');
+        setSoleType('');
+        setUpperMaterial('');
+        setSubline('');
         setStatus('New Designs');
         setImageUrl('');
       }

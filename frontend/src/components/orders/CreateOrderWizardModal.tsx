@@ -20,16 +20,6 @@ export const CreateOrderWizardModal: React.FC = () => {
   const [selectedCustId, setSelectedCustId] = useState(
     selectedCustomer ? selectedCustomer.id : customers[0]?.id || ''
   );
-
-  React.useEffect(() => {
-    if (isCreateOrderModalOpen) {
-      setCurrentStep(1);
-      if (selectedCustomer) {
-        setSelectedCustId(selectedCustomer.id);
-      }
-    }
-  }, [isCreateOrderModalOpen, selectedCustomer]);
-
   const [selectedDesignId, setSelectedDesignId] = useState(designs[0]?.id || '');
   const [selectedMfgId, setSelectedMfgId] = useState(manufacturers[0]?.id || '');
 
@@ -42,7 +32,7 @@ export const CreateOrderWizardModal: React.FC = () => {
     { size: 10, pairs: 20, cartons: 1, loose: 8 },
   ]);
 
-  const [advanceAmount, setAdvanceAmount] = useState<number>(100000);
+  const [advanceAmount, setAdvanceAmount] = useState<number>(0);
   const [tradeDiscountPercent, setTradeDiscountPercent] = useState<number>(8);
   const [discountReason, setDiscountReason] = useState<string>('');
   const [appSettings, setAppSettings] = useState({
@@ -54,9 +44,28 @@ export const CreateOrderWizardModal: React.FC = () => {
   React.useEffect(() => {
     discountRequestsService.fetchAppSettings().then((settings) => {
       setAppSettings(settings);
-      setTradeDiscountPercent(settings.defaultTradeDiscount);
     });
   }, []);
+
+  // Reset entire wizard state whenever modal opens
+  React.useEffect(() => {
+    if (isCreateOrderModalOpen) {
+      setCurrentStep(1);
+      setSelectedCustId(selectedCustomer ? selectedCustomer.id : customers[0]?.id || '');
+      setSelectedDesignId(designs[0]?.id || '');
+      setSelectedMfgId(manufacturers[0]?.id || '');
+      setSizeMatrix([
+        { size: 6, pairs: 30, cartons: 2, loose: 6 },
+        { size: 7, pairs: 50, cartons: 4, loose: 2 },
+        { size: 8, pairs: 60, cartons: 5, loose: 0, isFastMover: true },
+        { size: 9, pairs: 40, cartons: 3, loose: 4 },
+        { size: 10, pairs: 20, cartons: 1, loose: 8 },
+      ]);
+      setAdvanceAmount(0);
+      setDiscountReason('');
+      setTradeDiscountPercent(appSettings.defaultTradeDiscount || 8);
+    }
+  }, [isCreateOrderModalOpen, selectedCustomer, customers, designs, manufacturers, appSettings.defaultTradeDiscount]);
 
   if (!isCreateOrderModalOpen) return null;
 
