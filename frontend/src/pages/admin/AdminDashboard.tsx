@@ -154,8 +154,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* WIDGET A: Orders Pipeline & Funnel */}
         <Panel
-          title="Orders Pipeline & Funnel"
-          subtitle="Real-time order progression from booking to dispatch"
+          title={
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
+                <Icons.Orders size={20} strokeWidth={2} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground tracking-tight">
+                  Orders Pipeline & Funnel
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Real-time order progression from booking to dispatch
+                </p>
+              </div>
+            </div>
+          }
           headerAction={
             <Button
               variant="ghost"
@@ -163,6 +176,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               icon={Icons.ChevronRight}
               iconPosition="right"
               onClick={() => onNavigate('/admin/orders')}
+              className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-3 py-1.5"
             >
               View all orders
             </Button>
@@ -172,23 +186,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           {/* Segmented Funnel Stepper */}
           <div className="p-4 border-b border-border bg-muted/15">
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-              {ordersPipeline.stages.map((st) => (
-                <div
-                  key={st.name}
-                  onClick={() => onNavigate(`/admin/orders?status=${encodeURIComponent(st.name)}`)}
-                  className="p-2.5 rounded-xl border border-border bg-surface hover:border-zinc-400 dark:hover:border-zinc-500 transition-all cursor-pointer text-center"
-                >
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block truncate">
-                    {st.name}
-                  </span>
-                  <span className="text-base font-bold text-foreground block font-mono mt-1">
-                    {st.count}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-mono block">
-                    {formatLakh(st.value)}
-                  </span>
-                </div>
-              ))}
+              {ordersPipeline.stages.map((st) => {
+                const isActive = st.count > 0;
+                return (
+                  <div
+                    key={st.name}
+                    onClick={() => onNavigate(`/admin/orders?status=${encodeURIComponent(st.name)}`)}
+                    className={`relative p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ${
+                      isActive
+                        ? 'bg-surface border-primary/40 shadow-xs ring-1 ring-primary/20 hover:border-primary'
+                        : 'bg-surface/80 border-border/80 hover:border-border hover:bg-muted/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {st.name}
+                      </span>
+                      {isActive && (
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                      )}
+                    </div>
+                    <div className="mt-2 flex items-baseline justify-between gap-1">
+                      <span className={`text-lg font-extrabold font-mono tracking-tight ${isActive ? 'text-foreground' : 'text-muted-foreground/80'}`}>
+                        {st.count}
+                      </span>
+                      <span className="text-[11px] font-semibold text-muted-foreground font-mono">
+                        {formatLakh(st.value)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -221,13 +249,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       {ord.id}
                     </TableCell>
                     <TableCell>
-                      <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
-                        {ord.customerName}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">{ord.customerCity || 'Agra'}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
+                          <Icons.Store size={14} />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
+                            {ord.customerName}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">{ord.customerCity || 'Agra'}</span>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="font-mono text-xs">
-                      {ord.pairsCount || 0} Pairs
+                      <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                        <Icons.Designs size={12} className="text-muted-foreground" />
+                        {ord.pairsCount || 0} Pairs
+                      </span>
                     </TableCell>
                     <TableCell>
                       <StatusBadge
@@ -256,10 +294,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           )}
         </Panel>
 
-        {/* WIDGET B: Collections & Ageing Breakdown */}
+        {/* WIDGET B: Collections & Receivables Ageing */}
         <Panel
-          title="Collections & Receivables Ageing"
-          subtitle="Realized payments and overdue commercial aging brackets"
+          title={
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                <Icons.Payments size={20} strokeWidth={2} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground tracking-tight">
+                  Collections & Receivables Ageing
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Realized payments and overdue commercial aging brackets
+                </p>
+              </div>
+            </div>
+          }
           headerAction={
             <Button
               variant="ghost"
@@ -267,6 +318,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               icon={Icons.ChevronRight}
               iconPosition="right"
               onClick={() => onNavigate('/admin/payments')}
+              className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-3 py-1.5"
             >
               View ledger
             </Button>
@@ -275,27 +327,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         >
           {/* Ageing Summary Bar */}
           <div className="p-4 border-b border-border bg-muted/15">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-2.5">
-              Outstanding Balances by Aging Bracket
-            </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {collectionsData.agingBuckets.map((b) => (
-                <div
-                  key={b.label}
-                  onClick={() => onNavigate(`/admin/payments?aging=${b.range}`)}
-                  className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                    b.range === '90+' && b.amount > 0
-                      ? 'bg-rose-50/70 border-rose-300 dark:bg-rose-950/40 dark:border-rose-900/60'
-                      : 'bg-surface border-border hover:border-zinc-400 dark:hover:border-zinc-500'
-                  }`}
-                >
-                  <span className="text-[11px] font-semibold text-muted-foreground block truncate">{b.label}</span>
-                  <span className="text-xs font-bold text-foreground block font-mono mt-1">
-                    {formatLakh(b.amount)}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">({b.count} Stores)</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {collectionsData.agingBuckets.map((b) => {
+                const isCritical = b.range === '90+' && b.amount > 0;
+                const isOverdue = b.range === '61-90' && b.amount > 0;
+                const isAmber = b.range === '31-60' && b.amount > 0;
+                return (
+                  <div
+                    key={b.label}
+                    onClick={() => onNavigate(`/admin/payments?aging=${b.range}`)}
+                    className={`p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left ${
+                      isCritical
+                        ? 'bg-rose-50/70 border-rose-300 dark:bg-rose-950/40 dark:border-rose-900/60 shadow-xs'
+                        : isOverdue
+                        ? 'bg-orange-50/70 border-orange-300 dark:bg-orange-950/40 dark:border-orange-900/60'
+                        : isAmber
+                        ? 'bg-amber-50/70 border-amber-300 dark:bg-amber-950/40 dark:border-amber-900/60'
+                        : 'bg-surface/90 border-border/90 hover:border-border hover:bg-muted/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[11px] font-bold text-muted-foreground tracking-tight block truncate">
+                        {b.label}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-semibold">
+                        {b.count} Stores
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <span className={`text-base sm:text-lg font-extrabold font-mono tracking-tight block ${isCritical ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
+                        {formatLakh(b.amount)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -325,7 +391,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     className="hover:bg-muted/40 transition-colors"
                   >
                     <TableCell className="font-mono font-bold text-xs text-primary">
-                      {p.receiptNumber || `SF-REC-${p.id.slice(-5)}`}
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span>{p.receiptNumber || `SF-REC-${p.id.slice(-5)}`}</span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <span className="font-semibold text-foreground text-xs block truncate max-w-[130px]">
@@ -333,8 +402,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       </span>
                       <span className="text-[11px] text-muted-foreground">{p.customerCity || 'Agra'}</span>
                     </TableCell>
-                    <TableCell className="text-xs font-medium">
-                      {p.paymentMethod}
+                    <TableCell>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-muted/80 text-foreground border border-border">
+                        {p.paymentMethod}
+                      </span>
                     </TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">
                       {p.paymentDate}
@@ -353,10 +424,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                           e.stopPropagation();
                           setSelectedReceiptPayment(p);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                        className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer inline-flex items-center justify-center"
                         title="View & Print Official Receipt"
                       >
-                        <Icons.FileText size={15} />
+                        <Icons.FileText size={16} />
                       </button>
                     </TableCell>
                   </TableRow>

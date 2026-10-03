@@ -185,8 +185,21 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
         <div className="lg:col-span-7 space-y-6">
           {/* Widget 1: My Orders Pipeline & Latest Orders */}
           <Panel
-            title="My Orders Pipeline"
-            subtitle={`${ordersPipeline.totalActive} active retail bookings across production & dispatch`}
+            title={
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
+                  <Icons.Orders size={20} strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground tracking-tight">
+                    My Orders Pipeline
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {ordersPipeline.totalActive} active retail bookings across production & dispatch
+                  </p>
+                </div>
+              </div>
+            }
             headerAction={
               <Button
                 variant="ghost"
@@ -194,103 +207,150 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 icon={Icons.ChevronRight}
                 iconPosition="right"
                 onClick={() => onNavigate('/sales/orders')}
+                className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-3 py-1.5"
               >
-                View all
+                View all orders
               </Button>
             }
+            noPadding
           >
-            <div className="space-y-4">
-              {/* Funnel Stage Badges */}
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1 pb-2">
-                {ordersPipeline.stages.map((st) => (
-                  <div
-                    key={st.name}
-                    onClick={() => onNavigate(`/sales/orders?status=${st.key.toLowerCase()}`)}
-                    className="p-2.5 rounded-xl border border-border bg-muted/40 hover:bg-muted/80 transition-all cursor-pointer text-center"
-                  >
-                    <p className="text-[11px] font-medium text-muted-foreground truncate">{st.name}</p>
-                    <p className="text-base font-bold text-foreground mt-0.5">{st.count}</p>
-                    <p className="text-[10px] text-muted-foreground font-mono">{formatLakh(st.value)}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Latest Orders Table */}
-              <div className="border-t border-border pt-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                  Recent Retail Bookings
-                </p>
-                {ordersPipeline.latestOrders.length === 0 ? (
-                  <EmptyState
-                    title="No orders booked yet"
-                    description="Tap 'New Order' above to create a booking for a retail account."
-                    action={
-                      <Button size="sm" icon={Icons.Add} onClick={() => setIsCreateOrderModalOpen(true)}>
-                        Create Order
-                      </Button>
-                    }
-                  />
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Pairs</TableHead>
-                        <TableHead className="text-right">Net Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {ordersPipeline.latestOrders.map((order: Order) => (
-                        <TableRow
-                          key={order.id}
-                          onClick={() => onNavigate(`/sales/orders?search=${order.id}`)}
-                          className="cursor-pointer hover:bg-muted/50"
-                        >
-                          <TableCell className="font-mono font-bold text-xs">
-                            {order.id}
-                          </TableCell>
-                          <TableCell className="font-semibold text-sm">
-                            {order.customerName}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {order.pairsCount || 0} prs
-                          </TableCell>
-                          <TableMoneyCell
-                            amount={Number(order.netPayable || order.subtotal || 0)}
-                            className="text-right font-bold text-xs"
-                          />
-                          <TableCell>
-                            <StatusBadge
-                              variant={
-                                order.status === 'Delivered'
-                                  ? 'success'
-                                  : order.status === 'Dispatched'
-                                  ? 'info'
-                                  : order.status === 'In Production' || order.status === 'Ready QC'
-                                  ? 'active'
-                                  : order.status === 'Approved'
-                                  ? 'purple'
-                                  : 'pending'
-                              }
-                            >
-                              {order.status}
-                            </StatusBadge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+            {/* Funnel Stage Cards */}
+            <div className="p-4 border-b border-border bg-muted/15">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {ordersPipeline.stages.map((st) => {
+                  const isActive = st.count > 0;
+                  return (
+                    <div
+                      key={st.name}
+                      onClick={() => onNavigate(`/sales/orders?status=${st.key.toLowerCase()}`)}
+                      className={`relative p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ${
+                        isActive
+                          ? 'bg-surface border-primary/40 shadow-xs ring-1 ring-primary/20 hover:border-primary'
+                          : 'bg-surface/80 border-border/80 hover:border-border hover:bg-muted/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {st.name}
+                        </span>
+                        {isActive && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-baseline justify-between gap-1">
+                        <span className={`text-lg font-extrabold font-mono tracking-tight ${isActive ? 'text-foreground' : 'text-muted-foreground/80'}`}>
+                          {st.count}
+                        </span>
+                        <span className="text-[11px] font-semibold text-muted-foreground font-mono">
+                          {formatLakh(st.value)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+
+            {/* Latest Orders Table */}
+            {ordersPipeline.latestOrders.length === 0 ? (
+              <EmptyState
+                icon={Icons.Orders}
+                title="No orders booked yet"
+                description="Tap 'New Order' above to create a booking for a retail account."
+                action={
+                  <Button size="sm" icon={Icons.Add} onClick={() => setIsCreateOrderModalOpen(true)}>
+                    Create Order
+                  </Button>
+                }
+              />
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order #</TableHead>
+                    <TableHead>Retail Store</TableHead>
+                    <TableHead>Pairs</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Net Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ordersPipeline.latestOrders.map((order: Order) => (
+                    <TableRow
+                      key={order.id}
+                      onClick={() => onNavigate(`/sales/orders?search=${order.id}`)}
+                      className="cursor-pointer hover:bg-muted/40 transition-colors"
+                    >
+                      <TableCell className="font-mono font-bold text-xs text-primary">
+                        {order.id}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
+                            <Icons.Store size={14} />
+                          </div>
+                          <div>
+                            <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
+                              {order.customerName}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">{order.customerCity || 'Agra'}</span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                          <Icons.Designs size={12} className="text-muted-foreground" />
+                          {order.pairsCount || 0} Pairs
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge
+                          variant={
+                            order.status === 'Delivered'
+                              ? 'success'
+                              : order.status === 'Dispatched'
+                              ? 'info'
+                              : order.status === 'In Production' || order.status === 'Ready QC'
+                              ? 'active'
+                              : order.status === 'Approved'
+                              ? 'purple'
+                              : 'pending'
+                          }
+                        >
+                          {order.status}
+                        </StatusBadge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <TableMoneyCell
+                          amount={Number(order.netPayable || order.subtotal || 0)}
+                          className="text-right font-bold text-xs"
+                          isBold
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </Panel>
 
           {/* Widget 2: My Collections & Pending Cheques */}
           <Panel
-            title="Collections & Aging Balances"
-            subtitle={`Inflow: ${formatLakh(collectionsData.collectedThisPeriod)} • Cheques in clearing: ${formatLakh(collectionsData.chequesInTransit)}`}
+            title={
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                  <Icons.Payments size={20} strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground tracking-tight">
+                    Collections & Aging Balances
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Inflow: {formatLakh(collectionsData.collectedThisPeriod)} • Cheques in clearing: {formatLakh(collectionsData.chequesInTransit)}
+                  </p>
+                </div>
+              </div>
+            }
             headerAction={
               <Button
                 variant="ghost"
@@ -298,91 +358,128 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 icon={Icons.ChevronRight}
                 iconPosition="right"
                 onClick={() => onNavigate('/sales/collections')}
+                className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-3 py-1.5"
               >
-                View all
+                View ledger
               </Button>
             }
+            noPadding
           >
-            <div className="space-y-4">
-              {/* Aging Buckets Bar */}
+            {/* Aging Buckets Bar */}
+            <div className="p-4 border-b border-border bg-muted/15">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {collectionsData.agingBuckets.map((b) => (
-                  <div
-                    key={b.label}
-                    onClick={() => onNavigate(`/sales/collections?range=${b.range}`)}
-                    className="p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/70 transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-                      <span>{b.label}</span>
-                      <span className="font-bold text-foreground">({b.count})</span>
+                {collectionsData.agingBuckets.map((b) => {
+                  const isCritical = b.range === '90+' && b.amount > 0;
+                  const isOverdue = b.range === '61-90' && b.amount > 0;
+                  const isAmber = b.range === '31-60' && b.amount > 0;
+                  return (
+                    <div
+                      key={b.label}
+                      onClick={() => onNavigate(`/sales/collections?range=${b.range}`)}
+                      className={`p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left ${
+                        isCritical
+                          ? 'bg-rose-50/70 border-rose-300 dark:bg-rose-950/40 dark:border-rose-900/60 shadow-xs'
+                          : isOverdue
+                          ? 'bg-orange-50/70 border-orange-300 dark:bg-orange-950/40 dark:border-orange-900/60'
+                          : isAmber
+                          ? 'bg-amber-50/70 border-amber-300 dark:bg-amber-950/40 dark:border-amber-900/60'
+                          : 'bg-surface/90 border-border/90 hover:border-border hover:bg-muted/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[11px] font-bold text-muted-foreground tracking-tight block truncate">
+                          {b.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-semibold">
+                          ({b.count})
+                        </span>
+                      </div>
+                      <div className="mt-2">
+                        <span className={`text-base sm:text-lg font-extrabold font-mono tracking-tight block ${isCritical ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
+                          {formatLakh(b.amount)}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm font-bold text-foreground mt-1">{formatLakh(b.amount)}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Recent Payments Received */}
-              <div className="border-t border-border pt-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                  Recent Collected Payments
-                </p>
-                {collectionsData.latestPayments.length === 0 ? (
-                  <EmptyState
-                    title="No payments recorded"
-                    description="Recorded payments and cheque deposits will appear here."
-                    action={
-                      <Button size="sm" icon={Icons.Payments} onClick={() => setIsPaymentModalOpen(true)}>
-                        Record Payment
-                      </Button>
-                    }
-                  />
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Receipt #</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Method</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="text-center">Receipt</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {collectionsData.latestPayments.map((pmt: PaymentReceipt) => (
-                        <TableRow key={pmt.id} className="hover:bg-muted/40">
-                          <TableCell className="font-mono text-xs font-semibold text-muted-foreground">
-                            {pmt.receiptNumber || `SF-REC-${pmt.id}`}
-                          </TableCell>
-                          <TableCell className="font-semibold text-sm">
-                            {pmt.customerName}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {pmt.paymentMethod} {pmt.utrRef ? `(${pmt.utrRef})` : ''}
-                          </TableCell>
-                          <TableMoneyCell
-                            amount={Number(pmt.paymentAmount || 0)}
-                            className="text-right font-bold text-emerald-600 dark:text-emerald-400 text-xs"
-                          />
-                          <TableCell className="text-center">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedReceiptPayment(pmt);
-                              }}
-                              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-                              title="View & Print Receipt"
-                            >
-                              <Icons.FileText size={16} />
-                            </button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                  );
+                })}
               </div>
             </div>
+
+            {/* Recent Payments Received */}
+            {collectionsData.latestPayments.length === 0 ? (
+              <EmptyState
+                icon={Icons.Payments}
+                title="No payments recorded"
+                description="Recorded payments and cheque deposits will appear here."
+                action={
+                  <Button size="sm" icon={Icons.Payments} onClick={() => setIsPaymentModalOpen(true)}>
+                    Record Payment
+                  </Button>
+                }
+              />
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Receipt #</TableHead>
+                    <TableHead>Retail Store</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-center">Receipt</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {collectionsData.latestPayments.map((pmt: PaymentReceipt) => (
+                    <TableRow key={pmt.id} className="hover:bg-muted/40 transition-colors">
+                      <TableCell className="font-mono font-bold text-xs text-primary">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                          <span>{pmt.receiptNumber || `SF-REC-${pmt.id.slice(-5)}`}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
+                            <Icons.Store size={14} />
+                          </div>
+                          <div>
+                            <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
+                              {pmt.customerName}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">{pmt.customerCity || 'Agra'}</span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-muted/80 text-foreground border border-border">
+                          {pmt.paymentMethod}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <TableMoneyCell
+                          amount={Number(pmt.paymentAmount || 0)}
+                          className="text-right font-bold text-emerald-600 dark:text-emerald-400 text-xs"
+                          isBold
+                        />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedReceiptPayment(pmt);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer inline-flex items-center justify-center"
+                          title="View & Print Official Receipt"
+                        >
+                          <Icons.FileText size={16} />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </Panel>
 
           {/* Widget 3: Re-Order Opportunities (Inactive / Cleared Clients) */}
