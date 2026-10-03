@@ -51,7 +51,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     designsSummary,
     salesTeamSummary,
     approvalsSummary,
-    recentActivities,
     actions,
   } = useDashboardOverview();
 
@@ -719,28 +718,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               ))}
             </div>
           )}
-        </Panel>
-
-        {/* WIDGET H: Recent Operational Activity */}
-        <Panel
-          title="Recent Activity Timeline"
-          subtitle="Real-time timeline of operational transactions and updates"
-          noPadding
-        >
-          <div className="divide-y divide-border max-h-[360px] overflow-y-auto">
-            {recentActivities.map((act) => (
-              <div key={act.id} className="p-3.5 text-xs space-y-1 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center justify-between text-muted-foreground">
-                  <span className="font-semibold text-foreground">{act.actor} ({act.actorRole})</span>
-                  <span className="font-mono text-[10px]">{act.timestamp}</span>
-                </div>
-                <p className="text-foreground font-medium">{act.action}: <span className="text-muted-foreground">{act.recordTitle}</span></p>
-                {act.newValue && (
-                  <p className="text-[11px] text-muted-foreground font-mono">{act.newValue}</p>
-                )}
-              </div>
-            ))}
-          </div>
         </Panel>
       </div>
 
