@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, User, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../auth/AuthProvider';
 
-import newBackdrop from '../../assets/images/login/new_clean_login_stage_backdrop.png';
-import soleflowLogo from '../../assets/images/login/soleflow_brand_logo.png';
+import studioBackdrop from '../../assets/images/login/studio_3d_backdrop_clean.png';
+import studioLogo from '../../assets/images/login/studio_logo_clean.png';
 
 interface LoginPageProps {
   onSuccess: (role: 'admin' | 'salesperson') => void;
@@ -62,36 +62,26 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="relative w-screen h-screen min-h-[100dvh] max-h-[100dvh] overflow-hidden select-none bg-[#F8FAFC] flex items-center justify-center m-0 p-0">
+    <div className="relative w-screen h-screen min-h-[100dvh] max-h-[100dvh] overflow-hidden select-none bg-white flex items-center justify-center m-0 p-0">
       
-      {/* 1. Full Page Edge-to-Edge Background Artwork */}
+      {/* 1. Full Page 3D Studio Stage Backdrop */}
       <img
-        src={newBackdrop}
-        alt="SoleFlow Showcase Backdrop"
+        src={studioBackdrop}
+        alt="SoleFlow 3D Studio Stage"
         className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none z-0"
       />
 
-      {/* 2. Floating Centered Login Card */}
-      <div className="relative z-20 w-full max-w-[380px] sm:max-w-[400px] mx-auto px-4">
-        <div className="bg-white/95 backdrop-blur-md rounded-[26px] sm:rounded-[32px] shadow-[0_20px_50px_rgba(15,23,42,0.09)] border border-white/90 px-6 sm:px-8 py-5 sm:py-6 transition-all">
+      {/* 2. Seamless Central Login Card Matching Exact Design */}
+      <div className="relative z-20 w-full max-w-[340px] sm:max-w-[370px] mx-auto px-4">
+        <div className="bg-white rounded-[28px] sm:rounded-[34px] shadow-[0_20px_50px_rgba(15,23,42,0.12)] border border-slate-100/90 px-6 sm:px-7 py-5 sm:py-6 transition-all">
           
-          {/* SoleFlow Brand Logo */}
-          <div className="flex flex-col items-center justify-center mb-2.5">
+          {/* Circular Orbit Logo Emblem */}
+          <div className="flex flex-col items-center justify-center mb-3.5">
             <img
-              src={soleflowLogo}
-              alt="SoleFlow"
-              className="h-11 sm:h-13 w-auto object-contain pointer-events-none select-none"
+              src={studioLogo}
+              alt="SoleFlow Emblem"
+              className="h-16 sm:h-18 w-auto object-contain pointer-events-none select-none"
             />
-          </div>
-
-          {/* Heading */}
-          <div className="text-center mb-4">
-            <h1 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
-              Welcome <span className="text-[#1E5AE6]">back</span>
-            </h1>
-            <p className="text-slate-400 text-xs sm:text-sm font-medium mt-0.5">
-              Sign in to your account to continue
-            </p>
           </div>
 
           {/* Error Banner */}
@@ -102,69 +92,59 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-2.5">
             
-            {/* Email Address */}
-            <div>
-              <label className="block text-xs font-semibold text-[#0F172A] mb-1">
-                Email Address <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative flex items-center">
-                <Mail className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your work email"
-                  autoComplete="email"
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E5AE6] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
-                />
-              </div>
+            {/* Email Address Pill Input */}
+            <div className="relative flex items-center">
+              <Mail className="absolute left-3.5 w-4 h-4 text-[#2B7FFF] pointer-events-none" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email Address"
+                autoComplete="email"
+                className="w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-xs sm:text-sm font-medium rounded-2xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+              />
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold text-[#0F172A] mb-1">
-                Password <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative flex items-center">
-                <Lock className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  className="w-full pl-9 pr-9 py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E5AE6] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 text-slate-400 hover:text-slate-600 p-1 transition-colors cursor-pointer"
-                  title={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  ) : (
-                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  )}
-                </button>
-              </div>
+            {/* Password Pill Input */}
+            <div className="relative flex items-center">
+              <Lock className="absolute left-3.5 w-4 h-4 text-[#2B7FFF] pointer-events-none" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete="current-password"
+                className="w-full pl-10 pr-10 py-2.5 sm:py-3 text-xs sm:text-sm font-medium rounded-2xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 text-slate-400 hover:text-slate-600 p-1 transition-colors cursor-pointer"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <Eye className="w-4 h-4 text-slate-400" />
+                )}
+              </button>
             </div>
 
-            {/* Remember me & Forgot Password */}
+            {/* Remember Me & Forgot Password Row */}
             <div className="flex items-center justify-between pt-0.5 pb-0.5">
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-[#1E5AE6] border-slate-300 focus:ring-[#1E5AE6] accent-[#1E5AE6] cursor-pointer"
+                  className="w-3.5 h-3.5 rounded text-[#1E6FF6] border-slate-300 focus:ring-[#1E6FF6] accent-[#1E6FF6] cursor-pointer"
                 />
-                <span className="text-xs font-medium text-slate-700">
+                <span className="text-xs font-semibold text-slate-700">
                   Remember me
                 </span>
               </label>
@@ -173,18 +153,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <button
                   type="button"
                   onClick={onForgotPassword}
-                  className="text-xs font-semibold text-[#1E5AE6] hover:text-blue-700 hover:underline cursor-pointer select-none transition-colors"
+                  className="text-xs font-semibold text-[#1E6FF6] hover:text-blue-700 hover:underline cursor-pointer select-none transition-colors"
                 >
                   Forgot password?
                 </button>
               )}
             </div>
 
-            {/* Sign In Button */}
+            {/* Sign In Primary Pill Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-[#1E5AE6] hover:bg-[#1848BD] active:scale-[0.99] text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-blue-600/25 transition-all text-xs sm:text-sm md:text-base cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#1E6FF6] to-[#2563EB] hover:from-[#1859D6] hover:to-[#1D4ED8] active:scale-[0.99] text-white font-bold py-2.5 sm:py-3 px-6 rounded-2xl shadow-lg shadow-blue-500/25 transition-all text-xs sm:text-sm cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed mt-1"
             >
               {isLoading ? (
                 <>
@@ -200,40 +180,44 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </button>
           </form>
 
-          {/* Quick Demo Switcher Integrated Inside Card */}
-          <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Quick Demo
-            </span>
-            <div className="flex items-center gap-1.5">
+          {/* Quick Demo Segment with Trader & Sales Rep Badges */}
+          <div className="mt-3.5 pt-2.5 flex items-center justify-center gap-3">
+            <div className="flex-1 h-px bg-slate-100" />
+            
+            <div className="flex items-center gap-2.5">
+              {/* Trader Button */}
               <button
                 type="button"
                 onClick={() => handleQuickFill('admin')}
-                className="px-2.5 py-1 rounded-lg bg-blue-50/90 hover:bg-blue-100 text-[#1E5AE6] font-bold text-xs flex items-center gap-1 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+                className="flex flex-col items-center justify-center py-2 px-3.5 rounded-2xl bg-[#EEF4FF] hover:bg-blue-100/90 text-[#1E5AE6] transition-all cursor-pointer border border-blue-100/60 shadow-2xs active:scale-[0.97]"
                 title="Fill Admin Credentials"
               >
-                <ShieldCheck size={13} className="text-[#1E5AE6]" />
-                <span>Trader (Admin)</span>
+                <User size={16} className="text-[#1E5AE6] mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-800">Trader</span>
               </button>
+
+              {/* Sales Rep Button */}
               <button
                 type="button"
                 onClick={() => handleQuickFill('salesperson')}
-                className="px-2.5 py-1 rounded-lg bg-emerald-50/90 hover:bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+                className="flex flex-col items-center justify-center py-2 px-3.5 rounded-2xl bg-[#EAFBF3] hover:bg-emerald-100/90 text-[#059669] transition-all cursor-pointer border border-emerald-100/60 shadow-2xs active:scale-[0.97]"
                 title="Fill Salesperson Credentials"
               >
-                <UserCheck size={13} className="text-emerald-600" />
-                <span>Sales Rep</span>
+                <Users size={16} className="text-[#059669] mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-800">Sales Rep</span>
               </button>
             </div>
+
+            <div className="flex-1 h-px bg-slate-100" />
           </div>
 
-          {/* Back to Homepage Link */}
+          {/* Back Link */}
           {onBackToLanding && (
-            <div className="mt-2.5 text-center">
+            <div className="mt-2 text-center">
               <button
                 type="button"
                 onClick={onBackToLanding}
-                className="text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 ← Back to Homepage
               </button>
