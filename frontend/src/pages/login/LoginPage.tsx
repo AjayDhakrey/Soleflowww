@@ -3,7 +3,7 @@ import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, User, Users } from 'luci
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../auth/AuthProvider';
 
-import studioBackdrop from '../../assets/images/login/studio_3d_backdrop_clean.png';
+import studioStage from '../../assets/images/login/studio_3d_clean_stage.png';
 import studioLogo from '../../assets/images/login/studio_logo_clean.png';
 
 interface LoginPageProps {
@@ -62,18 +62,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="relative w-screen h-screen min-h-[100dvh] max-h-[100dvh] overflow-hidden select-none bg-white flex items-center justify-center m-0 p-0">
+    <div className="relative w-screen h-screen min-h-[100dvh] max-h-[100dvh] overflow-hidden select-none bg-[#F5F8FE] flex items-center justify-center m-0 p-0">
       
       {/* 1. Full Page 3D Studio Stage Backdrop */}
       <img
-        src={studioBackdrop}
-        alt="SoleFlow 3D Studio Stage"
+        src={studioStage}
+        alt="SoleFlow 3D Showcase Stage"
         className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none z-0"
       />
 
-      {/* 2. Seamless Form Layer (Transparent container so there is no duplicate/overlapping card) */}
-      <div className="relative z-20 w-full max-w-[295px] sm:max-w-[325px] md:max-w-[350px] mx-auto px-2 flex flex-col items-center justify-center">
-        <div className="w-full bg-transparent border-0 shadow-none px-2 sm:px-4 py-1 flex flex-col items-center">
+      {/* 2. Floating Centered Login Card */}
+      <div className="relative z-20 w-full max-w-[340px] sm:max-w-[370px] mx-auto px-4 flex items-center justify-center">
+        <div className="w-full bg-white/95 backdrop-blur-md rounded-[28px] sm:rounded-[34px] shadow-[0_25px_60px_rgba(15,23,42,0.14)] border border-white/90 px-6 sm:px-7 py-5 sm:py-6 transition-all">
           
           {/* Circular Orbit Logo Emblem */}
           <div className="flex flex-col items-center justify-center mb-3">
@@ -86,14 +86,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           {/* Error Banner */}
           {error && (
-            <div className="w-full mb-2 bg-rose-50 border border-rose-200 text-rose-600 text-[11px] px-3 py-1 rounded-xl flex items-center gap-1.5 animate-in fade-in duration-200">
+            <div className="mb-3 bg-rose-50 border border-rose-200 text-rose-600 text-[11px] px-3 py-1 rounded-xl flex items-center gap-1.5 animate-in fade-in duration-200">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
               <span className="font-medium">{error}</span>
             </div>
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="w-full space-y-2.5">
+          <form onSubmit={handleSubmit} className="space-y-2.5">
             
             {/* Email Address Pill Input */}
             <div className="relative flex items-center">
@@ -105,7 +105,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email Address"
                 autoComplete="email"
-                className="w-full pl-10 pr-3.5 py-2.5 sm:py-2.5 text-xs sm:text-sm font-medium rounded-2xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-3 focus:ring-blue-500/15 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                className="w-full pl-10 pr-3.5 py-2.5 sm:py-3 text-xs sm:text-sm font-medium rounded-2xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
               />
             </div>
 
@@ -119,7 +119,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 autoComplete="current-password"
-                className="w-full pl-10 pr-10 py-2.5 sm:py-2.5 text-xs sm:text-sm font-medium rounded-2xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-3 focus:ring-blue-500/15 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                className="w-full pl-10 pr-10 py-2.5 sm:py-3 text-xs sm:text-sm font-medium rounded-2xl text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
               />
               <button
                 type="button"
@@ -128,9 +128,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
-                  <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+                  <EyeOff className="w-4 h-4 text-slate-400" />
                 ) : (
-                  <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+                  <Eye className="w-4 h-4 text-slate-400" />
                 )}
               </button>
             </div>
@@ -181,43 +181,43 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </form>
 
           {/* Quick Demo Segment with Trader & Sales Rep Badges */}
-          <div className="w-full mt-3 pt-2 flex items-center justify-center gap-2.5">
-            <div className="flex-1 h-px bg-slate-200/60" />
+          <div className="mt-3.5 pt-2.5 flex items-center justify-center gap-3">
+            <div className="flex-1 h-px bg-slate-100" />
             
             <div className="flex items-center gap-2.5">
               {/* Trader Button */}
               <button
                 type="button"
                 onClick={() => handleQuickFill('admin')}
-                className="flex flex-col items-center justify-center py-1.5 px-3 sm:px-3.5 rounded-2xl bg-[#EEF4FF] hover:bg-blue-100/90 text-[#1E5AE6] transition-all cursor-pointer border border-blue-100/60 shadow-2xs active:scale-[0.97]"
+                className="flex flex-col items-center justify-center py-2 px-3.5 rounded-2xl bg-[#EEF4FF] hover:bg-blue-100/90 text-[#1E5AE6] transition-all cursor-pointer border border-blue-100/60 shadow-2xs active:scale-[0.97]"
                 title="Fill Admin Credentials"
               >
-                <User size={15} className="text-[#1E5AE6] mb-0.5" />
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-800">Trader</span>
+                <User size={16} className="text-[#1E5AE6] mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-800">Trader</span>
               </button>
 
               {/* Sales Rep Button */}
               <button
                 type="button"
                 onClick={() => handleQuickFill('salesperson')}
-                className="flex flex-col items-center justify-center py-1.5 px-3 sm:px-3.5 rounded-2xl bg-[#EAFBF3] hover:bg-emerald-100/90 text-[#059669] transition-all cursor-pointer border border-emerald-100/60 shadow-2xs active:scale-[0.97]"
+                className="flex flex-col items-center justify-center py-2 px-3.5 rounded-2xl bg-[#EAFBF3] hover:bg-emerald-100/90 text-[#059669] transition-all cursor-pointer border border-emerald-100/60 shadow-2xs active:scale-[0.97]"
                 title="Fill Salesperson Credentials"
               >
-                <Users size={15} className="text-[#059669] mb-0.5" />
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-800">Sales Rep</span>
+                <Users size={16} className="text-[#059669] mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-800">Sales Rep</span>
               </button>
             </div>
 
-            <div className="flex-1 h-px bg-slate-200/60" />
+            <div className="flex-1 h-px bg-slate-100" />
           </div>
 
           {/* Back Link */}
           {onBackToLanding && (
-            <div className="mt-1.5 text-center">
+            <div className="mt-2 text-center">
               <button
                 type="button"
                 onClick={onBackToLanding}
-                className="text-[10px] sm:text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 ← Back to Homepage
               </button>
