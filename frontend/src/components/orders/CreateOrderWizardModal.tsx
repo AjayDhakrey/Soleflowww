@@ -16,16 +16,19 @@ export const CreateOrderWizardModal: React.FC = () => {
     createOrder,
   } = useApp();
 
-  const [currentStep, setCurrentStep] = useState<number>(3);
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [selectedCustId, setSelectedCustId] = useState(
     selectedCustomer ? selectedCustomer.id : customers[0]?.id || ''
   );
 
   React.useEffect(() => {
-    if (selectedCustomer) {
-      setSelectedCustId(selectedCustomer.id);
+    if (isCreateOrderModalOpen) {
+      setCurrentStep(1);
+      if (selectedCustomer) {
+        setSelectedCustId(selectedCustomer.id);
+      }
     }
-  }, [selectedCustomer, isCreateOrderModalOpen]);
+  }, [isCreateOrderModalOpen, selectedCustomer]);
 
   const [selectedDesignId, setSelectedDesignId] = useState(designs[0]?.id || '');
   const [selectedMfgId, setSelectedMfgId] = useState(manufacturers[0]?.id || '');
