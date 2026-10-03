@@ -2,7 +2,6 @@ import { supabase } from '../lib/supabase';
 import { NotificationItem } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
-import { MOCK_NOTIFICATIONS } from '../data/mockData';
 
 export type NotificationRow = Database['public']['Tables']['notifications']['Row'];
 
@@ -20,7 +19,7 @@ export function mapNotificationRow(row: any): NotificationItem {
 
 export const notificationsService = {
   async fetchNotifications(): Promise<NotificationItem[]> {
-    if (!supabase) return MOCK_NOTIFICATIONS;
+    if (!supabase) return [];
 
     try {
       const { data, error } = await supabase
@@ -30,11 +29,11 @@ export const notificationsService = {
         .limit(30);
 
       if (error) throw parseSupabaseError(error);
-      if (!data || data.length === 0) return MOCK_NOTIFICATIONS;
+      if (!data || data.length === 0) return [];
       return data.map(mapNotificationRow);
     } catch (err) {
       console.warn('Error fetching notifications from Supabase:', err);
-      return MOCK_NOTIFICATIONS;
+      return [];
     }
   },
 

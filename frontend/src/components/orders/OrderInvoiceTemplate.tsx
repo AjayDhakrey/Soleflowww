@@ -145,7 +145,7 @@ export function exportInvoiceToWord(
     <![endif]-->
     <style>
       @page { size: A4 portrait; margin: 15mm; }
-      body { font-family: Arial, sans-serif; font-size: 10pt; color: #1E293B; line-height: 1.45; background: #FFFFFF; }
+      body { font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; font-size: 10pt; color: #1E293B; line-height: 1.45; background: #FFFFFF; }
       .head-table { width: 100%; border-bottom: 2pt solid #0B2A5B; padding-bottom: 10pt; margin-bottom: 12pt; }
       .brand-title { font-size: 18pt; font-weight: bold; color: #0B2A5B; }
       .brand-tag { font-size: 9.5pt; color: #C98E1A; font-weight: bold; }
@@ -304,7 +304,7 @@ const INVOICE_CSS = `
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--inv-line);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans, "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif);
   box-sizing: border-box;
 }
 
@@ -344,9 +344,10 @@ const INVOICE_CSS = `
 }
 
 .inv-brandname {
+  font-family: var(--font-display, "Sora", ui-sans-serif, system-ui, sans-serif);
   font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--inv-navy);
   line-height: 1.1;
 }
@@ -372,9 +373,10 @@ const INVOICE_CSS = `
 }
 
 .inv-title-box h1 {
+  font-family: var(--font-display, "Sora", ui-sans-serif, system-ui, sans-serif);
   font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--inv-navy);
   margin: 0;
 }

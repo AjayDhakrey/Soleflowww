@@ -213,10 +213,10 @@ export const RecordPaymentModal: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-muted/40 p-4 rounded-xl border border-border space-y-2.5 text-xs font-mono">
+              <div className="bg-muted/40 p-4 rounded-xl border border-border space-y-2.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Amount Realized:</span>
-                  <span className="font-bold text-foreground text-sm">₹{createdPayment.paymentAmount.toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-foreground text-sm font-display tabular-nums">₹{createdPayment.paymentAmount.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Payment Method:</span>
@@ -459,7 +459,7 @@ export const RecordPaymentModal: React.FC = () => {
                     value={utrRef}
                     onChange={(e) => setUtrRef(e.target.value)}
                     placeholder="e.g. UTR-49102914801 / UPI-Ref-98214"
-                    className="w-full h-12 px-4 text-sm font-mono bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full h-12 px-4 text-base md:text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               )}
@@ -468,12 +468,12 @@ export const RecordPaymentModal: React.FC = () => {
               <div className="p-4 rounded-xl border border-border bg-muted/50 flex items-center justify-between text-sm">
                 <div>
                   <span className="text-xs text-muted-foreground block">Ledger Balance Before</span>
-                  <span className="font-mono font-bold text-rose-600 dark:text-rose-400">₹{beforeDue.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums font-bold text-rose-600 dark:text-rose-400">₹{beforeDue.toLocaleString('en-IN')}</span>
                 </div>
                 <Icons.ChevronRight size={18} className="text-muted-foreground" />
                 <div className="text-right">
                   <span className="text-xs text-muted-foreground block">Remaining Due After</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{afterDue.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">₹{afterDue.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 

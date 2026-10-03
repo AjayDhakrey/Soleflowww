@@ -38,8 +38,10 @@ import { CreateOrderWizardModal } from './components/orders/CreateOrderWizardMod
 import { AddCustomerModal } from './components/customers/AddCustomerModal';
 import { ShareLookbookModal } from './components/designs/ShareLookbookModal';
 import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
+import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,7 +66,7 @@ const AppContent: React.FC = () => {
   const { user: authUser, role: authRole } = useAuth();
 
   const [currentPath, setCurrentPath] = useState<string>(
-    currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard'
+    currentUser?.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard'
   );
 
   const [unauthView, setUnauthView] = useState<'landing' | 'login' | 'signup' | 'forgot_password' | 'reset_password' | 'lookbook'>('landing');
@@ -297,6 +299,15 @@ const AppContent: React.FC = () => {
       return <ClearedAccountsInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
     }
 
+    // Platform Admin route (Super Admin Console)
+    if (currentPath === '/platform' || currentPath === '/admin/platform') {
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/admin/dashboard')}>
+          <PlatformAdminPage />
+        </RequireRole>
+      );
+    }
+
     // Admin routes guarded by RequireRole
     if (currentPath === '/admin/dashboard') {
       return (
@@ -305,6 +316,7 @@ const AppContent: React.FC = () => {
         </RequireRole>
       );
     }
+
     if (currentPath === '/admin/customers' || currentPath.startsWith('/admin/customers/')) {
       const match = currentPath.match(/\/admin\/customers\/([^?#/]+)/);
       const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
@@ -474,7 +486,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             <div className="w-12 h-12 rounded-xl bg-rose-500/20 text-rose-400 mx-auto flex items-center justify-center">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold">Something went wrong</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Something went wrong</h2>
             <p className="text-xs text-slate-400">
               {this.state.error?.message || 'An unexpected rendering error occurred.'}
             </p>
@@ -484,7 +496,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                 this.setState({ hasError: false, error: null });
                 window.location.reload();
               }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-blue-600/30"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-xl transition-all cursor-pointer shadow-lg shadow-blue-600/30"
             >
               Reload Application
             </button>

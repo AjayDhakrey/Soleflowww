@@ -22,7 +22,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full h-12 pl-11 pr-10 bg-surface border border-border rounded-xl text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${className}`}
+          className={`w-full h-12 pl-11 pr-10 bg-surface border border-border rounded-xl text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${className}`}
           {...props}
         />
         {hasValue && onClear && (

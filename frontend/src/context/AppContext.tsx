@@ -21,7 +21,6 @@ import {
   MOCK_ORDERS,
   MOCK_MANUFACTURERS,
   MOCK_SALES_TEAM,
-  MOCK_NOTIFICATIONS,
   MOCK_FOLLOWUPS,
   MOCK_FIELD_VISITS,
   MOCK_AUDIT_LOGS,
@@ -32,6 +31,7 @@ import { paymentsService } from '../services/payments';
 import { visitsService } from '../services/visits';
 import { followUpsService } from '../services/followUps';
 import { designsService } from '../services/designs';
+import { notificationsService } from '../services/notifications';
 import { useAuth } from '../auth/AuthProvider';
 
 interface AppContextType {
@@ -68,6 +68,7 @@ interface AppContextType {
   toggleSalesTask: (salespersonId: string, taskId: string) => void;
   notifications: NotificationItem[];
   markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
   followUps: FollowUpItem[];
   addFollowUp: (item: Partial<FollowUpItem>) => void;
   completeFollowUp: (id: string) => void;
@@ -204,7 +205,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>(MOCK_MANUFACTURERS);
   const [salesTeam, setSalesTeam] = useState<Salesperson[]>(MOCK_SALES_TEAM);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [followUps, setFollowUps] = useState<FollowUpItem[]>(MOCK_FOLLOWUPS);
   const [fieldVisits, setFieldVisits] = useState<FieldVisitItem[]>(MOCK_FIELD_VISITS);
   const [payments, setPayments] = useState<PaymentReceipt[]>([]);
@@ -232,6 +233,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       supabaseApi.getPayments().then((data) => {
         if (data && data.length > 0) setPayments(data);
+      });
+      notificationsService.fetchNotifications().then((data) => {
+        if (data) setNotifications(data);
+      }).catch((err) => {
+        console.warn('Initial notifications fetch error:', err);
       });
       supabaseApi.getAuditLogs().then((data) => {
         if (data && data.length > 0) setAuditLogs(data);
@@ -357,7 +363,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const auth = useAuth();
 
+  useEffect(() => {
+    if (auth?.user) {
+      setCurrentUser(auth.user);
+      setIsLoggedIn(auth.isLoggedIn);
+    } else if (auth && !auth.isLoading && !auth.isLoggedIn) {
+      setIsLoggedIn(false);
+    }
+  }, [auth?.user, auth?.isLoggedIn, auth?.isLoading]);
+
   const switchRole = (role?: UserRole) => {
+
     const targetRole: UserRole = role || (currentUser.role === 'admin' ? 'salesperson' : 'admin');
     const user = targetRole === 'admin' ? MOCK_USERS.admin : MOCK_USERS.salesperson;
     setCurrentUser(user);
@@ -382,16 +398,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const login = (email: string, pass: string): boolean => {
+  const login = (email: string, pass?: string): boolean => {
     let user = MOCK_USERS.admin;
-    if (email === 'admin@soleflow.com' && pass === 'admin123') {
-      user = MOCK_USERS.admin;
-    } else if (email === 'sales@soleflow.com' && pass === 'sales123') {
-      user = MOCK_USERS.salesperson;
-    } else if (email.includes('sales')) {
-      user = MOCK_USERS.salesperson;
+    const isSuper = email.includes('super');
+    if (email === 'sales@soleflow.com' || email.includes('sales')) {
+      user = { ...MOCK_USERS.salesperson, isSuperAdmin: false, is_super_admin: false, isDemoAccount: true };
+    } else if (isSuper) {
+      user = {
+        ...MOCK_USERS.admin,
+        id: 'superadmin-demo-uuid',
+        name: 'Platform Super Admin',
+        email: 'superadmin@soleflow.com',
+        roleLabel: 'Platform Owner',
+        isSuperAdmin: true,
+        is_super_admin: true,
+        isDemoAccount: true,
+      };
     } else {
-      user = MOCK_USERS.admin;
+      user = { ...MOCK_USERS.admin, isSuperAdmin: false, is_super_admin: false, isDemoAccount: true };
     }
 
     setIsMobileSidebarOpen(false);
@@ -400,7 +424,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       localStorage.setItem(
         AUTH_STORAGE_KEY,
-        JSON.stringify({ isLoggedIn: true, role: user.role, email: user.email })
+        JSON.stringify({ isLoggedIn: true, role: user.role, email: user.email, isSuperAdmin: user.isSuperAdmin, user })
       );
     } catch (e) {
       console.error('Failed to save session:', e);
@@ -686,6 +710,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
+    if (isSupabaseActive) {
+      notificationsService.markAsRead(id);
+    }
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, read: true }))
+    );
+    if (isSupabaseActive) {
+      notificationsService.markAllAsRead();
+    }
   };
 
   const addFollowUp = (item: Partial<FollowUpItem>) => {
@@ -912,6 +948,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleSalesTask,
         notifications,
         markNotificationAsRead,
+        markAllNotificationsAsRead,
         followUps,
         addFollowUp,
         completeFollowUp,

@@ -145,7 +145,7 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
                     {currentOrder?.pairsCount} Pairs • Subtotal ₹{currentOrder?.subtotal?.toLocaleString('en-IN')}
                   </p>
                 </div>
-                <span className="font-mono text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                <span className="text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800 text-xs tabular-nums">
                   Current: {defaultPct}%
                 </span>
               </div>
@@ -170,7 +170,7 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
               <label className="text-xs font-semibold text-foreground block mb-1">
                 Standard Discount
               </label>
-              <div className="h-9 px-3 rounded-xl bg-muted/50 border border-border flex items-center text-xs font-mono text-muted-foreground font-bold">
+              <div className="h-9 px-3 rounded-xl bg-muted/50 border border-border flex items-center text-xs text-muted-foreground font-bold tabular-nums">
                 {defaultPct}% Default
               </div>
             </div>
@@ -187,7 +187,7 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
                 required
                 value={requestedPercent}
                 onChange={(e) => setRequestedPercent(parseFloat(e.target.value) || defaultPct + 0.5)}
-                className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -198,7 +198,7 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
               <span className="text-[10px] uppercase font-bold text-purple-700 dark:text-purple-300 block">
                 MARGIN CONCESSION
               </span>
-              <span className="text-sm font-bold font-mono text-purple-950 dark:text-purple-200 mt-0.5 block">
+              <span className="text-sm font-bold font-display text-purple-950 dark:text-purple-200 mt-0.5 block tabular-nums">
                 ₹{concession.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -206,7 +206,7 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
               <span className="text-[10px] uppercase font-bold text-purple-700 dark:text-purple-300 block">
                 EST. NET PAYABLE (W/ GST)
               </span>
-              <span className="text-sm font-bold font-mono text-foreground mt-0.5 block">
+              <span className="text-sm font-bold font-display text-foreground mt-0.5 block tabular-nums">
                 ₹{newNetPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>

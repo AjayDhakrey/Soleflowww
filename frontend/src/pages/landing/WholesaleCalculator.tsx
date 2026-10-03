@@ -260,7 +260,7 @@ export const WholesaleCalculator: React.FC<WholesaleCalculatorProps> = ({ onOpen
 
               <div className="flex justify-between items-center py-2 border-t border-slate-800">
                 <span className="text-slate-300 font-semibold">Total Landed Investment:</span>
-                <span className="font-mono text-emerald-400 font-extrabold text-base tabular-nums">
+                <span className="font-display text-emerald-400 font-bold text-base tabular-nums">
                   ₹{totalLandedCost.toLocaleString('en-IN')}
                 </span>
               </div>

@@ -227,7 +227,7 @@ export const ConsignmentValue3D = () => (
       <g filter="drop-shadow(0 6px 10px rgba(4,120,87,0.4))">
         <circle cx="68" cy="64" r="16" fill="url(#valCoinGrad)" stroke="#FFFFFF" strokeWidth="2.5" />
         <circle cx="68" cy="64" r="13" stroke="#A7F3D0" strokeWidth="1" strokeDasharray="2 2" fill="none" />
-        <text x="68" y="70" textAnchor="middle" fontSize="16" fontWeight="900" fill="#FFFFFF" fontFamily="system-ui, sans-serif">
+        <text x="68" y="70" textAnchor="middle" fontSize="16" fontWeight="700" fill="#FFFFFF" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -260,15 +260,15 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <TotalOrders3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Orders">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Orders">
             Total Orders
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${totalOrdersCount} Batches`}
           >
             <span className="tabular-nums">{totalOrdersCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
+            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
               Batches
             </span>
           </p>
@@ -287,15 +287,15 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <InProduction3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="In Production">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="In Production">
             In Production
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${inProductionCount} Batches`}
           >
             <span className="tabular-nums">{inProductionCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
+            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
               Batches
             </span>
           </p>
@@ -314,15 +314,15 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <ReadyDispatch3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Ready to Dispatch">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Ready to Dispatch">
             Ready to Dispatch
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${readyDispatchCount} Batches`}
           >
             <span className="tabular-nums">{readyDispatchCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
+            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
               Batches
             </span>
           </p>
@@ -341,11 +341,11 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
       >
         <ConsignmentValue3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Consignment Value">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Consignment Value">
             Total Consignment Value
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate"
             title={typeof totalConsignmentValue === 'number' ? `₹${(totalConsignmentValue / 100000).toFixed(2)}L` : String(totalConsignmentValue)}
           >
             <span className="tabular-nums">

@@ -33,11 +33,11 @@ export const ReportsPage: React.FC = () => {
 
   const [requests, setRequests] = useState<DiscountRequest[]>([]);
   const [stats, setStats] = useState<DiscountRequestStats>({
-    pendingCount: 1,
-    pendingConcessionTotal: 28400,
+    pendingCount: 0,
+    pendingConcessionTotal: 0,
     approvedThisMonth: 0,
     rejectedThisMonth: 0,
-    totalRequests: 1,
+    totalRequests: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState<'pending' | 'approved' | 'rejected'>('pending');

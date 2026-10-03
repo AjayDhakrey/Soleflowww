@@ -16,7 +16,9 @@
     "db:roundtrip": "node scripts/db-roundtrip.mjs",
     "test:designs": "node scripts/design-permissions.mjs",
     "test:design-sync": "node scripts/design-sync-check.mjs",
+    "test:isolation": "node scripts/tenant-isolation-test.mjs",
     "lint": "tsc --noEmit",
+
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"

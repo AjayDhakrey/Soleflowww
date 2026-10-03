@@ -69,7 +69,7 @@ export const TableHead: React.FC<React.ThHTMLAttributes<HTMLTableCellElement>> =
 }) => {
   return (
     <th
-      className={`py-4 px-4 text-sm font-semibold text-muted-foreground select-none whitespace-nowrap ${className}`}
+      className={`py-4 px-4 text-sm font-medium text-muted-foreground select-none whitespace-nowrap ${className}`}
       {...props}
     >
       {children}
@@ -112,13 +112,13 @@ export const TableAvatarCell: React.FC<TableAvatarCellProps> = ({
       <Avatar name={name} src={avatarSrc} size="lg" />
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <p className="font-semibold text-foreground text-[15px] md:text-base leading-tight truncate">
+          <p className="font-semibold text-foreground text-sm leading-tight truncate">
             {name}
           </p>
           {badge}
         </div>
         {subtext && (
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5 truncate">
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
             {subtext}
           </p>
         )}
@@ -141,7 +141,7 @@ export const TableMoneyCell: React.FC<TableMoneyCellProps> = ({
   const formatted = typeof amount === 'number' ? `₹${amount.toLocaleString('en-IN')}` : amount;
 
   return (
-    <div className={`text-right tabular-nums text-[15px] md:text-base ${isBold ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'} ${className}`}>
+    <div className={`text-right tabular-nums text-sm ${isBold ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'} ${className}`}>
       {formatted}
     </div>
   );

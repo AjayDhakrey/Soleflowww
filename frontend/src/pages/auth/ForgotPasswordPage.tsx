@@ -80,7 +80,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBackTo
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@soleflow.in"
-                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base md:text-sm"
               />
             </div>
           </div>
@@ -88,7 +88,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBackTo
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? (
               <>

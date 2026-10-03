@@ -246,7 +246,7 @@ export function exportReceiptToWord(
         margin: 20mm 20mm 20mm 20mm;
       }
       body {
-        font-family: Arial, sans-serif;
+        font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
         font-size: 10.5pt;
         color: #1E293B;
         line-height: 1.5;
@@ -389,7 +389,7 @@ export function exportReceiptToWord(
 
 export const RECEIPT_CSS = `
 .rcpt{--rc-navy:#0B2A5B;--rc-blue:#1D5FD1;--rc-gold:#C98E1A;--rc-ink:#1E293B;--rc-muted:#64748B;--rc-line:#E2E8F0;--rc-soft:#F8FAFC;
-  width:100%;max-width:794px;margin:0 auto;background:#fff;color:var(--rc-ink);font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;
+  width:100%;max-width:794px;margin:0 auto;background:#fff;color:var(--rc-ink);font-family:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;
   font-size:13px;line-height:1.5;font-weight:400;-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;
   border:1px solid var(--rc-line);border-radius:14px;overflow:hidden;position:relative}
 .rcpt *{box-sizing:border-box}
@@ -398,12 +398,12 @@ export const RECEIPT_CSS = `
 .rcpt-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}
 .rcpt-brand{display:flex;gap:14px;align-items:center;min-width:0}
 .rcpt-logo{width:64px;height:64px;object-fit:contain;flex-shrink:0}
-.rcpt-brandname{font-size:22px;font-weight:600;color:var(--rc-navy);letter-spacing:-.01em;line-height:1.2}
+.rcpt-brandname{font-family:"Sora",ui-sans-serif,system-ui,sans-serif;font-size:22px;font-weight:700;color:var(--rc-navy);letter-spacing:-0.015em;line-height:1.2}
 .rcpt-tagline{font-size:12px;color:var(--rc-gold);font-weight:500}
 .rcpt-company{font-size:12px;color:var(--rc-muted);margin-top:10px;line-height:1.6}
 .rcpt-company b{font-weight:500;color:var(--rc-ink)}
 .rcpt-title{text-align:right;flex-shrink:0}
-.rcpt-title h1{margin:0;font-size:20px;font-weight:600;color:var(--rc-navy);letter-spacing:.06em}
+.rcpt-title h1{font-family:"Sora",ui-sans-serif,system-ui,sans-serif;margin:0;font-size:20px;font-weight:700;color:var(--rc-navy);letter-spacing:-0.015em}
 .rcpt-meta{margin-top:8px;font-size:12px;color:var(--rc-muted);display:grid;grid-template-columns:auto auto;gap:2px 12px;justify-content:end}
 .rcpt-meta span:nth-child(even){color:var(--rc-ink);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
 .rcpt-status{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500}
@@ -422,9 +422,9 @@ export const RECEIPT_CSS = `
 .rcpt-table th{font-size:11px;font-weight:500;color:var(--rc-muted);text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:10px 12px;background:var(--rc-soft);border-bottom:1px solid var(--rc-line)}
 .rcpt-table td{padding:12px;border-bottom:1px solid var(--rc-line);vertical-align:top}
 .rcpt-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.rcpt-mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12px}
+.rcpt-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px}
 .rcpt-amount{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 20px;border-radius:12px;background:#F5F8FF;border:1px solid #DBE6FB}
-.rcpt-amount .big{font-size:26px;font-weight:600;color:var(--rc-navy);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rcpt-amount .big{font-family:"Sora",ui-sans-serif,system-ui,sans-serif;font-size:26px;font-weight:700;color:var(--rc-navy);letter-spacing:-0.015em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .rcpt-words{font-size:12px;color:var(--rc-ink);font-style:italic;max-width:60%}
 .rcpt-summary{margin-top:18px;margin-left:auto;width:320px;font-variant-numeric:tabular-nums}
 .rcpt-summary div{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}

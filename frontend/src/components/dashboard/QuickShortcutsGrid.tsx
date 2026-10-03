@@ -83,7 +83,7 @@ const RecordPayment3D = () => (
     {/* Front Gold Rupee Coin */}
     <circle cx="74" cy="60" r="20" fill="url(#pmtGoldGrad)" stroke="#F59E0B" strokeWidth="2.5" filter="drop-shadow(0 4px 8px rgba(217,119,6,0.3))" />
     <circle cx="74" cy="60" r="16" fill="url(#pmtGoldInner)" />
-    <text x="74" y="67" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#B45309" fontFamily="system-ui, sans-serif">₹</text>
+    <text x="74" y="67" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#B45309" fontFamily="var(--font-sans)">₹</text>
 
     {/* Sparkles */}
     <path d="M22 34l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#FBBF24" />
@@ -284,7 +284,7 @@ const GstAuditLedger3D = () => (
 
     {/* 3D Teal Circular GST Badge on Bottom Right */}
     <circle cx="82" cy="68" r="16" fill="url(#gstBadgeGrad)" stroke="#FFFFFF" strokeWidth="2.5" filter="drop-shadow(0 4px 6px rgba(13,148,136,0.4))" />
-    <text x="82" y="73" textAnchor="middle" fontSize="12" fontWeight="extrabold" fill="#FFFFFF" fontFamily="system-ui, sans-serif" letterSpacing="0.5">GST</text>
+    <text x="82" y="73" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#FFFFFF" fontFamily="var(--font-sans)" letterSpacing="0.5">GST</text>
 
     {/* Sparkles */}
     <line x1="90" y1="24" x2="96" y2="20" stroke="#14B8A6" strokeWidth="3" strokeLinecap="round" />
@@ -326,7 +326,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
         <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <BookOrder3D />
         </div>
-        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight mt-1">
           Book Order
         </span>
       </button>
@@ -340,7 +340,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
         <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <RecordPayment3D />
         </div>
-        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight mt-1">
           Record Payment
         </span>
       </button>
@@ -354,7 +354,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
         <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <AddCustomer3D />
         </div>
-        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight mt-1">
           Add Customer
         </span>
       </button>
@@ -368,7 +368,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
         <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <NewDesign3D />
         </div>
-        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight mt-1">
           New Design
         </span>
       </button>
@@ -382,7 +382,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
         <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <ShareLookbook3D />
         </div>
-        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors tracking-tight mt-1">
           Share Lookbook
         </span>
       </button>
@@ -396,7 +396,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
         <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <GstAuditLedger3D />
         </div>
-        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors tracking-tight mt-1">
           GST Tax Ledger
         </span>
       </button>

@@ -25,7 +25,7 @@ export const AccessDeniedPage: React.FC<AccessDeniedPageProps> = ({
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={onReturnHome}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-md transition-colors cursor-pointer"
           >
             <Home className="w-4 h-4" />
             Return to Dashboard

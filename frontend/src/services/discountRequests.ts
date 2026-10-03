@@ -59,7 +59,7 @@ export function mapDiscountRequestRow(row: any): DiscountRequest {
   };
 }
 
-let inMemoryRequests: DiscountRequest[] = [...MOCK_DISCOUNT_REQUESTS];
+let inMemoryRequests: DiscountRequest[] = [];
 
 export const discountRequestsService = {
   async fetchAppSettings(): Promise<{ defaultTradeDiscount: number; maxTradeDiscount: number; minMargin: number }> {

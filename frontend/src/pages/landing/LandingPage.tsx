@@ -51,6 +51,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../auth/AuthProvider';
 import { FootwearMotionStage } from './FootwearMotionStage';
 
 // High-fidelity image and video poster assets
@@ -151,6 +152,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onReturnToDashboard,
 }) => {
   const { login, register } = useApp();
+  const { signIn, quickDemoLogin } = useAuth();
+  const [isDemoLoggingIn, setIsDemoLoggingIn] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
   const [authRoleChoice, setAuthRoleChoice] = useState<'admin' | 'salesperson'>('admin');
@@ -276,14 +279,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }, 450);
   };
 
-  const handleInstantLogin = (role: 'admin' | 'salesperson') => {
-    if (role === 'admin') {
-      login('admin@soleflow.com', 'admin123');
-      onLoginSuccess('admin');
+  const handleDemoLogin = async (demoRole: 'superadmin' | 'admin' | 'salesperson') => {
+    setIsDemoLoggingIn(true);
+    setAuthError('');
+
+    let demoEmail = 'admin@soleflow.com';
+    let demoPass = 'admin123';
+
+    if (demoRole === 'superadmin') {
+      demoEmail = (import.meta.env.VITE_DEMO_SUPERADMIN_EMAIL as string) || 'superadmin@soleflow.com';
+      demoPass = (import.meta.env.VITE_DEMO_SUPERADMIN_PASSWORD as string) || 'super123';
+    } else if (demoRole === 'admin') {
+      demoEmail = (import.meta.env.VITE_DEMO_ADMIN_EMAIL as string) || 'admin@soleflow.com';
+      demoPass = (import.meta.env.VITE_DEMO_ADMIN_PASSWORD as string) || 'admin123';
     } else {
-      login('sales@soleflow.com', 'sales123');
-      onLoginSuccess('salesperson');
+      demoEmail = (import.meta.env.VITE_DEMO_SALES_EMAIL as string) || 'sales@soleflow.com';
+      demoPass = (import.meta.env.VITE_DEMO_SALES_PASSWORD as string) || 'sales123';
     }
+
+    try {
+      if (quickDemoLogin) {
+        quickDemoLogin(demoRole);
+      } else if (signIn) {
+        await signIn(demoEmail, demoPass);
+      }
+    } catch (e) {
+      console.warn('Demo auth API login fallback to local state', e);
+    } finally {
+      login(demoEmail, demoPass);
+      setIsDemoLoggingIn(false);
+      setIsAuthModalOpen(false);
+      onLoginSuccess(demoRole === 'salesperson' ? 'salesperson' : 'admin');
+    }
+  };
+
+  const handleInstantLogin = (role: 'admin' | 'salesperson') => {
+    handleDemoLogin(role);
   };
 
   const handleFormLogin = (e: React.FormEvent) => {
@@ -362,7 +393,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
                 <img src={projectLogo} alt="SoleFlow Logo" className="w-full h-full object-contain" />
               </div>
-              <span className="font-extrabold tracking-tight text-slate-900">SoleFlow</span>
+              <span className="font-display font-bold tracking-tight text-slate-900">SoleFlow</span>
             </a>
 
             {/* Nav Links */}
@@ -441,6 +472,48 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <Play className="w-3.5 h-3.5 fill-current text-blue-400" />
                   <span>Watch demo</span>
                 </button>
+              </div>
+
+              {/* Instant 1-Click Demo Login Bar */}
+              <div className="pt-2 sm:pt-4 space-y-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 tracking-wide uppercase">
+                  <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+                  <span>Instant 1-Click Demo Login:</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin('superadmin')}
+                    disabled={isDemoLoggingIn}
+                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-950/70 hover:bg-purple-900/90 active:scale-95 text-purple-200 border border-purple-500/40 text-xs font-bold transition-all shadow-md backdrop-blur-md cursor-pointer hover:border-purple-400"
+                    title="Platform Owner Console (Multi-Tenant Super Admin)"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-purple-400 group-hover:scale-110 transition-transform" />
+                    <span>Super Admin</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin('admin')}
+                    disabled={isDemoLoggingIn}
+                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-950/70 hover:bg-blue-900/90 active:scale-95 text-blue-200 border border-blue-500/40 text-xs font-bold transition-all shadow-md backdrop-blur-md cursor-pointer hover:border-blue-400"
+                    title="Footwear Wholesaler Admin / Owner"
+                  >
+                    <Building className="w-3.5 h-3.5 text-blue-400 group-hover:scale-110 transition-transform" />
+                    <span>Admin / Owner</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin('salesperson')}
+                    disabled={isDemoLoggingIn}
+                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-950/70 hover:bg-emerald-900/90 active:scale-95 text-emerald-200 border border-emerald-500/40 text-xs font-bold transition-all shadow-md backdrop-blur-md cursor-pointer hover:border-emerald-400"
+                    title="Field Sales Representative"
+                  >
+                    <Users className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <span>Salesman</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1424,26 +1497,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
 
                   {/* 1-Click Instant Demo Access */}
-                  <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
-                    <div className="text-[11px] font-bold text-blue-900 uppercase tracking-wider">
-                      Instant 1-Click Demo Login
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
+                      <span className="flex items-center gap-1">
+                        <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                        1-Click Instant Demo Login:
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-normal">No password required</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
-                        onClick={() => handleInstantLogin('admin')}
-                        className="py-2 px-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                        onClick={() => handleDemoLogin('superadmin')}
+                        disabled={isDemoLoggingIn}
+                        className="py-2 px-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 active:scale-95 border border-purple-200 text-purple-700 text-[11px] font-bold transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shadow-xs"
+                        title="Platform Super Admin Console"
                       >
-                        <Building2 className="w-3.5 h-3.5" />
-                        <span>Trader Admin</span>
+                        <ShieldCheck className="w-4 h-4 text-purple-600" />
+                        <span className="truncate">Super Admin</span>
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleInstantLogin('salesperson')}
-                        className="py-2 px-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                        onClick={() => handleDemoLogin('admin')}
+                        disabled={isDemoLoggingIn}
+                        className="py-2 px-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-95 border border-blue-200 text-blue-700 text-[11px] font-bold transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shadow-xs"
+                        title="Wholesaler Owner / Admin"
                       >
-                        <UserIcon className="w-3.5 h-3.5" />
-                        <span>Sales Rep</span>
+                        <Building2 className="w-4 h-4 text-blue-600" />
+                        <span className="truncate">Admin / Owner</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDemoLogin('salesperson')}
+                        disabled={isDemoLoggingIn}
+                        className="py-2 px-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 text-emerald-700 text-[11px] font-bold transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shadow-xs"
+                        title="Field Sales Representative"
+                      >
+                        <UserIcon className="w-4 h-4 text-emerald-600" />
+                        <span className="truncate">Salesman</span>
                       </button>
                     </div>
                   </div>

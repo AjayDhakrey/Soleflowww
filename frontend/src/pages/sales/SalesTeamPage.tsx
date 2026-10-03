@@ -175,15 +175,23 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
         {/* Left Column: Representatives Directory (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Territory Representatives ({filteredReps.length})
-            </h3>
-            <span className="text-xs text-muted-foreground font-medium">
-              Click to inspect route
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20 shrink-0">
+                <Users className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground tracking-tight">
+                  Territory Representatives ({filteredReps.length})
+                </h3>
+                <p className="text-[11px] text-muted-foreground">Manage and track field force routes</p>
+              </div>
+            </div>
+            <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline-flex items-center gap-1">
+              Click to inspect <ChevronRight className="w-3 h-3" />
             </span>
           </div>
 
-          {/* Search & Filter Mini Bar */}
+          {/* Search & Filter Bar */}
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted-foreground" />
@@ -191,50 +199,40 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search rep name, zone..."
-                className="w-full h-8.5 pl-8.5 pr-3 text-xs rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                placeholder="Search rep name, zone, emp ID..."
+                className="w-full h-9 pl-9 pr-8 text-xs rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
 
-            <div className="flex bg-muted/60 p-0.5 rounded-xl border border-border text-xs shrink-0">
-              <button
-                onClick={() => setStatusFilter('All')}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                  statusFilter === 'All'
-                    ? 'bg-surface text-foreground shadow-xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setStatusFilter('In Market')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all ${
-                  statusFilter === 'In Market'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-bold shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Market
-              </button>
-              <button
-                onClick={() => setStatusFilter('Office/HQ')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all ${
-                  statusFilter === 'Office/HQ'
-                    ? 'bg-surface text-foreground shadow-xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                HQ
-              </button>
+            <div className="flex bg-muted/60 p-1 rounded-xl border border-border text-xs shrink-0 gap-0.5">
+              {(
+                [
+                  { label: 'All', value: 'All' },
+                  { label: 'Market', value: 'In Market' },
+                  { label: 'HQ', value: 'Office/HQ' },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.value)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    statusFilter === tab.value
+                      ? 'bg-surface text-foreground shadow-2xs font-bold'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -249,21 +247,22 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
             ) : (
               filteredReps.map((rep) => {
                 const isSelected = activeRep.id === rep.id;
-                const targetAchieved = Math.round((rep.bookedThisMonth / rep.monthlyTarget) * 100);
+                const targetAchieved = Math.round((rep.bookedThisMonth / (rep.monthlyTarget || 1)) * 100);
+                const isInMarket = rep.status === 'In Market';
 
                 return (
                   <div
                     key={rep.id}
                     onClick={() => setSelectedRepId(rep.id)}
-                    className={`p-4 rounded-2xl border bg-surface cursor-pointer transition-all duration-200 relative overflow-hidden group shadow-xs ${
+                    className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer relative overflow-hidden group text-left ${
                       isSelected
-                        ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md bg-blue-50/10 dark:bg-blue-950/10'
-                        : 'border-border hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
+                        ? 'bg-surface border-primary/50 shadow-sm ring-1 ring-primary/25'
+                        : 'bg-surface/80 border-border/80 hover:border-border hover:bg-muted/30'
                     }`}
                   >
-                    {/* Active accent left indicator */}
+                    {/* Active accent left bar */}
                     {isSelected && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-full" />
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary rounded-r-full" />
                     )}
 
                     <div className="flex items-start justify-between gap-3">
@@ -271,8 +270,8 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                         <div className="relative">
                           <Avatar name={rep.name} src={rep.photo} size="lg" />
                           <span
-                            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-surface ${
-                              rep.status === 'In Market' ? 'bg-emerald-500' : 'bg-slate-400'
+                            className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-surface ${
+                              isInMarket ? 'bg-emerald-500 ring-emerald-500/20' : 'bg-slate-400'
                             }`}
                             title={rep.status}
                           />
@@ -280,22 +279,39 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
 
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                               {rep.name}
                             </h4>
-                            <span className="font-mono text-[11px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md border border-border">
+                            <span className="font-mono text-[10px] font-semibold text-muted-foreground bg-muted/80 px-1.5 py-0.5 rounded border border-border">
                               {rep.empId}
                             </span>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {rep.roleTitle} • {rep.zone}
+                          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-muted-foreground/70" />
+                            {rep.zone} Territory • {rep.cluster}
                           </p>
                         </div>
                       </div>
 
-                      <StatusBadge status={rep.status === 'In Market' ? 'active' : 'neutral'}>
-                        {rep.status}
-                      </StatusBadge>
+                      <span
+                        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${
+                          isInMarket
+                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                            : 'bg-muted text-muted-foreground border-border'
+                        }`}
+                      >
+                        {isInMarket ? (
+                          <>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>In Market</span>
+                          </>
+                        ) : (
+                          <>
+                            <Building2 className="w-3 h-3" />
+                            <span>Office/HQ</span>
+                          </>
+                        )}
+                      </span>
                     </div>
 
                     {/* Quota Progress */}
@@ -313,31 +329,33 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                           <span
                             className={`text-[10px] font-bold px-1.5 py-0.2 rounded-md ${
                               targetAchieved >= 90
-                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                                : 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
                             }`}
                           >
                             {targetAchieved}%
                           </span>
                         </div>
                       </div>
-                      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden p-0.5 border border-border/50">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
-                            targetAchieved >= 90 ? 'bg-emerald-500' : 'bg-blue-600'
+                            targetAchieved >= 90
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                              : 'bg-gradient-to-r from-blue-600 to-indigo-500'
                           }`}
                           style={{ width: `${Math.min(100, targetAchieved)}%` }}
                         />
                       </div>
 
                       {/* Rep mini sub-metrics */}
-                      <div className="flex items-center justify-between mt-2.5 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-amber-500" />
+                      <div className="flex items-center justify-between mt-2.5 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/60 text-foreground font-medium text-[11px] border border-border/60">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                           {rep.todayVisitsDone}/{rep.todayVisitsTotal} Stops Done
                         </span>
-                        <span className="flex items-center gap-1 font-mono">
-                          <Receipt className="w-3 h-3 text-rose-500" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50/60 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-mono font-bold text-[11px] border border-rose-200 dark:border-rose-900/60">
+                          <Receipt className="w-3 h-3" />
                           ₹{(rep.collectionDue / 100000).toFixed(1)}L Due
                         </span>
                       </div>
@@ -355,38 +373,42 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
             title={
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Avatar name={activeRep.name} src={activeRep.photo} size="md" />
+                  <Avatar name={activeRep.name} src={activeRep.photo} size="lg" />
                   <span
-                    className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-surface ${
-                      activeRep.status === 'In Market' ? 'bg-emerald-500' : 'bg-slate-400'
+                    className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-surface ${
+                      activeRep.status === 'In Market' ? 'bg-emerald-500 ring-emerald-500/20' : 'bg-slate-400'
                     }`}
                   />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-base text-foreground">
+                    <span className="font-bold text-lg text-foreground tracking-tight">
                       {activeRep.name}
                     </span>
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className="font-mono text-[11px] font-bold text-muted-foreground bg-muted/80 px-2 py-0.5 rounded border border-border">
                       {activeRep.empId}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-muted-foreground" />
                     {activeRep.zone} Territory • {activeRep.cluster}
                   </p>
                 </div>
               </div>
             }
             subtitle={
-              <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1 font-mono">
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">
+                <a
+                  href={`tel:${activeRep.phone}`}
+                  className="flex items-center gap-1 font-mono hover:text-foreground text-muted-foreground transition-colors"
+                >
                   <Phone className="w-3 h-3 text-blue-500" />
                   {activeRep.phone}
-                </span>
+                </a>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Wallet className="w-3 h-3 text-emerald-500" />
-                  Commission: <strong className="text-foreground font-mono">₹{Number(activeRep.commissionAccrued || 0).toLocaleString('en-IN')}</strong> ({activeRep.commissionRate || 0}%)
+                  Commission Accrued: <strong className="text-foreground font-mono">₹{Number(activeRep.commissionAccrued || 0).toLocaleString('en-IN')}</strong> ({activeRep.commissionRate || 2.5}%)
                 </span>
               </div>
             }
@@ -396,7 +418,8 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   variant="secondary"
                   size="sm"
                   icon={Phone}
-                  onClick={() => showToast(`Calling ${activeRep.name} (${activeRep.phone})...`)}
+                  onClick={() => showToast(`Dialing ${activeRep.name} (${activeRep.phone})...`)}
+                  className="text-xs rounded-xl"
                 >
                   Call Rep
                 </Button>
@@ -405,6 +428,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   size="sm"
                   icon={Plus}
                   onClick={() => setIsAddStopOpen(true)}
+                  className="text-xs rounded-xl shadow-xs"
                 >
                   Add Stop
                 </Button>
@@ -413,96 +437,120 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
           >
             <div className="space-y-6">
               {/* Sample Kit & Zone Info Banner */}
-              <div className="p-3.5 rounded-xl bg-muted/50 border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                    <Package className="w-4 h-4" />
+              <div className="p-4 rounded-2xl bg-muted/30 border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
+                    <Package className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="font-bold text-foreground block">
-                      Assigned Kit: {activeRep.assignedKit}
+                    <span className="font-bold text-foreground text-sm block">
+                      Assigned Kit: {activeRep.assignedKit || 'Footwear SS25 Showcase'}
                     </span>
-                    <span className="text-muted-foreground text-[11px]">
-                      Kit physical inspection verified on {activeRep.kitVerifiedDate}
+                    <span className="text-muted-foreground text-xs mt-0.5 block">
+                      Kit physical inspection verified on {activeRep.kitVerifiedDate || 'October 2026'}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Kit Verified</span>
                 </div>
               </div>
 
-              {/* 4 Performance Metric Badges */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-3 bg-muted/40 rounded-xl border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                    TODAY VISITS
-                  </span>
-                  <span className="text-base font-bold text-foreground font-mono mt-0.5 block">
-                    {activeRep.todayVisitsDone} / {activeRep.todayVisitsTotal}
-                  </span>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 block">
-                    {Math.round((activeRep.todayVisitsDone / (activeRep.todayVisitsTotal || 1)) * 100)}% Route Done
-                  </span>
+              {/* 4 Performance Metric Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
+                {/* 1. Today Visits */}
+                <div className="p-3.5 bg-surface rounded-2xl border border-border flex flex-col justify-between shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                  <div className="flex items-center justify-between gap-1 text-muted-foreground">
+                    <span className="text-[11px] uppercase font-semibold tracking-tight block truncate">
+                      Today Visits
+                    </span>
+                    <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-xl font-bold text-foreground font-display tracking-tight tabular-nums block">
+                      {activeRep.todayVisitsDone || 0} / {activeRep.todayVisitsTotal || 0}
+                    </span>
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 block">
+                      {Math.round(((activeRep.todayVisitsDone || 0) / (activeRep.todayVisitsTotal || 1)) * 100)}% Route Done
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-3 bg-muted/40 rounded-xl border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                    BOOKED (MTD)
-                  </span>
-                  <span className="text-base font-bold text-blue-600 dark:text-blue-400 font-mono mt-0.5 block">
-                    ₹{(activeRep.bookedThisMonth / 100000).toFixed(1)}L
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-medium mt-0.5 block">
-                    Target: ₹{(activeRep.monthlyTarget / 100000).toFixed(1)}L
-                  </span>
+                {/* 2. Booked (MTD) */}
+                <div className="p-3.5 bg-surface rounded-2xl border border-border flex flex-col justify-between shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                  <div className="flex items-center justify-between gap-1 text-muted-foreground">
+                    <span className="text-[11px] uppercase font-semibold tracking-tight block truncate">
+                      Booked (MTD)
+                    </span>
+                    <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-xl font-bold text-primary font-display tracking-tight tabular-nums block">
+                      ₹{((activeRep.bookedThisMonth || 0) / 100000).toFixed(1)}L
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block">
+                      Target: ₹{((activeRep.monthlyTarget || 0) / 100000).toFixed(1)}L
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-3 bg-muted/40 rounded-xl border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                    COLLECTION DUE
-                  </span>
-                  <span className="text-base font-bold text-rose-600 dark:text-rose-400 font-mono mt-0.5 block">
-                    ₹{(activeRep.collectionDue / 100000).toFixed(1)}L
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-medium mt-0.5 block">
-                    Ledger balance
-                  </span>
+                {/* 3. Collection Due */}
+                <div className="p-3.5 bg-surface rounded-2xl border border-border flex flex-col justify-between shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                  <div className="flex items-center justify-between gap-1 text-muted-foreground">
+                    <span className="text-[11px] uppercase font-semibold tracking-tight block truncate">
+                      Collection Due
+                    </span>
+                    <Receipt className="w-3.5 h-3.5 text-rose-500" />
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-xl font-bold text-rose-600 dark:text-rose-400 font-display tracking-tight tabular-nums block">
+                      ₹{((activeRep.collectionDue || 0) / 100000).toFixed(1)}L
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block">
+                      Ledger balance
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-3 bg-muted/40 rounded-xl border border-border">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-                    ACCOUNTS
-                  </span>
-                  <span className="text-base font-bold text-foreground font-mono mt-0.5 block">
-                    {activeRep.assignedAccountsCount} Stores
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-medium mt-0.5 block">
-                    Active wholesale clients
-                  </span>
+                {/* 4. Accounts */}
+                <div className="p-3.5 bg-surface rounded-2xl border border-border flex flex-col justify-between shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                  <div className="flex items-center justify-between gap-1 text-muted-foreground">
+                    <span className="text-[11px] uppercase font-semibold tracking-tight block truncate">
+                      Accounts
+                    </span>
+                    <Store className="w-3.5 h-3.5 text-emerald-500" />
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-xl font-bold text-foreground font-display tracking-tight tabular-nums block">
+                      {activeRep.assignedAccountsCount || 0} Stores
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block truncate">
+                      Active wholesale clients
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Today's Route Stops Checklist & Live Feed */}
               <div>
-                <div className="flex items-center justify-between mb-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
                   <div>
-                    <h4 className="text-sm font-bold text-foreground">
+                    <h4 className="text-sm font-bold text-foreground tracking-tight">
                       Today's Field Stops &amp; Action Items
                     </h4>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Interactive route manifest • Check off visited stores and payments
                     </p>
                   </div>
 
-                  {/* Task status filter */}
-                  <div className="flex bg-muted/60 p-0.5 rounded-lg border border-border text-[11px]">
+                  {/* Task status filter tabs */}
+                  <div className="flex bg-muted/60 p-1 rounded-xl border border-border text-xs gap-0.5 self-start sm:self-auto">
                     <button
                       onClick={() => setTaskFilter('all')}
-                      className={`px-2 py-0.5 rounded font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
                         taskFilter === 'all'
-                          ? 'bg-surface text-foreground font-bold shadow-xs'
+                          ? 'bg-surface text-foreground font-bold shadow-2xs'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -510,9 +558,9 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                     </button>
                     <button
                       onClick={() => setTaskFilter('pending')}
-                      className={`px-2 py-0.5 rounded font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
                         taskFilter === 'pending'
-                          ? 'bg-surface text-foreground font-bold shadow-xs'
+                          ? 'bg-surface text-foreground font-bold shadow-2xs'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -520,9 +568,9 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                     </button>
                     <button
                       onClick={() => setTaskFilter('completed')}
-                      className={`px-2 py-0.5 rounded font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
                         taskFilter === 'completed'
-                          ? 'bg-surface text-foreground font-bold shadow-xs'
+                          ? 'bg-surface text-foreground font-bold shadow-2xs'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -533,8 +581,23 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
 
                 <div className="space-y-3">
                   {filteredTasks.length === 0 ? (
-                    <div className="p-8 text-center bg-muted/20 rounded-xl border border-border text-xs text-muted-foreground">
-                      No route stops match the selected filter.
+                    <div className="p-10 text-center bg-muted/15 rounded-2xl border border-dashed border-border text-xs text-muted-foreground flex flex-col items-center justify-center">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 border border-blue-500/20">
+                        <Navigation className="w-6 h-6" />
+                      </div>
+                      <p className="text-sm font-bold text-foreground">No route stops match this filter</p>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                        You can dispatch new store visits or payment collections directly to {activeRep.name}'s daily route.
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={Plus}
+                        onClick={() => setIsAddStopOpen(true)}
+                        className="mt-4 rounded-xl"
+                      >
+                        Add Route Stop
+                      </Button>
                     </div>
                   ) : (
                     filteredTasks.map((task: SalespersonTask) => {
@@ -544,7 +607,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                         <div
                           key={task.id}
                           onClick={() => toggleSalesTask(activeRep.id, task.id)}
-                          className={`p-4 rounded-xl border transition-all duration-150 cursor-pointer flex items-start justify-between gap-3.5 group ${
+                          className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-start justify-between gap-3.5 group ${
                             task.completed
                               ? 'bg-muted/30 border-border/80 opacity-75'
                               : 'bg-surface border-border hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xs'
@@ -553,10 +616,10 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                           <div className="flex items-start gap-3.5">
                             {/* Checkbox */}
                             <div
-                              className={`w-5 h-5 rounded-md flex items-center justify-center border mt-0.5 shrink-0 transition-colors ${
+                              className={`w-5 h-5 rounded-lg flex items-center justify-center border mt-0.5 shrink-0 transition-colors ${
                                 task.completed
-                                  ? 'bg-emerald-600 border-emerald-600 text-white'
-                                  : 'border-slate-300 dark:border-slate-600 group-hover:border-primary'
+                                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                                  : 'border-slate-300 dark:border-slate-600 group-hover:border-primary bg-surface'
                               }`}
                             >
                               {task.completed && <Check size={14} strokeWidth={2.5} />}
@@ -634,7 +697,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
           <div className="relative w-full max-w-md bg-surface rounded-2xl shadow-xl border border-border overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
                   <Navigation className="w-4 h-4" />
                 </div>
                 <div>
@@ -644,7 +707,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
               </div>
               <button
                 onClick={() => setIsAddStopOpen(false)}
-                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -661,7 +724,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   value={newStopTitle}
                   onChange={(e) => setNewStopTitle(e.target.value)}
                   placeholder="e.g. Visit Walkwell Footwear, MG Road"
-                  className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                  className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
 
@@ -675,7 +738,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                     value={newStopTime}
                     onChange={(e) => setNewStopTime(e.target.value)}
                     placeholder="04:30 PM"
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-mono"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
                   />
                 </div>
 
@@ -686,7 +749,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   <select
                     value={newStopType}
                     onChange={(e: any) => setNewStopType(e.target.value)}
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   >
                     <option value="visit">Store Visit</option>
                     <option value="cheque">Payment / Cheque</option>
@@ -705,7 +768,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   value={newStopDesc}
                   onChange={(e) => setNewStopDesc(e.target.value)}
                   placeholder="e.g. Show SS25 Derby catalog, collect overdue invoice #4421."
-                  className="w-full p-3 text-xs rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none"
+                  className="w-full p-3 text-xs rounded-xl bg-surface border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
                 />
               </div>
 
@@ -715,6 +778,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   variant="secondary"
                   size="sm"
                   onClick={() => setIsAddStopOpen(false)}
+                  className="rounded-xl"
                 >
                   Cancel
                 </Button>
@@ -723,6 +787,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   variant="primary"
                   size="sm"
                   icon={Send}
+                  className="rounded-xl shadow-xs"
                 >
                   Dispatch to Route
                 </Button>

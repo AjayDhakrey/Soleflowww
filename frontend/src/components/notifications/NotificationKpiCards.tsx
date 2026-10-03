@@ -11,7 +11,7 @@ interface NotificationKpiCardsProps {
    ========================================================================= */
 
 // 1. Total Notifications (3D Golden Bell with Red Badge & Sparkles)
-export const BellNotification3D = ({ badgeCount = 4 }: { badgeCount?: number }) => (
+export const BellNotification3D = ({ badgeCount = 0 }: { badgeCount?: number }) => (
   <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
@@ -63,12 +63,14 @@ export const BellNotification3D = ({ badgeCount = 4 }: { badgeCount?: number }) 
       </g>
 
       {/* Red Counter Badge on Top-Right */}
-      <g filter="drop-shadow(0 3px 5px rgba(225,29,72,0.4))">
-        <circle cx="74" cy="28" r="10" fill="#F43F5E" stroke="#FFFFFF" strokeWidth="2" />
-        <text x="74" y="32" textAnchor="middle" fontSize="10" fontWeight="900" fill="#FFFFFF" fontFamily="system-ui, sans-serif">
-          {badgeCount}
-        </text>
-      </g>
+      {badgeCount > 0 && (
+        <g filter="drop-shadow(0 3px 5px rgba(225,29,72,0.4))">
+          <circle cx="74" cy="28" r="10" fill="#F43F5E" stroke="#FFFFFF" strokeWidth="2" />
+          <text x="74" y="32" textAnchor="middle" fontSize="10" fontWeight="700" fill="#FFFFFF" fontFamily="var(--font-sans)">
+            {badgeCount > 9 ? '9+' : badgeCount}
+          </text>
+        </g>
+      )}
     </svg>
   </div>
 );
@@ -192,21 +194,23 @@ export const UrgentWarning3D = () => (
 export const NotificationKpiCards: React.FC<NotificationKpiCardsProps> = ({
   totalCount,
   unreadCount,
-  criticalCount = '1 Critical',
+  criticalCount = 0,
 }) => {
+  const criticalDisplay = typeof criticalCount === 'number' ? `${criticalCount} Critical` : criticalCount;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
       {/* 1. Total Notifications */}
       <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
-        <BellNotification3D badgeCount={unreadCount || 4} />
+        <BellNotification3D badgeCount={unreadCount} />
         <div className="flex-1 min-w-0">
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
             Total Notifications
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1 font-mono">
-            {totalCount}
+          <p className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 truncate">
+            <span className="tabular-nums">{totalCount}</span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-1 truncate">
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
             System &amp; trade logs
           </p>
         </div>
@@ -219,11 +223,11 @@ export const NotificationKpiCards: React.FC<NotificationKpiCardsProps> = ({
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
             Unread Alerts
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1 font-mono">
-            {unreadCount}
+          <p className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 truncate">
+            <span className="tabular-nums">{unreadCount}</span>
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-1 truncate">
-            Pending review
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+            {unreadCount > 0 ? 'Pending review' : 'All caught up'}
           </p>
         </div>
       </div>
@@ -235,11 +239,11 @@ export const NotificationKpiCards: React.FC<NotificationKpiCardsProps> = ({
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
             Urgent Action Required
           </span>
-          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1">
-            {criticalCount}
+          <p className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 truncate">
+            {criticalDisplay}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-1 truncate">
-            Overdue ledger alert
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
+            {criticalCount === 0 || criticalCount === '0 Critical' ? 'All systems nominal' : 'High priority alerts'}
           </p>
         </div>
       </div>

@@ -343,14 +343,14 @@ export const FootwearMotionStage: React.FC<FootwearMotionStageProps> = ({
                   <div className="relative z-10 flex flex-col justify-center min-w-0 flex-1">
                     <span
                       className={`text-xs sm:text-[13px] font-bold tracking-tight truncate leading-tight transition-colors duration-200 ${
-                        isActive ? 'text-slate-900 font-extrabold' : 'text-white group-hover:text-white'
+                        isActive ? 'text-slate-900 font-bold' : 'text-white group-hover:text-white'
                       }`}
                     >
                       {model.name}
                     </span>
                     <span
-                      className={`text-[10px] sm:text-[11px] font-mono tracking-wider transition-colors duration-200 ${
-                        isActive ? 'text-slate-500 font-semibold' : 'text-slate-400 group-hover:text-slate-300'
+                      className={`text-[10px] sm:text-[11px] tabular-nums transition-colors duration-200 ${
+                        isActive ? 'text-slate-500 font-medium' : 'text-slate-400 group-hover:text-slate-300'
                       }`}
                     >
                       {model.code} · {model.price}

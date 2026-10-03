@@ -49,6 +49,8 @@ interface NavGroupDef {
   items: NavItemDef[];
 }
 
+import { useAuth } from '../../auth/AuthProvider';
+
 export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => {
   const {
     currentUser,
@@ -60,6 +62,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
   } = useApp();
+
+  const { org, isSuperAdmin, isDemoAccount } = useAuth();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -88,7 +92,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
   const unreadAlerts =
     notifications.filter(
       (n) => !n.read && (n.category === 'alert' || n.category === 'order')
-    ).length || 2;
+    ).length;
+
+  const unreadSalesNotifications = notifications.filter((n) => !n.read).length;
 
   const adminNavGroups: NavGroupDef[] = [
     {
@@ -119,11 +125,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     {
       label: 'ADMINISTRATION',
       items: [
-        { name: 'Reports & Alerts', path: '/admin/reports', icon3D: 'Reports', badge: unreadAlerts },
+        { name: 'Reports & Alerts', path: '/admin/reports', icon3D: 'Reports', badge: unreadAlerts > 0 ? unreadAlerts : undefined },
         { name: 'Settings', path: '/admin/settings', icon3D: 'Settings' },
       ],
     },
   ];
+
+  if (isSuperAdmin) {
+    adminNavGroups.unshift({
+      label: 'PLATFORM OWNER',
+      items: [
+        { name: 'Platform Admin', path: '/platform', icon3D: 'Dashboard' },
+      ],
+    });
+  }
+
 
   const salesNavGroups: NavGroupDef[] = [
     {
@@ -154,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     {
       label: 'ACCOUNT',
       items: [
-        { name: 'Notifications', path: '/sales/notifications', icon3D: 'Reports', badge: 2 },
+        { name: 'Notifications', path: '/sales/notifications', icon3D: 'Reports', badge: unreadSalesNotifications > 0 ? unreadSalesNotifications : undefined },
         { name: 'Profile', path: '/sales/profile', icon3D: 'SalesTeam' },
       ],
     },
@@ -201,7 +217,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
   const renderNavGroup = (group: NavGroupDef) => (
     <div key={group.label} className="mb-4">
       {!isSidebarCollapsed && (
-        <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
+        <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400/45 dark:text-slate-500/45 select-none">
           {group.label}
         </div>
       )}
@@ -227,13 +243,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
               </div>
 
               {!isSidebarCollapsed && (
-                <span className={`text-[13.5px] truncate flex-1 text-left ${isActive ? 'text-emerald-700 dark:text-emerald-300 font-bold' : 'text-slate-700 dark:text-slate-200'}`}>
+                <span className={`text-[13px] font-medium truncate flex-1 text-left ${isActive ? 'text-emerald-700 dark:text-emerald-300 font-semibold' : 'text-slate-700 dark:text-slate-200'}`}>
                   {item.name}
                 </span>
               )}
 
               {!isSidebarCollapsed && item.badge && item.badge > 0 && (
-                <span className="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 shrink-0">
+                <span className="w-5 h-5 flex items-center justify-center text-xs font-medium tabular-nums rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 shrink-0">
                   {item.badge}
                 </span>
               )}
@@ -273,14 +289,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
         </div>
         {!isSidebarCollapsed && (
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
-              ShoeConnect
-            </h2>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
-              Step Towards Better Tomorrow
+            <div className="flex items-center gap-1.5 truncate">
+              <h2 className="font-display text-sm font-bold text-slate-900 dark:text-white truncate">
+                {org?.name || 'ShoeConnect'}
+              </h2>
+              {isDemoAccount && (
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-bold shrink-0">
+                  DEMO
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-slate-400/55 dark:text-slate-500/55 truncate">
+              {org?.city ? `${org.city} • Footwear Workspace` : 'Step Towards Better Tomorrow'}
             </p>
           </div>
         )}
+
       </div>
 
       {/* Navigation Groups Scroll Area */}
@@ -300,10 +324,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
 
           {!isSidebarCollapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">
+              <p className="text-xs font-semibold leading-tight text-slate-900 dark:text-white truncate">
                 {currentUser.name}
               </p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 capitalize truncate mt-0.5">
+              <p className="text-[10px] leading-tight text-muted-foreground capitalize truncate mt-0.5">
                 {currentUser.role === 'admin' ? 'Trader / Admin' : 'Sales Executive'}
               </p>
             </div>

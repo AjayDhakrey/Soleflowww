@@ -24,11 +24,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <div className="w-[88px] h-[88px] rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 mb-4 shrink-0 shadow-xs">
         <Icon size={36} strokeWidth={1.5} />
       </div>
-      <h4 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+      <h4 className="mt-1 font-display text-base font-semibold text-slate-900 dark:text-white">
         {title}
       </h4>
       {description && (
-        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-md mt-1.5 leading-relaxed">
+        <p className="max-w-sm text-sm text-muted-foreground mt-1.5">
           {description}
         </p>
       )}

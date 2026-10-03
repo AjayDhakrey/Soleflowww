@@ -50,11 +50,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({
         <p className="text-xs font-medium text-muted-foreground truncate" title={label}>
           {label}
         </p>
-        <p className="text-lg sm:text-xl font-bold text-foreground tracking-tight tabular-nums mt-0.5 leading-tight truncate">
+        <p className="mt-0.5 font-display text-xl font-bold tracking-tight text-foreground truncate">
           {value}
         </p>
         {caption && (
-          <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+          <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
             {caption}
           </p>
         )}

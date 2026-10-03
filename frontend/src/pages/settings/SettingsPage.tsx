@@ -1,12 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp, ThemePreference } from '../../context/AppContext';
+import { useAuth } from '../../auth/AuthProvider';
 import { Icons } from '../../lib/icons';
 import {
   PageHeader,
   Panel,
   Button,
 } from '../../components/ui';
-import { Sun, Moon, Monitor, Check } from 'lucide-react';
+import {
+  Sun,
+  Moon,
+  Monitor,
+  Check,
+  Users,
+  UserPlus,
+  Mail,
+  Phone,
+  Shield,
+  Trash2,
+  Send,
+  Building2,
+  Clock,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { OrgInvite, UserRole } from '../../types';
+
+interface MemberItem {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  phone?: string;
+  is_active: boolean;
+}
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -17,13 +45,209 @@ export const SettingsPage: React.FC = () => {
     setThemePreference,
   } = useApp();
 
-  const [companyName, setCompanyName] = useState('SoleFlow Footwear Trading Ltd.');
-  const [gstin, setGstin] = useState('09AAACS4412M1Z0');
+  const { org, orgId, isAdmin, isSuperAdmin, isDemoAccount } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<'general' | 'team' | 'theme'>('general');
+
+  // Firm Info
+  const [companyName, setCompanyName] = useState(org?.name || 'SoleFlow Footwear Trading Ltd.');
+  const [gstin, setGstin] = useState(org?.gstin || '09AAACS4412M1Z0');
   const [hubAddress, setHubAddress] = useState('Agra Mandi Dock 4, Hing Ki Mandi, Agra UP');
+
+  // Team Management
+  const [members, setMembers] = useState<MemberItem[]>([]);
+  const [invites, setInvites] = useState<OrgInvite[]>([]);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  
+  // Invite Form
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteName, setInviteName] = useState('');
+  const [invitePhone, setInvitePhone] = useState('');
+  const [inviteRole, setInviteRole] = useState<UserRole>('salesperson');
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
+
+  const loadTeamData = async () => {
+    if (!isAdmin && !isSuperAdmin) return;
+    setIsLoadingTeam(true);
+
+    if (!supabase) {
+      setMembers([
+        {
+          id: 'user-1',
+          name: currentUser.name,
+          email: currentUser.email,
+          role: currentUser.role,
+          phone: currentUser.phone || '+91 98000 00000',
+          is_active: true,
+        },
+        {
+          id: 'user-2',
+          name: 'Rahul Sharma',
+          email: 'rahul.sales@soleflow.com',
+          role: 'salesperson',
+          phone: '+91 98111 22233',
+          is_active: true,
+        },
+      ]);
+      setInvites([
+        {
+          id: 'inv-1',
+          org_id: orgId || 'demo-org',
+          email: 'priya.rep@shoehub.in',
+          role: 'salesperson',
+          token: 'tok-12345',
+          expires_at: new Date(Date.now() + 5 * 86400000).toISOString(),
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      setIsLoadingTeam(false);
+      return;
+    }
+
+    try {
+      // 1. Load active profiles
+      let profilesQuery = supabase.from('profiles').select('*');
+      if (orgId && !isSuperAdmin) {
+        profilesQuery = profilesQuery.eq('org_id', orgId);
+      }
+      const { data: profData } = await profilesQuery;
+      if (profData) {
+        setMembers(
+          profData.map((p: any) => ({
+            id: p.id,
+            name: p.full_name || p.name || p.email.split('@')[0],
+            email: p.email,
+            role: (p.role as UserRole) || 'salesperson',
+            phone: p.phone,
+            is_active: p.is_active !== false,
+          }))
+        );
+      }
+
+      // 2. Load pending invites
+      let invitesQuery = supabase.from('org_invites').select('*').is('accepted_at', null);
+      if (orgId && !isSuperAdmin) {
+        invitesQuery = invitesQuery.eq('org_id', orgId);
+      }
+      const { data: invData } = await invitesQuery;
+      if (invData) {
+        setInvites(invData as OrgInvite[]);
+      }
+    } catch (err) {
+      console.error('Error loading team data:', err);
+    } finally {
+      setIsLoadingTeam(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'team') {
+      loadTeamData();
+    }
+  }, [activeTab, orgId]);
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail) return;
+
+    if (isDemoAccount) {
+      showToast('Demo accounts cannot send live user invitations.');
+      return;
+    }
+
+    setIsSendingInvite(true);
+
+    try {
+      // Call backend route POST /admin/invite or direct Supabase insert
+      if (supabase && orgId) {
+        const { data: inviteRow, error } = await supabase
+          .from('org_invites')
+          .insert({
+            org_id: orgId,
+            email: inviteEmail.trim().toLowerCase(),
+            role: inviteRole,
+          })
+          .select('*')
+          .single();
+
+        if (error) {
+          showToast(`Error creating invite: ${error.message}`);
+        } else {
+          showToast(`Invitation created for ${inviteEmail}`);
+          setIsInviteModalOpen(false);
+          setInviteEmail('');
+          setInviteName('');
+          setInvitePhone('');
+          loadTeamData();
+        }
+      } else {
+        showToast(`[Demo Mode] Simulated invite sent to ${inviteEmail}`);
+        setIsInviteModalOpen(false);
+        setInviteEmail('');
+      }
+    } catch (err: any) {
+      showToast(`Failed: ${err.message}`);
+    } finally {
+      setIsSendingInvite(false);
+    }
+  };
+
+  const handleRevokeInvite = async (inviteId: string) => {
+    if (!supabase) {
+      setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+      showToast('Invite revoked');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('org_invites').delete().eq('id', inviteId);
+      if (error) {
+        showToast(`Failed: ${error.message}`);
+      } else {
+        showToast('Invite revoked successfully');
+        loadTeamData();
+      }
+    } catch (e: any) {
+      showToast(`Error: ${e.message}`);
+    }
+  };
+
+  const handleToggleMemberActive = async (memberId: string, currentStatus: boolean) => {
+    if (memberId === currentUser.id) {
+      showToast('You cannot deactivate your own account.');
+      return;
+    }
+
+    const nextStatus = !currentStatus;
+    if (!supabase) {
+      setMembers((prev) =>
+        prev.map((m) => (m.id === memberId ? { ...m, is_active: nextStatus } : m))
+      );
+      showToast(`Member ${nextStatus ? 'Activated' : 'Deactivated'}`);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: nextStatus })
+        .eq('id', memberId);
+
+      if (error) {
+        showToast(`Failed: ${error.message}`);
+      } else {
+        showToast(`Member ${nextStatus ? 'Activated' : 'Deactivated'}`);
+        loadTeamData();
+      }
+    } catch (e: any) {
+      showToast(`Error: ${e.message}`);
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    showToast('SoleFlow trade settings updated successfully.');
+    showToast('Business firm settings updated successfully.');
   };
 
   const handleSelectTheme = (pref: ThemePreference) => {
@@ -31,308 +255,432 @@ export const SettingsPage: React.FC = () => {
     showToast(`Theme updated to ${pref.charAt(0).toUpperCase() + pref.slice(1)}`);
   };
 
-  const handleThemeKeyDown = (e: React.KeyboardEvent, pref: ThemePreference) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleSelectTheme(pref);
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      const order: ThemePreference[] = ['light', 'dark', 'system'];
-      const nextIdx = (order.indexOf(pref) + 1) % order.length;
-      handleSelectTheme(order[nextIdx]);
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const order: ThemePreference[] = ['light', 'dark', 'system'];
-      const prevIdx = (order.indexOf(pref) - 1 + order.length) % order.length;
-      handleSelectTheme(order[prevIdx]);
-    }
-  };
-
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-4xl mx-auto pb-24 md:pb-12 bg-background text-foreground">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-4xl mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-200">
+      
       {/* 1. Page Header */}
       <PageHeader
         breadcrumbs={[
           { label: 'Dashboard', href: currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard' },
           { label: 'Settings' },
         ]}
-        title={currentUser.role === 'admin' ? 'Trading Firm Configuration & Settings' : 'User Profile & Settings'}
+        title={currentUser.role === 'admin' ? 'Workspace & Firm Settings' : 'User Profile & Settings'}
         subtitle={
           currentUser.role === 'admin'
-            ? 'Manage legal firm profile, tax identification, user workspace roles, and appearance preferences.'
-            : 'Manage your profile preferences, display theme, and workspace options.'
+            ? 'Manage legal business identity, team members, access roles, and appearance preferences.'
+            : 'Manage your personal profile, display theme, and workspace options.'
         }
       />
 
-      <form onSubmit={handleSave} className="space-y-6">
-        {/* Trading Firm Profile (Admin only or shared) */}
-        {currentUser.role === 'admin' && (
-          <Panel
-            title="Trading Firm Legal Entity"
-            subtitle="Registered business identity applied to invoices and bilty notes"
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-border pb-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('general')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+            activeTab === 'general'
+              ? 'bg-primary text-white shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          }`}
+        >
+          Firm Profile
+        </button>
+
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('team')}
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'team'
+                ? 'bg-primary text-white shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}
           >
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Users size={14} />
+            <span>Team & Salespeople</span>
+            {invites.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-bold">
+                {invites.length}
+              </span>
+            )}
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('theme')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+            activeTab === 'theme'
+              ? 'bg-primary text-white shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          }`}
+        >
+          Appearance
+        </button>
+      </div>
+
+      {/* TAB 1: GENERAL FIRM SETTINGS */}
+      {activeTab === 'general' && (
+        <form onSubmit={handleSave} className="space-y-6">
+          {currentUser.role === 'admin' && (
+            <Panel
+              title="Registered Business Profile"
+              subtitle="Business name and GST details applied to invoices and bilty notes"
+            >
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground block mb-1.5">
+                      Business / Firm Legal Name
+                    </label>
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground block mb-1.5">
+                      GSTIN / Tax ID
+                    </label>
+                    <input
+                      type="text"
+                      value={gstin}
+                      onChange={(e) => setGstin(e.target.value)}
+                      className="w-full h-12 px-4 text-sm font-mono bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1.5">
-                    Firm Legal Name
+                    Central Mandi Dispatch Address
                   </label>
                   <input
                     type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
+                    value={hubAddress}
+                    onChange={(e) => setHubAddress(e.target.value)}
                     className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">
-                    GSTIN / Tax ID
-                  </label>
-                  <input
-                    type="text"
-                    value={gstin}
-                    onChange={(e) => setGstin(e.target.value)}
-                    className="w-full h-12 px-4 text-sm font-mono bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
-                </div>
               </div>
+            </Panel>
+          )}
 
-              <div>
-                <label className="text-sm font-medium text-foreground block mb-1.5">
-                  Central Mandi Dispatch Address
-                </label>
-                <input
-                  type="text"
-                  value={hubAddress}
-                  onChange={(e) => setHubAddress(e.target.value)}
-                  className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
+          {/* Role Switcher Demo */}
+          <Panel
+            title="Active Session Role"
+            subtitle="Switch between wholesale trader administrative control and field representative view"
+          >
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Currently signed in as <strong className="text-foreground">{currentUser.name}</strong> ({currentUser.roleLabel}).
+              </p>
+
+              <div className="flex flex-wrap gap-3 pt-1">
+                <Button
+                  type="button"
+                  variant={currentUser.role === 'admin' ? 'primary' : 'secondary'}
+                  onClick={() => switchRole('admin')}
+                >
+                  Trader / Admin View
+                </Button>
+                <Button
+                  type="button"
+                  variant={currentUser.role === 'salesperson' ? 'primary' : 'secondary'}
+                  onClick={() => switchRole('salesperson')}
+                >
+                  Salesperson Portal View
+                </Button>
               </div>
             </div>
           </Panel>
-        )}
 
-        {/* Appearance & Theme Picker Panel */}
-        <Panel
-          title="Appearance & Theme"
-          subtitle="Select your preferred workspace theme across desktop and mobile devices"
-        >
-          <div
-            role="radiogroup"
-            aria-label="Theme preference"
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1"
-          >
-            {/* 1. Light Theme Card */}
-            <div
-              role="radio"
-              aria-checked={themePreference === 'light'}
-              tabIndex={themePreference === 'light' ? 0 : -1}
-              onClick={() => handleSelectTheme('light')}
-              onKeyDown={(e) => handleThemeKeyDown(e, 'light')}
-              className={`p-3.5 rounded-2xl cursor-pointer transition-all text-left bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                themePreference === 'light'
-                  ? 'border-2 border-primary shadow-xs'
-                  : 'border border-border hover:bg-muted/50'
-              }`}
-            >
-              {/* Mini Preview Box */}
-              <div className="h-22 w-full rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-2 flex gap-1.5 overflow-hidden shadow-2xs">
-                {/* Mini Sidebar */}
-                <div className="w-5 h-full rounded-md bg-[#FFFFFF] border border-[#E2E8F0] flex flex-col gap-1 p-1">
-                  <div className="w-2 h-2 rounded-full bg-[#2563EB]" />
-                  <div className="w-full h-1 rounded bg-[#E2E8F0]" />
-                  <div className="w-full h-1 rounded bg-[#E2E8F0]" />
-                </div>
-                {/* Mini Main Content */}
-                <div className="flex-1 h-full flex flex-col gap-1.5">
-                  <div className="h-3.5 w-full rounded-md bg-[#FFFFFF] border border-[#E2E8F0] flex items-center justify-between px-1.5">
-                    <div className="w-8 h-1 rounded bg-[#CBD5E1]" />
-                    <div className="w-2 h-2 rounded-full bg-[#E2E8F0]" />
-                  </div>
-                  <div className="flex-1 flex gap-1.5">
-                    <div className="flex-1 h-full rounded-md bg-[#FFFFFF] border border-[#E2E8F0] p-1 flex flex-col gap-1">
-                      <div className="w-3/4 h-1 rounded bg-[#94A3B8]" />
-                      <div className="w-1/2 h-1 rounded bg-[#E2E8F0]" />
-                    </div>
-                    <div className="flex-1 h-full rounded-md bg-[#FFFFFF] border border-[#E2E8F0] p-1 flex flex-col gap-1">
-                      <div className="w-2/3 h-1 rounded bg-[#94A3B8]" />
-                      <div className="w-1/3 h-1 rounded bg-[#2563EB]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Label & Radio Indicator */}
-              <div className="flex items-center justify-between mt-3 px-1">
-                <div className="flex items-center gap-2">
-                  <Sun size={17} className={themePreference === 'light' ? 'text-primary' : 'text-muted-foreground'} />
-                  <span className="text-sm font-semibold text-foreground">Light</span>
-                </div>
-                <div
-                  className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${
-                    themePreference === 'light'
-                      ? 'bg-primary text-white'
-                      : 'border border-border bg-muted/40'
-                  }`}
-                >
-                  {themePreference === 'light' && <Check size={12} strokeWidth={3} />}
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Dark Theme Card */}
-            <div
-              role="radio"
-              aria-checked={themePreference === 'dark'}
-              tabIndex={themePreference === 'dark' ? 0 : -1}
-              onClick={() => handleSelectTheme('dark')}
-              onKeyDown={(e) => handleThemeKeyDown(e, 'dark')}
-              className={`p-3.5 rounded-2xl cursor-pointer transition-all text-left bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                themePreference === 'dark'
-                  ? 'border-2 border-primary shadow-xs'
-                  : 'border border-border hover:bg-muted/50'
-              }`}
-            >
-              {/* Mini Preview Box */}
-              <div className="h-22 w-full rounded-xl bg-[#0B1220] border border-[#334155] p-2 flex gap-1.5 overflow-hidden shadow-2xs">
-                {/* Mini Sidebar */}
-                <div className="w-5 h-full rounded-md bg-[#111827] border border-[#334155] flex flex-col gap-1 p-1">
-                  <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-                  <div className="w-full h-1 rounded bg-[#334155]" />
-                  <div className="w-full h-1 rounded bg-[#334155]" />
-                </div>
-                {/* Mini Main Content */}
-                <div className="flex-1 h-full flex flex-col gap-1.5">
-                  <div className="h-3.5 w-full rounded-md bg-[#111827] border border-[#334155] flex items-center justify-between px-1.5">
-                    <div className="w-8 h-1 rounded bg-[#475569]" />
-                    <div className="w-2 h-2 rounded-full bg-[#334155]" />
-                  </div>
-                  <div className="flex-1 flex gap-1.5">
-                    <div className="flex-1 h-full rounded-md bg-[#111827] border border-[#334155] p-1 flex flex-col gap-1">
-                      <div className="w-3/4 h-1 rounded bg-[#64748B]" />
-                      <div className="w-1/2 h-1 rounded bg-[#1F2937]" />
-                    </div>
-                    <div className="flex-1 h-full rounded-md bg-[#111827] border border-[#334155] p-1 flex flex-col gap-1">
-                      <div className="w-2/3 h-1 rounded bg-[#64748B]" />
-                      <div className="w-1/3 h-1 rounded bg-[#3B82F6]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Label & Radio Indicator */}
-              <div className="flex items-center justify-between mt-3 px-1">
-                <div className="flex items-center gap-2">
-                  <Moon size={17} className={themePreference === 'dark' ? 'text-primary' : 'text-muted-foreground'} />
-                  <span className="text-sm font-semibold text-foreground">Dark</span>
-                </div>
-                <div
-                  className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${
-                    themePreference === 'dark'
-                      ? 'bg-primary text-white'
-                      : 'border border-border bg-muted/40'
-                  }`}
-                >
-                  {themePreference === 'dark' && <Check size={12} strokeWidth={3} />}
-                </div>
-              </div>
-            </div>
-
-            {/* 3. System Theme Card */}
-            <div
-              role="radio"
-              aria-checked={themePreference === 'system'}
-              tabIndex={themePreference === 'system' ? 0 : -1}
-              onClick={() => handleSelectTheme('system')}
-              onKeyDown={(e) => handleThemeKeyDown(e, 'system')}
-              className={`p-3.5 rounded-2xl cursor-pointer transition-all text-left bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                themePreference === 'system'
-                  ? 'border-2 border-primary shadow-xs'
-                  : 'border border-border hover:bg-muted/50'
-              }`}
-            >
-              {/* Mini Preview Box (Split Light / Dark) */}
-              <div className="h-22 w-full rounded-xl border border-border flex overflow-hidden shadow-2xs">
-                {/* Left Half (Light) */}
-                <div className="w-1/2 h-full bg-[#F8FAFC] border-r border-[#CBD5E1] p-1.5 flex gap-1">
-                  <div className="w-3.5 h-full rounded bg-[#FFFFFF] border border-[#E2E8F0] flex flex-col gap-0.5 p-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
-                    <div className="w-full h-0.5 rounded bg-[#E2E8F0]" />
-                  </div>
-                  <div className="flex-1 h-full flex flex-col gap-1">
-                    <div className="h-2.5 w-full rounded bg-[#FFFFFF] border border-[#E2E8F0]" />
-                    <div className="flex-1 rounded bg-[#FFFFFF] border border-[#E2E8F0]" />
-                  </div>
-                </div>
-                {/* Right Half (Dark) */}
-                <div className="w-1/2 h-full bg-[#0B1220] p-1.5 flex gap-1">
-                  <div className="flex-1 h-full flex flex-col gap-1">
-                    <div className="h-2.5 w-full rounded bg-[#111827] border border-[#334155]" />
-                    <div className="flex-1 rounded bg-[#111827] border border-[#334155]" />
-                  </div>
-                  <div className="w-3.5 h-full rounded bg-[#111827] border border-[#334155] flex flex-col items-center gap-0.5 p-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
-                    <div className="w-full h-0.5 rounded bg-[#334155]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Label & Radio Indicator */}
-              <div className="flex items-center justify-between mt-3 px-1">
-                <div className="flex items-center gap-2">
-                  <Monitor size={17} className={themePreference === 'system' ? 'text-primary' : 'text-muted-foreground'} />
-                  <span className="text-sm font-semibold text-foreground">System</span>
-                </div>
-                <div
-                  className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${
-                    themePreference === 'system'
-                      ? 'bg-primary text-white'
-                      : 'border border-border bg-muted/40'
-                  }`}
-                >
-                  {themePreference === 'system' && <Check size={12} strokeWidth={3} />}
-                </div>
-              </div>
-            </div>
+          <div className="flex justify-end">
+            <Button type="submit" variant="primary" icon={Icons.Check}>
+              Save Changes
+            </Button>
           </div>
-        </Panel>
+        </form>
+      )}
 
-        {/* Role Switcher */}
-        <Panel
-          title="Active Role & Permissions"
-          subtitle="Switch between wholesale trader administrative control and field representative view"
-        >
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-              Currently signed in as <strong className="text-foreground">{currentUser.name}</strong> ({currentUser.roleLabel}).
-            </p>
-
-            <div className="flex flex-wrap gap-3 pt-1">
-              <Button
-                type="button"
-                variant={currentUser.role === 'admin' ? 'primary' : 'secondary'}
-                onClick={() => switchRole('admin')}
-              >
-                Trader / Admin View
-              </Button>
-              <Button
-                type="button"
-                variant={currentUser.role === 'salesperson' ? 'primary' : 'secondary'}
-                onClick={() => switchRole('salesperson')}
-              >
-                Salesperson Portal View
-              </Button>
+      {/* TAB 2: TEAM MANAGEMENT */}
+      {activeTab === 'team' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-display font-bold text-lg text-foreground">Team Workspace Members</h3>
+              <p className="text-xs text-muted-foreground">
+                Invite salespeople and managers to collaborate in {org?.name || 'your firm'}.
+              </p>
             </div>
+            <Button
+              type="button"
+              variant="primary"
+              icon={Icons.Add}
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              Invite Member
+            </Button>
           </div>
-        </Panel>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button type="submit" variant="primary" icon={Icons.Check}>
-            Save Preferences
-          </Button>
+          {/* Pending Invites List */}
+          {invites.length > 0 && (
+            <Panel title="Pending Invitations" subtitle="Invited team members who haven't accepted yet">
+              <div className="divide-y divide-border/60">
+                {invites.map((inv) => (
+                  <div key={inv.id} className="py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
+                        <Mail size={16} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">{inv.email}</p>
+                        <p className="text-[11px] text-muted-foreground capitalize">
+                          Role: {inv.role} • Expires: {new Date(inv.expires_at).toLocaleDateString('en-IN')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleRevokeInvite(inv.id)}
+                        className="text-xs text-rose-600 hover:text-rose-700 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                      >
+                        Revoke
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          )}
+
+          {/* Active Members List */}
+          <Panel title="Active Members" subtitle="Verified users with workspace access">
+            <div className="divide-y divide-border/60">
+              {isLoadingTeam ? (
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  Loading team members...
+                </div>
+              ) : members.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  No active members found.
+                </div>
+              ) : (
+                members.map((member) => (
+                  <div key={member.id} className="py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                        {member.name.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-semibold text-foreground">{member.name}</p>
+                          <span
+                            className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                              member.role === 'admin'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            }`}
+                          >
+                            {member.role}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">{member.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          member.is_active
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-rose-50 text-rose-700 border border-rose-200'
+                        }`}
+                      >
+                        {member.is_active ? 'Active' : 'Disabled'}
+                      </span>
+
+                      {member.id !== currentUser.id && (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleMemberActive(member.id, member.is_active)}
+                          className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        >
+                          {member.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Panel>
         </div>
-      </form>
+      )}
+
+      {/* TAB 3: THEME */}
+      {activeTab === 'theme' && (
+        <div className="space-y-6">
+          <Panel
+            title="Appearance & Theme"
+            subtitle="Select your preferred workspace theme across desktop and mobile devices"
+          >
+            <div
+              role="radiogroup"
+              aria-label="Theme preference"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1"
+            >
+              {/* Light Theme */}
+              <div
+                role="radio"
+                aria-checked={themePreference === 'light'}
+                tabIndex={themePreference === 'light' ? 0 : -1}
+                onClick={() => handleSelectTheme('light')}
+                className={`p-3.5 rounded-2xl cursor-pointer transition-all text-left bg-surface focus:outline-none ${
+                  themePreference === 'light'
+                    ? 'border-2 border-primary shadow-xs'
+                    : 'border border-border hover:bg-muted/50'
+                }`}
+              >
+                <div className="flex items-center justify-between mt-1 px-1">
+                  <div className="flex items-center gap-2">
+                    <Sun size={17} className={themePreference === 'light' ? 'text-primary' : 'text-muted-foreground'} />
+                    <span className="text-sm font-semibold text-foreground">Light</span>
+                  </div>
+                  {themePreference === 'light' && <Check size={14} className="text-primary" />}
+                </div>
+              </div>
+
+              {/* Dark Theme */}
+              <div
+                role="radio"
+                aria-checked={themePreference === 'dark'}
+                tabIndex={themePreference === 'dark' ? 0 : -1}
+                onClick={() => handleSelectTheme('dark')}
+                className={`p-3.5 rounded-2xl cursor-pointer transition-all text-left bg-surface focus:outline-none ${
+                  themePreference === 'dark'
+                    ? 'border-2 border-primary shadow-xs'
+                    : 'border border-border hover:bg-muted/50'
+                }`}
+              >
+                <div className="flex items-center justify-between mt-1 px-1">
+                  <div className="flex items-center gap-2">
+                    <Moon size={17} className={themePreference === 'dark' ? 'text-primary' : 'text-muted-foreground'} />
+                    <span className="text-sm font-semibold text-foreground">Dark</span>
+                  </div>
+                  {themePreference === 'dark' && <Check size={14} className="text-primary" />}
+                </div>
+              </div>
+
+              {/* System Theme */}
+              <div
+                role="radio"
+                aria-checked={themePreference === 'system'}
+                tabIndex={themePreference === 'system' ? 0 : -1}
+                onClick={() => handleSelectTheme('system')}
+                className={`p-3.5 rounded-2xl cursor-pointer transition-all text-left bg-surface focus:outline-none ${
+                  themePreference === 'system'
+                    ? 'border-2 border-primary shadow-xs'
+                    : 'border border-border hover:bg-muted/50'
+                }`}
+              >
+                <div className="flex items-center justify-between mt-1 px-1">
+                  <div className="flex items-center gap-2">
+                    <Monitor size={17} className={themePreference === 'system' ? 'text-primary' : 'text-muted-foreground'} />
+                    <span className="text-sm font-semibold text-foreground">System</span>
+                  </div>
+                  {themePreference === 'system' && <Check size={14} className="text-primary" />}
+                </div>
+              </div>
+            </div>
+          </Panel>
+        </div>
+      )}
+
+      {/* Invite Member Modal */}
+      {isInviteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  <UserPlus size={18} />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-base text-foreground">Invite Team Member</h3>
+                  <p className="text-xs text-muted-foreground">Add a salesperson or administrator</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsInviteModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground text-sm font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSendInvite} className="space-y-3.5">
+              <div>
+                <label className="text-xs font-semibold text-foreground block mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="name@company.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="w-full h-11 px-3.5 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-foreground block mb-1">Full Name (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Suresh Kumar"
+                  value={inviteName}
+                  onChange={(e) => setInviteName(e.target.value)}
+                  className="w-full h-11 px-3.5 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-foreground block mb-1">Role Permission *</label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as UserRole)}
+                  className="w-full h-11 px-3 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:border-primary"
+                >
+                  <option value="salesperson">Salesperson (Assigned Customers Only)</option>
+                  <option value="admin">Administrator (Full Business Access)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsInviteModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isSendingInvite}
+                  icon={Icons.Send}
+                >
+                  {isSendingInvite ? 'Sending...' : 'Send Invitation'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

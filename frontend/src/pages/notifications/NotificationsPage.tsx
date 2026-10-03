@@ -10,15 +10,17 @@ import {
   PageHeader,
   KpiCard,
   Panel,
+  Button,
   EmptyState,
 } from '../../components/ui';
 import { NotificationKpiCards } from '../../components/notifications/NotificationKpiCards';
 
 export const NotificationsPage: React.FC = () => {
-  const { notifications, payments, customers, markNotificationAsRead } = useApp();
+  const { notifications, payments, customers, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const criticalCount = notifications.filter((n) => !n.read && n.category === 'alert').length;
 
   const handleNotificationClick = (n: any) => {
     markNotificationAsRead(n.id);
@@ -43,19 +45,42 @@ export const NotificationsPage: React.FC = () => {
         breadcrumbs={[{ label: 'Dashboard', href: '/sales/dashboard' }, { label: 'Notifications' }]}
         title="Notifications & Trade Alerts"
         subtitle="Real-time notifications for factory dispatch delays, overdue receivables, and payment receipts."
+        actions={
+          unreadCount > 0 ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={Icons.Success}
+              onClick={() => markAllNotificationsAsRead()}
+            >
+              Mark All as Read
+            </Button>
+          ) : undefined
+        }
       />
 
       {/* 2. KPI Summary Row (3D Claymorphic Redesign) */}
       <NotificationKpiCards
         totalCount={notifications.length}
         unreadCount={unreadCount}
-        criticalCount="1 Critical"
+        criticalCount={criticalCount}
       />
 
       {/* 3. Notifications List Panel */}
       <Panel
         title="All System Alerts"
         subtitle="Click any notification to acknowledge; payment alerts open digital receipt slips"
+        headerAction={
+          unreadCount > 0 ? (
+            <button
+              type="button"
+              onClick={() => markAllNotificationsAsRead()}
+              className="text-xs text-primary font-semibold hover:underline cursor-pointer"
+            >
+              Mark all read
+            </button>
+          ) : undefined
+        }
         noPadding
       >
         {notifications.length === 0 ? (

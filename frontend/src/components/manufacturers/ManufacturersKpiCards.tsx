@@ -227,11 +227,11 @@ export const ManufacturersKpiCards: React.FC<ManufacturersKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <PartnerFoundries3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Partner Foundries">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Partner Foundries">
             Partner Foundries
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display truncate"
             title={typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
           >
             {typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
@@ -246,11 +246,11 @@ export const ManufacturersKpiCards: React.FC<ManufacturersKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <CumulativeCapacity3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Cumulative Capacity">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Cumulative Capacity">
             Cumulative Capacity
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-display truncate"
             title={cumulativeCapacity}
           >
             {cumulativeCapacity}
@@ -265,11 +265,11 @@ export const ManufacturersKpiCards: React.FC<ManufacturersKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <OnTimeDelivery3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Average On-Time Delivery">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Average On-Time Delivery">
             Average On-Time Delivery
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-display truncate"
             title={onTimeRate}
           >
             {onTimeRate}
@@ -284,11 +284,11 @@ export const ManufacturersKpiCards: React.FC<ManufacturersKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <QcPassRatio3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Average QC Pass Ratio">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Average QC Pass Ratio">
             Average QC Pass Ratio
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-display truncate"
             title={qcPassRate}
           >
             {qcPassRate}

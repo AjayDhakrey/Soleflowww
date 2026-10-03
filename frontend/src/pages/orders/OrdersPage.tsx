@@ -519,7 +519,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
                     >
                       {/* Order ID */}
                       <td className="py-3.5 px-4 md:px-5 whitespace-nowrap">
-                        <span className="font-mono font-bold text-foreground text-xs sm:text-sm bg-muted/60 px-2.5 py-1 rounded-lg border border-border/70 group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
+                        <span className="tabular-nums font-bold text-foreground text-xs sm:text-sm bg-muted/60 px-2.5 py-1 rounded-lg border border-border/70 group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
                           {ord.id}
                         </span>
                       </td>
@@ -580,16 +580,16 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
 
                       {/* Net Payable */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <div className="font-bold font-mono text-foreground text-xs sm:text-sm leading-tight">
+                        <div className="font-bold tabular-nums text-foreground text-xs sm:text-sm leading-tight">
                           {ord.netPayable}
                         </div>
                         <div className="mt-0.5">
                           {ord.balanceDueText.includes('Bal') ? (
-                            <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40">
+                            <span className="inline-block px-1.5 py-0.2 rounded text-[10px] tabular-nums font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40">
                               {ord.balanceDueText}
                             </span>
                           ) : (
-                            <span className="inline-block px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
+                            <span className="inline-block px-1.5 py-0.2 rounded text-[10px] tabular-nums font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
                               Cleared
                             </span>
                           )}

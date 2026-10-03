@@ -186,7 +186,7 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({ onNa
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-slate-400">
+            <span className="text-[11px] tabular-nums text-slate-400">
               {walkthroughStep + 1} / {demoSteps.length}
             </span>
             <button
@@ -207,10 +207,10 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({ onNa
 
           <div className="space-y-1 min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h4 className="font-extrabold text-sm text-white truncate">
+              <h4 className="font-semibold text-sm text-white truncate">
                 {current.step}. {current.title}
               </h4>
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-800 text-slate-300">
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
                 {current.role === 'admin' ? 'Trader' : 'Sales Rep'}
               </span>
             </div>
@@ -223,7 +223,7 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({ onNa
         {/* Action Trigger */}
         <button
           onClick={handleStepAction}
-          className="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+          className="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
         >
           <span>{current.actionLabel}</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -234,7 +234,7 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({ onNa
           <button
             onClick={handlePrev}
             disabled={walkthroughStep === 0}
-            className={`flex items-center gap-1 font-semibold ${
+            className={`flex items-center gap-1 font-medium ${
               walkthroughStep === 0
                 ? 'text-slate-600 cursor-not-allowed'
                 : 'text-slate-300 hover:text-white cursor-pointer'
@@ -264,7 +264,7 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({ onNa
 
           <button
             onClick={handleNext}
-            className="flex items-center gap-1 font-bold text-emerald-400 hover:text-emerald-300 cursor-pointer"
+            className="flex items-center gap-1 font-medium text-emerald-400 hover:text-emerald-300 cursor-pointer"
           >
             <span>{walkthroughStep === demoSteps.length - 1 ? 'Finish' : 'Next Step'}</span>
             <ChevronRight className="w-4 h-4" />

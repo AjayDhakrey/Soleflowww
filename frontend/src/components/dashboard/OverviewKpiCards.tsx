@@ -89,7 +89,7 @@ const Collections3D = () => (
     {/* Front Big Gold Rupee Coin */}
     <circle cx="74" cy="60" r="20" fill="url(#goldGrad)" stroke="#F59E0B" strokeWidth="2.5" filter="drop-shadow(0 4px 8px rgba(217,119,6,0.3))" />
     <circle cx="74" cy="60" r="16" fill="url(#goldInner)" />
-    <text x="74" y="67" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#B45309" fontFamily="system-ui, sans-serif">₹</text>
+    <text x="74" y="67" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#B45309" fontFamily="var(--font-sans)">₹</text>
 
     {/* Sparkles */}
     <path d="M22 34l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#FBBF24" />
@@ -138,7 +138,7 @@ const Receivables3D = () => (
 
     {/* Pink Rupee Seal Bottom Right */}
     <circle cx="74" cy="68" r="16" fill="url(#sealGrad)" stroke="#FDA4AF" strokeWidth="2" filter="drop-shadow(0 4px 6px rgba(225,29,72,0.3))" />
-    <text x="74" y="74" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#FFFFFF" fontFamily="system-ui, sans-serif">₹</text>
+    <text x="74" y="74" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#FFFFFF" fontFamily="var(--font-sans)">₹</text>
 
     <defs>
       <linearGradient id="invGrad" x1="24" y1="16" x2="80" y2="88" gradientUnits="userSpaceOnUse">
@@ -181,7 +181,7 @@ const OpenOrders3D = ({ count }: { count: number }) => (
 
     {/* Orange Circular Counter Badge */}
     <circle cx="86" cy="62" r="16" fill="url(#orderBadgeGrad)" stroke="#FFFFFF" strokeWidth="2.5" filter="drop-shadow(0 4px 6px rgba(245,158,11,0.4))" />
-    <text x="86" y="68" textAnchor="middle" fontSize="16" fontWeight="extrabold" fill="#FFFFFF" fontFamily="system-ui, sans-serif">{count || 3}</text>
+    <text x="86" y="68" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#FFFFFF" fontFamily="var(--font-sans)">{count || 3}</text>
 
     <defs>
       <linearGradient id="orderBadgeGrad" x1="70" y1="46" x2="102" y2="78" gradientUnits="userSpaceOnUse">
@@ -312,11 +312,11 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="w-full space-y-1 my-1 min-w-0">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300 truncate" title="Sales Booked">
+          <p className="text-xs font-medium uppercase tracking-wider text-blue-900 dark:text-blue-300 truncate" title="Sales Booked">
             Sales Booked
           </p>
           <p
-            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#0B2A63] dark:text-blue-200 font-mono leading-none truncate max-w-full"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-[#0B2A63] dark:text-blue-200 leading-tight truncate max-w-full"
             title={salesValue}
           >
             {salesValue}
@@ -341,11 +341,11 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="w-full space-y-1 my-1 min-w-0">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300 truncate" title="Collections">
+          <p className="text-xs font-medium uppercase tracking-wider text-emerald-900 dark:text-emerald-300 truncate" title="Collections">
             Collections
           </p>
           <p
-            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#064E3B] dark:text-emerald-200 font-mono leading-none truncate max-w-full"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-[#064E3B] dark:text-emerald-200 leading-tight truncate max-w-full"
             title={collectionsValue}
           >
             {collectionsValue}
@@ -370,11 +370,11 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="w-full space-y-1 my-1 min-w-0">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-rose-900 dark:text-rose-300 truncate" title="Receivables">
+          <p className="text-xs font-medium uppercase tracking-wider text-rose-900 dark:text-rose-300 truncate" title="Receivables">
             Receivables
           </p>
           <p
-            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#9F1239] dark:text-rose-200 font-mono leading-none truncate max-w-full"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-[#9F1239] dark:text-rose-200 leading-tight truncate max-w-full"
             title={receivablesValue}
           >
             {receivablesValue}
@@ -399,11 +399,11 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="w-full space-y-1 my-1 min-w-0">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 truncate" title="Open Orders">
+          <p className="text-xs font-medium uppercase tracking-wider text-amber-900 dark:text-amber-300 truncate" title="Open Orders">
             Open Orders
           </p>
           <p
-            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#78350F] dark:text-amber-200 font-mono leading-none truncate max-w-full"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-[#78350F] dark:text-amber-200 leading-tight truncate max-w-full"
             title={`${openOrdersCount} Orders`}
           >
             {openOrdersCount} Orders
@@ -428,11 +428,11 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="w-full space-y-1 my-1 min-w-0">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300 truncate" title="Active Stores">
+          <p className="text-xs font-medium uppercase tracking-wider text-purple-900 dark:text-purple-300 truncate" title="Active Stores">
             Active Stores
           </p>
           <p
-            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#581C87] dark:text-purple-200 font-mono leading-none truncate max-w-full"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-[#581C87] dark:text-purple-200 leading-tight truncate max-w-full"
             title={`${activeStoresCount} Accounts`}
           >
             {activeStoresCount} Accounts
@@ -457,11 +457,11 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="w-full space-y-1 my-1 min-w-0">
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 truncate" title="Pairs Booked">
+          <p className="text-xs font-medium uppercase tracking-wider text-cyan-900 dark:text-cyan-300 truncate" title="Pairs Booked">
             Pairs Booked
           </p>
           <p
-            className="text-xl sm:text-2xl 2xl:text-[28px] font-extrabold tracking-tight text-[#0E7490] dark:text-cyan-200 font-mono leading-none truncate max-w-full"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-[#0E7490] dark:text-cyan-200 leading-tight truncate max-w-full"
             title={typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
           >
             {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}

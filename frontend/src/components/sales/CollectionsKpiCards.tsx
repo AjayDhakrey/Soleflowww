@@ -75,7 +75,7 @@ export const AssignedReceivables3D = () => (
       {/* Rupee Coin Seal on Bottom Right */}
       <g filter="drop-shadow(0 3px 5px rgba(4,120,87,0.4))">
         <circle cx="72" cy="70" r="11" fill="url(#coinRupeeCol)" stroke="#FFFFFF" strokeWidth="2.5" />
-        <text x="72" y="74" textAnchor="middle" fontSize="11" fontWeight="900" fill="#FFFFFF" fontFamily="system-ui, sans-serif">
+        <text x="72" y="74" textAnchor="middle" fontSize="11" fontWeight="700" fill="#FFFFFF" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -180,7 +180,7 @@ export const MoneySackCoins3D = () => (
           fill="url(#sackBody)"
         />
         {/* White Rupee Symbol on Front */}
-        <text x="48" y="66" textAnchor="middle" fontSize="18" fontWeight="900" fill="#FFFFFF" fontFamily="system-ui, sans-serif">
+        <text x="48" y="66" textAnchor="middle" fontSize="18" fontWeight="700" fill="#FFFFFF" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -279,11 +279,11 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <AssignedReceivables3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Assigned Receivables">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Assigned Receivables">
             Total Assigned Receivables
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
             title={`₹${(totalAssignedDue / 100000).toFixed(2)}L`}
           >
             ₹{(totalAssignedDue / 100000).toFixed(2)}L
@@ -303,15 +303,15 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <OverdueCalendar3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Overdue Stores">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Overdue Stores">
             Overdue Stores
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${pendingStoresCount} Accounts`}
           >
             <span className="tabular-nums">{pendingStoresCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 tracking-normal">Accounts</span>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal">Accounts</span>
           </p>
           <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Need field collection visits">
             Need field collection visits
@@ -328,11 +328,11 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <MoneySackCoins3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Collected This Month">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Collected This Month">
             Collected This Month
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
             title={`₹${(collectedThisMonth / 100000).toFixed(2)}L`}
           >
             ₹{(collectedThisMonth / 100000).toFixed(2)}L
@@ -352,11 +352,11 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
       >
         <ChequePen3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Cheques in Clearing">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Cheques in Clearing">
             Cheques in Clearing
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate"
             title={`₹${(chequesInClearingAmount / 100000).toFixed(2)}L`}
           >
             ₹{(chequesInClearingAmount / 100000).toFixed(2)}L

@@ -1,5 +1,31 @@
 export type UserRole = 'admin' | 'salesperson';
 
+export interface Organization {
+  id: string;
+  name: string;
+  phone?: string;
+  city?: string;
+  state?: string;
+  gstin?: string;
+  owner_id?: string;
+  status: 'active' | 'suspended';
+  is_demo?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface OrgInvite {
+  id: string;
+  org_id: string;
+  email: string;
+  role: UserRole;
+  token: string;
+  invited_by?: string;
+  expires_at: string;
+  accepted_at?: string;
+  created_at: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -10,7 +36,14 @@ export interface User {
   roleLabel: string;
   phone?: string;
   zone?: string;
+  org_id?: string;
+  orgId?: string;
+  isSuperAdmin?: boolean;
+  is_super_admin?: boolean;
+  isDemoAccount?: boolean;
+  is_demo_account?: boolean;
 }
+
 
 export interface CustomerActivity {
   id: string;

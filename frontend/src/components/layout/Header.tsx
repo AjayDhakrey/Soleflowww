@@ -8,6 +8,11 @@ interface HeaderProps {
   onNavigate: (path: string) => void;
 }
 
+import { useAuth } from '../../auth/AuthProvider';
+import { Shield, Building2, ChevronDown, Check } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { Organization } from '../../types';
+
 export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   const {
     currentUser,
@@ -17,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     designs,
     notifications,
     markNotificationAsRead,
+    markAllNotificationsAsRead,
     setIsPaymentModalOpen,
     setIsCreateOrderModalOpen,
     setIsAddCustomerModalOpen,
@@ -26,6 +32,21 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     isDarkMode,
     toggleDarkMode,
   } = useApp();
+
+  const { org, isSuperAdmin, isDemoAccount, activeOrgId, setActiveOrgId } = useAuth();
+  const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
+  const [orgList, setOrgList] = useState<Organization[]>([]);
+  const orgDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isSuperAdmin && supabase) {
+      supabase.from('organizations').select('*').then(({ data }) => {
+        if (data) setOrgList(data as Organization[]);
+      });
+    }
+  }, [isSuperAdmin]);
+
+  const activeOrgName = orgList.find((o) => o.id === activeOrgId)?.name || org?.name || 'Selected Business';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -52,6 +73,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         setIsNewMenuOpen(false);
         setIsNotifDropdownOpen(false);
         setIsProfileMenuOpen(false);
+        setIsOrgDropdownOpen(false);
         searchInputRef.current?.blur();
       }
     };
@@ -75,10 +97,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
       if (profileRef.current && !profileRef.current.contains(target)) {
         setIsProfileMenuOpen(false);
       }
+      if (orgDropdownRef.current && !orgDropdownRef.current.contains(target)) {
+        setIsOrgDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -113,15 +139,36 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     matchedCustomers.length > 0 || matchedOrders.length > 0 || matchedDesigns.length > 0;
 
   return (
-    <header className="h-[72px] bg-surface border-b border-border px-4 md:px-8 flex items-center justify-between gap-4 sticky top-0 z-20">
-      {/* Left: Mobile Drawer Trigger + Search Bar in one line */}
-      <div className="flex items-center gap-3 flex-1 max-w-[640px]">
-        <button
-          type="button"
-          onClick={toggleMobileSidebar}
-          className="md:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 cursor-pointer"
-          aria-label="Toggle navigation menu"
-        >
+    <div className="sticky top-0 z-20">
+      {/* Super Admin Active Tenant Amber Banner */}
+      {isSuperAdmin && activeOrgId && (
+        <div className="bg-amber-500 text-slate-950 px-4 py-1.5 text-xs font-semibold flex items-center justify-between border-b border-amber-600/30 shadow-xs select-none">
+          <div className="flex items-center gap-2">
+            <Shield className="w-3.5 h-3.5 text-slate-950" />
+            <span>
+              Viewing: <strong>{activeOrgName}</strong> — Platform Admin Mode (Tenant Isolated)
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveOrgId(null)}
+            className="text-[11px] bg-slate-950 text-amber-300 hover:bg-slate-900 px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer"
+          >
+            Exit to All Businesses
+          </button>
+        </div>
+      )}
+
+      <header className="h-[72px] bg-surface border-b border-border px-4 md:px-8 flex items-center justify-between gap-4">
+        {/* Left: Mobile Drawer Trigger + Search Bar in one line */}
+        <div className="flex items-center gap-3 flex-1 max-w-[640px]">
+          <button
+            type="button"
+            onClick={toggleMobileSidebar}
+            className="md:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 cursor-pointer"
+            aria-label="Toggle navigation menu"
+          >
+
           <Icons.Dashboard size={20} strokeWidth={1.75} />
         </button>
 
@@ -140,7 +187,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             }}
             onFocus={() => setIsSearchOpen(true)}
             placeholder="Search customers, orders, designs, invoices..."
-            className="w-full h-11 md:h-12 pl-11 pr-20 bg-muted hover:bg-muted/80 focus:bg-surface border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            className="w-full h-11 md:h-12 pl-11 pr-20 bg-muted hover:bg-muted/80 focus:bg-surface border border-border rounded-xl text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           />
           <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1">
             <kbd className="px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground bg-surface border border-border rounded shadow-2xs">
@@ -336,6 +383,77 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           )}
         </div>
 
+        {/* Super Admin Business Switcher */}
+        {isSuperAdmin && (
+          <div className="relative" ref={orgDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
+              className={`h-11 px-3 rounded-full border flex items-center gap-2 transition-colors cursor-pointer text-xs font-semibold ${
+                activeOrgId
+                  ? 'border-amber-400 bg-amber-50 text-amber-900'
+                  : 'border-border bg-surface hover:bg-muted text-foreground'
+              }`}
+              title="Platform Business Switcher"
+            >
+              <Building2 size={15} className={activeOrgId ? 'text-amber-700' : 'text-primary'} />
+              <span className="max-w-[130px] truncate">
+                {activeOrgId ? activeOrgName : 'All Businesses'}
+              </span>
+              <ChevronDown size={14} className="text-muted-foreground" />
+            </button>
+
+            {isOrgDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-surface border border-border rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1.5 border-b border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Switch Active Business
+                </div>
+                <div className="max-h-60 overflow-y-auto divide-y divide-border/50 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveOrgId(null);
+                      setIsOrgDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl hover:bg-muted cursor-pointer transition-colors ${
+                      !activeOrgId ? 'bg-primary/10 text-primary font-bold' : 'text-foreground'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Shield size={14} className="text-primary" />
+                      <span>All Businesses (Platform)</span>
+                    </div>
+                    {!activeOrgId && <Check size={14} />}
+                  </button>
+
+                  {orgList.map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveOrgId(o.id);
+                        setIsOrgDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl hover:bg-muted cursor-pointer transition-colors ${
+                        activeOrgId === o.id ? 'bg-amber-100/70 text-amber-900 font-bold' : 'text-foreground'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <Building2 size={14} className="text-muted-foreground shrink-0" />
+                        <span className="truncate">{o.name}</span>
+                        {o.is_demo && (
+                          <span className="text-[8px] px-1 py-0.2 bg-amber-200 text-amber-800 rounded font-bold">DEMO</span>
+                        )}
+                      </div>
+                      {activeOrgId === o.id && <Check size={14} className="text-amber-800 shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 44px Round Notification Bell */}
         <div className="relative" ref={notifRef}>
           <button
@@ -346,7 +464,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           >
             <Icons.Notifications size={20} strokeWidth={1.75} />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-surface">
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -358,27 +476,44 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 <span className="text-sm font-bold text-foreground">
                   Notifications
                 </span>
-                <span className="text-xs text-muted-foreground hover:text-foreground font-medium cursor-pointer">
-                  Mark all read
-                </span>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => markAllNotificationsAsRead()}
+                    className="text-xs text-primary hover:underline font-semibold cursor-pointer"
+                  >
+                    Mark all read
+                  </button>
+                )}
               </div>
               <div className="max-h-72 overflow-y-auto divide-y divide-border mt-1">
-                {notifications.slice(0, 5).map((n) => (
-                  <div
-                    key={n.id}
-                    onClick={() => markNotificationAsRead(n.id)}
-                    className={`p-3 rounded-xl hover:bg-muted cursor-pointer transition-colors ${
-                      !n.read ? 'bg-muted/70' : ''
-                    }`}
-                  >
-                    <p className="text-xs font-semibold text-foreground">
-                      {n.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                      {n.desc}
-                    </p>
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-muted-foreground">
+                    No new notifications
                   </div>
-                ))}
+                ) : (
+                  notifications.slice(0, 5).map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => markNotificationAsRead(n.id)}
+                      className={`p-3 rounded-xl hover:bg-muted cursor-pointer transition-colors ${
+                        !n.read ? 'bg-muted/70 font-semibold' : 'opacity-80'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-foreground truncate">
+                          {n.title}
+                        </p>
+                        {!n.read && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        {n.desc}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -395,7 +530,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
               <p className="text-xs font-semibold text-foreground leading-tight">
                 {currentUser.name}
               </p>
-              <p className="text-[11px] text-muted-foreground capitalize">
+              <p className="text-[10px] leading-tight text-muted-foreground capitalize">
                 {currentUser.role === 'admin' ? 'Admin' : 'Salesman'}
               </p>
             </div>
@@ -474,5 +609,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         </div>
       </div>
     </header>
+  </div>
   );
 };
+
+

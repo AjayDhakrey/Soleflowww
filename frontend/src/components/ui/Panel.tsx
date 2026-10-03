@@ -29,12 +29,12 @@ export const Panel: React.FC<PanelProps> = ({
         <div className="px-6 py-5 border-b border-border flex flex-wrap items-center justify-between gap-4">
           <div>
             {title && (
-              <h3 className="text-lg md:text-xl font-bold text-foreground tracking-tight">
+              <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">
                 {title}
               </h3>
             )}
             {subtitle && (
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 {subtitle}
               </p>
             )}

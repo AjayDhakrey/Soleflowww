@@ -150,7 +150,7 @@ const TotalReceivables3D = () => (
       <g filter="drop-shadow(0 4px 6px rgba(202,138,4,0.35))">
         <circle cx="64" cy="36" r="16" fill="url(#coinGold)" stroke="#CA8A04" strokeWidth="1.5" />
         <circle cx="64" cy="36" r="13" stroke="#FDE047" strokeWidth="1" strokeDasharray="2 2" fill="none" />
-        <text x="64" y="42" textAnchor="middle" fontSize="15" fontWeight="900" fill="#854D0E" fontFamily="system-ui, -apple-system, sans-serif">
+        <text x="64" y="42" textAnchor="middle" fontSize="15" fontWeight="900" fill="#854D0E" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -172,7 +172,7 @@ const TotalReceivables3D = () => (
         <circle cx="68" cy="56" r="2" fill="#E11D48" />
 
         {/* Rupee Symbol on Front */}
-        <text x="46" y="74" textAnchor="middle" fontSize="22" fontWeight="900" fill="#FFFFFF" fontFamily="system-ui, -apple-system, sans-serif">
+        <text x="46" y="74" textAnchor="middle" fontSize="22" fontWeight="900" fill="#FFFFFF" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -346,14 +346,14 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
       >
         <div className="flex items-center gap-3 min-w-0">
           <TotalCustomers3D />
-          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Customers">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Total Customers">
             Total Customers
           </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
             title={typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : String(totalCustomers)}
           >
             {typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : totalCustomers}
@@ -364,7 +364,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
           <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
             ↑ {totalCustomersGrowth}%
           </span>
-          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
+          <span className="text-[11px] text-muted-foreground truncate">
             vs prev period
           </span>
         </div>
@@ -385,14 +385,14 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
       >
         <div className="flex items-center gap-3 min-w-0">
           <TotalReceivables3D />
-          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Total Receivables">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Total Receivables">
             Total Receivables
           </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
             title={totalReceivables}
           >
             {totalReceivables}
@@ -403,7 +403,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
           <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
             ↑ {totalReceivablesGrowth}%
           </span>
-          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
+          <span className="text-[11px] text-muted-foreground truncate">
             vs prev period
           </span>
         </div>
@@ -424,14 +424,14 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
       >
         <div className="flex items-center gap-3 min-w-0">
           <OverdueAccounts3D />
-          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Overdue Accounts">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Overdue Accounts">
             Overdue Accounts
           </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
             title={typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : String(overdueAccounts)}
           >
             {typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : overdueAccounts}
@@ -442,7 +442,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
           <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 shrink-0">
             ↑ {overdueGrowth}%
           </span>
-          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
+          <span className="text-[11px] text-muted-foreground truncate">
             vs prev period
           </span>
         </div>
@@ -463,14 +463,14 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
       >
         <div className="flex items-center gap-3 min-w-0">
           <ClearedAccounts3D />
-          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug truncate" title="Cleared Accounts">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Cleared Accounts">
             Cleared Accounts
           </span>
         </div>
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="text-2xl sm:text-3xl 2xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
             title={typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : String(clearedAccounts)}
           >
             {typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : clearedAccounts}
@@ -481,7 +481,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
           <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
             ↑ {clearedGrowth}%
           </span>
-          <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate">
+          <span className="text-[11px] text-muted-foreground truncate">
             vs prev period
           </span>
         </div>

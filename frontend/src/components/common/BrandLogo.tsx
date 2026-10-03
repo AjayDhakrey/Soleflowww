@@ -40,15 +40,15 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
       {showText && (
         <div className="min-w-0">
-          <h2 className="text-base font-bold text-foreground tracking-tight leading-tight truncate">
+          <h2 className="font-display text-sm font-bold text-foreground truncate">
             ShoeConnect
           </h2>
           {subtitle ? (
-            <p className="text-xs text-muted-foreground truncate mt-0.5">
+            <p className="text-[10px] text-muted-foreground/55 truncate mt-0.5">
               {subtitle}
             </p>
           ) : (
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-[10px] text-muted-foreground/55 truncate">
               Step Towards Better Tomorrow
             </p>
           )}

@@ -142,15 +142,15 @@ export const DiscountRequestDrawer: React.FC<DiscountRequestDrawerProps> = ({
         {/* Drawer Header */}
         <div className="px-6 py-4.5 border-b border-border flex items-center justify-between bg-surface shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs font-mono">
+            <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs">
               <Percent className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-base text-foreground tracking-tight">
+                <h3 className="font-bold text-base text-foreground tracking-tight font-display">
                   Discount Authorization
                 </h3>
-                <span className="font-mono text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border">
+                <span className="text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border tabular-nums">
                   {request.id}
                 </span>
               </div>
@@ -243,46 +243,46 @@ export const DiscountRequestDrawer: React.FC<DiscountRequestDrawerProps> = ({
                 <tbody className="divide-y divide-border">
                   <tr>
                     <td className="py-2.5 px-3 text-muted-foreground font-medium">Order Subtotal</td>
-                    <td className="py-2.5 px-3 text-right font-mono">
+                    <td className="py-2.5 px-3 text-right tabular-nums">
                       ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                    <td className="py-2.5 px-3 text-right tabular-nums font-semibold">
                       ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   <tr>
                     <td className="py-2.5 px-3 text-muted-foreground font-medium">Trade Discount</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                    <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
                       -₹{defaultDiscountAmt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400">
+                    <td className="py-2.5 px-3 text-right tabular-nums font-bold text-purple-600 dark:text-purple-400">
                       -₹{requestedDiscountAmt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   <tr>
                     <td className="py-2.5 px-3 text-muted-foreground font-medium">Taxable Subtotal</td>
-                    <td className="py-2.5 px-3 text-right font-mono">
+                    <td className="py-2.5 px-3 text-right tabular-nums">
                       ₹{defaultTaxable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono">
+                    <td className="py-2.5 px-3 text-right tabular-nums">
                       ₹{requestedTaxable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   <tr>
                     <td className="py-2.5 px-3 text-muted-foreground font-medium">GST (12%)</td>
-                    <td className="py-2.5 px-3 text-right font-mono">
+                    <td className="py-2.5 px-3 text-right tabular-nums">
                       ₹{defaultGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono">
+                    <td className="py-2.5 px-3 text-right tabular-nums">
                       ₹{requestedGst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                   <tr className="bg-muted/30 font-bold">
                     <td className="py-2.5 px-3 text-foreground">Net Payable Invoice</td>
-                    <td className="py-2.5 px-3 text-right font-mono">
+                    <td className="py-2.5 px-3 text-right tabular-nums">
                       ₹{defaultNet.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                    <td className="py-2.5 px-3 text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-display">
                       ₹{requestedNet.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -296,7 +296,7 @@ export const DiscountRequestDrawer: React.FC<DiscountRequestDrawerProps> = ({
                 <span className="text-[10px] uppercase font-bold text-purple-700 dark:text-purple-300 block">
                   MARGIN CONCESSION
                 </span>
-                <span className="text-base font-bold font-mono text-purple-900 dark:text-purple-200 mt-0.5 block">
+                <span className="text-base font-bold font-display text-purple-900 dark:text-purple-200 mt-0.5 block tabular-nums">
                   ₹{request.marginConcession.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <span className="text-[10px] text-purple-600 dark:text-purple-400 mt-0.5 block">

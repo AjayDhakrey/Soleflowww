@@ -302,7 +302,7 @@ export const NavPayments3D: React.FC<{ className?: string }> = ({ className = 'w
   </div>
 );
 
-// 8. Reports & Alerts (3D Analytics Chart Document + Red Notification Bell)
+// 8. Reports & Alerts (3D Analytics Chart Document)
 export const NavReports3D: React.FC<{ className?: string }> = ({ className = 'w-9 h-9' }) => (
   <div className={`relative flex items-center justify-center shrink-0 ${className}`}>
     <svg viewBox="0 0 100 100" className="w-full h-full select-none drop-shadow-xs" fill="none">
@@ -311,29 +311,19 @@ export const NavReports3D: React.FC<{ className?: string }> = ({ className = 'w-
           <stop offset="0%" stopColor="#CCFBF1" stopOpacity="0.9" />
           <stop offset="100%" stopColor="#CCFBF1" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="bellGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#FB7185" />
-          <stop offset="100%" stopColor="#E11D48" />
-        </linearGradient>
       </defs>
 
       <circle cx="50" cy="50" r="42" fill="url(#repGlow)" />
 
       {/* 3D Document Sheet */}
       <g filter="drop-shadow(0 4px 6px rgba(0,0,0,0.1))">
-        <rect x="24" y="22" width="46" height="56" rx="8" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1.5" />
+        <rect x="24" y="20" width="52" height="60" rx="8" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1.5" />
+        {/* Header line */}
+        <rect x="32" y="28" width="22" height="4" rx="2" fill="#94A3B8" />
         {/* Chart Bars */}
-        <rect x="32" y="52" width="6" height="18" rx="2" fill="#38BDF8" />
-        <rect x="42" y="40" width="6" height="30" rx="2" fill="#F43F5E" />
-        <rect x="52" y="34" width="6" height="36" rx="2" fill="#10B981" />
-      </g>
-
-      {/* 3D Red Alert Bell on Corner */}
-      <g filter="drop-shadow(0 4px 7px rgba(225,29,72,0.4))">
-        <circle cx="70" cy="68" r="14" fill="url(#bellGrad)" stroke="#FFFFFF" strokeWidth="2.5" />
-        {/* Bell Clapper */}
-        <path d="M66 65C66 62 68 60 70 60C72 60 74 62 74 65V70H66V65Z" fill="#FFFFFF" />
-        <circle cx="70" cy="73" r="2" fill="#FFFFFF" />
+        <rect x="32" y="52" width="8" height="20" rx="2" fill="#38BDF8" />
+        <rect x="46" y="42" width="8" height="30" rx="2" fill="#F43F5E" />
+        <rect x="60" y="34" width="8" height="38" rx="2" fill="#10B981" />
       </g>
     </svg>
   </div>

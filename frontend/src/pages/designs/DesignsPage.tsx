@@ -477,7 +477,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         {/* Top Right: Status Badges & Quick View Eye */}
                         <div className="absolute top-3 right-3 flex items-center gap-1.5">
                           {isNew && !shoe.isArchived && (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/95 text-white tracking-wider shadow-sm flex items-center gap-1 backdrop-blur-xs">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/95 text-white tracking-wider shadow-sm flex items-center gap-1 backdrop-blur-xs">
                               <Sparkles className="w-2.5 h-2.5" /> NEW
                             </span>
                           )}
@@ -653,10 +653,10 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
           <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
               <div>
-                <h3 className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white tracking-tight font-display">
                   {quickViewShoe.name}
                 </h3>
-                <p className="text-xs font-mono text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Article Code: {quickViewShoe.articleCode} • {quickViewShoe.category}
                 </p>
               </div>

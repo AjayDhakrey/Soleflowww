@@ -503,23 +503,23 @@ export const CreateOrderWizardModal: React.FC = () => {
               <div className="p-4 rounded-xl border border-border bg-muted/40 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Gross Goods Value ({totalPairs} Prs):</span>
-                  <span className="font-mono text-foreground">₹{subtotal.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums text-foreground">₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                   <span>Trade Discount ({tradeDiscountPercent}%):</span>
-                  <span className="font-mono">-₹{discountAmount.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums">-₹{discountAmount.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">GST (12% Footwear Slab):</span>
-                  <span className="font-mono text-foreground">+₹{gstAmount.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums text-foreground">+₹{gstAmount.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="pt-2 border-t border-border flex justify-between font-bold text-base text-foreground">
+                <div className="pt-2 border-t border-border flex justify-between font-bold text-base text-foreground font-display">
                   <span>Net Payable:</span>
-                  <span className="font-mono">₹{netTotalPayable.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums">₹{netTotalPayable.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-amber-600 dark:text-amber-400 font-semibold">
                   <span>Balance Due on Dispatch:</span>
-                  <span className="font-mono">₹{commercialBalance.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums">₹{commercialBalance.toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>

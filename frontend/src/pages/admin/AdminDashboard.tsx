@@ -207,10 +207,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       )}
                     </div>
                     <div className="mt-2 flex items-baseline justify-between gap-1">
-                      <span className={`text-lg font-extrabold font-mono tracking-tight ${isActive ? 'text-foreground' : 'text-muted-foreground/80'}`}>
+                      <span className={`text-lg font-bold font-display tracking-tight tabular-nums ${isActive ? 'text-foreground' : 'text-muted-foreground/80'}`}>
                         {st.count}
                       </span>
-                      <span className="text-[11px] font-semibold text-muted-foreground font-mono">
+                      <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
                         {formatLakh(st.value)}
                       </span>
                     </div>
@@ -347,15 +347,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     }`}
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-[11px] font-bold text-muted-foreground tracking-tight block truncate">
+                      <span className="text-[11px] font-semibold text-muted-foreground tracking-tight block truncate">
                         {b.label}
                       </span>
-                      <span className="text-[10px] text-muted-foreground font-semibold">
+                      <span className="text-[10px] text-muted-foreground font-medium">
                         {b.count} Stores
                       </span>
                     </div>
                     <div className="mt-2">
-                      <span className={`text-base sm:text-lg font-extrabold font-mono tracking-tight block ${isCritical ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
+                      <span className={`text-base sm:text-lg font-bold font-display tracking-tight tabular-nums block ${isCritical ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
                         {formatLakh(b.amount)}
                       </span>
                     </div>

@@ -241,11 +241,11 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <TotalRevenue3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Revenue">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Revenue">
             Total Revenue
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-display truncate"
             title={totalRevenue}
           >
             {totalRevenue}
@@ -260,11 +260,11 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <WholesaleMargin3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Average Wholesale Margin">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Average Wholesale Margin">
             Average Wholesale Margin
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-display truncate"
             title={avgMargin}
           >
             {avgMargin}
@@ -279,11 +279,11 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <RetailOutlets3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Active Retail Outlets">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Active Retail Outlets">
             Active Retail Outlets
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-display truncate"
             title={activeOutlets}
           >
             {activeOutlets}
@@ -301,11 +301,11 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
       >
         <MarginRequests3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Special Margin Requests">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Special Margin Requests">
             Special Margin Requests
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-amber-800 dark:text-amber-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-800 dark:text-amber-300 mt-0.5 font-display truncate"
             title={pendingRequests}
           >
             {pendingRequests}

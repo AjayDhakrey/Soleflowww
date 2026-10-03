@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole } from '../types';
+import { User, UserRole, Organization } from '../types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { MOCK_USERS } from '../data/mockData';
 
@@ -14,12 +14,32 @@ export interface UserProfile {
   cluster?: string | null;
   avatar_url?: string | null;
   is_active?: boolean;
+  org_id?: string | null;
+  is_super_admin?: boolean;
+  is_demo_account?: boolean;
+}
+
+export interface SignUpParams {
+  email: string;
+  password: string;
+  fullName: string;
+  phone: string;
+  businessName: string;
+  city?: string;
+  gstin?: string;
+  inviteToken?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   role: UserRole;
+  org: Organization | null;
+  orgId: string | null;
+  activeOrgId: string | null;
+  setActiveOrgId: (id: string | null) => void;
+  isSuperAdmin: boolean;
+  isDemoAccount: boolean;
   isAdmin: boolean;
   isSalesperson: boolean;
   isLoggedIn: boolean;
@@ -30,11 +50,14 @@ interface AuthContextType {
   hasRealSession: boolean;
   canManageCatalog: boolean;
   signIn: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (params: SignUpParams) => Promise<{ success: boolean; needsEmailVerification?: boolean; error?: string }>;
   signOut: () => Promise<void>;
   resetPasswordForEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; message: string }>;
   switchDemoRole: (role: UserRole) => void;
+  quickDemoLogin: (demoRole: 'superadmin' | 'admin' | 'salesperson') => { success: boolean };
   clearAuthError: () => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [org, setOrg] = useState<Organization | null>(null);
+  const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   // DEPRECATED: const [role, setRole] = useState<UserRole>('admin');
   const [role, setRole] = useState<UserRole>('salesperson');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -73,24 +98,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       role: prof.role || 'salesperson',
       avatar: prof.avatar_url || (prof.role === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar),
       initials,
-      roleLabel: prof.role_label || (prof.role === 'admin' ? 'Trader Admin' : 'Field Sales Rep'),
+      roleLabel: prof.is_super_admin ? 'Platform Owner' : (prof.role_label || (prof.role === 'admin' ? 'Trader Admin' : 'Field Sales Rep')),
       phone: prof.phone || undefined,
       zone: prof.zone || undefined,
+      org_id: prof.org_id || undefined,
+      orgId: prof.org_id || undefined,
+      isSuperAdmin: prof.is_super_admin,
+      is_super_admin: prof.is_super_admin,
+      isDemoAccount: prof.is_demo_account,
+      is_demo_account: prof.is_demo_account,
     };
   };
 
   // Load profile from Supabase profiles table
-  const fetchUserProfile = async (userId: string, email: string): Promise<UserProfile> => {
+  const fetchUserProfile = async (userId: string, email: string): Promise<{ profile: UserProfile; organization: Organization | null }> => {
     const fallbackRole: UserRole =
       email.toLowerCase().includes('admin') || email === 'soleflow.admin@gmail.com' ? 'admin' : 'salesperson';
     const fallbackName = fallbackRole === 'admin' ? 'Vikram Malhotra' : 'Rahul Sharma';
 
+    const fallbackOrg: Organization = {
+      id: 'default-org-uuid',
+      name: 'SoleFlow Footwear',
+      status: 'active',
+      is_demo: false,
+    };
+
     if (!supabase) {
       return {
-        id: userId,
-        email,
-        name: fallbackName,
-        role: fallbackRole,
+        profile: {
+          id: userId,
+          email,
+          name: fallbackName,
+          role: fallbackRole,
+          org_id: fallbackOrg.id,
+          is_super_admin: false,
+          is_demo_account: false,
+        },
+        organization: fallbackOrg,
       };
     }
 
@@ -103,36 +147,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error || !data) {
         return {
-          id: userId,
-          email,
-          name: fallbackName,
-          role: fallbackRole,
+          profile: {
+            id: userId,
+            email,
+            name: fallbackName,
+            role: fallbackRole,
+            org_id: fallbackOrg.id,
+            is_super_admin: false,
+            is_demo_account: false,
+          },
+          organization: fallbackOrg,
         };
       }
 
       const assignedRole: UserRole = (data.role as UserRole) || fallbackRole;
       const assignedName = (data as any).name || (data as any).full_name || fallbackName;
+      const userOrgId = data.org_id || null;
+
+      let loadedOrg: Organization | null = null;
+      if (userOrgId) {
+        const { data: orgData } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', userOrgId)
+          .maybeSingle();
+        
+        if (orgData) {
+          loadedOrg = orgData as Organization;
+        }
+      }
 
       return {
-        id: data.id || userId,
-        email: email || (data as any).email,
-        name: assignedName,
-        role: assignedRole,
-        role_label: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
-        phone: data.phone,
-        zone: data.zone,
-        avatar_url: (data as any).avatar_url,
+        profile: {
+          id: data.id || userId,
+          email: email || (data as any).email,
+          name: assignedName,
+          role: assignedRole,
+          role_label: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
+          phone: data.phone,
+          zone: data.zone,
+          avatar_url: (data as any).avatar_url,
+          org_id: userOrgId,
+          is_super_admin: Boolean((data as any).is_super_admin),
+          is_demo_account: Boolean((data as any).is_demo_account),
+        },
+        organization: loadedOrg,
       };
     } catch (err) {
       console.error('Error loading profile from Supabase:', err);
       return {
-        id: userId,
-        email,
-        name: fallbackName,
-        role: fallbackRole,
+        profile: {
+          id: userId,
+          email,
+          name: fallbackName,
+          role: fallbackRole,
+          org_id: fallbackOrg.id,
+          is_super_admin: false,
+          is_demo_account: false,
+        },
+        organization: fallbackOrg,
       };
     }
   };
+
 
   // Initial Auth Check
   useEffect(() => {
@@ -147,9 +224,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             const userEmail = session.user.email || 'user@soleflow.com';
-            const prof = await fetchUserProfile(session.user.id, userEmail);
+            const { profile: prof, organization: userOrg } = await fetchUserProfile(session.user.id, userEmail);
             if (isMounted) {
               setProfile(prof);
+              setOrg(userOrg);
               setRole(prof.role);
               setUser(mapProfileToUser(prof));
               setHasRealSession(true);
@@ -179,6 +257,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: activeUser.email,
                 name: activeUser.name,
                 role: activeRole,
+                org_id: 'demo-org-uuid',
+                is_super_admin: false,
+                is_demo_account: true,
+              });
+              setOrg({
+                id: 'demo-org-uuid',
+                name: 'Demo Footwear Traders',
+                status: 'active',
+                is_demo: true,
               });
               setHasRealSession(false);
             }
@@ -200,8 +287,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const email = session.user.email || 'user@soleflow.com';
-          const prof = await fetchUserProfile(session.user.id, email);
+          const { profile: prof, organization: userOrg } = await fetchUserProfile(session.user.id, email);
           setProfile(prof);
+          setOrg(userOrg);
           setRole(prof.role);
           setUser(mapProfileToUser(prof));
           setHasRealSession(true);
@@ -212,6 +300,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
+          setOrg(null);
+          setActiveOrgId(null);
           setHasRealSession(false);
           localStorage.removeItem(AUTH_STORAGE_KEY);
         }
@@ -228,10 +318,186 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [isDemoMode, isConfigured, allowDemo]);
 
+  const refreshProfile = async () => {
+    if (!supabase || !profile?.id) return;
+    try {
+      const { profile: updatedProf, organization: updatedOrg } = await fetchUserProfile(profile.id, profile.email);
+      setProfile(updatedProf);
+      setOrg(updatedOrg);
+      setRole(updatedProf.role);
+      setUser(mapProfileToUser(updatedProf));
+    } catch (err) {
+      console.error('Failed to refresh profile:', err);
+    }
+  };
+
+  // Sign Up implementation
+  const signUp = async (params: SignUpParams): Promise<{ success: boolean; needsEmailVerification?: boolean; error?: string }> => {
+    setAuthError(null);
+    setIsLoading(true);
+
+    try {
+      if (!supabase || !isConfigured) {
+        if (allowDemo) {
+          const mockOrg: Organization = {
+            id: 'mock-new-org-' + Date.now(),
+            name: params.businessName,
+            phone: params.phone,
+            city: params.city || 'Agra',
+            state: 'Uttar Pradesh',
+            gstin: params.gstin,
+            status: 'active',
+            is_demo: false,
+          };
+          const mockUser: User = {
+            id: 'mock-user-' + Date.now(),
+            name: params.fullName,
+            email: params.email,
+            role: 'admin',
+            avatar: MOCK_USERS.admin.avatar,
+            initials: params.fullName.substring(0, 2).toUpperCase(),
+            roleLabel: 'Trader Admin',
+            phone: params.phone,
+            org_id: mockOrg.id,
+            orgId: mockOrg.id,
+          };
+          setUser(mockUser);
+          setOrg(mockOrg);
+          setRole('admin');
+          setProfile({
+            id: mockUser.id,
+            email: params.email,
+            name: params.fullName,
+            role: 'admin',
+            org_id: mockOrg.id,
+            phone: params.phone,
+          });
+          setIsLoading(false);
+          return { success: true, needsEmailVerification: false };
+        }
+        setIsLoading(false);
+        return { success: false, error: 'Database service is not configured.' };
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email: params.email.trim(),
+        password: params.password,
+        options: {
+          data: {
+            full_name: params.fullName,
+            phone: params.phone,
+            business_name: params.businessName,
+            city: params.city || 'Agra',
+            gstin: params.gstin || '',
+            invite_token: params.inviteToken || null,
+          },
+          emailRedirectTo: `${window.location.origin}/#login`,
+        },
+      });
+
+      if (error) {
+        setAuthError(error.message);
+        setIsLoading(false);
+        return { success: false, error: error.message };
+      }
+
+      const needsEmailVerification = !data.session && Boolean(data.user && !data.user.confirmed_at);
+
+      if (data.user && data.session) {
+        const { profile: prof, organization: userOrg } = await fetchUserProfile(data.user.id, params.email);
+        setProfile(prof);
+        setOrg(userOrg);
+        setRole(prof.role);
+        setUser(mapProfileToUser(prof));
+        setHasRealSession(true);
+      }
+
+      setIsLoading(false);
+      return { success: true, needsEmailVerification };
+    } catch (err: any) {
+      console.error('Sign up error:', err);
+      const msg = err?.message || 'Failed to create account.';
+      setAuthError(msg);
+      setIsLoading(false);
+      return { success: false, error: msg };
+    }
+  };
+
+  // Quick Instant Demo Login
+  const quickDemoLogin = (demoRole: 'superadmin' | 'admin' | 'salesperson') => {
+    setAuthError(null);
+    setIsLoading(false);
+
+    const isSuper = demoRole === 'superadmin';
+    const assignedRole: UserRole = demoRole === 'salesperson' ? 'salesperson' : 'admin';
+    const demoEmail = isSuper
+      ? 'superadmin@soleflow.com'
+      : assignedRole === 'salesperson'
+      ? 'sales@soleflow.com'
+      : 'admin@soleflow.com';
+    const demoName = isSuper
+      ? 'Platform Super Admin'
+      : assignedRole === 'salesperson'
+      ? 'Rahul Sharma'
+      : 'Vikram Malhotra';
+    const baseUser = assignedRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin;
+
+    const demoUser: User = {
+      ...baseUser,
+      id: isSuper ? 'superadmin-demo-uuid' : baseUser.id,
+      name: demoName,
+      email: demoEmail,
+      role: assignedRole,
+      isSuperAdmin: isSuper,
+      is_super_admin: isSuper,
+      isDemoAccount: true,
+      is_demo_account: true,
+      org_id: 'demo-org-uuid',
+      orgId: 'demo-org-uuid',
+    };
+
+    setUser(demoUser);
+    setRole(assignedRole);
+    setProfile({
+      id: demoUser.id,
+      email: demoEmail,
+      name: demoName,
+      role: assignedRole,
+      is_super_admin: isSuper,
+      is_demo_account: true,
+      org_id: 'demo-org-uuid',
+    });
+    setOrg({
+      id: 'demo-org-uuid',
+      name: isSuper ? 'Demo Platform View (All Businesses)' : 'Demo Footwear Traders',
+      status: 'active',
+      is_demo: true,
+    });
+    setHasRealSession(false);
+
+    try {
+      localStorage.setItem(
+        AUTH_STORAGE_KEY,
+        JSON.stringify({ isLoggedIn: true, role: assignedRole, email: demoEmail, isSuperAdmin: isSuper, user: demoUser })
+      );
+    } catch (e) {
+      console.warn('LocalStorage save session warning:', e);
+    }
+
+    return { success: true };
+  };
+
   // Sign In implementation
   const signIn = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     setAuthError(null);
     setIsLoading(true);
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const isDemoEmail =
+      normalizedEmail === 'admin@soleflow.com' ||
+      normalizedEmail === 'sales@soleflow.com' ||
+      normalizedEmail === 'superadmin@soleflow.com' ||
+      normalizedEmail.includes('soleflow.com');
 
     try {
       // 1. If real Supabase client is configured, attempt Supabase Auth
@@ -242,30 +508,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (error) {
-          // If Supabase auth fails and demo mode is allowed with default demo credentials
-          if (
-            allowDemo &&
-            ((email === 'admin@soleflow.com' && pass === 'admin123') ||
-              (email === 'sales@soleflow.com' && pass === 'sales123'))
-          ) {
-            console.warn('Supabase Auth error; falling back to demo session:', error.message);
-            const demoRole: UserRole = email.includes('sales') ? 'salesperson' : 'admin';
-            const demoUser = demoRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin;
-            setUser(demoUser);
-            setRole(demoRole);
-            setProfile({
-              id: demoUser.id,
-              email: demoUser.email,
-              name: demoUser.name,
-              role: demoRole,
-            });
-            setHasRealSession(false);
-            localStorage.setItem(
-              AUTH_STORAGE_KEY,
-              JSON.stringify({ isLoggedIn: true, role: demoRole, email: demoUser.email })
-            );
-            setIsLoading(false);
-            return { success: true };
+          // If Supabase auth fails and this is a demo email, fall back to instant demo session
+          if (isDemoEmail) {
+            console.warn('Supabase Auth demo account error; activating demo mode:', error.message);
+            const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
+              ? 'superadmin'
+              : normalizedEmail.includes('sales')
+              ? 'salesperson'
+              : 'admin';
+            return quickDemoLogin(roleForDemo);
           }
 
           setAuthError(error.message);
@@ -275,8 +526,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (data.user) {
           const userEmail = data.user.email || email;
-          const prof = await fetchUserProfile(data.user.id, userEmail);
+          const { profile: prof, organization: userOrg } = await fetchUserProfile(data.user.id, userEmail);
           setProfile(prof);
+          setOrg(userOrg);
           setRole(prof.role);
           setUser(mapProfileToUser(prof));
           setHasRealSession(true);
@@ -289,38 +541,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Demo mode / Mock credentials authentication (ONLY when allowDemo is true)
-      if (!allowDemo) {
-        setAuthError('Authentication failed.');
-        setIsLoading(false);
-        return { success: false, error: 'Authentication failed. Please check your credentials.' };
+      // 2. Offline / Demo mode fallback
+      if (isDemoEmail) {
+        const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
+          ? 'superadmin'
+          : normalizedEmail.includes('sales')
+          ? 'salesperson'
+          : 'admin';
+        return quickDemoLogin(roleForDemo);
       }
 
-      let assignedRole: UserRole = 'admin';
-      if (email === 'sales@soleflow.com' || email.toLowerCase().includes('sales')) {
-        assignedRole = 'salesperson';
-      }
-
-      const activeUser = assignedRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin;
-      setUser(activeUser);
-      setRole(assignedRole);
-      setProfile({
-        id: activeUser.id,
-        email: activeUser.email,
-        name: activeUser.name,
-        role: assignedRole,
-      });
-      setHasRealSession(false);
-
-      localStorage.setItem(
-        AUTH_STORAGE_KEY,
-        JSON.stringify({ isLoggedIn: true, role: assignedRole, email: activeUser.email })
-      );
-
+      setAuthError('Authentication failed.');
       setIsLoading(false);
-      return { success: true };
+      return { success: false, error: 'Authentication failed. Please check your credentials.' };
     } catch (err: any) {
       console.error('Sign in unexpected error:', err);
+      if (isDemoEmail) {
+        const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
+          ? 'superadmin'
+          : normalizedEmail.includes('sales')
+          ? 'salesperson'
+          : 'admin';
+        return quickDemoLogin(roleForDemo);
+      }
       const msg = err?.message || 'Login failed. Please check your credentials.';
       setAuthError(msg);
       setIsLoading(false);
@@ -340,6 +583,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setUser(null);
     setProfile(null);
+    setOrg(null);
+    setActiveOrgId(null);
     setHasRealSession(false);
     localStorage.removeItem(AUTH_STORAGE_KEY);
     window.location.hash = '#login';
@@ -394,6 +639,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: newUser.email,
       name: newUser.name,
       role: newRole,
+      org_id: 'demo-org-uuid',
+      is_demo_account: true,
+    });
+    setOrg({
+      id: 'demo-org-uuid',
+      name: 'Demo Footwear Traders',
+      status: 'active',
+      is_demo: true,
     });
     setHasRealSession(false);
     localStorage.setItem(
@@ -404,13 +657,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuthError = () => setAuthError(null);
 
-  const isAdminRole = role === 'admin' || profile?.role === 'admin' || user?.role === 'admin';
+  const isSuperAdmin = Boolean(profile?.is_super_admin || user?.is_super_admin);
+  const isDemoAccount = Boolean(profile?.is_demo_account || user?.is_demo_account);
+  const isAdminRole = isSuperAdmin || role === 'admin' || profile?.role === 'admin' || user?.role === 'admin';
   const canManageCatalog = isAdminRole;
 
   const value: AuthContextType = {
     user,
     profile,
     role,
+    org,
+    orgId: org?.id || profile?.org_id || null,
+    activeOrgId,
+    setActiveOrgId,
+    isSuperAdmin,
+    isDemoAccount,
     isAdmin: isAdminRole,
     isSalesperson: !isAdminRole,
     canManageCatalog,
@@ -421,14 +682,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     authError,
     isDemoMode,
     signIn,
+    signUp,
     signOut,
     resetPasswordForEmail,
     updatePassword,
     switchDemoRole,
+    quickDemoLogin,
     clearAuthError,
+    refreshProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+
 };
 
 export const useAuth = (): AuthContextType => {

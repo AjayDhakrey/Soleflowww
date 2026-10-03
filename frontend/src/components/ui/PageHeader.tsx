@@ -21,11 +21,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       {breadcrumbs && <Breadcrumbs items={breadcrumbs} className="mb-2" />}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-foreground tracking-tight leading-tight">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground truncate">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-sm md:text-base text-muted-foreground mt-1 max-w-2xl">
+            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
               {subtitle}
             </p>
           )}

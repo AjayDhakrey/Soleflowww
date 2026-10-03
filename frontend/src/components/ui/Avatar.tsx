@@ -8,9 +8,9 @@ export interface AvatarProps {
 }
 
 const sizeMap = {
-  sm: 'w-8 h-8 text-xs',
-  md: 'w-10 h-10 text-sm',
-  lg: 'w-11 h-11 text-base', // 44px per spec
+  sm: 'w-8 h-8 text-[10px]',
+  md: 'w-10 h-10 text-xs',
+  lg: 'w-11 h-11 text-sm',
 };
 
 export const Avatar: React.FC<AvatarProps> = ({
@@ -40,7 +40,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <div
-      className={`rounded-full shrink-0 flex items-center justify-center font-bold tracking-tight bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 select-none ${sizeClass} ${className}`}
+      className={`rounded-full shrink-0 flex items-center justify-center font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 select-none ${sizeClass} ${className}`}
     >
       {initials}
     </div>

@@ -67,7 +67,7 @@ export const ActiveArticles3D = ({ count = 6 }: { count?: number }) => (
       {/* Green Circular Count Badge on Bottom-Right */}
       <g filter="drop-shadow(0 3px 5px rgba(4,120,87,0.4))">
         <circle cx="74" cy="72" r="11" fill="#10B981" stroke="#FFFFFF" strokeWidth="2.5" />
-        <text x="74" y="76" textAnchor="middle" fontSize="11" fontWeight="900" fill="#FFFFFF" fontFamily="system-ui, sans-serif">
+        <text x="74" y="76" textAnchor="middle" fontSize="11" fontWeight="900" fill="#FFFFFF" fontFamily="var(--font-sans)">
           {count}
         </text>
       </g>
@@ -178,7 +178,7 @@ export const HighMargin3D = () => (
       {/* Gold Rupee Coin in Front */}
       <g filter="drop-shadow(0 4px 7px rgba(217,119,6,0.45))">
         <circle cx="58" cy="68" r="14" fill="url(#coinGoldMar)" stroke="#B45309" strokeWidth="1.5" />
-        <text x="58" y="73" textAnchor="middle" fontSize="14" fontWeight="900" fill="#78350F" fontFamily="system-ui, sans-serif">
+        <text x="58" y="73" textAnchor="middle" fontSize="14" fontWeight="900" fill="#78350F" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -251,15 +251,15 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ActiveArticles3D count={totalActiveModels} />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Active Articles">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Active Articles">
             Total Active Articles
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${totalActiveModels} Models`}
           >
             <span className="tabular-nums">{totalActiveModels}</span>
-            <span className="text-xs sm:text-sm font-bold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
+            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
               Models
             </span>
           </p>
@@ -273,15 +273,15 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <FastMovers3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Popular Fast-Movers">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Popular Fast-Movers">
             Popular Fast-Movers
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${popularStylesCount} Styles`}
           >
             <span className="tabular-nums">{popularStylesCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-blue-600/90 dark:text-blue-400/90 tracking-normal">
+            <span className="text-xs sm:text-sm font-semibold text-blue-600/90 dark:text-blue-400/90 tracking-normal">
               Styles
             </span>
           </p>
@@ -295,15 +295,15 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <HighMargin3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="High Margin Lines">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="High Margin Lines">
             High Margin Lines
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${highMarginCount} SKUs`}
           >
             <span className="tabular-nums">{highMarginCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
+            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
               SKUs
             </span>
           </p>
@@ -317,15 +317,15 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <SelectedShare3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Selected for Sharing">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Selected for Sharing">
             Selected for Sharing
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-sans truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
             title={`${selectedCount} Articles`}
           >
             <span className="tabular-nums">{selectedCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
+            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
               Articles
             </span>
           </p>

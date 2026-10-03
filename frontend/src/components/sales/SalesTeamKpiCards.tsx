@@ -180,7 +180,7 @@ export const CommissionAccrued3D = () => (
       <g filter="drop-shadow(0 4px 6px rgba(202,138,4,0.35))">
         <circle cx="64" cy="36" r="16" fill="url(#commCoinGold)" stroke="#CA8A04" strokeWidth="1.5" />
         <circle cx="64" cy="36" r="13" stroke="#FDE047" strokeWidth="1" strokeDasharray="2 2" fill="none" />
-        <text x="64" y="42" textAnchor="middle" fontSize="15" fontWeight="900" fill="#854D0E" fontFamily="system-ui, -apple-system, sans-serif">
+        <text x="64" y="42" textAnchor="middle" fontSize="15" fontWeight="700" fill="#854D0E" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -196,7 +196,7 @@ export const CommissionAccrued3D = () => (
         />
         <circle cx="68" cy="56" r="4.5" fill="#FFFFFF" filter="drop-shadow(0 2px 3px rgba(0,0,0,0.15))" />
         <circle cx="68" cy="56" r="2" fill="#047857" />
-        <text x="46" y="74" textAnchor="middle" fontSize="22" fontWeight="900" fill="#FFFFFF" fontFamily="system-ui, -apple-system, sans-serif">
+        <text x="46" y="74" textAnchor="middle" fontSize="22" fontWeight="700" fill="#FFFFFF" fontFamily="var(--font-sans)">
           ₹
         </text>
       </g>
@@ -283,12 +283,12 @@ export const SalesTeamKpiCards: React.FC<SalesTeamKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <FieldForce3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Field Reps">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Field Reps">
             Total Field Reps
           </span>
-          <p className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate flex items-baseline gap-1.5" title={`${totalReps} Executives`}>
+          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate flex items-baseline gap-1.5" title={`${totalReps} Executives`}>
             <span className="tabular-nums">{totalReps}</span>
-            <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 tracking-normal">Executives</span>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal">Executives</span>
           </p>
           <div className="flex items-center gap-2 mt-1 text-xs">
             <span className="font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -306,10 +306,10 @@ export const SalesTeamKpiCards: React.FC<SalesTeamKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <BookedRevenue3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Booked (Month)">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Booked (Month)">
             Total Booked (Month)
           </span>
-          <p className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate" title={`₹${(totalBooked / 100000).toFixed(1)}L`}>
+          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate" title={`₹${(totalBooked / 100000).toFixed(1)}L`}>
             ₹{(totalBooked / 100000).toFixed(1)}L
           </p>
           <div className="flex items-center gap-2 mt-1 text-xs">
@@ -328,10 +328,10 @@ export const SalesTeamKpiCards: React.FC<SalesTeamKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <CommissionAccrued3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Commission Accrued">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Commission Accrued">
             Commission Accrued
           </span>
-          <p className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate" title={`₹${Number(commissionAccrued || 0).toLocaleString('en-IN')}`}>
+          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate" title={`₹${Number(commissionAccrued || 0).toLocaleString('en-IN')}`}>
             ₹{Number(commissionAccrued || 0).toLocaleString('en-IN')}
           </p>
           <div className="flex items-center gap-2 mt-1 text-xs">
@@ -350,12 +350,12 @@ export const SalesTeamKpiCards: React.FC<SalesTeamKpiCardsProps> = ({
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <FieldVisits3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Today's Field Visits">
+          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Today's Field Visits">
             Today's Field Visits
           </span>
-          <p className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-0.5 font-sans truncate flex items-baseline gap-1.5" title={`${visitsDone} / ${visitsGoal} Done`}>
+          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate flex items-baseline gap-1.5" title={`${visitsDone} / ${visitsGoal} Done`}>
             <span className="tabular-nums">{visitsDone} / {visitsGoal}</span>
-            <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 tracking-normal">Done</span>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal">Done</span>
           </p>
           <div className="flex items-center gap-2 mt-1 text-xs">
             <span className="font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
