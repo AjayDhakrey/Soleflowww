@@ -332,7 +332,7 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
 
     const currentSales = currentOrders.reduce((sum, o) => sum + Number(o.netPayable || o.subtotal || 0), 0);
     const prevSales = prevOrders.reduce((sum, o) => sum + Number(o.netPayable || o.subtotal || 0), 0);
-    const salesChange = prevSales > 0 ? Math.round(((currentSales - prevSales) / prevSales) * 100) : 14;
+    const salesChange = prevSales > 0 ? Math.round(((currentSales - prevSales) / prevSales) * 100) : (currentSales > 0 ? 100 : 0);
 
     // 2. Collections Received
     let currentPayments = scopedPayments.filter((p) => p.status !== 'bounced' && p.status !== 'reversed' && isInCurrentPeriod(p.paymentDate));
@@ -343,7 +343,7 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
 
     const currentCollections = currentPayments.reduce((sum, p) => sum + Number(p.paymentAmount || 0), 0);
     const prevCollections = prevPayments.reduce((sum, p) => sum + Number(p.paymentAmount || 0), 0);
-    const collectionsChange = prevCollections > 0 ? Math.round(((currentCollections - prevCollections) / prevCollections) * 100) : 8;
+    const collectionsChange = prevCollections > 0 ? Math.round(((currentCollections - prevCollections) / prevCollections) * 100) : (currentCollections > 0 ? 100 : 0);
 
     // 3. Total Receivables Outstanding
     const totalReceivables = scopedCustomers.reduce((sum, c) => sum + Number(c.amountDue || 0), 0);
@@ -359,7 +359,7 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
     // 6. Pairs Booked
     const currentPairs = currentOrders.reduce((sum, o) => sum + Number(o.pairsCount || 0), 0);
     const prevPairs = prevOrders.reduce((sum, o) => sum + Number(o.pairsCount || 0), 0);
-    const pairsChange = prevPairs > 0 ? Math.round(((currentPairs - prevPairs) / prevPairs) * 100) : 12;
+    const pairsChange = prevPairs > 0 ? Math.round(((currentPairs - prevPairs) / prevPairs) * 100) : (currentPairs > 0 ? 100 : 0);
 
     return {
       sales: {
@@ -596,10 +596,10 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
       .sort((a, b) => b.pairs - a.pairs)
       .slice(0, 5);
 
-    // If none ordered yet, fall back to default catalog slice
+    // If none ordered yet, fall back to default catalog slice with 0 pairs
     const displayTopDesigns = bestSellers.length > 0 
       ? bestSellers.map((b) => ({ ...b.design, orderedPairs: b.pairs }))
-      : designs.slice(0, 5).map((d) => ({ ...d, orderedPairs: 240 }));
+      : designs.slice(0, 5).map((d) => ({ ...d, orderedPairs: 0 }));
 
     return {
       totalActive,
@@ -622,8 +622,8 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
 
       return {
         ...rep,
-        bookedThisMonth: realBooked > 0 ? realBooked : rep.bookedThisMonth,
-        commissionAccrued: realCollected > 0 ? realCollected : rep.commissionAccrued,
+        bookedThisMonth: realBooked,
+        commissionAccrued: realCollected > 0 ? Math.round(realCollected * ((rep.commissionRate || 2.5) / 100)) : 0,
         targetPct,
         isInactive: repOrders.length === 0 && repPayments.length === 0,
       };
@@ -651,7 +651,7 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
       todaysFollowUps,
       overdueFollowUps,
       visitsCompleted: completedVisitsCount,
-      visitsPlanned: Math.max(todaysVisits.length, 6),
+      visitsPlanned: todaysVisits.length,
       visitsList: scopedVisits.slice(0, 5),
     };
   }, [scopedFollowUps, scopedVisits, now]);

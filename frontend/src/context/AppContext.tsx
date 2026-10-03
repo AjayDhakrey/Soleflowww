@@ -546,41 +546,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const createOrder = (orderData: Partial<Order>) => {
-    const orderNumber = `ORD-0${149 + orders.length}`;
+    const orderNumber = orderData.id || `ORD-0${149 + orders.length}`;
+    const calculatedPairs = orderData.pairsCount ?? (orderData.items?.reduce((sum, item) => sum + (item.totalPairs || 0), 0) ?? 0);
+    const calculatedCartons = orderData.cartonsCount ?? (orderData.items?.reduce((sum, item) => sum + (item.totalCartons || 0), 0) ?? 0);
+    const subtotal = orderData.subtotal ?? (orderData.items?.reduce((sum, item) => sum + (item.itemSubtotal || 0), 0) ?? 0);
+    const tradeDiscountPercent = orderData.tradeDiscountPercent ?? 0;
+    const tradeDiscountAmount = orderData.tradeDiscountAmount ?? Math.round((subtotal * tradeDiscountPercent) / 100);
+    const taxableSubtotal = orderData.taxableSubtotal ?? (subtotal - tradeDiscountAmount);
+    const gstPercent = orderData.gstPercent ?? 12;
+    const gstAmount = orderData.gstAmount ?? Math.round((taxableSubtotal * gstPercent) / 100);
+    const netPayable = orderData.netPayable ?? (taxableSubtotal + gstAmount);
+    const advanceDeposited = orderData.advanceDeposited ?? 0;
+    const balanceDue = orderData.balanceDue ?? Math.max(0, netPayable - advanceDeposited);
+
     const newOrder: Order = {
       id: orderNumber,
-      customerId: orderData.customerId || customers[0].id,
-      customerName: orderData.customerName || customers[0].businessName,
-      propName: orderData.propName || customers[0].propName,
-      customerCity: orderData.customerCity || customers[0].city,
-      customerState: orderData.customerState || customers[0].state,
+      customerId: orderData.customerId || (customers[0]?.id || 'cust-1'),
+      customerName: orderData.customerName || (customers[0]?.businessName || 'Retail Customer'),
+      propName: orderData.propName || (customers[0]?.propName || ''),
+      customerCity: orderData.customerCity || (customers[0]?.city || 'Agra'),
+      customerState: orderData.customerState || (customers[0]?.state || 'Uttar Pradesh'),
       salespersonId: currentUser.id,
       salespersonName: currentUser.name,
       items: orderData.items || [],
-      pairsCount: orderData.pairsCount || 200,
-      cartonsCount: orderData.cartonsCount || 16,
-      wholesaleRate: orderData.wholesaleRate || 1250,
-      subtotal: orderData.subtotal || 250000,
-      tradeDiscountPercent: orderData.tradeDiscountPercent || 5,
-      tradeDiscountAmount: orderData.tradeDiscountAmount || 12500,
-      taxableSubtotal: orderData.taxableSubtotal || 237500,
-      gstPercent: 12,
-      gstAmount: orderData.gstAmount || 28500,
-      netPayable: orderData.netPayable || 266000,
-      advanceDeposited: orderData.advanceDeposited || 100000,
-      balanceDue: orderData.balanceDue || 166000,
-      manufacturerId: orderData.manufacturerId || 'mfg-1',
-      manufacturerName: orderData.manufacturerName || 'Apex Footwear Works',
-      manufacturerPlant: orderData.manufacturerPlant || 'Agra Unit 2',
-      expectedDelivery: '10 Nov 2024',
-      paymentStatus: 'Advance Deposited',
-      status: currentUser.role === 'admin' ? 'Approved' : 'Submitted',
+      pairsCount: calculatedPairs,
+      cartonsCount: calculatedCartons,
+      wholesaleRate: orderData.wholesaleRate ?? (calculatedPairs > 0 ? Math.round(subtotal / calculatedPairs) : 0),
+      subtotal,
+      tradeDiscountPercent,
+      tradeDiscountAmount,
+      taxableSubtotal,
+      gstPercent,
+      gstAmount,
+      netPayable,
+      advanceDeposited,
+      balanceDue,
+      manufacturerId: orderData.manufacturerId || (manufacturers[0]?.id || 'mfg-1'),
+      manufacturerName: orderData.manufacturerName || (manufacturers[0]?.companyName || 'Apex Footwear Works'),
+      manufacturerPlant: orderData.manufacturerPlant || (manufacturers[0]?.hubLocation || 'Agra Unit 2'),
+      expectedDelivery: orderData.expectedDelivery || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+      paymentStatus: advanceDeposited > 0 ? (advanceDeposited >= netPayable ? 'Fully Paid' : 'Advance Deposited') : 'Payment Pending',
+      status: orderData.status || (currentUser.role === 'admin' ? 'Approved' : 'Submitted'),
       orderDate: 'Today',
-      batchNumber: `SF-90${orders.length + 3}`,
+      batchNumber: orderData.batchNumber || `SF-90${orders.length + 3}`,
       timeline: [
         { step: 'Created', date: 'Today, Just Now', completed: true },
         { step: 'Submitted', date: 'Today, Just Now', completed: true, active: true },
-        { step: 'Approved', date: 'Pending Trader Review', completed: currentUser.role === 'admin' },
+        { step: 'Approved', date: 'Pending Trader Review', completed: (orderData.status || (currentUser.role === 'admin' ? 'Approved' : 'Submitted')) === 'Approved' },
         { step: 'In Production', date: 'Queued at Plant', completed: false },
         { step: 'Ready QC', date: 'Est. 10 Days', completed: false },
         { step: 'Dispatched', date: 'Bilty Pending', completed: false },

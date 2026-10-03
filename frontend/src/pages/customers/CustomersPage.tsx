@@ -184,14 +184,14 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
 
       {/* 3. 4 Customer KPI Summary Cards (3D Claymorphic Masterpiece Style) */}
       <CustomerKpiCards
-        totalCustomers={metrics.totalCustomers || 12548}
-        totalCustomersGrowth={14}
-        totalReceivables={formatIndianCurrency(metrics.totalReceivables || 1956000, true)}
-        totalReceivablesGrowth={8}
-        overdueAccounts={metrics.overdueAccounts || 5248}
-        overdueGrowth={6}
-        clearedAccounts={metrics.clearedAccounts || 8732}
-        clearedGrowth={12}
+        totalCustomers={metrics.totalCustomers}
+        totalCustomersGrowth={0}
+        totalReceivables={formatIndianCurrency(metrics.totalReceivables, true)}
+        totalReceivablesGrowth={0}
+        overdueAccounts={metrics.overdueAccounts}
+        overdueGrowth={0}
+        clearedAccounts={metrics.clearedAccounts}
+        clearedGrowth={0}
         onNavigateTotal={() => onNavigate(`/customers/insights/total?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}
         onNavigateReceivables={() => onNavigate(`/customers/insights/receivables?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}
         onNavigateOverdue={() => onNavigate(`/customers/insights/overdue?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}

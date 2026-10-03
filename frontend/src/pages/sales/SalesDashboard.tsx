@@ -163,18 +163,18 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
 
       {/* 3. Salesman Key Metrics (3D Claymorphic Masterpiece Design) */}
       <OverviewKpiCards
-        salesValue={formatLakh(repBooked || 1956000)}
-        salesGrowth={kpis.sales.comparison.changePercent || 14}
+        salesValue={formatLakh(repBooked)}
+        salesGrowth={kpis.sales.comparison.changePercent || 0}
         collectionsValue={formatLakh(kpis.collections.value)}
-        collectionsGrowth={kpis.collections.comparison.changePercent || 8}
-        receivablesValue={formatLakh(kpis.receivables.value || 750000)}
-        receivablesAccountsCount={kpis.receivables.customerCount || 5}
-        openOrdersCount={kpis.openOrders.count || 3}
-        openOrdersValue={formatLakh(kpis.openOrders.value || 1025000)}
-        activeStoresCount={customersSummary.active || 7}
-        totalRegisteredBuyers={customers.length || 7}
-        pairsBookedValue={kpis.pairsBooked.value || 1000}
-        pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 12}
+        collectionsGrowth={kpis.collections.comparison.changePercent || 0}
+        receivablesValue={formatLakh(kpis.receivables.value)}
+        receivablesAccountsCount={kpis.receivables.customerCount}
+        openOrdersCount={kpis.openOrders.count}
+        openOrdersValue={formatLakh(kpis.openOrders.value)}
+        activeStoresCount={customersSummary.active}
+        totalRegisteredBuyers={customers.length}
+        pairsBookedValue={kpis.pairsBooked.value}
+        pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 0}
         onNavigate={onNavigate}
         isSalesperson={true}
       />

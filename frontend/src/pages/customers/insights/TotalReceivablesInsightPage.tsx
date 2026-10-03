@@ -267,7 +267,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Collected This Month">Collected This Month</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
             <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums truncate">
-              {formatIndianCurrency(metrics.collectedThisMonth || 350000, true)}
+              {formatIndianCurrency(metrics.collectedThisMonth, true)}
             </h3>
             <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
               Realized

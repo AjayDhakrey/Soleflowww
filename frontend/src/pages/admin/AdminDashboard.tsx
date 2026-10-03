@@ -134,18 +134,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
       {/* 3. 6 Key Business KPI Cards (3D Claymorphic Masterpiece Design) */}
       <OverviewKpiCards
-        salesValue={formatLakh(kpis.sales.value || 1956000)}
-        salesGrowth={kpis.sales.comparison.changePercent || 14}
+        salesValue={formatLakh(kpis.sales.value)}
+        salesGrowth={kpis.sales.comparison.changePercent || 0}
         collectionsValue={formatLakh(kpis.collections.value)}
-        collectionsGrowth={kpis.collections.comparison.changePercent || 8}
-        receivablesValue={formatLakh(kpis.receivables.value || 750000)}
-        receivablesAccountsCount={kpis.receivables.customerCount || 5}
-        openOrdersCount={kpis.openOrders.count || 3}
-        openOrdersValue={formatLakh(kpis.openOrders.value || 1025000)}
-        activeStoresCount={kpis.activeCustomers.count || 7}
-        totalRegisteredBuyers={kpis.activeCustomers.total || 7}
-        pairsBookedValue={kpis.pairsBooked.value || 1000}
-        pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 12}
+        collectionsGrowth={kpis.collections.comparison.changePercent || 0}
+        receivablesValue={formatLakh(kpis.receivables.value)}
+        receivablesAccountsCount={kpis.receivables.customerCount}
+        openOrdersCount={kpis.openOrders.count}
+        openOrdersValue={formatLakh(kpis.openOrders.value)}
+        activeStoresCount={kpis.activeCustomers.count}
+        totalRegisteredBuyers={kpis.activeCustomers.total}
+        pairsBookedValue={kpis.pairsBooked.value}
+        pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 0}
         onNavigate={onNavigate}
         isSalesperson={false}
       />
@@ -560,10 +560,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
                 <div className="text-right">
                   <span className="font-bold font-mono text-xs text-foreground block">
-                    {d.orderedPairs || 240} Pairs
+                    {d.orderedPairs || 0} Pairs
                   </span>
                   <span className="text-[11px] text-muted-foreground font-mono">
-                    ₹{(d.price || 1250).toLocaleString('en-IN')}/pr
+                    ₹{(d.price || 0).toLocaleString('en-IN')}/pr
                   </span>
                 </div>
               </div>
@@ -604,7 +604,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       {formatLakh(rep.bookedThisMonth)}
                     </span>
                     <span className="text-[11px] text-muted-foreground block">
-                      Target: {formatLakh(rep.monthlyTarget || 1200000)} ({rep.targetPct}%)
+                      Target: {formatLakh(rep.monthlyTarget || 0)} ({rep.targetPct}%)
                     </span>
                   </div>
                 </div>
