@@ -236,8 +236,17 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filteredLogs.map((log) => {
-                const IconComp = log.entityIcon;
+              {filteredLogs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                    <FileCheck className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
+                    <p className="font-semibold text-foreground text-sm">No Audit Events Found</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">New operational transactions will be automatically recorded here.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredLogs.map((log) => {
+                  const IconComp = log.entityIcon;
 
                 return (
                   <tr
@@ -320,8 +329,9 @@ export const AuditLogPage: React.FC<AuditLogPageProps> = ({ onNavigate }) => {
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
+              })
+            )}
+          </tbody>
           </table>
         </div>
       </div>

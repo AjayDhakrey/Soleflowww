@@ -160,42 +160,6 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
         </div>
       </div>
 
-      {/* 2. Needs Attention Alert Strip */}
-      {needsAttention.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/25 dark:border-amber-500/20 rounded-2xl p-4 shadow-2xs">
-          <div className="flex items-center gap-2 mb-2.5">
-            <Icons.Pending size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
-              Needs Immediate Attention ({needsAttention.reduce((sum, i) => sum + i.count, 0)} Items In Your Accounts)
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {needsAttention.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onNavigate(item.route)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
-                  item.badgeVariant === 'rose'
-                    ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900/50'
-                    : item.badgeVariant === 'purple'
-                    ? 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50'
-                    : item.badgeVariant === 'blue'
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50'
-                    : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900/50'
-                }`}
-              >
-                <span>{item.title}</span>
-                {item.amount != null && item.amount > 0 && (
-                  <span className="font-mono font-bold">({formatLakh(item.amount)})</span>
-                )}
-                <Icons.ChevronRight size={14} className="opacity-60" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* 3. Salesman Key Metrics (3D Claymorphic Masterpiece Design) */}
       <OverviewKpiCards

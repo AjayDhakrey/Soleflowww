@@ -470,6 +470,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Failed to clear session:', e);
     }
     setIsLoggedIn(false);
+    window.location.hash = '#login';
     showToast('Signed out of SoleFlow');
   };
 

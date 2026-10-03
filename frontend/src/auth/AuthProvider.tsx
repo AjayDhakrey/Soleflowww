@@ -342,6 +342,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
     setHasRealSession(false);
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    window.location.hash = '#login';
     setIsLoading(false);
   };
 

@@ -132,47 +132,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         </div>
       </div>
 
-      {/* 2. Needs Immediate Attention Alert Banner */}
-      {needsAttention.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/25 dark:border-amber-500/20 rounded-2xl p-4 shadow-xs">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
-                Needs Immediate Attention ({needsAttention.reduce((sum, i) => sum + i.count, 0)} Items)
-              </span>
-            </div>
-            <span className="text-[11px] text-amber-800/80 dark:text-amber-300/80 font-medium">
-              Click item to resolve
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {needsAttention.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onNavigate(item.route)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99] ${
-                  item.badgeVariant === 'rose'
-                    ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900/50'
-                    : item.badgeVariant === 'purple'
-                    ? 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50'
-                    : item.badgeVariant === 'blue'
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50'
-                    : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900/50'
-                }`}
-              >
-                <span>{item.title}</span>
-                {item.amount != null && item.amount > 0 && (
-                  <span className="font-mono font-bold">({formatLakh(item.amount)})</span>
-                )}
-                <Icons.ChevronRight size={13} className="opacity-60" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* 3. 6 Key Business KPI Cards (3D Claymorphic Masterpiece Design) */}
       <OverviewKpiCards
