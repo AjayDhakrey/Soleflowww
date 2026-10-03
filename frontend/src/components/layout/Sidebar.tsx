@@ -13,7 +13,6 @@ import {
   NavManufacturers3D,
   NavPayments3D,
   NavReports3D,
-  NavAuditLog3D,
   NavSettings3D,
   NavFollowUps3D,
   NavVisits3D,
@@ -34,7 +33,6 @@ type Nav3DIconKey =
   | 'Manufacturers'
   | 'Payments'
   | 'Reports'
-  | 'AuditLog'
   | 'Settings'
   | 'FollowUps'
   | 'Visits';
@@ -122,7 +120,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
       label: 'ADMINISTRATION',
       items: [
         { name: 'Reports & Alerts', path: '/admin/reports', icon3D: 'Reports', badge: unreadAlerts },
-        { name: 'Audit Log', path: '/admin/audit-log', icon3D: 'AuditLog' },
         { name: 'Settings', path: '/admin/settings', icon3D: 'Settings' },
       ],
     },
@@ -190,8 +187,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
         return <NavPayments3D className="w-9 h-9" />;
       case 'Reports':
         return <NavReports3D className="w-9 h-9" />;
-      case 'AuditLog':
-        return <NavAuditLog3D className="w-9 h-9" />;
       case 'Settings':
         return <NavSettings3D className="w-9 h-9" />;
       case 'FollowUps':

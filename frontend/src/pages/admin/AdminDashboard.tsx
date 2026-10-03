@@ -721,21 +721,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           )}
         </Panel>
 
-        {/* WIDGET H: Recent Activity & Audit Trail */}
+        {/* WIDGET H: Recent Operational Activity */}
         <Panel
-          title="Recent Business Activity & Audit Log"
+          title="Recent Activity Timeline"
           subtitle="Real-time timeline of operational transactions and updates"
-          headerAction={
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={Icons.ChevronRight}
-              iconPosition="right"
-              onClick={() => onNavigate('/admin/audit-log')}
-            >
-              Full audit log
-            </Button>
-          }
           noPadding
         >
           <div className="divide-y divide-border max-h-[360px] overflow-y-auto">

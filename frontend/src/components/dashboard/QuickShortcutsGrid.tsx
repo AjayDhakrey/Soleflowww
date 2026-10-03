@@ -387,7 +387,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
         </span>
       </button>
 
-      {/* 6. GST Audit Ledger */}
+      {/* 6. GST Tax Ledger */}
       <button
         type="button"
         onClick={onGstLedger}
@@ -397,7 +397,7 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
           <GstAuditLedger3D />
         </div>
         <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors tracking-tight mt-1">
-          GST Audit Ledger
+          GST Tax Ledger
         </span>
       </button>
     </div>

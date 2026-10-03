@@ -452,7 +452,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
           { key: 'models', label: 'Top Models', icon: Layers },
           { key: 'followups', label: 'Follow-ups & Visits', icon: Calendar, count: customerFollowUps.length },
           { key: 'notes', label: 'Internal Notes', icon: MessageSquare, count: localNotes.length },
-          { key: 'activity', label: 'Audit Timeline', icon: Clock },
+          { key: 'activity', label: 'Activity Timeline', icon: Clock },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -627,7 +627,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             <div>
               <h3 className="text-base font-bold text-foreground">Verified Financial Statement</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Audit ledger of billed tax invoices and realized bank payment receipts
+                Complete ledger of billed tax invoices and realized bank payment receipts
               </p>
             </div>
             <div className="flex items-center gap-2.5">

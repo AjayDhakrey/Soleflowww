@@ -423,13 +423,13 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                       Assigned Kit: {activeRep.assignedKit}
                     </span>
                     <span className="text-muted-foreground text-[11px]">
-                      Kit physical audit verified on {activeRep.kitVerifiedDate}
+                      Kit physical inspection verified on {activeRep.kitVerifiedDate}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Audit Verified</span>
+                  <span>Kit Verified</span>
                 </div>
               </div>
 

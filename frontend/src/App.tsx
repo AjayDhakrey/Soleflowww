@@ -17,7 +17,6 @@ import { PaymentsPage } from './pages/payments/PaymentsPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
-import { AuditLogPage } from './pages/admin/AuditLogPage';
 import { SalesDashboard } from './pages/sales/SalesDashboard';
 import { FollowUpsPage } from './pages/sales/FollowUpsPage';
 import { VisitsPage } from './pages/sales/VisitsPage';
@@ -350,13 +349,6 @@ const AppContent: React.FC = () => {
     }
     if (currentPath === '/admin/notifications') {
       return <NotificationsPage />;
-    }
-    if (currentPath === '/admin/audit-log') {
-      return (
-        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
-          <AuditLogPage />
-        </RequireRole>
-      );
     }
 
     // Sales routes

@@ -248,7 +248,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
           <div className="flex items-center gap-2.5">
             <Button
               variant="secondary"
-              icon={Icons.AuditLog}
+              icon={Icons.Clock}
               onClick={() => setIsShareHistoryOpen(true)}
               className="rounded-xl"
             >

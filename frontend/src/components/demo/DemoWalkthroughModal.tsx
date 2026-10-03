@@ -118,15 +118,6 @@ export const DemoWalkthroughModal: React.FC<DemoWalkthroughModalProps> = ({ onNa
     },
     {
       step: 8,
-      title: 'Audit Log & Complete Traceability',
-      role: 'admin',
-      path: '/admin/audit-log',
-      description: 'Reconstruct who did what, when, to which record, and view exact state diffs for total administrative and tax audit integrity.',
-      actionLabel: 'Inspect Audit Trail',
-      icon: History,
-    },
-    {
-      step: 9,
       title: 'Switch to Sales Rep Field Portal',
       role: 'salesperson',
       path: '/sales/dashboard',
