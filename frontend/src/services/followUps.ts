@@ -6,21 +6,74 @@ import { MOCK_FOLLOWUPS } from '../data/mockData';
 
 export type FollowUpRow = Database['public']['Tables']['follow_ups']['Row'];
 
+export function sanitizeFollowUpType(rawType?: string): 'call' | 'visit' | 'collection' | 'design_followup' {
+  const t = (rawType || '').toLowerCase();
+  if (t.includes('visit') || t.includes('store') || t.includes('shop') || t.includes('market') || t.includes('in-person')) {
+    return 'visit';
+  }
+  if (t.includes('payment') || t.includes('collection') || t.includes('balance') || t.includes('cheque') || t.includes('due') || t.includes('overdue')) {
+    return 'collection';
+  }
+  if (t.includes('design') || t.includes('catalog') || t.includes('shoe') || t.includes('sample') || t.includes('model') || t.includes('article')) {
+    return 'design_followup';
+  }
+  return 'call';
+}
+
+export function sanitizeFollowUpStatus(rawStatus?: string): 'pending' | 'completed' | 'cancelled' {
+  const s = (rawStatus || '').toLowerCase();
+  if (s === 'completed') return 'completed';
+  if (s === 'cancelled' || s === 'canceled') return 'cancelled';
+  return 'pending';
+}
+
+export function sanitizeFollowUpPriority(rawPriority?: string): 'low' | 'normal' | 'high' | 'urgent' {
+  const p = (rawPriority || '').toLowerCase();
+  if (p === 'low' || p === 'high' || p === 'urgent') return p;
+  return 'normal';
+}
+
 export function mapFollowUpRow(row: any): FollowUpItem {
   const dueDate = row.due_at ? new Date(row.due_at) : new Date();
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const dueMidnight = new Date(dueDate);
+  dueMidnight.setHours(0, 0, 0, 0);
+
+  let mappedStatus: FollowUpItem['status'] = 'today';
+  if (row.status === 'completed') {
+    mappedStatus = 'completed';
+  } else if (dueMidnight.getTime() < now.getTime()) {
+    mappedStatus = 'overdue';
+  } else if (dueMidnight.getTime() > now.getTime()) {
+    mappedStatus = 'upcoming';
+  } else {
+    mappedStatus = 'today';
+  }
+
+  let customReason = row.type || 'Follow-up';
+  let notes = row.outcome || row.notes || '';
+  if (notes.startsWith('[')) {
+    const endBracket = notes.indexOf(']');
+    if (endBracket !== -1) {
+      customReason = notes.substring(1, endBracket);
+      notes = notes.substring(endBracket + 1).trim();
+    }
+  }
+
   return {
-    id: row.id,
+    id: String(row.id),
     customerId: row.client_id,
-    customerName: row.customerName || row.customer_name || '',
-    customerCity: row.customerCity || row.customer_city || '',
+    customerName: row.customerName || row.customer_name || 'Client Store',
+    customerCity: row.customerCity || row.customer_city || 'Agra',
     phone: row.phone || '',
-    reason: row.type || row.reason || '',
-    date: row.due_date || dueDate.toLocaleDateString('en-IN'),
+    reason: customReason,
+    date: row.due_date || dueDate.toISOString().split('T')[0],
     time: row.due_time || dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     relatedOrder: row.order_id || undefined,
     amountDue: row.amount_due ? Number(row.amount_due) : undefined,
-    notes: row.notes || row.outcome || '',
-    status: (row.status || 'today') as FollowUpItem['status'],
+    notes: notes,
+    status: mappedStatus,
   };
 }
 
@@ -76,7 +129,8 @@ export const followUpsService = {
         .order('due_at', { ascending: true });
 
       if (filters?.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
+        const dbStatus = sanitizeFollowUpStatus(filters.status);
+        query = query.eq('status', dbStatus);
       }
       if (filters?.salespersonId) {
         query = query.eq('owner_id', filters.salespersonId);
@@ -100,14 +154,20 @@ export const followUpsService = {
     if (!supabase) return { success: true };
 
     try {
+      const rawReason = data.reason || data.type || 'Follow-up';
+      const rawNotes = data.notes || data.outcome || '';
+      const combinedOutcome = rawNotes
+        ? `${rawReason !== 'call' && rawReason !== 'collection' && rawReason !== 'visit' && rawReason !== 'design_followup' ? `[${rawReason}] ` : ''}${rawNotes}`
+        : rawReason;
+
       const payload = {
         client_id: data.client_id || data.customerId,
         due_at: parseIsoDueAt(data.due_at || data.date, data.time),
         owner_name: data.owner_name || data.ownerName || 'Field Rep',
-        type: data.type || data.reason || 'Follow-up',
-        status: data.status || 'today',
-        outcome: data.outcome || data.notes || null,
-        priority: data.priority || 'normal',
+        type: sanitizeFollowUpType(rawReason),
+        status: sanitizeFollowUpStatus(data.status),
+        outcome: combinedOutcome || null,
+        priority: sanitizeFollowUpPriority(data.priority),
       };
 
       const { data: res, error } = await (supabase as any)

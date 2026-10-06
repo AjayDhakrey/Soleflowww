@@ -20,6 +20,13 @@ export function mapFieldVisitRow(row: any): FieldVisitItem {
   };
 }
 
+export function sanitizeVisitStatus(rawStatus?: string): 'planned' | 'completed' | 'missed' {
+  const s = (rawStatus || '').toLowerCase();
+  if (s === 'completed') return 'completed';
+  if (s === 'missed') return 'missed';
+  return 'planned';
+}
+
 export const visitsService = {
   async fetchVisits(filters?: { status?: string; salespersonId?: string }): Promise<FieldVisitItem[]> {
     if (!supabase) return MOCK_FIELD_VISITS;
@@ -31,7 +38,8 @@ export const visitsService = {
         .order('visit_date', { ascending: false });
 
       if (filters?.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
+        const dbStatus = sanitizeVisitStatus(filters.status);
+        query = query.eq('status', dbStatus);
       }
       if (filters?.salespersonId) {
         query = query.eq('salesperson_id', filters.salespersonId);
@@ -64,7 +72,7 @@ export const visitsService = {
         purpose: data.purpose || 'Store Visit',
         outcome: data.outcome || null,
         notes: data.notes || null,
-        status: data.status || 'today',
+        status: sanitizeVisitStatus(data.status),
       };
 
       const { data: res, error } = await (supabase as any)
