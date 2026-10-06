@@ -805,17 +805,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setFieldVisits((prev) => [newVisit, ...prev]);
+
     if (isSupabaseActive) {
-      visitsService.createVisit({
-        client_id: newVisit.customerId,
-        salesperson_id: currentUser.id,
-        salesperson_name: currentUser.name,
-        visit_date: new Date().toISOString().split('T')[0],
-        purpose: newVisit.purpose,
-        outcome: newVisit.outcome,
-        notes: newVisit.notes,
-        status: newVisit.status as any,
-      });
+      visitsService
+        .createVisit({
+          client_id: newVisit.customerId,
+          salesperson_id: currentUser.id,
+          salesperson_name: currentUser.name,
+          visit_date: new Date().toISOString().split('T')[0],
+          purpose: newVisit.purpose,
+          location: newVisit.location,
+          outcome: newVisit.outcome,
+          notes: newVisit.notes,
+          status: newVisit.status as any,
+        })
+        .then((res) => {
+          if (res.success) {
+            showToast(`✅ Store visit saved to Supabase for ${newVisit.customerName}!`);
+          } else {
+            console.warn('Field visit Supabase save error:', res.error);
+            showToast(`⚠️ Visit saved locally (${res.error || 'Sync pending'})`);
+          }
+        })
+        .catch((err) => {
+          console.warn('Field visit Supabase exception:', err);
+          showToast(`Store visit recorded for ${newVisit.customerName}!`);
+        });
+    } else {
+      showToast(`Store visit recorded for ${newVisit.customerName}!`);
     }
 
     addAuditEvent({
@@ -825,8 +842,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordTitle: `${newVisit.customerName} - ${newVisit.purpose}`,
       newValue: `Outcome: ${newVisit.outcome || 'Check-in'} at ${newVisit.location}`,
     });
-
-    showToast(`Store visit recorded for ${newVisit.customerName}!`);
   };
 
   const completeFieldVisit = (
@@ -840,9 +855,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
     if (isSupabaseActive) {
-      visitsService.completeVisit(id, outcome, notes);
+      visitsService.completeVisit(id, outcome, notes).then((res) => {
+        if (res.success) {
+          showToast(`✅ Visit completed & saved to Supabase!`);
+        } else {
+          showToast(`Visit completed • Outcome: ${outcome}`);
+        }
+      });
+    } else {
+      showToast(`Visit completed • Outcome: ${outcome}`);
     }
-    showToast(`Visit completed • Outcome: ${outcome}`);
   };
 
   const recordPayment = async (p: Partial<PaymentReceipt>) => {

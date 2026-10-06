@@ -15,11 +15,14 @@ export function mapFieldVisitRow(row: any): FieldVisitItem {
     purpose = purpose.substring(0, startIdx).trim();
   }
 
+  const custName = row.customers?.businessName || row.customerName || row.customer_name || 'Client Store';
+  const custLoc = row.customers?.city ? `${row.customers.city}, ${row.customers.state || 'UP'}` : (location || 'Agra Marketplace');
+
   return {
     id: String(row.id),
     customerId: row.client_id,
-    customerName: row.customerName || row.customer_name || 'Client Store',
-    location: location || 'Agra Marketplace',
+    customerName: custName,
+    location: custLoc,
     time: row.visit_time || (row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : 'Today'),
     purpose: purpose,
     status: (row.status === 'completed' ? 'completed' : 'today') as FieldVisitItem['status'],
@@ -42,7 +45,7 @@ export const visitsService = {
     try {
       let query = (supabase as any)
         .from('field_visits')
-        .select('*')
+        .select('*, customers(businessName, city, state)')
         .order('visit_date', { ascending: false });
 
       if (filters?.status && filters.status !== 'all') {
@@ -55,6 +58,14 @@ export const visitsService = {
 
       const { data, error } = await query;
       if (error) {
+        // Fallback to simple select if join fails
+        const fallbackRes = await (supabase as any)
+          .from('field_visits')
+          .select('*')
+          .order('visit_date', { ascending: false });
+        if (!fallbackRes.error && fallbackRes.data && fallbackRes.data.length > 0) {
+          return fallbackRes.data.map(mapFieldVisitRow);
+        }
         console.warn('Supabase fetchVisits warning:', error);
         return MOCK_FIELD_VISITS;
       }
@@ -86,6 +97,14 @@ export const visitsService = {
         status: sanitizeVisitStatus(data.status),
       };
 
+      const updateFields: any = {
+        purpose: payload.purpose,
+        outcome: payload.outcome,
+        notes: payload.notes,
+        status: payload.status,
+        salesperson_name: payload.salesperson_name,
+      };
+
       // 1. Proactively check if a visit already exists for this client today to avoid 409 Conflict
       try {
         const { data: existingVisits } = await (supabase as any)
@@ -99,20 +118,16 @@ export const visitsService = {
           const existingId = existingVisits[0].id;
           const { data: updatedVisit, error: updateErr } = await (supabase as any)
             .from('field_visits')
-            .update({
-              purpose: payload.purpose,
-              outcome: payload.outcome,
-              notes: payload.notes,
-              status: payload.status,
-              salesperson_name: payload.salesperson_name,
-              updated_at: new Date().toISOString(),
-            })
+            .update(updateFields)
             .eq('id', existingId)
             .select()
             .single();
 
           if (!updateErr && updatedVisit) {
             return { success: true, data: updatedVisit };
+          }
+          if (updateErr) {
+            console.warn('Field visit pre-check update error:', updateErr);
           }
         }
       } catch (checkErr) {
@@ -127,7 +142,7 @@ export const visitsService = {
         .single();
 
       // If foreign key fails on salesperson_id, retry with null
-      if (error && (error.message?.includes('sales_team') || error.message?.includes('violates foreign key'))) {
+      if (error && (error.message?.includes('sales_team') || error.message?.includes('violates foreign key') || error.code === '23503')) {
         const fallbackPayload = { ...payload, salesperson_id: null };
         const retry = await (supabase as any)
           .from('field_visits')
@@ -144,14 +159,7 @@ export const visitsService = {
       if (error && (error.code === '23505' || (error as any).status === 409 || error.message?.includes('duplicate') || error.message?.includes('unique') || error.message?.includes('Conflict') || error.message?.includes('conflict'))) {
         const updateRes = await (supabase as any)
           .from('field_visits')
-          .update({
-            purpose: payload.purpose,
-            outcome: payload.outcome,
-            notes: payload.notes,
-            status: payload.status,
-            salesperson_name: payload.salesperson_name,
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateFields)
           .eq('client_id', payload.client_id)
           .eq('visit_date', payload.visit_date)
           .select()
@@ -159,6 +167,9 @@ export const visitsService = {
 
         if (!updateRes.error && updateRes.data) {
           return { success: true, data: updateRes.data };
+        }
+        if (updateRes.error) {
+          error = updateRes.error;
         }
       }
 
@@ -187,7 +198,6 @@ export const visitsService = {
           status: 'completed',
           outcome: outcome || 'Interested',
           notes: notes || null,
-          updated_at: new Date().toISOString(),
         })
         .eq('id', id);
 
