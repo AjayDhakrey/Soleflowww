@@ -7,14 +7,22 @@ import { MOCK_FIELD_VISITS } from '../data/mockData';
 export type FieldVisitRow = Database['public']['Tables']['field_visits']['Row'];
 
 export function mapFieldVisitRow(row: any): FieldVisitItem {
+  let purpose = row.purpose || 'Store Visit';
+  let location = row.location || '';
+  if (!location && purpose.includes('[') && purpose.endsWith(']')) {
+    const startIdx = purpose.lastIndexOf('[');
+    location = purpose.substring(startIdx + 1, purpose.length - 1);
+    purpose = purpose.substring(0, startIdx).trim();
+  }
+
   return {
-    id: row.id,
+    id: String(row.id),
     customerId: row.client_id,
-    customerName: row.customerName || row.customer_name || '',
-    location: row.location || '',
-    time: row.visit_time || (row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : ''),
-    purpose: row.purpose || '',
-    status: (row.status || 'today') as FieldVisitItem['status'],
+    customerName: row.customerName || row.customer_name || 'Client Store',
+    location: location || 'Agra Marketplace',
+    time: row.visit_time || (row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : 'Today'),
+    purpose: purpose,
+    status: (row.status === 'completed' ? 'completed' : 'today') as FieldVisitItem['status'],
     outcome: (row.outcome as FieldVisitItem['outcome']) || undefined,
     notes: row.notes || undefined,
   };
@@ -63,23 +71,40 @@ export const visitsService = {
     if (!supabase) return { success: true };
 
     try {
-      const payload = {
+      const rawPurpose = data.purpose || 'Store Visit';
+      const rawLocation = data.location ? ` [${data.location}]` : '';
+      const finalPurpose = `${rawPurpose}${rawLocation}`;
+
+      const payload: any = {
         client_id: data.client_id || data.customerId,
         salesperson_id: data.salesperson_id || data.salespersonId || null,
         salesperson_name: data.salesperson_name || data.salespersonName || 'Sales Rep',
         visit_date: data.visit_date || new Date().toISOString().split('T')[0],
-        location: data.location || '',
-        purpose: data.purpose || 'Store Visit',
+        purpose: finalPurpose,
         outcome: data.outcome || null,
         notes: data.notes || null,
         status: sanitizeVisitStatus(data.status),
       };
 
-      const { data: res, error } = await (supabase as any)
+      let { data: res, error } = await (supabase as any)
         .from('field_visits')
         .insert([payload])
         .select()
         .single();
+
+      // If foreign key fails on salesperson_id, retry with null
+      if (error && (error.message?.includes('sales_team') || error.message?.includes('violates foreign key'))) {
+        const fallbackPayload = { ...payload, salesperson_id: null };
+        const retry = await (supabase as any)
+          .from('field_visits')
+          .insert([fallbackPayload])
+          .select()
+          .single();
+        if (!retry.error) {
+          return { success: true, data: retry.data };
+        }
+        error = retry.error;
+      }
 
       if (error) {
         console.warn('Supabase createVisit warning:', error);
