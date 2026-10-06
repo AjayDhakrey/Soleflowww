@@ -535,8 +535,8 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
 
               {/* Today's Route Stops Checklist & Live Feed */}
               <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+                  <div className="min-w-0">
                     <h4 className="text-sm font-bold text-foreground tracking-tight">
                       Today's Field Stops &amp; Action Items
                     </h4>
@@ -546,12 +546,12 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   </div>
 
                   {/* Task status filter tabs */}
-                  <div className="flex bg-muted/60 p-1 rounded-xl border border-border text-xs gap-0.5 self-start sm:self-auto">
+                  <div className="inline-flex items-center shrink-0 bg-muted/60 p-1 rounded-xl border border-border text-xs gap-1 self-start sm:self-auto">
                     <button
                       onClick={() => setTaskFilter('all')}
-                      className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all cursor-pointer ${
                         taskFilter === 'all'
-                          ? 'bg-surface text-foreground font-bold shadow-2xs'
+                          ? 'bg-surface text-foreground font-bold shadow-xs'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -559,9 +559,9 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                     </button>
                     <button
                       onClick={() => setTaskFilter('pending')}
-                      className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all cursor-pointer ${
                         taskFilter === 'pending'
-                          ? 'bg-surface text-foreground font-bold shadow-2xs'
+                          ? 'bg-surface text-foreground font-bold shadow-xs'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -569,9 +569,9 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                     </button>
                     <button
                       onClick={() => setTaskFilter('completed')}
-                      className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all cursor-pointer ${
                         taskFilter === 'completed'
-                          ? 'bg-surface text-foreground font-bold shadow-2xs'
+                          ? 'bg-surface text-foreground font-bold shadow-xs'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
