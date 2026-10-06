@@ -106,6 +106,28 @@ export const visitsService = {
         error = retry.error;
       }
 
+      // If 409 Conflict (visit already exists for this client today), update existing visit record
+      if (error && (error.code === '23505' || (error as any).status === 409 || error.message?.includes('duplicate') || error.message?.includes('unique') || error.message?.includes('Conflict') || error.message?.includes('conflict'))) {
+        const updateRes = await (supabase as any)
+          .from('field_visits')
+          .update({
+            purpose: payload.purpose,
+            outcome: payload.outcome,
+            notes: payload.notes,
+            status: payload.status,
+            salesperson_name: payload.salesperson_name,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('client_id', payload.client_id)
+          .eq('visit_date', payload.visit_date)
+          .select()
+          .maybeSingle();
+
+        if (!updateRes.error && updateRes.data) {
+          return { success: true, data: updateRes.data };
+        }
+      }
+
       if (error) {
         console.warn('Supabase createVisit warning:', error);
         return { success: false, error: error.message };
