@@ -76,14 +76,16 @@ export const getAppOrigin = (): string => {
   }
 
   if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin;
+    if (!window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
+      return window.location.origin;
+    }
   }
 
   if (import.meta.env.VITE_VERCEL_URL) {
     return `https://${import.meta.env.VITE_VERCEL_URL}`;
   }
 
-  return 'http://localhost:3000';
+  return 'https://soleflowww.vercel.app';
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

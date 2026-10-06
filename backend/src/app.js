@@ -26,7 +26,12 @@ app.use(
   })
 );
 
-const defaultOrigins = ['http://localhost:3000', 'http://localhost:5173', 'https://soleflow.vercel.app'];
+const defaultOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://soleflow.vercel.app',
+  'https://soleflowww.vercel.app',
+];
 const envOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
 const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
