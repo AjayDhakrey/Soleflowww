@@ -89,17 +89,26 @@ export const paymentsService = {
   },
 
   async recordPayment(params: RecordPaymentParams): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase || isDemoModeActive) {
+    if (!supabase) {
       return { success: false, error: 'Payment service is not configured.' };
     }
 
     try {
-      const { data, error } = await supabase.rpc('record_payment', {
+      const paymentDateIso = (() => {
+        try {
+          const d = params.paymentDate ? new Date(params.paymentDate) : new Date();
+          return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+        } catch {
+          return new Date().toISOString();
+        }
+      })();
+
+      const { data, error } = await (supabase as any).rpc('record_payment', {
         p_client_id: params.clientId,
         p_amount: params.amount,
         p_method: params.method || 'UPI',
         p_reference: params.reference || '',
-        p_payment_date: params.paymentDate ? new Date(params.paymentDate).toISOString() : new Date().toISOString(),
+        p_payment_date: paymentDateIso,
         p_allocations: (params.allocations || []) as any,
         p_notes: params.notes || '',
         p_cheque_no: params.chequeNo || null,

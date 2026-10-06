@@ -754,7 +754,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (isSupabaseActive) {
       followUpsService.createFollowUp({
         client_id: newFollowUp.customerId,
-        due_at: newFollowUp.date ? new Date(`${newFollowUp.date}T${newFollowUp.time || '11:00:00'}`).toISOString() : new Date().toISOString(),
+        date: newFollowUp.date,
+        time: newFollowUp.time,
         owner_name: currentUser.name || 'Sales Rep',
         type: newFollowUp.reason,
         status: newFollowUp.status,

@@ -24,6 +24,47 @@ export function mapFollowUpRow(row: any): FollowUpItem {
   };
 }
 
+export function parseIsoDueAt(dateStr?: string, timeStr?: string): string {
+  if (!dateStr) return new Date().toISOString();
+  try {
+    if (dateStr.includes('T') && dateStr.endsWith('Z')) {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    }
+
+    let hours = 11;
+    let minutes = 0;
+    if (timeStr) {
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (match) {
+        hours = parseInt(match[1], 10);
+        minutes = parseInt(match[2], 10);
+        const meridian = match[3]?.toUpperCase();
+        if (meridian === 'PM' && hours < 12) hours += 12;
+        if (meridian === 'AM' && hours === 12) hours = 0;
+      }
+    }
+
+    const dateParts = dateStr.split('-');
+    if (dateParts.length === 3) {
+      const year = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10) - 1;
+      const day = parseInt(dateParts[2], 10);
+      const d = new Date(year, month, day, hours, minutes, 0);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    }
+
+    const fallbackDate = new Date(dateStr);
+    if (!isNaN(fallbackDate.getTime())) {
+      fallbackDate.setHours(hours, minutes, 0, 0);
+      return fallbackDate.toISOString();
+    }
+  } catch (err) {
+    console.warn('parseIsoDueAt error:', err);
+  }
+  return new Date().toISOString();
+}
+
 export const followUpsService = {
   async fetchFollowUps(filters?: { status?: string; salespersonId?: string }): Promise<FollowUpItem[]> {
     if (!supabase) return MOCK_FOLLOWUPS;
@@ -61,7 +102,7 @@ export const followUpsService = {
     try {
       const payload = {
         client_id: data.client_id || data.customerId,
-        due_at: data.due_at || (data.date ? new Date(`${data.date}T${data.time || '11:00:00'}`).toISOString() : new Date().toISOString()),
+        due_at: parseIsoDueAt(data.due_at || data.date, data.time),
         owner_name: data.owner_name || data.ownerName || 'Field Rep',
         type: data.type || data.reason || 'Follow-up',
         status: data.status || 'today',
