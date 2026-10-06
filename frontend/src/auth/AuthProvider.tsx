@@ -64,6 +64,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'soleflow_auth_session';
 
+export const getAppOrigin = (): string => {
+  const customSiteUrl = (
+    import.meta.env.VITE_SITE_URL ||
+    import.meta.env.VITE_APP_URL ||
+    import.meta.env.NEXT_PUBLIC_SITE_URL
+  ) as string;
+
+  if (customSiteUrl) {
+    return customSiteUrl.replace(/\/+$/, '');
+  }
+
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  if (import.meta.env.VITE_VERCEL_URL) {
+    return `https://${import.meta.env.VITE_VERCEL_URL}`;
+  }
+
+  return 'http://localhost:3000';
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isConfigured = isSupabaseConfigured();
   const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -379,6 +401,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: 'Database service is not configured.' };
       }
 
+      const appOrigin = getAppOrigin();
       const { data, error } = await supabase.auth.signUp({
         email: params.email.trim(),
         password: params.password,
@@ -391,7 +414,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             gstin: params.gstin || '',
             invite_token: params.inviteToken || null,
           },
-          emailRedirectTo: `${window.location.origin}/#login`,
+          emailRedirectTo: `${appOrigin}/#login`,
         },
       });
 
@@ -595,8 +618,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetPasswordForEmail = async (email: string): Promise<{ success: boolean; message: string }> => {
     if (supabase) {
       try {
+        const appOrigin = getAppOrigin();
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/#auth/reset`,
+          redirectTo: `${appOrigin}/#auth/reset`,
         });
         if (error) {
           return { success: false, message: error.message };
