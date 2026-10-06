@@ -86,6 +86,40 @@ export const visitsService = {
         status: sanitizeVisitStatus(data.status),
       };
 
+      // 1. Proactively check if a visit already exists for this client today to avoid 409 Conflict
+      try {
+        const { data: existingVisits } = await (supabase as any)
+          .from('field_visits')
+          .select('id')
+          .eq('client_id', payload.client_id)
+          .eq('visit_date', payload.visit_date)
+          .limit(1);
+
+        if (existingVisits && existingVisits.length > 0) {
+          const existingId = existingVisits[0].id;
+          const { data: updatedVisit, error: updateErr } = await (supabase as any)
+            .from('field_visits')
+            .update({
+              purpose: payload.purpose,
+              outcome: payload.outcome,
+              notes: payload.notes,
+              status: payload.status,
+              salesperson_name: payload.salesperson_name,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingId)
+            .select()
+            .single();
+
+          if (!updateErr && updatedVisit) {
+            return { success: true, data: updatedVisit };
+          }
+        }
+      } catch (checkErr) {
+        console.warn('Field visit pre-check ignored:', checkErr);
+      }
+
+      // 2. Insert new field visit if none exists
       let { data: res, error } = await (supabase as any)
         .from('field_visits')
         .insert([payload])
@@ -106,7 +140,7 @@ export const visitsService = {
         error = retry.error;
       }
 
-      // If 409 Conflict (visit already exists for this client today), update existing visit record
+      // Fallback: If 409 Conflict still encountered, update existing visit record
       if (error && (error.code === '23505' || (error as any).status === 409 || error.message?.includes('duplicate') || error.message?.includes('unique') || error.message?.includes('Conflict') || error.message?.includes('conflict'))) {
         const updateRes = await (supabase as any)
           .from('field_visits')
