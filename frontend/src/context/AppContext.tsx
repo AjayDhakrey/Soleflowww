@@ -903,6 +903,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await paymentsService.recordPayment({
           clientId: cust.id,
           amount: payAmount,
+          customerName: newReceipt.customerName,
+          customerCity: newReceipt.customerCity,
+          amountDueBefore: beforeDue,
+          amountDueAfter: afterDue,
+          collectedBy: newReceipt.collectedBy,
+          orderId: newReceipt.orderId,
+          orderNumber: newReceipt.orderNumber,
           method: newReceipt.paymentMethod,
           reference: newReceipt.utrRef,
           paymentDate: newReceipt.paymentDate,
@@ -910,6 +917,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           chequeNo: newReceipt.chequeNo,
           chequeBank: newReceipt.chequeBank,
           chequeDate: newReceipt.chequeDate,
+          receiptNumber: newReceipt.receiptNumber,
+          orgId: (auth as any)?.profile?.org_id || undefined,
         });
       } catch (err) {
         console.error('Error saving payment to Supabase:', err);

@@ -193,8 +193,8 @@ async function runBrowserUserTest() {
       await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06_field_visits_view.png') });
     });
 
-    // 8. Test Payments & Collections
-    await step('8. Test Payments Section', async () => {
+    // 8. Test Payments & Collections & Record Payment Flow
+    await step('8. Test Payments Section & Record Payment Modal', async () => {
       await page.evaluate(() => {
         const links = Array.from(document.querySelectorAll('button, a'));
         const payTab = links.find(l => l.innerText.trim().toLowerCase().includes('payment') || l.innerText.trim().toLowerCase().includes('collection'));
@@ -203,6 +203,21 @@ async function runBrowserUserTest() {
 
       await new Promise(r => setTimeout(r, 2000));
       await page.screenshot({ path: path.join(SCREENSHOT_DIR, '07_payments_view.png') });
+
+      // Click "Record Payment" button
+      const openedModal = await page.evaluate(() => {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const recordBtn = btns.find(b => b.innerText.toLowerCase().includes('record payment') || b.innerText.toLowerCase().includes('collect payment'));
+        if (recordBtn) {
+          recordBtn.click();
+          return true;
+        }
+        return false;
+      });
+
+      console.log(`  Record Payment Modal trigger: ${openedModal ? 'Clicked' : 'Not found'}`);
+      await new Promise(r => setTimeout(r, 1500));
+      await page.screenshot({ path: path.join(SCREENSHOT_DIR, '07_record_payment_modal.png') });
     });
 
     // 9. Test Deep Page Refresh URL Persistence
