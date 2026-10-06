@@ -55,6 +55,60 @@ const queryClient = new QueryClient({
   },
 });
 
+const getInitialPath = (defaultRole?: string): string => {
+  if (typeof window === 'undefined') return '/admin/dashboard';
+
+  const pathname = window.location.pathname;
+  const hash = window.location.hash;
+
+  // 1. Direct browser URL path (e.g. /sales/visits, /admin/orders, /admin/customers)
+  if (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/sales') ||
+    pathname.startsWith('/platform') ||
+    pathname.startsWith('/receipts/') ||
+    pathname.startsWith('/customers/insights') ||
+    pathname === '/landing'
+  ) {
+    return pathname;
+  }
+
+  // 2. Hash-based route fallback
+  if (hash) {
+    const cleanHash = hash.replace(/^#\/?/, '/');
+    if (
+      cleanHash.startsWith('/admin') ||
+      cleanHash.startsWith('/sales') ||
+      cleanHash.startsWith('/platform') ||
+      cleanHash.startsWith('/receipts/') ||
+      cleanHash.startsWith('/customers/insights') ||
+      cleanHash === '/landing'
+    ) {
+      return cleanHash;
+    }
+  }
+
+  // 3. Saved active route in localStorage
+  try {
+    const saved = localStorage.getItem('soleflow_active_path');
+    if (
+      saved &&
+      (saved.startsWith('/admin') ||
+        saved.startsWith('/sales') ||
+        saved.startsWith('/platform') ||
+        saved.startsWith('/receipts/') ||
+        saved.startsWith('/customers/insights') ||
+        saved === '/landing')
+    ) {
+      return saved;
+    }
+  } catch (e) {
+    console.warn('localStorage read error:', e);
+  }
+
+  return defaultRole === 'salesperson' ? '/sales/dashboard' : '/admin/dashboard';
+};
+
 const AppContent: React.FC = () => {
   const {
     currentUser,
@@ -67,11 +121,30 @@ const AppContent: React.FC = () => {
 
   const { user: authUser, role: authRole } = useAuth();
 
-  const [currentPath, setCurrentPath] = useState<string>(
-    currentUser?.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard'
+  const [currentPath, setCurrentPath] = useState<string>(() =>
+    getInitialPath(currentUser?.role)
   );
 
-  const [unauthView, setUnauthView] = useState<'landing' | 'login' | 'signup' | 'forgot_password' | 'reset_password' | 'lookbook'>('landing');
+  const [unauthView, setUnauthView] = useState<'landing' | 'login' | 'signup' | 'forgot_password' | 'reset_password' | 'lookbook' | 'app'>(() => {
+    if (typeof window === 'undefined') return 'landing';
+    const hash = window.location.hash;
+    const pathname = window.location.pathname;
+    if (hash.startsWith('#s/') || pathname.startsWith('/s/')) return 'lookbook';
+    if (hash === '#auth/forgot-password') return 'forgot_password';
+    if (hash === '#auth/reset') return 'reset_password';
+    if (hash === '#signup' || hash === '#auth/signup') return 'signup';
+    if (hash === '#login' || hash === '#auth/login') return 'login';
+    if (
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/sales') ||
+      pathname.startsWith('/platform') ||
+      pathname.startsWith('/receipts/') ||
+      pathname.startsWith('/customers/insights')
+    ) {
+      return 'app';
+    }
+    return 'landing';
+  });
   const [activeShareToken, setActiveShareToken] = useState<string>('');
 
   // Live Supabase Realtime subscriptions for orders and notifications
@@ -95,6 +168,27 @@ const AppContent: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  // Handle browser Back / Forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      const p = window.location.pathname;
+      if (
+        p.startsWith('/admin') ||
+        p.startsWith('/sales') ||
+        p.startsWith('/platform') ||
+        p.startsWith('/receipts/') ||
+        p.startsWith('/customers/insights') ||
+        p === '/landing'
+      ) {
+        setCurrentPath(p);
+        localStorage.setItem('soleflow_active_path', p);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // URL hash and path routing for direct link access
   useEffect(() => {
     const handleRoute = () => {
@@ -104,10 +198,10 @@ const AppContent: React.FC = () => {
       if (hash.startsWith('#receipts/')) {
         const pId = hash.replace('#receipts/', '');
         setCurrentPath(`/receipts/${pId}`);
-        setUnauthView('app' as any);
+        setUnauthView('app');
       } else if (pathname.startsWith('/receipts/')) {
         setCurrentPath(pathname);
-        setUnauthView('app' as any);
+        setUnauthView('app');
       } else if (hash.startsWith('#s/')) {
         const token = hash.replace('#s/', '');
         setActiveShareToken(token);
@@ -124,23 +218,26 @@ const AppContent: React.FC = () => {
         setUnauthView('login');
       } else if (hash === '#signup' || hash === '#auth/signup') {
         setUnauthView('signup');
-      } else if (
-        hash === '#landing' ||
-        hash === '#home'
-      ) {
+      } else if (hash === '#landing' || hash === '#home') {
         setUnauthView('landing');
       } else if (
-        hash.startsWith('#app') ||
+        pathname.startsWith('/admin') ||
+        pathname.startsWith('/sales') ||
+        pathname.startsWith('/platform') ||
+        pathname.startsWith('/customers/insights') ||
         hash.startsWith('#admin') ||
         hash.startsWith('#sales') ||
-        hash.startsWith('#dashboard')
+        hash.startsWith('#app')
       ) {
-        setUnauthView('app' as any);
+        if (pathname.length > 1 && pathname !== '/') {
+          setCurrentPath(pathname);
+        }
+        setUnauthView('app');
       } else {
         if (!isLoggedIn) {
           setUnauthView('login');
         } else {
-          setUnauthView('app' as any);
+          setUnauthView('app');
         }
       }
     };
@@ -150,15 +247,27 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleRoute);
   }, [isLoggedIn]);
 
-  // Sync route on role switch
+  // Keep browser URL and localStorage in sync with currentPath
   useEffect(() => {
-    if (currentUser.role === 'admin' && currentPath.startsWith('/sales')) {
-      setCurrentPath('/admin/dashboard');
-    } else if (currentUser.role === 'salesperson' && currentPath.startsWith('/admin')) {
+    if (isLoggedIn && currentPath && unauthView === 'app') {
+      try {
+        localStorage.setItem('soleflow_active_path', currentPath);
+        if (window.location.pathname !== currentPath && !window.location.hash.startsWith('#s/')) {
+          window.history.replaceState({ path: currentPath }, '', currentPath);
+        }
+      } catch (e) {
+        console.warn('History replaceState error:', e);
+      }
+    }
+  }, [currentPath, isLoggedIn, unauthView]);
+
+  // Sync route on role switch (only restrict salesperson from admin paths)
+  useEffect(() => {
+    if (currentUser.role === 'salesperson' && currentPath.startsWith('/admin')) {
       setCurrentPath('/sales/dashboard');
     }
     setIsMobileSidebarOpen(false);
-  }, [currentUser.role, setIsMobileSidebarOpen]);
+  }, [currentUser.role, currentPath, setIsMobileSidebarOpen]);
 
   // Ensure mobile menu is closed on route change or when logging in
   useEffect(() => {
@@ -171,10 +280,17 @@ const AppContent: React.FC = () => {
     // Restrict salesperson from admin paths
     if (currentUser.role === 'salesperson' && path.startsWith('/admin')) {
       showToast('Restricted: Trader Admin privileges required');
-      setCurrentPath('/sales/dashboard');
-      return;
+      path = '/sales/dashboard';
     }
     setCurrentPath(path);
+    try {
+      localStorage.setItem('soleflow_active_path', path);
+      if (window.location.pathname !== path) {
+        window.history.pushState({ path }, '', path);
+      }
+    } catch (e) {
+      console.warn('History navigation error:', e);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
