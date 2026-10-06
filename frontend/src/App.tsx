@@ -56,7 +56,7 @@ const queryClient = new QueryClient({
 });
 
 const getInitialPath = (defaultRole?: string): string => {
-  if (typeof window === 'undefined') return '/admin/dashboard';
+  if (typeof window === 'undefined') return '/landing';
 
   const pathname = window.location.pathname;
   const hash = window.location.hash;
@@ -67,8 +67,7 @@ const getInitialPath = (defaultRole?: string): string => {
     pathname.startsWith('/sales') ||
     pathname.startsWith('/platform') ||
     pathname.startsWith('/receipts/') ||
-    pathname.startsWith('/customers/insights') ||
-    pathname === '/landing'
+    pathname.startsWith('/customers/insights')
   ) {
     return pathname;
   }
@@ -81,32 +80,13 @@ const getInitialPath = (defaultRole?: string): string => {
       cleanHash.startsWith('/sales') ||
       cleanHash.startsWith('/platform') ||
       cleanHash.startsWith('/receipts/') ||
-      cleanHash.startsWith('/customers/insights') ||
-      cleanHash === '/landing'
+      cleanHash.startsWith('/customers/insights')
     ) {
       return cleanHash;
     }
   }
 
-  // 3. Saved active route in localStorage
-  try {
-    const saved = localStorage.getItem('soleflow_active_path');
-    if (
-      saved &&
-      (saved.startsWith('/admin') ||
-        saved.startsWith('/sales') ||
-        saved.startsWith('/platform') ||
-        saved.startsWith('/receipts/') ||
-        saved.startsWith('/customers/insights') ||
-        saved === '/landing')
-    ) {
-      return saved;
-    }
-  } catch (e) {
-    console.warn('localStorage read error:', e);
-  }
-
-  return defaultRole === 'salesperson' ? '/sales/dashboard' : '/admin/dashboard';
+  return '/landing';
 };
 
 const AppContent: React.FC = () => {
@@ -132,8 +112,8 @@ const AppContent: React.FC = () => {
     if (hash.startsWith('#s/') || pathname.startsWith('/s/')) return 'lookbook';
     if (hash === '#auth/forgot-password') return 'forgot_password';
     if (hash === '#auth/reset') return 'reset_password';
-    if (hash === '#signup' || hash === '#auth/signup') return 'signup';
-    if (hash === '#login' || hash === '#auth/login') return 'login';
+    if (hash === '#signup' || hash === '#auth/signup' || pathname === '/signup') return 'signup';
+    if (hash === '#login' || hash === '#auth/login' || pathname === '/login') return 'login';
     if (
       pathname.startsWith('/admin') ||
       pathname.startsWith('/sales') ||
@@ -214,11 +194,11 @@ const AppContent: React.FC = () => {
         setUnauthView('forgot_password');
       } else if (hash === '#auth/reset') {
         setUnauthView('reset_password');
-      } else if (hash === '#login' || hash === '#auth/login') {
+      } else if (hash === '#login' || hash === '#auth/login' || pathname === '/login') {
         setUnauthView('login');
-      } else if (hash === '#signup' || hash === '#auth/signup') {
+      } else if (hash === '#signup' || hash === '#auth/signup' || pathname === '/signup') {
         setUnauthView('signup');
-      } else if (hash === '#landing' || hash === '#home') {
+      } else if (hash === '#landing' || hash === '#home' || pathname === '/landing' || pathname === '/') {
         setUnauthView('landing');
       } else if (
         pathname.startsWith('/admin') ||
@@ -232,13 +212,9 @@ const AppContent: React.FC = () => {
         if (pathname.length > 1 && pathname !== '/') {
           setCurrentPath(pathname);
         }
-        setUnauthView('app');
+        setUnauthView(isLoggedIn ? 'app' : 'login');
       } else {
-        if (!isLoggedIn) {
-          setUnauthView('login');
-        } else {
-          setUnauthView('app');
-        }
+        setUnauthView('landing');
       }
     };
 
@@ -330,31 +306,34 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // 3. Login / Signup Page (or unauthenticated default)
-  if (unauthView === 'login' || unauthView === 'signup' || !isLoggedIn) {
-    if (unauthView === 'landing' && (window.location.hash === '#landing' || window.location.hash === '#home')) {
-      return (
-        <LandingPage
-          isAlreadyLoggedIn={false}
-          onReturnToDashboard={() => {
-            window.location.hash = '#login';
-            setUnauthView('login');
-          }}
-          onLoginSuccess={(role) => {
-            setIsMobileSidebarOpen(false);
-            const targetPath = role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
-            setCurrentPath(targetPath);
-            setUnauthView('app' as any);
-            window.location.hash = '#app';
-          }}
-          onNavigateToLogin={(mode = 'login') => {
-            window.location.hash = mode;
-            setUnauthView(mode);
-          }}
-        />
-      );
-    }
+  // 3. Public Landing Page (Default for root URL /)
+  if (unauthView === 'landing') {
+    return (
+      <LandingPage
+        isAlreadyLoggedIn={isLoggedIn}
+        onReturnToDashboard={() => {
+          const targetPath = currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
+          setCurrentPath(targetPath);
+          setUnauthView('app');
+          window.location.hash = '#app';
+        }}
+        onLoginSuccess={(role) => {
+          setIsMobileSidebarOpen(false);
+          const targetPath = role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
+          setCurrentPath(targetPath);
+          setUnauthView('app');
+          window.location.hash = '#app';
+        }}
+        onNavigateToLogin={(mode = 'login') => {
+          window.location.hash = mode;
+          setUnauthView(mode);
+        }}
+      />
+    );
+  }
 
+  // 4. Login / Signup Page
+  if (unauthView === 'login' || unauthView === 'signup' || !isLoggedIn) {
     return (
       <LoginPage
         initialMode={unauthView === 'signup' ? 'signup' : 'login'}
@@ -362,7 +341,7 @@ const AppContent: React.FC = () => {
           setIsMobileSidebarOpen(false);
           const targetPath = role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
           setCurrentPath(targetPath);
-          setUnauthView('app' as any);
+          setUnauthView('app');
           window.location.hash = '#app';
         }}
         onBackToLanding={() => {
