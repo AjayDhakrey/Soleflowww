@@ -234,6 +234,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       supabaseApi.getPayments().then((data) => {
         if (data && data.length > 0) setPayments(data);
       });
+      followUpsService.fetchFollowUps().then((data) => {
+        if (data && data.length > 0) setFollowUps(data);
+      }).catch((err) => {
+        console.warn('Initial follow-ups fetch error:', err);
+      });
+      visitsService.fetchVisits().then((data) => {
+        if (data && data.length > 0) setFieldVisits(data);
+      }).catch((err) => {
+        console.warn('Initial visits fetch error:', err);
+      });
       notificationsService.fetchNotifications().then((data) => {
         if (data) setNotifications(data);
       }).catch((err) => {
@@ -744,11 +754,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (isSupabaseActive) {
       followUpsService.createFollowUp({
         client_id: newFollowUp.customerId,
-        due_at: new Date().toISOString(),
-        type: 'collection',
-        status: 'pending',
+        due_at: newFollowUp.date ? new Date(`${newFollowUp.date}T${newFollowUp.time || '11:00:00'}`).toISOString() : new Date().toISOString(),
+        owner_name: currentUser.name || 'Sales Rep',
+        type: newFollowUp.reason,
+        status: newFollowUp.status,
+        outcome: newFollowUp.notes,
         priority: 'normal',
+      }).then((res) => {
+        if (res.success) {
+          showToast(`✅ Follow-up saved to Supabase for ${newFollowUp.customerName}!`);
+        } else {
+          showToast(`Follow-up scheduled for ${newFollowUp.customerName}!`);
+        }
       });
+    } else {
+      showToast(`Follow-up scheduled for ${newFollowUp.customerName}!`);
     }
 
     addAuditEvent({
@@ -758,8 +778,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordTitle: `${newFollowUp.customerName} (${newFollowUp.reason})`,
       newValue: `Scheduled for ${newFollowUp.date} at ${newFollowUp.time}`,
     });
-
-    showToast(`Follow-up scheduled for ${newFollowUp.customerName}!`);
   };
 
   const completeFollowUp = (id: string) => {

@@ -79,6 +79,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     designs,
     currentUser,
     isSupabaseActive,
+    addFollowUp,
     setSelectedCustomer,
     setIsCreateOrderModalOpen,
     setIsPaymentModalOpen,
@@ -283,8 +284,19 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
 
   const handleAddFollowUp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFollowUpText.trim()) return;
-    showToast(`Follow-up scheduled for ${newFollowUpDate}: ${newFollowUpText}`);
+    if (!newFollowUpText.trim() || !customer) return;
+    addFollowUp({
+      customerId: customer.id,
+      customerName: customer.businessName,
+      customerCity: customer.city,
+      phone: customer.phone,
+      reason: 'Scheduled Interaction & Order Discussion',
+      date: newFollowUpDate || new Date().toISOString().split('T')[0],
+      time: '11:00 AM',
+      notes: newFollowUpText.trim(),
+      amountDue: customer.amountDue,
+      status: 'today',
+    });
     setNewFollowUpText('');
   };
 
