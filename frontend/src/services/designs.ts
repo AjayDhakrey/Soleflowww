@@ -16,6 +16,7 @@ export function fromDesignRow(row: any): ShoeDesign {
     name: row.name || '',
     category: (row.category || '') as ShoeDesign['category'],
     price: Number(row.price ?? row.wholesale_price ?? 0),
+    costPrice: Number(row.costPrice ?? row.cost_per_pair ?? row.cost ?? 0) || undefined,
     moqPairs: Number(row.moqPairs ?? row.moq_pairs ?? 0),
     moqCartons: Number(row.moqCartons ?? row.moq_cartons ?? 0),
     sizes: Array.isArray(row.sizes) ? row.sizes : [],

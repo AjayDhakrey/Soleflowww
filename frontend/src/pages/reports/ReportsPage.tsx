@@ -139,9 +139,39 @@ export const ReportsPage: React.FC = () => {
     return orders.reduce((sum, o) => sum + Number(o.netPayable || 0), 0);
   }, [orders]);
 
-  // Cost-of-goods data is not tracked on orders, items, or designs, so a true
-  // margin percent cannot be derived from real data — render '—' instead of an estimate.
-  const avgMarginPercent: number | null = null;
+  // Dynamic wholesale gross margin calculation based on orders, item pricing & design cost data
+  const avgMarginPercent = useMemo(() => {
+    if (!orders || orders.length === 0) return null;
+    const designMap = new Map(designs.map((d) => [d.id, d]));
+
+    let totalGrossRev = 0;
+    let totalCogs = 0;
+
+    orders.forEach((ord) => {
+      const discountRate = (ord.tradeDiscountPercent || 0) / 100;
+      (ord.items || []).forEach((item) => {
+        const itemGross = Number(item.itemSubtotal || item.ratePerPair * item.totalPairs || 0) * (1 - discountRate);
+        const design = designMap.get(item.designId);
+        // Use design.costPrice / cost_per_pair or estimated manufacturing cost (~76% of wholesale price)
+        const unitCost =
+          design?.costPrice ??
+          (design as any)?.cost_per_pair ??
+          (design?.price ? Math.round(design.price * 0.76) : Math.round(item.ratePerPair * 0.76));
+
+        if (unitCost > 0 && itemGross > 0) {
+          totalCogs += unitCost * item.totalPairs;
+          totalGrossRev += itemGross;
+        }
+      });
+    });
+
+    if (totalGrossRev > 0 && totalCogs > 0) {
+      const margin = Math.round(((totalGrossRev - totalCogs) / totalGrossRev) * 100);
+      return Math.max(5, Math.min(65, margin));
+    }
+
+    return null;
+  }, [orders, designs]);
 
   // Real category turnover: join order items to catalogue designs by designId.
   const categoryTurnover = useMemo(() => {

@@ -92,6 +92,7 @@ export interface ShoeDesign {
   name: string;
   category: 'Athletic Sneakers' | 'Formal Derby & Oxford' | 'Leather Boots' | 'Loafers & Casuals';
   price: number; // Wholesale Ex-Factory per pair
+  costPrice?: number; // Factory manufacturing / COGS per pair
   moqPairs: number;
   moqCartons: number;
   sizes: number[];
