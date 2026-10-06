@@ -212,11 +212,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [auditLogs, setAuditLogs] = useState<AuditEvent[]>(MOCK_AUDIT_LOGS);
   const [designShares, setDesignShares] = useState<DesignShareRecord[]>(MOCK_DESIGN_SHARES);
 
+  const auth = useAuth();
   const isSupabaseActive = isSupabaseConfigured();
 
-  // Hydrate from live Supabase database if configured
+  // Hydrate from live Supabase database when configured and user has an active authenticated session
   useEffect(() => {
-    if (isSupabaseActive) {
+    if (isSupabaseActive && auth?.hasRealSession && auth?.isLoggedIn) {
       supabaseApi.getCustomers().then((data) => {
         if (data && data.length > 0) {
           setCustomers(data);
@@ -262,7 +263,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (data && data.length > 0) setSalesTeam(data);
       });
     }
-  }, [isSupabaseActive]);
+  }, [isSupabaseActive, auth?.hasRealSession, auth?.isLoggedIn, auth?.user?.id]);
 
   const refreshDesigns = async () => {
     try {
@@ -370,8 +371,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setToastMessage(null);
     }, 3000);
   };
-
-  const auth = useAuth();
 
   useEffect(() => {
     if (auth?.user) {
