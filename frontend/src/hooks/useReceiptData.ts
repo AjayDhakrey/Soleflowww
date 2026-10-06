@@ -14,7 +14,7 @@ import {
 
 export function useReceiptData(paymentId: string | undefined) {
   const { payments, customers } = useApp();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, org } = useAuth();
 
   // Query database if available, with AppContext fallback
   const { data: dbPayment, isLoading, error } = useQuery({
@@ -36,7 +36,7 @@ export function useReceiptData(paymentId: string | undefined) {
         receiptNumber: data.receiptNumber || `SF-REC-${data.id.slice(-5)}`,
         customerId: data.customerId || '',
         customerName: data.customerName || 'Customer Store',
-        customerCity: data.customerCity || 'Agra',
+        customerCity: data.customerCity || '',
         orderId: data.orderId || undefined,
         orderNumber: data.orderNumber || undefined,
         amountDueBefore: Number(data.amountDueBefore ?? 0),
@@ -72,7 +72,7 @@ export function useReceiptData(paymentId: string | undefined) {
   const hasAccess = useMemo(() => {
     if (!payment) return false;
     if (isAdmin) return true;
-    if (!customerRecord) return true; // fallback if customer unassigned
+    if (!customerRecord) return isAdmin;
     return (
       customerRecord.salespersonId === user?.id ||
       customerRecord.salespersonName?.toLowerCase().includes(user?.name.toLowerCase() || '') ||
@@ -80,17 +80,20 @@ export function useReceiptData(paymentId: string | undefined) {
     );
   }, [payment, isAdmin, customerRecord, user]);
 
+  // Company identity comes from the signed-in user's real organization —
+  // nothing fabricated prints on documents.
   const company: ReceiptCompanyInfo = useMemo(() => {
     return {
       ...DEFAULT_RECEIPT_COMPANY,
-      brandName: 'ShoeConnect',
-      legalName: 'SoleFlow Footwear Trading Ltd.',
-      tagline: 'Step Towards Better Tomorrow',
-      address: 'Agra Mandi Dock 4, Hing Ki Mandi, Agra, Uttar Pradesh',
-      gstin: '09AAACS4412M1Z0',
+      brandName: org?.name || 'SoleFlow',
+      legalName: org?.name || '',
+      tagline: '',
+      address: [org?.city, org?.state].filter(Boolean).join(', '),
+      gstin: org?.gstin || '',
+      phone: org?.phone || '',
       logoUrl: '/assets/images/shoeconnect-logo.png',
     };
-  }, []);
+  }, [org]);
 
   const customer: ReceiptCustomerExtras = useMemo(() => {
     if (!customerRecord && !payment) return {};
@@ -100,7 +103,7 @@ export function useReceiptData(paymentId: string | undefined) {
       phone: customerRecord?.phone || undefined,
       address: customerRecord?.address
         ? `${customerRecord.address}, ${customerRecord.city}, ${customerRecord.state}`
-        : `${payment?.customerCity || 'Agra'}, Uttar Pradesh`,
+        : [payment?.customerCity].filter(Boolean).join('') || undefined,
     };
   }, [customerRecord, payment]);
 

@@ -35,17 +35,17 @@ export const AddCustomerModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!businessName.trim()) return;
+    if (!businessName.trim() || !phone.trim()) return;
     addCustomer({
       businessName: businessName.trim(),
       propName: propName.trim(),
-      phone: phone.trim() || '+91 98000 12345',
-      whatsapp: phone.trim() || '+91 98000 12345',
-      city: city.trim() || 'Agra',
-      state: state.trim() || 'Uttar Pradesh',
-      address: address.trim() || `${city.trim() || 'Agra'} Wholesale Footwear Market`,
-      gstin: gstin.trim() || '09AAACA9999F1Z0',
-      creditLimit: Number(creditLimit) || 500000,
+      phone: phone.trim(),
+      whatsapp: phone.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      address: address.trim(),
+      gstin: gstin.trim(),
+      creditLimit: Number(creditLimit) || 0,
       paymentTerms,
     });
     setBusinessName('');

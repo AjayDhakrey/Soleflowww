@@ -193,12 +193,12 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4">
         {/* Overdue Accounts */}
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Accounts">Overdue Accounts</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.overdueAccounts}`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums wrap-anywhere">
               {metrics.overdueAccounts}
             </h3>
             {metrics.trends.overdueAccounts && (
@@ -216,11 +216,11 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Amount">Overdue Amount</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums truncate">
+            <h3 title={formatIndianCurrency(metrics.overdueAmount)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums wrap-anywhere">
               {formatIndianCurrency(metrics.overdueAmount, true)}
             </h3>
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title={`Full exact: ${formatIndianCurrency(metrics.overdueAmount)}`}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 wrap-anywhere" title={`Full exact: ${formatIndianCurrency(metrics.overdueAmount)}`}>
             Full exact: <strong className="text-foreground">{formatIndianCurrency(metrics.overdueAmount)}</strong>
           </p>
         </div>
@@ -229,8 +229,8 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Avg Days Overdue">Avg Days Overdue</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums truncate">
-              {metrics.avgDaysOverdue || 18} Days
+            <h3 title={`${metrics.avgDaysOverdue || 0} Days`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums wrap-anywhere">
+              {metrics.avgDaysOverdue || 0} Days
             </h3>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Average delay across delinquent accounts">
@@ -242,7 +242,7 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Credit Limit Breaches">Credit Limit Breaches</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums truncate">
+            <h3 title={`${overLimitCount} Stores`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums wrap-anywhere">
               {overLimitCount} Stores
             </h3>
           </div>
@@ -327,7 +327,7 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
           </div>
 
           <div className="pt-3 mt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-            <span>Primary escalation: <strong className="text-foreground">Rahul Sharma (Field Lead)</strong></span>
+            <span>Primary escalation: <strong className="text-foreground">Unassigned</strong></span>
           </div>
         </div>
       </div>
@@ -469,7 +469,7 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
 
                       {/* Sales Rep */}
                       <td className="py-3.5 px-4 text-xs font-medium text-foreground">
-                        {cust.salespersonName || 'Rahul Sharma'}
+                        {cust.salespersonName || 'Unassigned'}
                       </td>
 
                       {/* Overdue Amount */}
@@ -492,7 +492,7 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
 
                       {/* Payment Terms */}
                       <td className="py-3.5 px-4 text-xs text-muted-foreground">
-                        {cust.paymentTerms || '30% Advance + 70% Bilty'}
+                        {cust.paymentTerms || 'Not set'}
                       </td>
 
                       {/* Last Payment */}

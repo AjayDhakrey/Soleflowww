@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, isDemoModeActive } from '../lib/supabase';
 import { Order, OrderItem, OrderTimelineEvent } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -14,17 +14,17 @@ export function mapOrderFinancialToOrder(
   history?: OrderTimelineEvent[]
 ): Order {
   const status = (fin.order_status || fin.status || rawOrder?.status || 'Draft') as Order['status'];
-  const orderDate = fin.order_date_at ? new Date(fin.order_date_at).toLocaleDateString('en-IN') : (rawOrder?.orderDate || fin.order_date || 'Today');
+  const orderDate = fin.order_date_at ? new Date(fin.order_date_at).toLocaleDateString('en-IN') : (rawOrder?.orderDate || fin.order_date || '');
 
   return {
     id: fin.order_id || rawOrder?.id,
     customerId: fin.client_id || rawOrder?.customerId,
-    customerName: fin.client_name || rawOrder?.customerName || 'Client Store',
-    propName: rawOrder?.propName || 'Store Owner',
-    customerCity: rawOrder?.customerCity || 'Agra',
-    customerState: rawOrder?.customerState || 'Uttar Pradesh',
+    customerName: fin.client_name || rawOrder?.customerName || '',
+    propName: rawOrder?.propName || '',
+    customerCity: rawOrder?.customerCity || '',
+    customerState: rawOrder?.customerState || '',
     salespersonId: fin.salesman_id || fin.salesperson_id || rawOrder?.salespersonId || '',
-    salespersonName: fin.salesman_name || fin.salesperson_name || rawOrder?.salespersonName || 'Field Rep',
+    salespersonName: fin.salesman_name || fin.salesperson_name || rawOrder?.salespersonName || '',
     items: items || rawOrder?.items || [],
     pairsCount: Number(rawOrder?.pairsCount ?? fin.total_pairs ?? 0),
     cartonsCount: Number(rawOrder?.cartonsCount ?? fin.total_cartons ?? 0),
@@ -33,14 +33,14 @@ export function mapOrderFinancialToOrder(
     tradeDiscountPercent: Number(rawOrder?.tradeDiscountPercent ?? fin.trade_discount_percent ?? 0),
     tradeDiscountAmount: Number(rawOrder?.tradeDiscountAmount ?? fin.trade_discount_amount ?? 0),
     taxableSubtotal: Number(rawOrder?.taxableSubtotal ?? fin.taxable_subtotal ?? 0),
-    gstPercent: Number(rawOrder?.gstPercent ?? fin.gst_percent ?? 12),
+    gstPercent: Number(rawOrder?.gstPercent ?? fin.gst_percent ?? 0),
     gstAmount: Number(rawOrder?.gstAmount ?? fin.gst_amount ?? 0),
     netPayable: Number(fin.net_payable ?? rawOrder?.netPayable ?? 0),
     advanceDeposited: Number(fin.paid_verified ?? fin.total_paid ?? rawOrder?.advanceDeposited ?? 0),
     balanceDue: Number(fin.outstanding ?? fin.balance_due ?? rawOrder?.balanceDue ?? 0),
-    manufacturerId: rawOrder?.manufacturerId || fin.manufacturer_id || 'mfg-1',
-    manufacturerName: rawOrder?.manufacturerName || 'Apex Footwear Works',
-    manufacturerPlant: rawOrder?.manufacturerPlant || 'Agra Unit 2',
+    manufacturerId: rawOrder?.manufacturerId || fin.manufacturer_id || '',
+    manufacturerName: rawOrder?.manufacturerName || '',
+    manufacturerPlant: rawOrder?.manufacturerPlant || '',
     expectedDelivery: rawOrder?.expectedDelivery || fin.expected_delivery || 'TBD',
     paymentStatus: (fin.payment_status || rawOrder?.paymentStatus || 'Payment Pending') as Order['paymentStatus'],
     status,
@@ -62,12 +62,16 @@ export const ordersService = {
     clientId?: string;
     salespersonId?: string;
     search?: string;
+    orgId?: string;
   }): Promise<Order[]> {
-    if (!supabase) return MOCK_ORDERS;
+    if (!supabase || isDemoModeActive) return isDemoModeActive ? MOCK_ORDERS : [];
 
     try {
       let query = supabase.from('v_order_financials').select('*');
 
+      if (filters?.orgId) {
+        query = query.eq('org_id', filters.orgId);
+      }
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('order_status', filters.status);
       }
@@ -84,18 +88,18 @@ export const ordersService = {
       const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
 
-      if (!data || data.length === 0) return MOCK_ORDERS;
+      if (!data || data.length === 0) return [];
 
       return data.map((d) => mapOrderFinancialToOrder(d));
     } catch (err) {
-      console.warn('Error fetching orders from Supabase; returning mock orders:', err);
-      return MOCK_ORDERS;
+      console.error('Error fetching orders from Supabase:', err);
+      return [];
     }
   },
 
   async fetchOrderById(orderId: string): Promise<Order | null> {
-    if (!supabase) {
-      return MOCK_ORDERS.find((o) => o.id === orderId) || null;
+    if (!supabase || isDemoModeActive) {
+      return null;
     }
 
     try {
@@ -115,10 +119,10 @@ export const ordersService = {
         .eq('order_id', orderId);
 
       const items: OrderItem[] = (rawItems || []).map((item: any) => ({
-        designId: item.design_id || 'sf-1024',
-        designName: item.design_name_snapshot || item.design_name || 'Shoe Model',
-        articleCode: item.design_code_snapshot || item.article_code || 'ART-00',
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80',
+        designId: item.design_id || '',
+        designName: item.design_name_snapshot || item.design_name || '',
+        articleCode: item.design_code_snapshot || item.article_code || '',
+        image: '',
         ratePerPair: Number(item.rate || item.rate_per_pair || 0),
         sizeBreakdown: Array.isArray(item.size_matrix) ? item.size_matrix : (Array.isArray(item.size_breakdown) ? item.size_breakdown : []),
         totalPairs: Number(item.qty_pairs || item.total_pairs || 0),
@@ -144,7 +148,7 @@ export const ordersService = {
       return mapOrderFinancialToOrder(finData, undefined, items, history);
     } catch (err) {
       console.error('Error fetching order by ID:', err);
-      return MOCK_ORDERS.find((o) => o.id === orderId) || null;
+      return null;
     }
   },
 
@@ -158,7 +162,7 @@ export const ordersService = {
     expectedDelivery?: string;
     notes?: string;
   }): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       return {
         success: true,
         data: {
@@ -193,7 +197,7 @@ export const ordersService = {
     note?: string;
     manufacturerId?: string;
   }): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
 
     try {
       const { data, error } = await supabase.rpc('advance_order_status', {

@@ -537,7 +537,7 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
     });
 
     activeOrders.forEach((o) => {
-      const mId = o.manufacturerId || 'mfg-1';
+      const mId = o.manufacturerId || '';
       if (!mfgMap[mId]) {
         mfgMap[mId] = {
           id: mId,
@@ -615,8 +615,8 @@ export function useDashboardOverview(initialPeriod: DashboardPeriod = 'month') {
       const repPayments = payments.filter((p) => p.collectedBy?.toLowerCase().includes(rep.name.toLowerCase()));
       
       const realBooked = repOrders.reduce((sum, o) => sum + Number(o.netPayable || 0), 0);
-      const target = rep.monthlyTarget || 1200000;
-      const targetPct = Math.min(100, Math.round((realBooked / target) * 100));
+      const target = rep.monthlyTarget || 0;
+      const targetPct = target > 0 ? Math.min(100, Math.round((realBooked / target) * 100)) : 0;
 
       const realCollected = repPayments.reduce((sum, p) => sum + Number(p.paymentAmount || 0), 0);
 

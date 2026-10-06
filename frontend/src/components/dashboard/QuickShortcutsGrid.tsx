@@ -15,7 +15,7 @@ interface QuickShortcutsGridProps {
 
 // 1. Book Order (3D Clipboard with Plus Badge & Sparkles)
 const BookOrder3D = () => (
-  <svg viewBox="0 0 120 100" className="w-20 h-16 sm:w-24 sm:h-20 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-14 h-11 sm:w-16 sm:h-13 drop-shadow-md select-none" fill="none">
     {/* Ambient Glow */}
     <circle cx="60" cy="50" r="38" fill="#DBEAFE" fillOpacity="0.6" filter="blur(8px)" />
 
@@ -60,7 +60,7 @@ const BookOrder3D = () => (
 
 // 2. Record Payment (3D Coins Stack with Rupee and Green Arrow)
 const RecordPayment3D = () => (
-  <svg viewBox="0 0 120 100" className="w-20 h-16 sm:w-24 sm:h-20 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-14 h-11 sm:w-16 sm:h-13 drop-shadow-md select-none" fill="none">
     {/* Ambient Glow */}
     <circle cx="60" cy="50" r="38" fill="#D1FAE5" fillOpacity="0.6" filter="blur(8px)" />
 
@@ -105,7 +105,7 @@ const RecordPayment3D = () => (
 
 // 3. Add Customer (3D Purple Users Group with Plus Badge)
 const AddCustomer3D = () => (
-  <svg viewBox="0 0 120 100" className="w-20 h-16 sm:w-24 sm:h-20 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-14 h-11 sm:w-16 sm:h-13 drop-shadow-md select-none" fill="none">
     {/* Ambient Glow */}
     <circle cx="60" cy="50" r="38" fill="#F3E8FF" fillOpacity="0.7" filter="blur(8px)" />
 
@@ -150,7 +150,7 @@ const AddCustomer3D = () => (
 
 // 4. New Design (3D Orange Sneaker + Palette Swatch + Pencil)
 const NewDesign3D = () => (
-  <svg viewBox="0 0 120 100" className="w-20 h-16 sm:w-24 sm:h-20 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-14 h-11 sm:w-16 sm:h-13 drop-shadow-md select-none" fill="none">
     {/* Ambient Glow */}
     <circle cx="60" cy="50" r="38" fill="#FFEDD5" fillOpacity="0.7" filter="blur(8px)" />
 
@@ -206,7 +206,7 @@ const NewDesign3D = () => (
 
 // 5. Share Lookbook (3D Tablet with Shoe Lookbook & Blue Share Nodes)
 const ShareLookbook3D = () => (
-  <svg viewBox="0 0 120 100" className="w-20 h-16 sm:w-24 sm:h-20 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-14 h-11 sm:w-16 sm:h-13 drop-shadow-md select-none" fill="none">
     {/* Ambient Glow */}
     <circle cx="60" cy="50" r="38" fill="#EFF6FF" fillOpacity="0.7" filter="blur(8px)" />
 
@@ -257,7 +257,7 @@ const ShareLookbook3D = () => (
 
 // 6. GST Audit Ledger (3D Spiral Audit Book with Charts & GST Seal Badge)
 const GstAuditLedger3D = () => (
-  <svg viewBox="0 0 120 100" className="w-20 h-16 sm:w-24 sm:h-20 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-14 h-11 sm:w-16 sm:h-13 drop-shadow-md select-none" fill="none">
     {/* Ambient Glow */}
     <circle cx="60" cy="50" r="38" fill="#CCFBF1" fillOpacity="0.7" filter="blur(8px)" />
 
@@ -316,17 +316,17 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
   onGstLedger,
 }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3.5 sm:gap-4">
+    <div className="rounded-2xl border border-border/80 bg-border/60 dark:bg-border/40 overflow-hidden shadow-2xs grid grid-cols-[repeat(auto-fit,minmax(min(100%,9.5rem),1fr))] gap-px">
       {/* 1. Book Order */}
       <button
         type="button"
         onClick={onBookOrder}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-surface border border-border/90 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 select-none"
+        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <BookOrder3D />
         </div>
-        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight mt-0.5">
           Book Order
         </span>
       </button>
@@ -335,12 +335,12 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onRecordPayment}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-surface border border-border/90 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1 select-none"
+        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <RecordPayment3D />
         </div>
-        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight mt-0.5">
           Record Payment
         </span>
       </button>
@@ -349,12 +349,12 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onAddCustomer}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-surface border border-border/90 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 select-none"
+        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <AddCustomer3D />
         </div>
-        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight mt-0.5">
           Add Customer
         </span>
       </button>
@@ -363,12 +363,12 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onNewDesign}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-surface border border-border/90 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-lg hover:-translate-y-1 select-none"
+        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <NewDesign3D />
         </div>
-        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight mt-0.5">
           New Design
         </span>
       </button>
@@ -377,12 +377,12 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onShareLookbook}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-surface border border-border/90 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-lg hover:-translate-y-1 select-none"
+        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <ShareLookbook3D />
         </div>
-        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors tracking-tight mt-0.5">
           Share Lookbook
         </span>
       </button>
@@ -391,12 +391,12 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onGstLedger}
-        className="group relative rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-200 cursor-pointer bg-surface border border-border/90 hover:border-teal-400 dark:hover:border-teal-500 hover:shadow-lg hover:-translate-y-1 select-none"
+        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
-        <div className="mb-2 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
+        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200">
           <GstAuditLedger3D />
         </div>
-        <span className="text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors tracking-tight mt-1">
+        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors tracking-tight mt-0.5">
           GST Tax Ledger
         </span>
       </button>

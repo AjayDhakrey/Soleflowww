@@ -609,7 +609,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       manufacturerName: orderData.manufacturerName || (manufacturers[0]?.companyName || 'Apex Footwear Works'),
       manufacturerPlant: orderData.manufacturerPlant || (manufacturers[0]?.hubLocation || 'Agra Unit 2'),
       expectedDelivery: orderData.expectedDelivery || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      paymentStatus: advanceDeposited > 0 ? (advanceDeposited >= netPayable ? 'Fully Paid' : 'Advance Deposited') : 'Payment Pending',
+      paymentStatus: advanceDeposited > 0 ? (advanceDeposited >= netPayable ? 'Paid' : 'Advance Deposited') : 'Payment Pending',
       status: orderData.status || (currentUser.role === 'admin' ? 'Approved' : 'Submitted'),
       orderDate: 'Today',
       batchNumber: orderData.batchNumber || `SF-90${orders.length + 3}`,

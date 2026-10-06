@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { MOCK_DESIGNS } from '../../data/mockData';
 import { ShoeDesign } from '../../types';
 import {
   Footprints,
@@ -28,6 +27,7 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
 }) => {
   const [designs, setDesigns] = useState<ShoeDesign[]>([]);
   const [clientInfo, setClientInfo] = useState<{ businessName?: string; city?: string } | null>(null);
+  const [salesPhone, setSalesPhone] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDesign, setSelectedDesign] = useState<ShoeDesign | null>(null);
@@ -51,6 +51,10 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
             if (isMounted) {
               setDesigns(rawData.designs || []);
               setClientInfo(rawData.client || null);
+              // Use the sharing org's real sales phone when the share payload provides one
+              setSalesPhone(
+                rawData.salesPhone || rawData.sales_phone || rawData.client?.phone || rawData.org?.phone || null
+              );
               if (rawData.designs?.length > 0) {
                 setSelectedDesign(rawData.designs[0]);
               }
@@ -60,18 +64,15 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
           }
         }
 
-        // Fallback for mock/demo share tokens
+        // Invalid/expired token or database unavailable — no mock fallback
         if (isMounted) {
-          const mockItems = MOCK_DESIGNS.slice(0, 3);
-          setDesigns(mockItems);
-          setSelectedDesign(mockItems[0]);
-          setClientInfo({ businessName: 'ABC Footwear', city: 'Agra' });
+          setError('This link is invalid or has expired');
           setIsLoading(false);
         }
       } catch (err: any) {
         console.error('Failed to load shared lookbook:', err);
         if (isMounted) {
-          setError(err?.message || 'Could not load lookbook. It may be expired or invalid.');
+          setError(err?.message || 'This link is invalid or has expired');
           setIsLoading(false);
         }
       }
@@ -85,11 +86,12 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
   }, [shareToken]);
 
   const handleWhatsAppEnquiry = (design?: ShoeDesign) => {
+    if (!salesPhone) return;
     const item = design || selectedDesign;
     const text = item
       ? `Hello SoleFlow Team, I am interested in wholesale booking for Article *${item.articleCode} - ${item.name}* (Wholesale Rate: ₹${item.price}/pair, MOQ: ${item.moqPairs} pairs). Please share delivery schedule and sample terms.`
       : `Hello SoleFlow Team, I am interested in your wholesale shoe catalog.`;
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(text)}`;
+    const whatsappUrl = `https://wa.me/${salesPhone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -115,7 +117,7 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
         <div className="max-w-md w-full text-center bg-slate-900 border border-slate-800 p-8 rounded-2xl">
           <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Lookbook Unavailable</h2>
-          <p className="text-sm text-slate-400 mb-6">{error || 'This catalog link has expired or is invalid.'}</p>
+          <p className="text-sm text-slate-400 mb-6">{error || 'This link is invalid or has expired'}</p>
           {onReturnToApp && (
             <button
               onClick={onReturnToApp}
@@ -151,13 +153,15 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleWhatsAppEnquiry()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-emerald-600/20 transition-all"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>WhatsApp Enquiry</span>
-          </button>
+          {salesPhone && (
+            <button
+              onClick={() => handleWhatsAppEnquiry()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-emerald-600/20 transition-all"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp Enquiry</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -252,16 +256,20 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
 
                 {/* Actions */}
                 <div className="pt-2 flex items-center gap-2">
-                  <button
-                    onClick={() => handleWhatsAppEnquiry(design)}
-                    className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Book on WhatsApp</span>
-                  </button>
+                  {salesPhone && (
+                    <button
+                      onClick={() => handleWhatsAppEnquiry(design)}
+                      className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Book on WhatsApp</span>
+                    </button>
+                  )}
                   <button
                     onClick={handleExpressInterest}
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer"
+                    className={`px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer ${
+                      salesPhone ? '' : 'flex-1'
+                    }`}
                   >
                     Interested
                   </button>

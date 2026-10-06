@@ -39,6 +39,8 @@ import { AddCustomerModal } from './components/customers/AddCustomerModal';
 import { ShareLookbookModal } from './components/designs/ShareLookbookModal';
 import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
 import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
+import { AccountsPage } from './pages/platform/AccountsPage';
+import { ViewModeProvider } from './context/ViewModeContext';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -299,6 +301,15 @@ const AppContent: React.FC = () => {
       return <ClearedAccountsInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
     }
 
+    // Platform Accounts route (Super Admin All Accounts Overview)
+    if (currentPath === '/platform/accounts' || currentPath === '/admin/accounts') {
+      return (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/admin/dashboard')}>
+          <AccountsPage onNavigate={handleNavigate} />
+        </RequireRole>
+      );
+    }
+
     // Platform Admin route (Super Admin Console)
     if (currentPath === '/platform' || currentPath === '/admin/platform') {
       return (
@@ -513,9 +524,11 @@ export default function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <AppProvider>
-            <AppContent />
-          </AppProvider>
+          <ViewModeProvider>
+            <AppProvider>
+              <AppContent />
+            </AppProvider>
+          </ViewModeProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>

@@ -77,11 +77,11 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
       // @ts-ignore
       const html2pdfModule = (await import('html2pdf.js')).default || (await import('html2pdf.js'));
       const opt = {
-        margin: [8, 8, 8, 8],
+        margin: [8, 8, 8, 8] as [number, number, number, number],
         filename: `${suggestedFileName}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
       };
       await html2pdfModule().set(opt).from(element).save();
     } catch (err) {

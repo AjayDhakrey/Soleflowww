@@ -54,6 +54,9 @@ import {
   Percent,
   ExternalLink,
   Globe,
+  Clock,
+  ReceiptText,
+  Send,
 } from 'lucide-react';
 
 export const Icons = {
@@ -80,6 +83,7 @@ export const Icons = {
   Reports: BarChart3,
   Notifications: Bell,
   AuditLog: History,
+  Activity: History,
   Settings: Settings,
 
   // Actions & Controls
@@ -132,6 +136,10 @@ export const Icons = {
   Security: ShieldCheck,
   Lock: ShieldCheck,
   Key: KeyRound,
+  Clock: Clock,
+  Success: CheckCircle2,
+  Receipt: ReceiptText,
+  Send: Send,
 } as const;
 
 export type IconName = keyof typeof Icons;

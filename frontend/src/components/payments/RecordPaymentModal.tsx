@@ -110,15 +110,14 @@ export const RecordPaymentModal: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const generatedReceipt = `SF-REC-${Math.floor(10000 + Math.random() * 90000)}`;
       const refString = paymentMethod === 'Cheque' ? `CHQ-${chequeNo} (${chequeBank})` : utrRef || 'Direct Transfer';
 
-      const newPayment: PaymentReceipt = {
-        id: `pay-${Date.now()}`,
+      // Receipt number & payment id are owned by the server (record_payment RPC
+      // generates the receipt number) — send only the real collection fields.
+      const newPayment: Partial<PaymentReceipt> = {
         customerId: currentCust.id,
         customerName: currentCust.businessName,
         customerCity: currentCust.city,
-        receiptNumber: generatedReceipt,
         orderId: targetOrderId !== 'auto_fifo' ? targetOrderId : undefined,
         amountDueBefore: beforeDue,
         paymentAmount: payAmt,
@@ -126,7 +125,7 @@ export const RecordPaymentModal: React.FC = () => {
         paymentDate: paymentDate,
         paymentMethod: paymentMethod,
         utrRef: refString,
-        collectedBy: currentUser?.name || 'Field Sales Rep',
+        collectedBy: currentUser?.name || '',
         notes: notes ? `${notes} (Target: ${targetOrderId})` : `Settlement: ${targetOrderId}`,
         sentSms: sendSms,
         chequeNo: paymentMethod === 'Cheque' ? chequeNo : undefined,
@@ -136,7 +135,8 @@ export const RecordPaymentModal: React.FC = () => {
       };
 
       await recordPayment(newPayment);
-      setCreatedPayment(newPayment);
+      // Display snapshot: identifiers stay empty until the server assigns them.
+      setCreatedPayment({ id: '', receiptNumber: '', ...newPayment } as PaymentReceipt);
     } catch (err: any) {
       showToast(err?.message || 'Failed to record payment entry.');
     } finally {
@@ -209,7 +209,7 @@ export const RecordPaymentModal: React.FC = () => {
                   Payment Recorded Successfully
                 </h4>
                 <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                  Receipt #{createdPayment.receiptNumber} generated for {createdPayment.customerName}
+                  Receipt #{createdPayment.receiptNumber || '—'} generated for {createdPayment.customerName}
                 </p>
               </div>
 
@@ -525,7 +525,7 @@ export const RecordPaymentModal: React.FC = () => {
             customerCode: currentCust?.id,
             gstin: currentCust?.gstin,
             phone: currentCust?.phone,
-            address: currentCust?.address ? `${currentCust.address}, ${currentCust.city}, ${currentCust.state}` : `${currentCust?.city || 'Agra'}, Uttar Pradesh`,
+            address: [currentCust?.address, currentCust?.city, currentCust?.state].filter(Boolean).join(', ') || undefined,
           }}
           status={mapPaymentStatusToReceiptStatus(createdPayment.status)}
         />

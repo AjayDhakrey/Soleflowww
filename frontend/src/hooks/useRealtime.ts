@@ -1,19 +1,28 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import {supabase, isDemoModeActive} from '../lib/supabase';
+import { useEffectiveOrgId } from '../context/ViewModeContext';
 
 export function useRealtimeSubscriptions(userId?: string | null, onNotification?: (msg: string) => void) {
   const queryClient = useQueryClient();
+  const effectiveOrgId = useEffectiveOrgId();
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase || isDemoModeActive) return;
 
-    // Listen to orders table changes
+    const filterClause = effectiveOrgId ? `org_id=eq.${effectiveOrgId}` : undefined;
+
+    // Listen to orders table changes scoped to effective org
     const ordersChannel = supabase
-      .channel('orders-realtime')
+      .channel(`orders-realtime-${effectiveOrgId || 'global'}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          ...(filterClause ? { filter: filterClause } : {}),
+        },
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['orders'] });
           queryClient.invalidateQueries({ queryKey: ['receivables'] });
@@ -27,10 +36,15 @@ export function useRealtimeSubscriptions(userId?: string | null, onNotification?
 
     // Listen to notifications table
     const notificationsChannel = supabase
-      .channel('notifications-realtime')
+      .channel(`notifications-realtime-${effectiveOrgId || 'global'}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          ...(filterClause ? { filter: filterClause } : {}),
+        },
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
           if (onNotification) {
@@ -46,5 +60,5 @@ export function useRealtimeSubscriptions(userId?: string | null, onNotification?
         supabase.removeChannel(notificationsChannel);
       }
     };
-  }, [queryClient, userId, onNotification]);
+  }, [queryClient, userId, effectiveOrgId, onNotification]);
 }

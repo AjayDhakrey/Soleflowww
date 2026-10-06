@@ -317,20 +317,20 @@ const ClearedAccounts3D = () => (
 
 export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
   totalCustomers,
-  totalCustomersGrowth = 14,
+  totalCustomersGrowth = 0,
   totalReceivables,
-  totalReceivablesGrowth = 8,
+  totalReceivablesGrowth = 0,
   overdueAccounts,
-  overdueGrowth = 5,
+  overdueGrowth = 0,
   clearedAccounts,
-  clearedGrowth = 12,
+  clearedGrowth = 0,
   onNavigateTotal,
   onNavigateReceivables,
   onNavigateOverdue,
   onNavigateCleared,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="rounded-2xl sm:rounded-3xl border border-border/80 bg-border/60 dark:bg-border/40 overflow-hidden shadow-xs grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-px">
       {/* 1. Total Customers */}
       <div
         role="button"
@@ -342,7 +342,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateTotal();
           }
         }}
-        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
         <div className="flex items-center gap-3 min-w-0">
           <TotalCustomers3D />
@@ -353,21 +353,23 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
             title={typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : String(totalCustomers)}
           >
             {typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : totalCustomers}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
-            ↑ {totalCustomersGrowth}%
-          </span>
-          <span className="text-[11px] text-muted-foreground truncate">
-            vs prev period
-          </span>
-        </div>
+        {totalCustomersGrowth !== 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
+              ↑ {totalCustomersGrowth}%
+            </span>
+            <span className="text-[11px] text-muted-foreground truncate">
+              vs prev period
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 2. Total Receivables */}
@@ -381,7 +383,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateReceivables();
           }
         }}
-        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
         <div className="flex items-center gap-3 min-w-0">
           <TotalReceivables3D />
@@ -392,21 +394,23 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
             title={totalReceivables}
           >
             {totalReceivables}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
-            ↑ {totalReceivablesGrowth}%
-          </span>
-          <span className="text-[11px] text-muted-foreground truncate">
-            vs prev period
-          </span>
-        </div>
+        {totalReceivablesGrowth !== 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
+              ↑ {totalReceivablesGrowth}%
+            </span>
+            <span className="text-[11px] text-muted-foreground truncate">
+              vs prev period
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 3. Overdue Accounts */}
@@ -420,7 +424,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateOverdue();
           }
         }}
-        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
         <div className="flex items-center gap-3 min-w-0">
           <OverdueAccounts3D />
@@ -431,21 +435,23 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
             title={typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : String(overdueAccounts)}
           >
             {typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : overdueAccounts}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 shrink-0">
-            ↑ {overdueGrowth}%
-          </span>
-          <span className="text-[11px] text-muted-foreground truncate">
-            vs prev period
-          </span>
-        </div>
+        {overdueGrowth !== 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 shrink-0">
+              ↑ {overdueGrowth}%
+            </span>
+            <span className="text-[11px] text-muted-foreground truncate">
+              vs prev period
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 4. Cleared Accounts */}
@@ -459,7 +465,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
             onNavigateCleared();
           }
         }}
-        className="group relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
       >
         <div className="flex items-center gap-3 min-w-0">
           <ClearedAccounts3D />
@@ -470,21 +476,23 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
 
         <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate"
+            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
             title={typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : String(clearedAccounts)}
           >
             {typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : clearedAccounts}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
-            ↑ {clearedGrowth}%
-          </span>
-          <span className="text-[11px] text-muted-foreground truncate">
-            vs prev period
-          </span>
-        </div>
+        {clearedGrowth !== 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
+              ↑ {clearedGrowth}%
+            </span>
+            <span className="text-[11px] text-muted-foreground truncate">
+              vs prev period
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

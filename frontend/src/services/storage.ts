@@ -1,9 +1,9 @@
-import { supabase } from '../lib/supabase';
+import {supabase, isDemoModeActive} from '../lib/supabase';
 import { parseSupabaseError } from './apiError';
 
 export const storageService = {
   async uploadDesignImage(file: File, fileName?: string): Promise<{ success: boolean; url?: string; error?: string }> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       return {
         success: true,
         url: URL.createObjectURL(file),
@@ -35,7 +35,7 @@ export const storageService = {
   },
 
   async uploadPaymentReceipt(file: File, fileName?: string): Promise<{ success: boolean; path?: string; error?: string }> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       return {
         success: true,
         path: `local-${file.name}`,

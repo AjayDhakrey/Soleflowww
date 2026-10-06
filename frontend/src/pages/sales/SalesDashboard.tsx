@@ -61,21 +61,19 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
   const currentRep = salesTeam.find((r) => r.id === currentUser.id || r.name.toLowerCase().includes(currentUser.name.toLowerCase())) || salesTeam[0] || {
     id: currentUser.id,
     name: currentUser.name,
-    monthlyTarget: 1200000,
+    monthlyTarget: 0,
     bookedThisMonth: kpis.sales.value || 0,
-    commissionAccrued: Math.round((kpis.collections.value || 0) * 0.02),
+    commissionAccrued: 0,
     todayVisitsDone: followUpsAndVisits.visitsCompleted,
     todayVisitsTotal: followUpsAndVisits.visitsPlanned,
     collectionDue: kpis.receivables.value,
-    tasksChecklist: [
-      { id: 't1', task: 'Visit Aggarwal Boot House (Payment collection)', time: '11:00 AM', completed: false },
-      { id: 't2', task: 'Present Summer catalogue at Modern Footwear', time: '02:30 PM', completed: false },
-      { id: 't3', task: 'Follow-up with Royal Shoes for bulk order', time: '04:45 PM', completed: true },
-    ],
+    tasksChecklist: [],
   };
 
   const repBooked = kpis.sales.value || currentRep.bookedThisMonth || 0;
-  const targetPct = Math.min(100, Math.round((repBooked / (currentRep.monthlyTarget || 1200000)) * 100));
+  const targetPct = (currentRep.monthlyTarget || 0) > 0
+    ? Math.min(100, Math.round((repBooked / (currentRep.monthlyTarget || 0)) * 100))
+    : 0;
 
   const todayDateFormatted = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -190,11 +188,11 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
                   <Icons.Orders size={20} strokeWidth={2} />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground tracking-tight">
+                <div className="min-w-0">
+                  <h3 title="My Orders Pipeline" className="text-lg font-bold text-foreground tracking-tight truncate">
                     My Orders Pipeline
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
                     {ordersPipeline.totalActive} active retail bookings across production & dispatch
                   </p>
                 </div>
@@ -216,32 +214,32 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
           >
             {/* Funnel Stage Cards */}
             <div className="p-4 border-b border-border bg-muted/15">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,6rem),1fr))] gap-2">
                 {ordersPipeline.stages.map((st) => {
                   const isActive = st.count > 0;
                   return (
                     <div
                       key={st.name}
                       onClick={() => onNavigate(`/sales/orders?status=${st.key.toLowerCase()}`)}
-                      className={`relative p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group ${
+                      className={`relative p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group min-w-0 overflow-hidden ${
                         isActive
                           ? 'bg-surface border-primary/40 shadow-xs ring-1 ring-primary/20 hover:border-primary'
                           : 'bg-surface/80 border-border/80 hover:border-border hover:bg-muted/40'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-1.5">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      <div className="flex items-center justify-between gap-1.5 min-w-0">
+                        <span title={st.name} className={`text-[11px] font-bold uppercase tracking-wider truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                           {st.name}
                         </span>
                         {isActive && (
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                         )}
                       </div>
-                      <div className="mt-2 flex items-baseline justify-between gap-1">
-                        <span className={`text-lg font-bold font-display tracking-tight tabular-nums ${isActive ? 'text-foreground' : 'text-muted-foreground/80'}`}>
+                      <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-1.5 gap-y-0.5">
+                        <span className={`text-lg font-bold font-display tracking-tight tabular-nums whitespace-nowrap ${isActive ? 'text-foreground' : 'text-muted-foreground/80'}`}>
                           {st.count}
                         </span>
-                        <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                        <span className="text-[11px] font-medium text-muted-foreground tabular-nums whitespace-nowrap" title={`₹${st.value.toLocaleString('en-IN')}`}>
                           {formatLakh(st.value)}
                         </span>
                       </div>
@@ -293,7 +291,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                             <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
                               {order.customerName}
                             </span>
-                            <span className="text-[11px] text-muted-foreground">{order.customerCity || 'Agra'}</span>
+                            <span className="text-[11px] text-muted-foreground">{order.customerCity || '—'}</span>
                           </div>
                         </div>
                       </TableCell>
@@ -341,11 +339,11 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
                   <Icons.Payments size={20} strokeWidth={2} />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground tracking-tight">
+                <div className="min-w-0">
+                  <h3 title="Collections & Aging Balances" className="text-lg font-bold text-foreground tracking-tight truncate">
                     Collections & Aging Balances
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
                     Inflow: {formatLakh(collectionsData.collectedThisPeriod)} • Cheques in clearing: {formatLakh(collectionsData.chequesInTransit)}
                   </p>
                 </div>
@@ -446,7 +444,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                             <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
                               {pmt.customerName}
                             </span>
-                            <span className="text-[11px] text-muted-foreground">{pmt.customerCity || 'Agra'}</span>
+                            <span className="text-[11px] text-muted-foreground">{pmt.customerCity || '—'}</span>
                           </div>
                         </div>
                       </TableCell>
@@ -554,6 +552,11 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
             }
           >
             <div className="space-y-2.5">
+              {(currentRep.tasksChecklist || []).length === 0 && (
+                <p className="p-4 rounded-xl border border-dashed border-border bg-muted/20 text-center text-xs text-muted-foreground">
+                  No route stops scheduled today
+                </p>
+              )}
               {(currentRep.tasksChecklist || []).map((task: any) => (
                 <div
                   key={task.id}

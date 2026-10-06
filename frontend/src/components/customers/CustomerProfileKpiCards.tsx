@@ -213,10 +213,10 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
   dueCaption = 'Ledger standing',
   creditLimit,
   limitUsage,
-  paymentTerms = '30% Adv + 70% Bilty',
+  paymentTerms = 'Not set',
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Lifetime Business */}
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfileLifetime3D />
@@ -225,7 +225,7 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
             Lifetime Business
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-sans wrap-anywhere"
             title={lifetimeBusiness}
           >
             {lifetimeBusiness}
@@ -244,7 +244,7 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
             Total Realized
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-sans truncate"
+            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-sans wrap-anywhere"
             title={totalPaid}
           >
             {totalPaid}
@@ -263,7 +263,7 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
             Outstanding Balance
           </span>
           <p
-            className={`text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight mt-0.5 font-sans truncate ${
+            className={`text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight mt-0.5 font-sans wrap-anywhere ${
               isOverdue
                 ? 'text-rose-800 dark:text-rose-300'
                 : isCleared

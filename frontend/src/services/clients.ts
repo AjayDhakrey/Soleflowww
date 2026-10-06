@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, isDemoModeActive } from '../lib/supabase';
 import { Customer, CustomerActivity } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError, AppError } from './apiError';
@@ -67,20 +67,20 @@ export function toCustomerRow(input: any): Partial<CustomerRow> {
 export function mapClientFinancialToCustomer(row: any, rawClient?: any): Customer {
   return {
     id: row.client_id || row.id,
-    businessName: row.business_name || row.name || rawClient?.businessName || 'Wholesale Client',
+    businessName: row.business_name || row.name || rawClient?.businessName || '',
     propName: row.prop_name || row.contact_person || rawClient?.propName || '',
     phone: row.phone || rawClient?.phone || '',
     whatsapp: rawClient?.whatsapp || row.whatsapp || row.phone || '',
     email: rawClient?.email || row.email || '',
-    city: row.city || rawClient?.city || 'Agra',
-    state: row.state || rawClient?.state || 'Uttar Pradesh',
+    city: row.city || rawClient?.city || '',
+    state: row.state || rawClient?.state || '',
     cluster: row.cluster || rawClient?.cluster || '',
     address: rawClient?.address || row.address || '',
     gstin: rawClient?.gstin || row.gstin || '',
     salespersonId: row.salesman_id || row.salesperson_id || rawClient?.salespersonId || '',
-    salespersonName: row.salesman_name || row.salesperson_name || rawClient?.salespersonName || 'Unassigned',
-    paymentTerms: row.payment_terms || rawClient?.paymentTerms || '30% Advance + 70% Bilty',
-    creditLimit: Number(row.credit_limit ?? rawClient?.creditLimit ?? 500000),
+    salespersonName: row.salesman_name || row.salesperson_name || rawClient?.salespersonName || '',
+    paymentTerms: row.payment_terms || rawClient?.paymentTerms || '',
+    creditLimit: Number(row.credit_limit ?? rawClient?.creditLimit ?? 0),
     totalBusiness: Number(row.total_business ?? rawClient?.totalBusiness ?? 0),
     totalPaid: Number(row.total_paid ?? rawClient?.totalPaid ?? 0),
     amountDue: Number(row.outstanding ?? row.amount_due ?? rawClient?.amountDue ?? 0),
@@ -90,7 +90,7 @@ export function mapClientFinancialToCustomer(row: any, rawClient?: any): Custome
     lastOrderDate: row.last_order_at ? new Date(row.last_order_at).toLocaleDateString('en-IN') : (rawClient?.lastOrderDate || 'None'),
     lastPaymentDate: row.last_payment_at ? new Date(row.last_payment_at).toLocaleDateString('en-IN') : (rawClient?.lastPaymentDate || 'None'),
     lastPaymentAmount: Number(row.last_payment_amount ?? rawClient?.lastPaymentAmount ?? 0),
-    tier: (row.tier || rawClient?.tier || 'Standard Retail') as Customer['tier'],
+    tier: (row.tier || rawClient?.tier || '') as Customer['tier'],
     activityHistory: [],
     notes: rawClient?.notes || undefined,
   };
@@ -99,20 +99,20 @@ export function mapClientFinancialToCustomer(row: any, rawClient?: any): Custome
 export function mapClientRowToCustomer(row: any): Customer {
   return {
     id: row.id,
-    businessName: row.businessName || row.name || 'Wholesale Client',
+    businessName: row.businessName || row.name || '',
     propName: row.propName || row.contact_person || '',
     phone: row.phone || '',
     whatsapp: row.whatsapp || row.phone || '',
     email: row.email || '',
-    city: row.city || 'Agra',
-    state: row.state || 'Uttar Pradesh',
+    city: row.city || '',
+    state: row.state || '',
     cluster: row.cluster || '',
     address: row.address || '',
     gstin: row.gstin || '',
     salespersonId: row.salespersonId || row.salesperson_id || '',
-    salespersonName: row.salespersonName || row.salesperson_name || 'Assigned Rep',
-    paymentTerms: row.paymentTerms || row.payment_terms || '30% Advance + 70% Bilty',
-    creditLimit: Number(row.creditLimit ?? row.credit_limit ?? 500000),
+    salespersonName: row.salespersonName || row.salesperson_name || '',
+    paymentTerms: row.paymentTerms || row.payment_terms || '',
+    creditLimit: Number(row.creditLimit ?? row.credit_limit ?? 0),
     totalBusiness: Number(row.totalBusiness ?? 0),
     totalPaid: Number(row.totalPaid ?? 0),
     amountDue: Number(row.amountDue ?? 0),
@@ -122,19 +122,22 @@ export function mapClientRowToCustomer(row: any): Customer {
     lastOrderDate: row.lastOrderDate || 'None',
     lastPaymentDate: row.lastPaymentDate || 'None',
     lastPaymentAmount: Number(row.lastPaymentAmount ?? 0),
-    tier: (row.tier || 'Standard Retail') as Customer['tier'],
+    tier: (row.tier || '') as Customer['tier'],
     activityHistory: [],
     notes: row.notes || undefined,
   };
 }
 
 export const clientsService = {
-  async fetchClients(filters?: { search?: string; status?: string; tier?: string; salespersonId?: string }): Promise<Customer[]> {
-    if (!supabase) return MOCK_CUSTOMERS;
+  async fetchClients(filters?: { search?: string; status?: string; tier?: string; salespersonId?: string; orgId?: string }): Promise<Customer[]> {
+    if (!supabase || isDemoModeActive) return isDemoModeActive ? MOCK_CUSTOMERS : [];
 
     try {
       let query = supabase.from('v_client_financials').select('*');
 
+      if (filters?.orgId) {
+        query = query.eq('org_id', filters.orgId);
+      }
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('client_status', filters.status);
       }
@@ -154,14 +157,14 @@ export const clientsService = {
       if (!data || data.length === 0) return [];
       return data.map((d) => mapClientFinancialToCustomer(d));
     } catch (err: any) {
-      console.warn('Error fetching clients from Supabase; returning mock data:', err);
-      return MOCK_CUSTOMERS;
+      console.error('Error fetching clients from Supabase:', err);
+      return [];
     }
   },
 
   async fetchClientById(clientId: string): Promise<Customer | null> {
-    if (!supabase) {
-      return MOCK_CUSTOMERS.find((c) => c.id === clientId) || null;
+    if (!supabase || isDemoModeActive) {
+      return isDemoModeActive ? (MOCK_CUSTOMERS.find((c) => c.id === clientId) || null) : null;
     }
 
     try {
@@ -188,12 +191,12 @@ export const clientsService = {
       return null;
     } catch (err) {
       console.error('Error fetching client by ID:', err);
-      return MOCK_CUSTOMERS.find((c) => c.id === clientId) || null;
+      return null;
     }
   },
 
   async createClient(clientData: any): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       return { success: true, data: { id: `cust-${Date.now()}`, ...clientData } };
     }
 
@@ -205,14 +208,14 @@ export const clientsService = {
         p_phone: clientData.phone,
         p_whatsapp: clientData.whatsapp || clientData.phone,
         p_email: clientData.email || null,
-        p_city: clientData.city || 'Agra',
-        p_state: clientData.state || 'Uttar Pradesh',
-        p_cluster: clientData.cluster || 'Agra Footwear Cluster',
+        p_city: clientData.city || '',
+        p_state: clientData.state || '',
+        p_cluster: clientData.cluster || '',
         p_address: clientData.address || null,
         p_gstin: clientData.gstin || null,
         p_salesperson_id: clientData.salespersonId || clientData.salesperson_id || clientData.salesman_id || null,
-        p_credit_limit: Number(clientData.creditLimit || clientData.credit_limit || 500000),
-        p_payment_terms: clientData.paymentTerms || clientData.payment_terms || '30% Advance + 70% Bilty',
+        p_credit_limit: Number(clientData.creditLimit || clientData.credit_limit || 0),
+        p_payment_terms: clientData.paymentTerms || clientData.payment_terms || '',
       });
 
       if (error) throw parseSupabaseError(error);
@@ -223,7 +226,7 @@ export const clientsService = {
   },
 
   async updateClient(clientId: string, updates: any): Promise<{ success: boolean; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
 
     try {
       const rowUpdates = toCustomerRow(updates);
@@ -240,7 +243,7 @@ export const clientsService = {
   },
 
   async archiveClient(clientId: string): Promise<{ success: boolean; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
 
     try {
       const { error } = await supabase.rpc('archive_client', {
@@ -255,7 +258,7 @@ export const clientsService = {
   },
 
   async assignSalesman(clientId: string, salespersonId: string): Promise<{ success: boolean; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
 
     try {
       const { error } = await supabase.rpc('assign_salesman', {
@@ -271,7 +274,7 @@ export const clientsService = {
   },
 
   async fetchClientNotes(clientId: string): Promise<any[]> {
-    if (!supabase) return [];
+    if (!supabase || isDemoModeActive) return [];
 
     try {
       const { data, error } = await supabase
@@ -289,7 +292,7 @@ export const clientsService = {
   },
 
   async addClientNote(clientId: string, note: string): Promise<boolean> {
-    if (!supabase) return true;
+    if (!supabase || isDemoModeActive) return true;
 
     try {
       const { error } = await supabase.from('client_notes').insert([

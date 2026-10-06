@@ -362,7 +362,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 >
                   <span>{cat.label}</span>
                   <span
-                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${
                       isSelected
                         ? 'bg-white/20 dark:bg-slate-900/20 text-white dark:text-slate-900'
                         : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'
@@ -454,7 +454,8 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                           alt={shoe.name}
                           className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-300 group-hover:scale-105 select-none"
                           onError={(e) => {
-                            (e.target as any).src = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
+                            // No stock-photo substitution: hide the broken image and let the placeholder background show
+                            (e.target as any).style.visibility = 'hidden';
                           }}
                         />
 
@@ -477,7 +478,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         {/* Top Right: Status Badges & Quick View Eye */}
                         <div className="absolute top-3 right-3 flex items-center gap-1.5">
                           {isNew && !shoe.isArchived && (
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/95 text-white tracking-wider shadow-sm flex items-center gap-1 backdrop-blur-xs">
+                            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/95 text-white tracking-wider shadow-sm flex items-center gap-1 backdrop-blur-xs">
                               <Sparkles className="w-2.5 h-2.5" /> NEW
                             </span>
                           )}
@@ -495,11 +496,11 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         {/* Bottom Left Badges */}
                         <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5">
                           {shoe.isArchived ? (
-                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                            <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
                               Archived
                             </span>
                           ) : shoe.marginBadge ? (
-                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80">
+                            <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80">
                               {shoe.marginBadge}
                             </span>
                           ) : null}
@@ -540,22 +541,22 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         {/* Pricing & Packaging Bar */}
                         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
                           <div>
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+                            <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block">
                               Wholesale Ex-Factory
                             </span>
                             <div className="flex items-baseline gap-1">
                               <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white tabular-nums">
                                 ₹{Number(shoe.price || 0).toLocaleString('en-IN')}
                               </span>
-                              <span className="text-[10px] font-medium text-slate-400">/ pair</span>
+                              <span className="text-[11px] font-medium text-slate-400">/ pair</span>
                             </div>
                           </div>
 
                           <div className="text-right">
-                            <span className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 inline-block">
+                            <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 inline-block">
                               {cartonUnits} Prs/Ctn
                             </span>
-                            <span className="block text-[10px] font-mono text-slate-400 mt-0.5">
+                            <span className="block text-[11px] font-mono text-slate-400 mt-0.5">
                               ₹{Number(cartonWholesaleTotal || 0).toLocaleString('en-IN')}/ctn
                             </span>
                           </div>

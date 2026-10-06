@@ -48,11 +48,11 @@ export interface ReceiptTemplateProps {
 }
 
 export const DEFAULT_RECEIPT_COMPANY: ReceiptCompanyInfo = {
-  brandName: 'ShoeConnect',
-  legalName: 'SoleFlow Footwear Trading Ltd.',
-  tagline: 'Step Towards Better Tomorrow',
-  address: 'Agra Mandi Dock 4, Hing Ki Mandi, Agra, Uttar Pradesh',
-  gstin: '09AAACS4412M1Z0',
+  brandName: '',
+  legalName: '',
+  tagline: '',
+  address: '',
+  gstin: '',
   phone: '',
   email: '',
   logoUrl: '/assets/images/shoeconnect-logo.png',
@@ -302,7 +302,7 @@ export function exportReceiptToWord(
           <div class="party-label">Received From</div>
           <div class="party-name">${receipt.customerName}</div>
           <div style="font-size: 9pt; color: #475569;">
-            ${customer?.address || receipt.customerCity || 'Agra'}<br/>
+            ${customer?.address || receipt.customerCity || '—'}<br/>
             ${customer?.customerCode || receipt.customerId ? `Account: ${customer?.customerCode || receipt.customerId}<br/>` : ''}
             ${customer?.gstin ? `GSTIN: ${customer.gstin}<br/>` : ''}
             ${customer?.phone ? `Phone: ${customer.phone}` : ''}
@@ -642,11 +642,11 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
       // @ts-ignore
       const html2pdfModule = (await import('html2pdf.js')).default || (await import('html2pdf.js'));
       const opt = {
-        margin: [8, 8, 8, 8],
+        margin: [8, 8, 8, 8] as [number, number, number, number],
         filename: `${suggestedBaseName}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
       };
       await html2pdfModule().set(opt).from(element).save();
     } catch (err) {

@@ -201,12 +201,12 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4">
         {/* Cleared Accounts */}
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Cleared Accounts">Cleared Accounts</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.clearedAccounts}`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums wrap-anywhere">
               {metrics.clearedAccounts}
             </h3>
             {metrics.trends.clearedAccounts && (
@@ -224,7 +224,7 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Lifetime Business">Lifetime Business</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums truncate">
+            <h3 title={formatIndianCurrency(metrics.clearedBusinessTotal)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums wrap-anywhere">
               {formatIndianCurrency(metrics.clearedBusinessTotal, true)}
             </h3>
           </div>
@@ -237,7 +237,7 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Avg Payment Velocity">Avg Payment Velocity</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-blue-600 dark:text-blue-400 tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.avgDaysToPay} Days`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-blue-600 dark:text-blue-400 tracking-tight tabular-nums wrap-anywhere">
               {metrics.avgDaysToPay} Days
             </h3>
           </div>
@@ -250,7 +250,7 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Re-order Opportunities">Re-order Opportunities</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.reorderOpportunities.length} Stores`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums wrap-anywhere">
               {metrics.reorderOpportunities.length} Stores
             </h3>
             <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 shrink-0">
@@ -345,7 +345,7 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
                     <p className="font-bold text-xs sm:text-sm text-foreground tabular-nums">
                       {formatIndianCurrency(cust.totalBusiness)}
                     </p>
-                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                       Zero Balance
                     </span>
                   </div>
@@ -503,7 +503,7 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
 
                       {/* Sales Rep */}
                       <td className="py-3.5 px-4 text-xs font-medium text-foreground">
-                        {cust.salespersonName || 'Rahul Sharma'}
+                        {cust.salespersonName || 'Unassigned'}
                       </td>
 
                       {/* Orders */}

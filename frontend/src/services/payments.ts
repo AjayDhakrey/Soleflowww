@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import {supabase, isDemoModeActive} from '../lib/supabase';
 import { PaymentReceipt } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -30,8 +30,8 @@ export interface SalesmanCollectionsSummary {
 }
 
 export const paymentsService = {
-  async fetchPayments(filters?: { clientId?: string; salesmanName?: string; status?: string }): Promise<PaymentReceipt[]> {
-    if (!supabase) return [];
+  async fetchPayments(filters?: { clientId?: string; salesmanName?: string; status?: string; orgId?: string }): Promise<PaymentReceipt[]> {
+    if (!supabase || isDemoModeActive) return [];
 
     try {
       let query = supabase
@@ -40,6 +40,9 @@ export const paymentsService = {
         .is('archived_at', null)
         .order('created_at', { ascending: false });
 
+      if (filters?.orgId) {
+        query = query.eq('org_id', filters.orgId);
+      }
       if (filters?.clientId) {
         query = query.eq('customerId', filters.clientId);
       }
@@ -57,19 +60,19 @@ export const paymentsService = {
 
       return data.map((p: any): PaymentReceipt => ({
         id: p.id,
-        receiptNumber: p.receiptNumber || `SF-REC-${p.id.slice(-5)}`,
+        receiptNumber: p.receiptNumber || '',
         customerId: p.customerId || '',
-        customerName: p.customerName || 'Customer',
-        customerCity: p.customerCity || 'Agra',
+        customerName: p.customerName || '',
+        customerCity: p.customerCity || '',
         orderId: p.orderId || undefined,
         orderNumber: p.orderNumber || undefined,
         amountDueBefore: Number(p.amountDueBefore ?? 0),
         paymentAmount: Number(p.paymentAmount ?? 0),
         amountDueAfter: Number(p.amountDueAfter ?? 0),
-        paymentDate: p.paymentDate || new Date().toISOString().slice(0, 10),
+        paymentDate: p.paymentDate || '',
         paymentMethod: (p.paymentMethod === 'NEFT' ? 'NEFT/RTGS' : p.paymentMethod) as PaymentReceipt['paymentMethod'],
         utrRef: p.utrRef || '',
-        collectedBy: p.collectedBy || 'Sales Rep',
+        collectedBy: p.collectedBy || '',
         notes: p.notes || '',
         sentSms: Boolean(p.sentSms),
         status: p.status || 'verified',
@@ -86,15 +89,8 @@ export const paymentsService = {
   },
 
   async recordPayment(params: RecordPaymentParams): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) {
-      return {
-        success: true,
-        data: {
-          id: `PAY-${Date.now().toString().slice(-5)}`,
-          receiptNumber: `SF-REC-${Math.floor(10000 + Math.random() * 90000)}`,
-          ...params,
-        },
-      };
+    if (!supabase || isDemoModeActive) {
+      return { success: false, error: 'Payment service is not configured.' };
     }
 
     try {
@@ -120,7 +116,7 @@ export const paymentsService = {
   },
 
   async clearCheque(paymentId: string): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
     try {
       const { data, error } = await supabase.rpc('clear_cheque', {
         p_payment_id: paymentId,
@@ -133,7 +129,7 @@ export const paymentsService = {
   },
 
   async bounceCheque(paymentId: string, reason?: string): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
     try {
       const { data, error } = await supabase.rpc('bounce_cheque', {
         p_payment_id: paymentId,
@@ -147,7 +143,7 @@ export const paymentsService = {
   },
 
   async verifyPayment(paymentId: string): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
     try {
       const { data, error } = await supabase.rpc('verify_payment', {
         p_payment_id: paymentId,
@@ -160,7 +156,7 @@ export const paymentsService = {
   },
 
   async reversePayment(paymentId: string, reason?: string): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
     try {
       const { data, error } = await supabase.rpc('reverse_payment', {
         p_payment_id: paymentId,
@@ -173,14 +169,19 @@ export const paymentsService = {
     }
   },
 
-  async fetchSalesmanCollections(): Promise<SalesmanCollectionsSummary[]> {
-    if (!supabase) return [];
+  async fetchSalesmanCollections(orgId?: string): Promise<SalesmanCollectionsSummary[]> {
+    if (!supabase || isDemoModeActive) return [];
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('v_salesman_collections')
         .select('*');
 
+      if (orgId) {
+        query = query.eq('org_id', orgId);
+      }
+
+      const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
       return data || [];
     } catch (err) {
@@ -189,15 +190,20 @@ export const paymentsService = {
     }
   },
 
-  async fetchReceivables(): Promise<ReceivableRow[]> {
-    if (!supabase) return [];
+  async fetchReceivables(orgId?: string): Promise<ReceivableRow[]> {
+    if (!supabase || isDemoModeActive) return [];
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('v_receivables')
         .select('*')
         .order('amount_due', { ascending: false });
 
+      if (orgId) {
+        query = query.eq('org_id', orgId);
+      }
+
+      const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
       return data || [];
     } catch (err) {

@@ -3,6 +3,12 @@ import { useApp } from '../../context/AppContext';
 import { Icons } from '../../lib/icons';
 import { Button } from '../ui/Button';
 
+// Build the WhatsApp message from the designs actually being shared
+const buildShareMessage = (sharedDesigns: { name: string }[]): string => {
+  const names = sharedDesigns.map((d) => d.name).join(', ');
+  return `Namaste! Sharing ${sharedDesigns.length} design(s) from our latest collection: ${names}. Take a look and share your interest!`;
+};
+
 export const ShareLookbookModal: React.FC = () => {
   const {
     isShareModalOpen,
@@ -16,20 +22,20 @@ export const ShareLookbookModal: React.FC = () => {
   } = useApp();
 
   const [selectedCustId, setSelectedCustId] = useState(customers[0]?.id || '');
-  const [customMsg, setCustomMsg] = useState(
-    'Namaste! Here is the latest SoleFlow AW24 Footwear Collection lookbook with wholesale ex-factory rates and carton packing details. Please review and let us know your booking requirements.'
-  );
+  const [customMsg, setCustomMsg] = useState(() => {
+    const chosen = designs.filter((d) => selectedDesignIds.includes(d.id));
+    return buildShareMessage(chosen.length > 0 ? chosen : designs.slice(0, 3));
+  });
 
   React.useEffect(() => {
     if (isShareModalOpen) {
       if (customers.length > 0) {
         setSelectedCustId(customers[0].id);
       }
-      setCustomMsg(
-        'Namaste! Here is the latest SoleFlow AW24 Footwear Collection lookbook with wholesale ex-factory rates and carton packing details. Please review and let us know your booking requirements.'
-      );
+      const chosen = designs.filter((d) => selectedDesignIds.includes(d.id));
+      setCustomMsg(buildShareMessage(chosen.length > 0 ? chosen : designs.slice(0, 3)));
     }
-  }, [isShareModalOpen, customers]);
+  }, [isShareModalOpen, customers, designs, selectedDesignIds]);
 
   if (!isShareModalOpen) return null;
 

@@ -39,7 +39,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           onClick?.();
         }
       }}
-      className={`bg-surface border border-border rounded-xl sm:rounded-2xl p-3.5 sm:p-4 flex items-center gap-3 sm:gap-3.5 transition-all duration-150 shadow-2xs ${
+      className={`card-cq bg-surface border border-border rounded-xl sm:rounded-2xl p-3.5 sm:p-4 flex items-center gap-3 sm:gap-3.5 transition-all duration-150 shadow-2xs min-w-0 overflow-hidden ${
         isClickable
           ? 'cursor-pointer hover:border-border hover:shadow-sm active:scale-[0.99]'
           : ''
@@ -50,11 +50,14 @@ export const KpiCard: React.FC<KpiCardProps> = ({
         <p className="text-xs font-medium text-muted-foreground truncate" title={label}>
           {label}
         </p>
-        <p className="mt-0.5 font-display text-xl font-bold tracking-tight text-foreground truncate">
+        <p
+          className="mt-0.5 font-display text-fluid-kpi font-bold tracking-tight text-foreground wrap-anywhere tabular-nums"
+          title={String(value)}
+        >
           {value}
         </p>
         {caption && (
-          <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
+          <p className="mt-0.5 text-[11px] text-muted-foreground truncate" title={caption}>
             {caption}
           </p>
         )}

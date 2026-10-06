@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import {supabase, isDemoModeActive} from '../lib/supabase';
 import { parseSupabaseError } from './apiError';
 
 export interface SearchResultItem {
@@ -13,7 +13,7 @@ export interface SearchResultItem {
 export const searchService = {
   async globalSearch(query: string): Promise<SearchResultItem[]> {
     if (!query || query.trim().length === 0) return [];
-    if (!supabase) return [];
+    if (!supabase || isDemoModeActive) return [];
 
     try {
       const { data, error } = await supabase.rpc('global_search', {

@@ -749,3 +749,61 @@
 
 
 
+
+/* ==========================================================================
+   Zoom-proof layout foundations (see TEXT_OVERFLOW_ZOOM_FIX_PROMPT.md)
+   Keeps content inside its box at any browser zoom (50%-200%) or window
+   width: flex/grid children may shrink below their content size, text
+   truncates or wraps instead of overlapping sibling cards, and cards can
+   adapt to their own width via container queries.
+   ========================================================================== */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Flex/grid children may shrink below their content size so inner text
+   truncates/wraps instead of overlapping neighbouring cards. */
+*,
+*::before,
+*::after {
+  min-width: 0;
+}
+
+/* Exception: direct children of scrollable strips keep their natural width
+   and scroll, instead of being squeezed into overlapping text. */
+.overflow-x-auto > *,
+.overflow-y-auto > * {
+  flex-shrink: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Fluid type: scales with the card's own width (requires a container ancestor). */
+.text-fluid-kpi {
+  font-size: clamp(1.125rem, 0.9rem + 1.2cqi, 1.75rem);
+  line-height: 1.15;
+}
+
+.text-fluid-title {
+  font-size: clamp(1rem, 0.9rem + 0.6cqi, 1.375rem);
+  line-height: 1.25;
+}
+
+.text-fluid-label {
+  font-size: clamp(0.75rem, 0.7rem + 0.25cqi, 0.8125rem);
+  line-height: 1.3;
+}
+
+/* Long tokens (amounts, IDs, emails) break rather than overflow their card. */
+.wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Opt a card into container queries; use @[NNNpx]: variants inside it. */
+.card-cq {
+  container-type: inline-size;
+}

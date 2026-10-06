@@ -2,31 +2,19 @@ import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 import { logger } from '../lib/logger.js';
 
 export async function verifyAuthToken(req, res, next) {
+  if (!supabaseAdmin) {
+    return res
+      .status(503)
+      .json({ error: 'Server not configured: missing SUPABASE_SERVICE_ROLE_KEY' });
+  }
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    // In local demo mode, allow fallback header or demo user
-    if (process.env.VITE_DEMO_MODE === 'true' || !supabaseAdmin) {
-      req.user = {
-        id: 'user-admin',
-        email: 'admin@soleflow.com',
-        role: req.headers['x-demo-role'] || 'admin',
-      };
-      return next();
-    }
-    return res.status(401).json({ error: 'Missing or malformed Authorization header' });
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   const token = authHeader.replace('Bearer ', '').trim();
-
-  if (!supabaseAdmin) {
-    req.user = {
-      id: 'user-admin',
-      email: 'admin@soleflow.com',
-      role: 'admin',
-    };
-    return next();
-  }
 
   try {
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
@@ -36,10 +24,10 @@ export async function verifyAuthToken(req, res, next) {
       return res.status(401).json({ error: 'Invalid or expired session token' });
     }
 
-    // Query profiles table for role
+    // Query profiles table for role and org membership
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('role, name, phone, zone')
+      .select('role, name, phone, zone, org_id')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -50,6 +38,7 @@ export async function verifyAuthToken(req, res, next) {
       name: profile?.name || user.email?.split('@')[0],
       phone: profile?.phone,
       zone: profile?.zone,
+      orgId: profile?.org_id || null,
     };
 
     next();

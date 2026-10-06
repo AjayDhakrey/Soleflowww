@@ -246,7 +246,7 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
   selectedCount,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Active Articles */}
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ActiveArticles3D count={totalActiveModels} />
@@ -254,12 +254,13 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Active Articles">
             Total Active Articles
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${totalActiveModels} Models`}
           >
-            <span className="tabular-nums">{totalActiveModels}</span>
-            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
+            <span className="tabular-nums whitespace-nowrap">{totalActiveModels}</span>
+            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
               Models
             </span>
           </p>
@@ -276,12 +277,13 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Popular Fast-Movers">
             Popular Fast-Movers
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${popularStylesCount} Styles`}
           >
-            <span className="tabular-nums">{popularStylesCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-blue-600/90 dark:text-blue-400/90 tracking-normal">
+            <span className="tabular-nums whitespace-nowrap">{popularStylesCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-blue-600/90 dark:text-blue-400/90 tracking-normal whitespace-nowrap">
               Styles
             </span>
           </p>
@@ -298,12 +300,13 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="High Margin Lines">
             High Margin Lines
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${highMarginCount} SKUs`}
           >
-            <span className="tabular-nums">{highMarginCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
+            <span className="tabular-nums whitespace-nowrap">{highMarginCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
               SKUs
             </span>
           </p>
@@ -320,12 +323,13 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Selected for Sharing">
             Selected for Sharing
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${selectedCount} Articles`}
           >
-            <span className="tabular-nums">{selectedCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
+            <span className="tabular-nums whitespace-nowrap">{selectedCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
               Articles
             </span>
           </p>

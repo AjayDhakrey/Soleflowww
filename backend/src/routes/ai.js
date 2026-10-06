@@ -19,10 +19,8 @@ aiRouter.post('/ask', async (req, res, next) => {
     }
 
     if (!ai) {
-      // Fallback demo response if GEMINI_API_KEY is not supplied in environment
-      return res.status(200).json({
-        response: `[SoleFlow AI Assistant]: Based on current market intelligence, athletic sneakers (Runner Classic & AeroGlide) have 42% higher seasonal turnover. We recommend following up with ABC Footwear regarding their overdue ledger balance before committing additional production lots.`,
-      });
+      // GEMINI_API_KEY is not configured — never fake an AI response
+      return res.status(503).json({ error: 'AI service is not configured.' });
     }
 
     const systemInstruction = `You are SoleFlow AI, a specialist wholesale shoe business analyst assisting shoe traders and field sales reps in India. Provide concise, commercial, and actionable guidance about orders, inventory, leather production, margins, and credit terms.`;

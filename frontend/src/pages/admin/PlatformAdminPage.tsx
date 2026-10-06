@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { useApp } from '../../context/AppContext';
-import { supabase } from '../../lib/supabase';
+import {supabase, isDemoModeActive} from '../../lib/supabase';
 import { Organization } from '../../types';
 
 interface OrgDetail extends Organization {
@@ -37,6 +37,7 @@ export const PlatformAdminPage: React.FC = () => {
 
   const [orgs, setOrgs] = useState<OrgDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -45,43 +46,11 @@ export const PlatformAdminPage: React.FC = () => {
 
   const loadOrganizations = async () => {
     setIsLoading(true);
-    if (!supabase) {
-      // Mock demo data
-      const mockList: OrgDetail[] = [
-        {
-          id: 'demo-org-uuid',
-          name: 'Demo Footwear Traders',
-          phone: '+91 98765 43210',
-          city: 'Agra',
-          state: 'Uttar Pradesh',
-          gstin: '09DEMO0000A1Z1',
-          status: 'active',
-          is_demo: true,
-          created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
-          user_count: 3,
-          customer_count: 18,
-          order_count: 42,
-          total_volume: 2840000,
-          owner_email: 'admin@soleflow.com',
-        },
-        {
-          id: 'demo-org-2',
-          name: 'Demo Shoe Mart',
-          phone: '+91 98765 12345',
-          city: 'Kanpur',
-          state: 'Uttar Pradesh',
-          gstin: '09DEMO0000A1Z2',
-          status: 'active',
-          is_demo: true,
-          created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
-          user_count: 2,
-          customer_count: 12,
-          order_count: 26,
-          total_volume: 1450000,
-          owner_email: 'kanpur@shoemart.com',
-        },
-      ];
-      setOrgs(mockList);
+    setLoadError(null);
+    if (!supabase || isDemoModeActive) {
+      // Database not configured: show an honest empty state, no mock tenants
+      setOrgs([]);
+      setLoadError('Platform data unavailable — database not configured');
       setIsLoading(false);
       return;
     }
@@ -119,11 +88,8 @@ export const PlatformAdminPage: React.FC = () => {
     }
 
     const nextStatus = currentStatus === 'active' ? 'suspended' : 'active';
-    if (!supabase) {
-      setOrgs((prev) =>
-        prev.map((o) => (o.id === orgId ? { ...o, status: nextStatus } : o))
-      );
-      showToast(`Business ${nextStatus === 'active' ? 'Reactivated' : 'Suspended'}`);
+    if (!supabase || isDemoModeActive) {
+      showToast('Database not configured — organization status cannot be changed.');
       return;
     }
 
@@ -226,7 +192,7 @@ export const PlatformAdminPage: React.FC = () => {
       </div>
 
       {/* KPI Highlight Tiles */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Accounts</span>
@@ -337,6 +303,13 @@ export const PlatformAdminPage: React.FC = () => {
                     Loading platform organizations...
                   </td>
                 </tr>
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center">
+                    <AlertTriangle className="w-6 h-6 text-amber-500 mx-auto mb-2" />
+                    <p className="text-slate-500 font-medium">{loadError}</p>
+                  </td>
+                </tr>
               ) : filteredOrgs.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-400">
@@ -375,7 +348,7 @@ export const PlatformAdminPage: React.FC = () => {
                       </td>
 
                       <td className="py-3.5 px-4 text-slate-600 font-medium">
-                        {organization.city || 'Agra'}, {organization.state || 'UP'}
+                        {[organization.city, organization.state].filter(Boolean).join(', ') || '—'}
                       </td>
 
                       <td className="py-3.5 px-4 font-mono text-[11px] text-slate-600">

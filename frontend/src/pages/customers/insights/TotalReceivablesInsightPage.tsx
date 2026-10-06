@@ -214,12 +214,12 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4">
         {/* Total Outstanding */}
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Total Outstanding">Total Outstanding</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums truncate">
+            <h3 title={formatIndianCurrency(metrics.totalReceivables)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums wrap-anywhere">
               {formatIndianCurrency(metrics.totalReceivables, true)}
             </h3>
             {metrics.trends.totalReceivables && (
@@ -228,7 +228,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
               </span>
             )}
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title={`Full exact: ${formatIndianCurrency(metrics.totalReceivables)}`}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 wrap-anywhere" title={`Full exact: ${formatIndianCurrency(metrics.totalReceivables)}`}>
             Full exact: <strong className="text-foreground">{formatIndianCurrency(metrics.totalReceivables)}</strong>
           </p>
         </div>
@@ -237,7 +237,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Due This Week">Due This Week</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums truncate">
+            <h3 title={formatIndianCurrency(metrics.dueThisWeek)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums wrap-anywhere">
               {formatIndianCurrency(metrics.dueThisWeek, true)}
             </h3>
           </div>
@@ -250,7 +250,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Amount">Overdue Amount</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums truncate">
+            <h3 title={formatIndianCurrency(metrics.overdueAmount)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums wrap-anywhere">
               {formatIndianCurrency(metrics.overdueAmount, true)}
             </h3>
             <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 shrink-0">
@@ -266,7 +266,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Collected This Month">Collected This Month</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums truncate">
+            <h3 title={formatIndianCurrency(metrics.collectedThisMonth)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums wrap-anywhere">
               {formatIndianCurrency(metrics.collectedThisMonth, true)}
             </h3>
             <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -301,7 +301,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
             </div>
 
             {/* Interactive Buckets Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8.5rem),1fr))] gap-3 my-4">
               {metrics.ageingBuckets.map((b) => {
                 const isSelected = activeBucket === b.key;
                 const isCritical = b.key === '61_90' || b.key === '90_plus';
@@ -310,19 +310,19 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
                     key={b.key}
                     type="button"
                     onClick={() => setActiveBucket(isSelected ? 'all' : b.key)}
-                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer min-w-0 overflow-hidden ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 ring-2 ring-blue-500/20'
                         : 'border-border bg-muted/30 hover:bg-muted/70'
                     }`}
                   >
-                    <p className="text-[11px] font-semibold text-muted-foreground truncate">{b.label}</p>
-                    <p className={`text-lg font-bold mt-1 tabular-nums ${isCritical && b.amount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
+                    <p title={b.label} className="text-[11px] font-semibold text-muted-foreground truncate">{b.label}</p>
+                    <p title={`₹${b.amount.toLocaleString('en-IN')}`} className={`text-lg font-bold mt-1 tabular-nums whitespace-nowrap ${isCritical && b.amount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'}`}>
                       {formatIndianCurrency(b.amount, true)}
                     </p>
-                    <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                      <span>{b.count} Stores</span>
-                      <span className="font-semibold">{b.percentage}%</span>
+                    <div className="flex flex-wrap items-center justify-between gap-x-1.5 gap-y-0.5 mt-2 text-xs text-muted-foreground">
+                      <span className="whitespace-nowrap">{b.count} Stores</span>
+                      <span className="font-semibold whitespace-nowrap">{b.percentage}%</span>
                     </div>
                   </button>
                 );
@@ -388,7 +388,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
                       <p className="font-bold text-xs sm:text-sm text-rose-600 dark:text-rose-400 tabular-nums">
                         {formatIndianCurrency(c.amountDue)}
                       </p>
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                      <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
                         limitUsage > 100 ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' : 'bg-muted text-muted-foreground'
                       }`}>
                         {limitUsage}% limit
@@ -554,7 +554,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
 
                       {/* Sales Rep */}
                       <td className="py-3.5 px-4 text-xs font-medium text-foreground">
-                        {cust.salespersonName || 'Rahul Sharma'}
+                        {cust.salespersonName || 'Unassigned'}
                       </td>
 
                       {/* Invoiced */}

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import {supabase, isDemoModeActive} from '../lib/supabase';
 import { fromDesignRow } from '../services/designs';
 import { ShoeDesign } from '../types';
 
@@ -13,7 +13,7 @@ export function useDesignsRealtime(options?: UseDesignsRealtimeOptions) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase || isDemoModeActive) return;
 
     const channelName = `designs-realtime-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const designsChannel = supabase

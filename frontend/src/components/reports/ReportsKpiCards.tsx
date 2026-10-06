@@ -236,7 +236,7 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
   onRequestsClick,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Revenue */}
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <TotalRevenue3D />
@@ -245,7 +245,7 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
             Total Revenue
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-display wrap-anywhere"
             title={totalRevenue}
           >
             {totalRevenue}
@@ -264,7 +264,7 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
             Average Wholesale Margin
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-display wrap-anywhere"
             title={avgMargin}
           >
             {avgMargin}
@@ -283,7 +283,7 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
             Active Retail Outlets
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-display wrap-anywhere"
             title={activeOutlets}
           >
             {activeOutlets}
@@ -305,7 +305,7 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
             Special Margin Requests
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-800 dark:text-amber-300 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-800 dark:text-amber-300 mt-0.5 font-display wrap-anywhere"
             title={pendingRequests}
           >
             {pendingRequests}

@@ -112,7 +112,7 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
         pendingCount={pendingCount}
         completedCount={completedCount}
         priorityCount={
-          followUps.filter((f) => (f.amountDue || 0) > 100000 && f.status !== 'completed').length || 3
+          followUps.filter((f) => (f.amountDue || 0) > 100000 && f.status !== 'completed').length
         }
       />
 

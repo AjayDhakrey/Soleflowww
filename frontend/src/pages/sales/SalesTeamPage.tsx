@@ -160,7 +160,6 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
       {/* 2. KPI Summary Cards (3D Claymorphic Redesign) */}
       <SalesTeamKpiCards
         totalReps={salesTeam.length}
-        repsCaption="Agra, Kanpur & Delhi routes"
         totalBooked={totalBooked}
         targetAmount={totalTarget}
         commissionAccrued={totalCommissions}
@@ -408,7 +407,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Wallet className="w-3 h-3 text-emerald-500" />
-                  Commission Accrued: <strong className="text-foreground font-mono">₹{Number(activeRep.commissionAccrued || 0).toLocaleString('en-IN')}</strong> ({activeRep.commissionRate || 2.5}%)
+                  Commission Accrued: <strong className="text-foreground font-mono">₹{Number(activeRep.commissionAccrued || 0).toLocaleString('en-IN')}</strong> ({activeRep.commissionRate || 0}%)
                 </span>
               </div>
             }
@@ -444,17 +443,19 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   </div>
                   <div>
                     <span className="font-bold text-foreground text-sm block">
-                      Assigned Kit: {activeRep.assignedKit || 'Footwear SS25 Showcase'}
+                      Assigned Kit: {activeRep.assignedKit || 'Kit not assigned'}
                     </span>
                     <span className="text-muted-foreground text-xs mt-0.5 block">
-                      Kit physical inspection verified on {activeRep.kitVerifiedDate || 'October 2026'}
+                      Kit physical inspection verified on {activeRep.kitVerifiedDate || '—'}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Kit Verified</span>
-                </div>
+                {activeRep.assignedKit && activeRep.kitVerifiedDate && (
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Kit Verified</span>
+                  </div>
+                )}
               </div>
 
               {/* 4 Performance Metric Cards */}

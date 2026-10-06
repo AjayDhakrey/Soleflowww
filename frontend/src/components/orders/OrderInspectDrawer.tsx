@@ -234,7 +234,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
             <div className="flex items-center gap-2 mt-1.5">
               {getPaymentStatusBadge(order.paymentStatus || 'Payment Pending')}
               <span className="text-xs text-muted-foreground">
-                • Booked on {order.orderDate || order.expectedDelivery || '2026-2027'}
+                • Booked on {order.orderDate || order.expectedDelivery || '—'}
               </span>
             </div>
           </div>
@@ -406,7 +406,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
                     <User size={12} />
                   </div>
                   <span className="font-semibold text-foreground text-xs">
-                    {order.salespersonName || 'Rahul Sharma (Field Rep)'}
+                    {order.salespersonName || 'Unassigned'}
                   </span>
                 </div>
               </div>
@@ -604,7 +604,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
                       {orderPayments.map((p) => (
                         <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border/60 text-xs">
                           <div>
-                            <span className="font-mono font-bold text-foreground block">{p.receiptNumber || `SF-REC-${p.id.slice(-5)}`}</span>
+                            <span className="font-mono font-bold text-foreground block">{p.receiptNumber || '—'}</span>
                             <span className="text-[10px] text-muted-foreground">{p.paymentDate} • {p.paymentMethod}</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -653,20 +653,20 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
               <div>
                 <span className="text-muted-foreground block">Manufacturing Foundry</span>
                 <span className="font-bold text-foreground text-sm block mt-0.5">
-                  {order.manufacturerName || 'Apex Footwear Works'}
+                  {order.manufacturerName || '—'}
                 </span>
                 <span className="text-muted-foreground block text-[11px] mt-0.5">
-                  {order.manufacturerPlant || 'Agra Unit 2 (Sikandra Area)'}
+                  {order.manufacturerPlant || '—'}
                 </span>
               </div>
 
               <div>
                 <span className="text-muted-foreground block">Batch Schedule</span>
                 <span className="font-mono font-bold text-foreground block mt-0.5">
-                  {order.batchNumber || 'Batch Scheduled on Line 2'}
+                  {order.batchNumber || '—'}
                 </span>
                 <span className="text-muted-foreground block text-[11px] mt-0.5">
-                  Est. Dispatch: {order.expectedDelivery || '28 Oct 2026'}
+                  Est. Dispatch: {order.expectedDelivery || '—'}
                 </span>
               </div>
             </div>
@@ -851,7 +851,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
               customerCode: cust.id,
               gstin: cust.gstin,
               phone: cust.phone,
-              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+              address: [cust.address, cust.city, cust.state].filter(Boolean).join(', ') || undefined,
             };
           })()}
           status={mapPaymentStatusToReceiptStatus(selectedReceiptPayment.status)}
@@ -871,7 +871,7 @@ export const OrderInspectDrawer: React.FC<OrderInspectDrawerProps> = ({
               customerCode: cust.id,
               gstin: cust.gstin,
               phone: cust.phone,
-              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+              address: [cust.address, cust.city, cust.state].filter(Boolean).join(', ') || undefined,
             };
           })()}
         />

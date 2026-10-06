@@ -24,7 +24,7 @@ import {
   CheckCircle2,
   XCircle,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import {supabase, isDemoModeActive} from '../../lib/supabase';
 import { OrgInvite, UserRole } from '../../types';
 
 interface MemberItem {
@@ -45,14 +45,15 @@ export const SettingsPage: React.FC = () => {
     setThemePreference,
   } = useApp();
 
-  const { org, orgId, isAdmin, isSuperAdmin, isDemoAccount } = useAuth();
+  const { org, orgId, isAdmin, isSuperAdmin, isDemoAccount, refreshProfile } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'general' | 'team' | 'theme'>('general');
 
-  // Firm Info
-  const [companyName, setCompanyName] = useState(org?.name || 'SoleFlow Footwear Trading Ltd.');
-  const [gstin, setGstin] = useState(org?.gstin || '09AAACS4412M1Z0');
-  const [hubAddress, setHubAddress] = useState('Agra Mandi Dock 4, Hing Ki Mandi, Agra UP');
+  // Firm Info (initialized from the real organization record; empty when unknown)
+  const [companyName, setCompanyName] = useState(org?.name || '');
+  const [gstin, setGstin] = useState(org?.gstin || '');
+  const [hubCity, setHubCity] = useState(org?.city || '');
+  const [orgState, setOrgState] = useState(org?.state || '');
 
   // Team Management
   const [members, setMembers] = useState<MemberItem[]>([]);
@@ -71,36 +72,10 @@ export const SettingsPage: React.FC = () => {
     if (!isAdmin && !isSuperAdmin) return;
     setIsLoadingTeam(true);
 
-    if (!supabase) {
-      setMembers([
-        {
-          id: 'user-1',
-          name: currentUser.name,
-          email: currentUser.email,
-          role: currentUser.role,
-          phone: currentUser.phone || '+91 98000 00000',
-          is_active: true,
-        },
-        {
-          id: 'user-2',
-          name: 'Rahul Sharma',
-          email: 'rahul.sales@soleflow.com',
-          role: 'salesperson',
-          phone: '+91 98111 22233',
-          is_active: true,
-        },
-      ]);
-      setInvites([
-        {
-          id: 'inv-1',
-          org_id: orgId || 'demo-org',
-          email: 'priya.rep@shoehub.in',
-          role: 'salesperson',
-          token: 'tok-12345',
-          expires_at: new Date(Date.now() + 5 * 86400000).toISOString(),
-          created_at: new Date().toISOString(),
-        },
-      ]);
+    if (!supabase || isDemoModeActive) {
+      // Database not configured: show honest empty lists instead of fabricated team data
+      setMembers([]);
+      setInvites([]);
       setIsLoadingTeam(false);
       return;
     }
@@ -160,31 +135,34 @@ export const SettingsPage: React.FC = () => {
 
     try {
       // Call backend route POST /admin/invite or direct Supabase insert
-      if (supabase && orgId) {
-        const { data: inviteRow, error } = await supabase
-          .from('org_invites')
-          .insert({
-            org_id: orgId,
-            email: inviteEmail.trim().toLowerCase(),
-            role: inviteRole,
-          })
-          .select('*')
-          .single();
+      if (!supabase || isDemoModeActive) {
+        showToast('Database not configured — invites cannot be sent.');
+        return;
+      }
+      if (!orgId) {
+        showToast('No active organization found for your account.');
+        return;
+      }
 
-        if (error) {
-          showToast(`Error creating invite: ${error.message}`);
-        } else {
-          showToast(`Invitation created for ${inviteEmail}`);
-          setIsInviteModalOpen(false);
-          setInviteEmail('');
-          setInviteName('');
-          setInvitePhone('');
-          loadTeamData();
-        }
+      const { error } = await supabase
+        .from('org_invites')
+        .insert({
+          org_id: orgId,
+          email: inviteEmail.trim().toLowerCase(),
+          role: inviteRole,
+        })
+        .select('*')
+        .single();
+
+      if (error) {
+        showToast(`Error creating invite: ${error.message}`);
       } else {
-        showToast(`[Demo Mode] Simulated invite sent to ${inviteEmail}`);
+        showToast(`Invitation created for ${inviteEmail}`);
         setIsInviteModalOpen(false);
         setInviteEmail('');
+        setInviteName('');
+        setInvitePhone('');
+        loadTeamData();
       }
     } catch (err: any) {
       showToast(`Failed: ${err.message}`);
@@ -194,9 +172,8 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleRevokeInvite = async (inviteId: string) => {
-    if (!supabase) {
-      setInvites((prev) => prev.filter((i) => i.id !== inviteId));
-      showToast('Invite revoked');
+    if (!supabase || isDemoModeActive) {
+      showToast('Database not configured — invites cannot be revoked.');
       return;
     }
 
@@ -220,11 +197,8 @@ export const SettingsPage: React.FC = () => {
     }
 
     const nextStatus = !currentStatus;
-    if (!supabase) {
-      setMembers((prev) =>
-        prev.map((m) => (m.id === memberId ? { ...m, is_active: nextStatus } : m))
-      );
-      showToast(`Member ${nextStatus ? 'Activated' : 'Deactivated'}`);
+    if (!supabase || isDemoModeActive) {
+      showToast('Database not configured — member status cannot be changed.');
       return;
     }
 
@@ -245,9 +219,42 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    showToast('Business firm settings updated successfully.');
+
+    if (!supabase || isDemoModeActive) {
+      showToast('Database not configured — settings cannot be saved.');
+      return;
+    }
+
+    const targetOrgId = org?.id || orgId;
+    if (!targetOrgId) {
+      showToast('No organization is linked to your account.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('organizations')
+        .update({
+          name: companyName,
+          gstin: gstin || null,
+          city: hubCity || null,
+          state: orgState || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', targetOrgId);
+
+      if (error) {
+        showToast(`Failed: ${error.message}`);
+        return;
+      }
+
+      showToast('Business firm settings updated successfully.');
+      await refreshProfile();
+    } catch (err: any) {
+      showToast(`Error: ${err.message}`);
+    }
   };
 
   const handleSelectTheme = (pref: ThemePreference) => {
@@ -353,16 +360,29 @@ export const SettingsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">
-                    Central Mandi Dispatch Address
-                  </label>
-                  <input
-                    type="text"
-                    value={hubAddress}
-                    onChange={(e) => setHubAddress(e.target.value)}
-                    className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground block mb-1.5">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      value={hubCity}
+                      onChange={(e) => setHubCity(e.target.value)}
+                      className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground block mb-1.5">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      value={orgState}
+                      onChange={(e) => setOrgState(e.target.value)}
+                      className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
                 </div>
               </div>
             </Panel>

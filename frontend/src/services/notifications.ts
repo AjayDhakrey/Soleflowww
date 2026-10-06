@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import {supabase, isDemoModeActive} from '../lib/supabase';
 import { NotificationItem } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -19,7 +19,7 @@ export function mapNotificationRow(row: any): NotificationItem {
 
 export const notificationsService = {
   async fetchNotifications(): Promise<NotificationItem[]> {
-    if (!supabase) return [];
+    if (!supabase || isDemoModeActive) return [];
 
     try {
       const { data, error } = await supabase
@@ -38,7 +38,7 @@ export const notificationsService = {
   },
 
   async markAsRead(id: string): Promise<boolean> {
-    if (!supabase) return true;
+    if (!supabase || isDemoModeActive) return true;
 
     try {
       const { error } = await supabase
@@ -55,7 +55,7 @@ export const notificationsService = {
   },
 
   async markAllAsRead(): Promise<boolean> {
-    if (!supabase) return true;
+    if (!supabase || isDemoModeActive) return true;
 
     try {
       const { error } = await supabase

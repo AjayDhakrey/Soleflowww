@@ -130,7 +130,8 @@ export const DiscountRequestDrawer: React.FC<DiscountRequestDrawerProps> = ({
     }
   };
 
-  const isLowMargin = (request.projectedMarginPercent ?? 20) < 15;
+  const isLowMargin =
+    typeof request.projectedMarginPercent === 'number' && request.projectedMarginPercent < 15;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
@@ -323,7 +324,7 @@ export const DiscountRequestDrawer: React.FC<DiscountRequestDrawerProps> = ({
                     isLowMargin ? 'text-amber-900 dark:text-amber-200' : 'text-emerald-900 dark:text-emerald-200'
                   }`}
                 >
-                  {request.projectedMarginPercent ? `${request.projectedMarginPercent}%` : '21.4%'}
+                  {request.projectedMarginPercent ? `${request.projectedMarginPercent}%` : '—'}
                 </span>
                 <span
                   className={`text-[10px] mt-0.5 block ${
@@ -377,7 +378,7 @@ export const DiscountRequestDrawer: React.FC<DiscountRequestDrawerProps> = ({
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {request.decisionNote || 'Decision logged by management.'}
+                {request.decisionNote || '—'}
               </p>
               {request.decidedAt && (
                 <p className="text-[10px] text-muted-foreground mt-1 font-mono">

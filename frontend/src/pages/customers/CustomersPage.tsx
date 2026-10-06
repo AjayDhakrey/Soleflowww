@@ -24,14 +24,6 @@ interface CustomersPageProps {
   fromPath?: string;
 }
 
-const STORE_THUMBNAILS: Record<string, string> = {
-  'ABC Footwear': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80',
-  'Regal Footwear Hub': 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=120&q=80',
-  'Delhi Walkways Hub': 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=120&q=80',
-  'Kanpur Leather Mart': 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=120&q=80',
-  'ABC Footwear Hub': 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=120&q=80',
-};
-
 export const CustomersPage: React.FC<CustomersPageProps> = ({
   onNavigate,
   customerId,
@@ -261,7 +253,6 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((c) => {
-                  const thumb = STORE_THUMBNAILS[c.businessName] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80';
                   const initials = getInitials(c.businessName);
 
                   return (
@@ -276,11 +267,6 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
                             {initials}
                           </div>
-                          <img
-                            src={thumb}
-                            alt={c.businessName}
-                            className="w-10 h-8 rounded-lg object-cover border border-border shrink-0 bg-muted hidden sm:block"
-                          />
                           <div>
                             <div className="font-bold text-foreground text-xs sm:text-sm leading-tight">
                               {c.businessName}
@@ -295,7 +281,7 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
                       {/* GSTIN */}
                       <td className="py-3.5 px-4">
                         <span className="font-mono text-xs text-muted-foreground">
-                          {c.gstin || '09AAACA1234F1Z5'}
+                          {c.gstin || '—'}
                         </span>
                       </td>
 
@@ -305,7 +291,7 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
                           {c.city}
                         </div>
                         <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[150px]">
-                          {c.address || 'Market Hub'}
+                          {c.address || '—'}
                         </div>
                       </td>
 
@@ -324,7 +310,7 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
                       {/* Credit Limit */}
                       <td className="py-3.5 px-4">
                         <span className="font-medium text-muted-foreground text-xs sm:text-sm">
-                          ₹{((c.creditLimit || 500000) / 100000).toFixed(1)}L
+                          {c.creditLimit > 0 ? `₹${(c.creditLimit / 100000).toFixed(1)}L` : '—'}
                         </span>
                       </td>
 

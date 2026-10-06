@@ -50,6 +50,7 @@ interface NavGroupDef {
 }
 
 import { useAuth } from '../../auth/AuthProvider';
+import { useViewMode } from '../../context/ViewModeContext';
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => {
   const {
@@ -131,10 +132,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     },
   ];
 
-  if (isSuperAdmin) {
+  const { isReadOnly, exitViewMode } = useViewMode();
+
+  if (isReadOnly) {
+    adminNavGroups.unshift({
+      label: 'VIEW MODE',
+      items: [
+        { name: '← Back to Accounts', path: '/platform/accounts', icon3D: 'Dashboard' },
+      ],
+    });
+  } else if (isSuperAdmin) {
     adminNavGroups.unshift({
       label: 'PLATFORM OWNER',
       items: [
+        { name: 'Accounts', path: '/platform/accounts', icon3D: 'Dashboard' },
         { name: 'Platform Admin', path: '/platform', icon3D: 'Dashboard' },
       ],
     });
@@ -178,7 +189,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
 
   const navGroups = currentUser.role === 'admin' ? adminNavGroups : salesNavGroups;
 
-  const handleNavClick = (path: string) => {
+  const handleNavClick = async (path: string) => {
+    if (path === '/platform/accounts' && isReadOnly) {
+      await exitViewMode();
+    }
     onNavigate(path);
     if (isMobileSidebarOpen) {
       setIsMobileSidebarOpen(false);
@@ -217,7 +231,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
   const renderNavGroup = (group: NavGroupDef) => (
     <div key={group.label} className="mb-4">
       {!isSidebarCollapsed && (
-        <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400/45 dark:text-slate-500/45 select-none">
+        <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400/45 dark:text-slate-500/45 select-none">
           {group.label}
         </div>
       )}
@@ -243,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
               </div>
 
               {!isSidebarCollapsed && (
-                <span className={`text-[13px] font-medium truncate flex-1 text-left ${isActive ? 'text-emerald-700 dark:text-emerald-300 font-semibold' : 'text-slate-700 dark:text-slate-200'}`}>
+                <span title={item.name} className={`text-[13px] font-medium truncate flex-1 text-left ${isActive ? 'text-emerald-700 dark:text-emerald-300 font-semibold' : 'text-slate-700 dark:text-slate-200'}`}>
                   {item.name}
                 </span>
               )}
@@ -283,23 +297,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
         <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden group">
           <img
             src={projectLogo}
-            alt="ShoeConnect Logo"
+            alt="SoleFlow Logo"
             className="w-full h-full object-contain rounded-lg transition-transform group-hover:scale-105"
           />
         </div>
         {!isSidebarCollapsed && (
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 truncate">
-              <h2 className="font-display text-sm font-bold text-slate-900 dark:text-white truncate">
-                {org?.name || 'ShoeConnect'}
+            {/* zoom-proof: truncate is inert on a flex container; the h2 keeps truncate */}
+            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+              <h2 title={org?.name || 'SoleFlow'} className="font-display text-sm font-bold text-slate-900 dark:text-white truncate">
+                {org?.name || 'SoleFlow'}
               </h2>
               {isDemoAccount && (
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-bold shrink-0">
+                <span className="text-[11px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-bold shrink-0">
                   DEMO
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-slate-400/55 dark:text-slate-500/55 truncate">
+            <p className="text-[11px] text-slate-400/55 dark:text-slate-500/55 truncate">
               {org?.city ? `${org.city} • Footwear Workspace` : 'Step Towards Better Tomorrow'}
             </p>
           </div>
@@ -320,21 +335,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
             isSidebarCollapsed ? 'justify-center' : ''
           }`}
         >
-          <NavUserAvatar3D className="w-10 h-10" />
+          <NavUserAvatar3D className="w-10 h-10 shrink-0" />
 
           {!isSidebarCollapsed && (
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold leading-tight text-slate-900 dark:text-white truncate">
                 {currentUser.name}
               </p>
-              <p className="text-[10px] leading-tight text-muted-foreground capitalize truncate mt-0.5">
+              <p className="text-[11px] leading-tight text-muted-foreground capitalize truncate mt-0.5">
                 {currentUser.role === 'admin' ? 'Trader / Admin' : 'Sales Executive'}
               </p>
             </div>
           )}
 
           {!isSidebarCollapsed && (
-            <div className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
+            <div className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 shrink-0">
               <Icons.ChevronDown size={17} strokeWidth={2} />
             </div>
           )}

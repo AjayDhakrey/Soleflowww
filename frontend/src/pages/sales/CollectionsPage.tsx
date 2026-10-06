@@ -116,7 +116,11 @@ export const CollectionsPage: React.FC = () => {
 
   const handleShareWhatsApp = (p: typeof payments[0]) => {
     const cust = customers.find((c) => c.id === p.customerId);
-    const phone = (cust?.phone || '+91 98000 00000').replace(/[^0-9]/g, '');
+    const phone = (cust?.phone || '').replace(/[^0-9]/g, '');
+    if (!phone) {
+      showToast('No phone number on file for this store.');
+      return;
+    }
     const phoneWithCode = phone.length === 10 ? `91${phone}` : phone;
     const msg = `*Payment Receipt — SoleFlow Footwear*\n\n` +
       `Receipt No: *${p.receiptNumber}*\n` +
@@ -269,9 +273,13 @@ export const CollectionsPage: React.FC = () => {
                       {cust.phone}
                     </TableCell>
                     <TableCell>
-                      <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400">
-                        {cust.overdueDays || 12} Days
-                      </span>
+                      {(cust.overdueDays || 0) > 0 ? (
+                        <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400">
+                          {cust.overdueDays} Days
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
                       {cust.paymentTerms}
@@ -491,7 +499,7 @@ export const CollectionsPage: React.FC = () => {
               customerCode: cust.id,
               gstin: cust.gstin,
               phone: cust.phone,
-              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || '—'}, Uttar Pradesh`,
             };
           })()}
           status={mapPaymentStatusToReceiptStatus(selectedReceiptPayment.status)}

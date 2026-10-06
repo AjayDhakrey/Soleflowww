@@ -47,77 +47,6 @@ interface OrderDisplayItem {
   rawOrder?: Order;
 }
 
-const DEFAULT_ORDERS_DISPLAY: OrderDisplayItem[] = [
-  {
-    id: 'ORD-0148',
-    initials: 'AF',
-    initialsColor: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50',
-    customerStore: 'ABC Footwear',
-    proprietorAndCity: 'Agra • Ramesh & Sunil Agarwal',
-    date: '—',
-    articles: 'Runner Classic',
-    volumePairs: '200 Pairs',
-    volumeCartons: '(16 Ctns)',
-    factoryName: 'Apex Footwear Works',
-    factoryPlant: 'Agra Unit 2 (Sikandra Area)',
-    status: 'In Production',
-    statusType: 'in_production',
-    netPayable: '₹2,66,000',
-    balanceDueText: '₹1,66,000 Bal',
-  },
-  {
-    id: 'ORD-0147',
-    initials: 'KL',
-    initialsColor: 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900/50',
-    customerStore: 'Kanpur Leather Mart',
-    proprietorAndCity: 'Kanpur • Deepak Soni',
-    date: '—',
-    articles: 'Verona Crust Leather D...',
-    volumePairs: '306 Pairs',
-    volumeCartons: '(18 Ctns)',
-    factoryName: 'Taj Heritage Craft',
-    factoryPlant: 'Agra Unit 1',
-    status: 'Ready to Dispatch',
-    statusType: 'ready_dispatch',
-    netPayable: '₹9,28,972',
-    balanceDueText: '₹6,28,972 Bal',
-  },
-  {
-    id: 'ORD-0146',
-    initials: 'DW',
-    initialsColor: 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-900/50',
-    customerStore: 'Delhi Walkways Hub',
-    proprietorAndCity: 'New Delhi • Harpreet Singh',
-    date: '—',
-    articles: 'AeroGlide Knit Runner',
-    volumePairs: '120 Pairs',
-    volumeCartons: '(10 Ctns)',
-    factoryName: 'Apex Footwear Works',
-    factoryPlant: 'Agra Unit 3',
-    status: 'Delivered',
-    statusType: 'delivered',
-    netPayable: '₹1,47,840',
-    balanceDueText: 'Cleared',
-  },
-  {
-    id: 'ORD-0145',
-    initials: 'AF',
-    initialsColor: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-900/50',
-    customerStore: 'ABC Footwear Hub',
-    proprietorAndCity: 'Agra • Sunil Agarwal',
-    date: '—',
-    articles: 'Verona Derby & Runners',
-    volumePairs: '320 Pairs',
-    volumeCartons: '(26 Ctns)',
-    factoryName: 'Apex Footwear Works',
-    factoryPlant: 'Agra Unit 2',
-    status: 'Under Review',
-    statusType: 'under_review',
-    netPayable: '₹6,12,864',
-    balanceDueText: '₹2,30,000 Bal',
-  },
-];
-
 export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
   const {
     orders,
@@ -152,7 +81,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
     }
   }, [orders]);
 
-  // Dynamic order display list mapped from orders in context, with fallback to DEFAULT_ORDERS_DISPLAY
+  // Dynamic order display list mapped from live orders in context
   const displayOrders: OrderDisplayItem[] = useMemo(() => {
     if (orders && orders.length > 0) {
       return orders.map((o) => {
@@ -178,7 +107,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
         const firstItem = o.items?.[0];
         const articlesStr = totalItemsCount > 0
           ? `${firstItem?.designName || firstItem?.articleCode || 'Footwear Model'}${totalItemsCount > 1 ? ` (+${totalItemsCount - 1} more)` : ''}`
-          : `Batch Article (${Number(o.pairsCount || 24)} Pairs)`;
+          : `Batch Article (${Number(o.pairsCount || 0)} Pairs)`;
 
         const statusMap: Record<string, { status: OrderDisplayItem['status']; statusType: OrderDisplayItem['statusType'] }> = {
           'In Production': { status: 'In Production', statusType: 'in_production' },
@@ -204,14 +133,14 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
           id: o.id,
           initials: initials || 'OR',
           initialsColor: colorClasses[colorIdx],
-          customerStore: o.customerName || 'Customer Store',
-          proprietorAndCity: `${o.customerCity || 'Agra'} • ${o.propName || 'Store Owner'}`,
+          customerStore: o.customerName || '—',
+          proprietorAndCity: `${o.customerCity || '—'} • ${o.propName || ''}`,
           date: o.orderDate || '—',
           articles: articlesStr,
           volumePairs: `${totalPairs.toLocaleString('en-IN')} Pairs`,
           volumeCartons: `${totalCartons} Cartons`,
-          factoryName: o.manufacturerName || 'Apex Footwear Works',
-          factoryPlant: o.manufacturerPlant || 'Agra Unit 2',
+          factoryName: o.manufacturerName || '—',
+          factoryPlant: o.manufacturerPlant || '—',
           status: mappedStatus.status,
           statusType: mappedStatus.statusType,
           netPayable: `₹${Number(o.netPayable || 0).toLocaleString('en-IN')}`,
@@ -220,7 +149,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
         };
       });
     }
-    return DEFAULT_ORDERS_DISPLAY;
+    return [];
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
@@ -372,27 +301,15 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
       {/* 3. 4 KPI Summary Cards Row */}
       {viewMode === 'list' && (
         <OrdersKpiCards
-          totalOrdersCount={orders.length > 0 ? orders.length : 4}
-          inProductionCount={
-            orders.length > 0
-              ? orders.filter((o) => o.status === 'In Production' || o.status === 'Approved').length
-              : 1
-          }
-          readyDispatchCount={
-            orders.length > 0
-              ? orders.filter(
-                  (o) =>
-                    o.status === 'Ready to Dispatch' ||
-                    o.status === 'Ready QC' ||
-                    o.status === 'Dispatched'
-                ).length
-              : 1
-          }
-          totalConsignmentValue={
-            orders.length > 0
-              ? orders.reduce((sum, o) => sum + (o.netPayable || 0), 0)
-              : '₹19.56L'
-          }
+          totalOrdersCount={orders.length}
+          inProductionCount={orders.filter((o) => o.status === 'In Production' || o.status === 'Approved').length}
+          readyDispatchCount={orders.filter(
+            (o) =>
+              o.status === 'Ready to Dispatch' ||
+              o.status === 'Ready QC' ||
+              o.status === 'Dispatched'
+          ).length}
+          totalConsignmentValue={orders.reduce((sum, o) => sum + (o.netPayable || 0), 0)}
           onNavigateAll={() => setStatusFilter('All')}
           onNavigateProduction={() => setStatusFilter('In Production')}
           onNavigateDispatch={() => setStatusFilter('Ready to Dispatch')}
@@ -714,7 +631,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
               customerCode: cust.id,
               gstin: cust.gstin,
               phone: cust.phone,
-              address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+              address: [cust.address, cust.city, cust.state].filter(Boolean).join(', ') || undefined,
             };
           })()}
         />

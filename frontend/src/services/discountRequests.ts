@@ -1,34 +1,6 @@
-import { supabase } from '../lib/supabase';
+import {supabase, isDemoModeActive} from '../lib/supabase';
 import { DiscountRequest, DiscountRequestStats } from '../types';
 import { parseSupabaseError } from './apiError';
-
-export const MOCK_DISCOUNT_REQUESTS: DiscountRequest[] = [
-  {
-    id: 'DR-00001',
-    orderId: 'PO-8820',
-    clientId: 'cust-3',
-    clientName: 'Metro Shoes Delhi',
-    clientCity: 'Delhi NCR',
-    requestedBy: 'user-sales',
-    salesmanId: 'user-sales',
-    salesmanName: 'Rahul Sharma',
-    defaultPercent: 8.0,
-    requestedPercent: 9.5,
-    approvedPercent: null,
-    orderSubtotal: 1893333.33,
-    pairs: 900,
-    productSummary: '900 Pairs • Runner Classic Pro + Verona Derby',
-    marginConcession: 28400,
-    projectedMarginPercent: 21.4,
-    reason: 'Client placing major Diwali seasonal booking (900 pairs across 4 branches). Requested 9.5% to close deal against local competitor offering 10%.',
-    status: 'pending',
-    decidedBy: null,
-    decidedAt: null,
-    decisionNote: null,
-    createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-  },
-];
 
 // Helper to map DB snake_case row to CamelCase DiscountRequest
 export function mapDiscountRequestRow(row: any): DiscountRequest {
@@ -36,17 +8,17 @@ export function mapDiscountRequestRow(row: any): DiscountRequest {
     id: row.id,
     orderId: row.order_id || row.orderId,
     clientId: row.client_id || row.clientId,
-    clientName: row.customer_name || row.clientName || (row.customers && row.customers.businessName) || 'Client Account',
-    clientCity: row.customer_city || row.clientCity || (row.customers && row.customers.city) || 'Agra',
+    clientName: row.customer_name || row.clientName || (row.customers && row.customers.businessName) || '',
+    clientCity: row.customer_city || row.clientCity || (row.customers && row.customers.city) || '',
     requestedBy: row.requested_by || row.requestedBy,
     salesmanId: row.salesman_id || row.salesmanId,
-    salesmanName: row.salesman_name || row.salesmanName || 'Field Sales Rep',
-    defaultPercent: Number(row.default_percent ?? row.defaultPercent ?? 8),
-    requestedPercent: Number(row.requested_percent ?? row.requestedPercent ?? 9.5),
+    salesmanName: row.salesman_name || row.salesmanName || '',
+    defaultPercent: Number(row.default_percent ?? row.defaultPercent ?? 0),
+    requestedPercent: Number(row.requested_percent ?? row.requestedPercent ?? 0),
     approvedPercent: row.approved_percent != null ? Number(row.approved_percent) : (row.approvedPercent != null ? Number(row.approvedPercent) : null),
     orderSubtotal: Number(row.order_subtotal ?? row.orderSubtotal ?? 0),
     pairs: Number(row.pairs ?? 0),
-    productSummary: row.product_summary || row.productSummary || 'Wholesale Footwear Batch',
+    productSummary: row.product_summary || row.productSummary || '',
     marginConcession: Number(row.margin_concession ?? row.marginConcession ?? 0),
     projectedMarginPercent: row.projected_margin_percent != null ? Number(row.projected_margin_percent) : (row.projectedMarginPercent != null ? Number(row.projectedMarginPercent) : null),
     reason: row.reason || '',
@@ -63,7 +35,7 @@ let inMemoryRequests: DiscountRequest[] = [];
 
 export const discountRequestsService = {
   async fetchAppSettings(): Promise<{ defaultTradeDiscount: number; maxTradeDiscount: number; minMargin: number }> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       return { defaultTradeDiscount: 8, maxTradeDiscount: 15, minMargin: 15 };
     }
 
@@ -100,7 +72,7 @@ export const discountRequestsService = {
     orderId?: string;
     search?: string;
   }): Promise<DiscountRequest[]> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       let list = [...inMemoryRequests];
       if (filters?.status && filters.status !== 'all') {
         list = list.filter((r) => r.status === filters.status);
@@ -163,7 +135,7 @@ export const discountRequestsService = {
         return mapped;
       });
     } catch (err) {
-      console.warn('Error fetching discount requests from Supabase; using local cache:', err);
+      console.error('Error fetching discount requests from Supabase:', err);
       let list = [...inMemoryRequests];
       if (filters?.status && filters.status !== 'all') {
         list = list.filter((r) => r.status === filters.status);
@@ -173,7 +145,7 @@ export const discountRequestsService = {
   },
 
   async getDiscountRequest(id: string): Promise<DiscountRequest | null> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       return inMemoryRequests.find((r) => r.id === id) || null;
     }
 
@@ -208,34 +180,8 @@ export const discountRequestsService = {
       throw new Error('Please provide a reason / justification for the discount request.');
     }
 
-    if (!supabase) {
-      const newReq: DiscountRequest = {
-        id: `DR-${String(inMemoryRequests.length + 1).padStart(5, '0')}`,
-        orderId,
-        clientId: 'cust-1',
-        clientName: 'ABC Footwear',
-        clientCity: 'Agra',
-        requestedBy: 'demo-user',
-        salesmanId: 'user-sales',
-        salesmanName: 'Rahul Sharma',
-        defaultPercent: 8.0,
-        requestedPercent,
-        approvedPercent: null,
-        orderSubtotal: 500000,
-        pairs: 240,
-        productSummary: '240 Pairs • Runner Classic Pro',
-        marginConcession: ((requestedPercent - 8) * 500000) / 100,
-        projectedMarginPercent: 21.0,
-        reason,
-        status: 'pending',
-        decidedBy: null,
-        decidedAt: null,
-        decisionNote: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      inMemoryRequests.unshift(newReq);
-      return newReq;
+    if (!supabase || isDemoModeActive) {
+      throw new Error('Discount request service is not configured.');
     }
 
     try {
@@ -245,73 +191,18 @@ export const discountRequestsService = {
         p_reason: reason,
       });
 
-      if (error) {
-        console.warn('request_discount RPC returned error, using local fallback:', error);
-        const newReq: DiscountRequest = {
-          id: `DR-${String(inMemoryRequests.length + 1).padStart(5, '0')}`,
-          orderId,
-          clientId: 'cust-1',
-          clientName: 'Client Account',
-          clientCity: 'Agra',
-          requestedBy: 'user-sales',
-          salesmanId: 'user-sales',
-          salesmanName: 'Rahul Sharma',
-          defaultPercent: 8.0,
-          requestedPercent,
-          approvedPercent: null,
-          orderSubtotal: 500000,
-          pairs: 240,
-          productSummary: '240 Pairs • Wholesale Footwear',
-          marginConcession: ((requestedPercent - 8) * 500000) / 100,
-          projectedMarginPercent: 21.0,
-          reason,
-          status: 'pending',
-          decidedBy: null,
-          decidedAt: null,
-          decisionNote: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        inMemoryRequests.unshift(newReq);
-        return newReq;
-      }
+      if (error) throw parseSupabaseError(error);
       const mapped = mapDiscountRequestRow(data);
       inMemoryRequests.unshift(mapped);
       return mapped;
     } catch (err) {
-      console.warn('requestDiscount catch, falling back:', err);
-      const newReq: DiscountRequest = {
-        id: `DR-${String(inMemoryRequests.length + 1).padStart(5, '0')}`,
-        orderId,
-        clientId: 'cust-1',
-        clientName: 'Client Account',
-        clientCity: 'Agra',
-        requestedBy: 'user-sales',
-        salesmanId: 'user-sales',
-        salesmanName: 'Rahul Sharma',
-        defaultPercent: 8.0,
-        requestedPercent,
-        approvedPercent: null,
-        orderSubtotal: 500000,
-        pairs: 240,
-        productSummary: '240 Pairs • Wholesale Footwear',
-        marginConcession: ((requestedPercent - 8) * 500000) / 100,
-        projectedMarginPercent: 21.0,
-        reason,
-        status: 'pending',
-        decidedBy: null,
-        decidedAt: null,
-        decisionNote: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      inMemoryRequests.unshift(newReq);
-      return newReq;
+      console.error('Error submitting discount request:', err);
+      throw err;
     }
   },
 
   async approveDiscountRequest(requestId: string, approvedPercent?: number, note?: string): Promise<DiscountRequest> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       const index = inMemoryRequests.findIndex((r) => r.id === requestId);
       if (index === -1) throw new Error(`Discount request ${requestId} not found.`);
 
@@ -320,7 +211,7 @@ export const discountRequestsService = {
         ...inMemoryRequests[index],
         status: 'approved',
         approvedPercent: finalPct,
-        decisionNote: note || 'Approved by Trader',
+        decisionNote: note || '',
         decidedAt: new Date().toISOString(),
       };
       return inMemoryRequests[index];
@@ -342,7 +233,7 @@ export const discountRequestsService = {
             ...inMemoryRequests[index],
             status: 'approved',
             approvedPercent: finalPct,
-            decisionNote: note || 'Approved by Trader',
+            decisionNote: note || '',
             decidedAt: new Date().toISOString(),
           };
           return inMemoryRequests[index];
@@ -363,7 +254,7 @@ export const discountRequestsService = {
           ...inMemoryRequests[index],
           status: 'approved',
           approvedPercent: finalPct,
-          decisionNote: note || 'Approved by Trader',
+          decisionNote: note || '',
           decidedAt: new Date().toISOString(),
         };
         return inMemoryRequests[index];
@@ -377,7 +268,7 @@ export const discountRequestsService = {
       throw new Error('A rejection reason / note is required.');
     }
 
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       const index = inMemoryRequests.findIndex((r) => r.id === requestId);
       if (index === -1) throw new Error(`Discount request ${requestId} not found.`);
 
@@ -431,7 +322,7 @@ export const discountRequestsService = {
   },
 
   async cancelDiscountRequest(requestId: string): Promise<DiscountRequest> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       const index = inMemoryRequests.findIndex((r) => r.id === requestId);
       if (index === -1) throw new Error(`Discount request ${requestId} not found.`);
 
@@ -481,7 +372,7 @@ export const discountRequestsService = {
   },
 
   async getDiscountStats(): Promise<DiscountRequestStats> {
-    if (!supabase) {
+    if (!supabase || isDemoModeActive) {
       const pending = inMemoryRequests.filter((r) => r.status === 'pending');
       const approved = inMemoryRequests.filter((r) => r.status === 'approved');
       const rejected = inMemoryRequests.filter((r) => r.status === 'rejected');

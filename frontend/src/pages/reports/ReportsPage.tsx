@@ -8,6 +8,7 @@ import {
   Button,
   StatusBadge,
   Tag,
+  EmptyState,
 } from '../../components/ui';
 import ReportsKpiCards from '../../components/reports/ReportsKpiCards';
 import {
@@ -20,15 +21,24 @@ import {
   AlertTriangle,
   XCircle,
   FileSpreadsheet,
+  Factory,
 } from 'lucide-react';
 import { discountRequestsService } from '../../services/discountRequests';
 import { DiscountRequest, DiscountRequestStats } from '../../types';
 import { DiscountRequestDrawer } from '../../components/discounts/DiscountRequestDrawer';
 import { RequestDiscountModal } from '../../components/discounts/RequestDiscountModal';
-import { supabase } from '../../lib/supabase';
+import {supabase, isDemoModeActive} from '../../lib/supabase';
+
+// Bar colors per catalogue category (falls back to primary for unknown categories)
+const CATEGORY_BAR_COLORS: Record<string, string> = {
+  'Athletic Sneakers': 'bg-primary',
+  'Formal Derby & Oxford': 'bg-purple-600 dark:bg-purple-400',
+  'Leather Boots': 'bg-amber-500',
+  'Loafers & Casuals': 'bg-emerald-500',
+};
 
 export const ReportsPage: React.FC = () => {
-  const { customers, orders, currentUser, showToast } = useApp();
+  const { customers, orders, designs, manufacturers, currentUser, showToast } = useApp();
   const isAdmin = currentUser?.role === 'admin';
 
   const [requests, setRequests] = useState<DiscountRequest[]>([]);
@@ -67,7 +77,7 @@ export const ReportsPage: React.FC = () => {
     loadData();
 
     // Supabase Realtime Subscription
-    if (supabase) {
+    if (supabase && !isDemoModeActive) {
       const channel = supabase
         .channel('public:discount_requests_changes')
         .on(
@@ -129,18 +139,54 @@ export const ReportsPage: React.FC = () => {
     return orders.reduce((sum, o) => sum + Number(o.netPayable || 0), 0);
   }, [orders]);
 
-  const totalDiscountGiven = useMemo(() => {
-    return orders.reduce((sum, o) => sum + Number(o.tradeDiscountAmount || 0), 0);
-  }, [orders]);
+  // Cost-of-goods data is not tracked on orders, items, or designs, so a true
+  // margin percent cannot be derived from real data — render '—' instead of an estimate.
+  const avgMarginPercent: number | null = null;
 
-  const totalSubtotal = useMemo(() => {
-    return orders.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
-  }, [orders]);
+  // Real category turnover: join order items to catalogue designs by designId.
+  const categoryTurnover = useMemo(() => {
+    const categoryByDesign = new Map(designs.map((d) => [d.id, d.category]));
+    const totals = new Map<string, number>();
+    let total = 0;
+    orders.forEach((o) => {
+      (o.items || []).forEach((item) => {
+        const category = categoryByDesign.get(item.designId);
+        if (!category) return;
+        const amount = Number(item.itemSubtotal || 0);
+        totals.set(category, (totals.get(category) || 0) + amount);
+        total += amount;
+      });
+    });
+    return {
+      total,
+      rows: Array.from(totals.entries())
+        .map(([category, amount]) => ({
+          category,
+          amount,
+          pct: total > 0 ? Math.round((amount / total) * 100) : 0,
+        }))
+        .sort((a, b) => b.amount - a.amount),
+    };
+  }, [orders, designs]);
 
-  const avgMarginPercent = useMemo(() => {
-    if (totalSubtotal <= 0) return 22.5;
-    return Math.max(15, Number((((totalSubtotal - totalDiscountGiven) / totalSubtotal) * 24.8).toFixed(1)));
-  }, [totalSubtotal, totalDiscountGiven]);
+  // Real per-manufacturer order stats from context manufacturers + orders.
+  const manufacturerStats = useMemo(() => {
+    return manufacturers.map((m) => {
+      const mfgOrders = orders.filter(
+        (o) => o.manufacturerId === m.id || o.manufacturerName === m.companyName
+      );
+      return {
+        id: m.id,
+        name: m.companyName,
+        hub: m.hubLocation,
+        orderCount: mfgOrders.length,
+        orderValue: mfgOrders.reduce((sum, o) => sum + Number(o.netPayable || 0), 0),
+        onTimeRate: Number(m.onTimeDeliveryRate || 0),
+      };
+    });
+  }, [manufacturers, orders]);
+
+  const formatLakh = (amount: number) => `₹${(amount / 100000).toFixed(2)}L`;
 
   const handleExportLedger = () => {
     const headers = ['Order ID', 'Customer Name', 'City', 'Pairs Count', 'Cartons', 'Subtotal (INR)', 'Discount (INR)', 'Net Payable (INR)', 'Status', 'Order Date'];
@@ -189,8 +235,8 @@ export const ReportsPage: React.FC = () => {
       <ReportsKpiCards
         totalRevenue={`₹${(totalRevenue / 100000).toFixed(2)}L`}
         revenueCaption={`Across ${orders.length} booked wholesale orders`}
-        avgMargin={`${avgMarginPercent}%`}
-        marginCaption="Healthy distributor spread"
+        avgMargin={avgMarginPercent === null ? '—' : `${avgMarginPercent}%`}
+        marginCaption={avgMarginPercent === null ? 'Cost data not tracked yet' : 'Healthy distributor spread'}
         activeOutlets={`${customers.length} Stores`}
         outletsCaption="Consistent repeat billing"
         pendingRequests={`${pendingCount} Pending`}
@@ -331,7 +377,7 @@ export const ReportsPage: React.FC = () => {
                               </span>
                             </>
                           ) : (
-                            ' • Profitability remains healthy at 21.4%'
+                            ''
                           )}
                           .
                         </p>
@@ -376,75 +422,71 @@ export const ReportsPage: React.FC = () => {
           title="Monthly Footwear Category Turnover"
           subtitle="Volume and revenue distribution across silhouettes"
         >
-          <div className="space-y-4 pt-1 text-xs">
-            <div>
-              <div className="flex items-center justify-between mb-1.5 text-xs">
-                <span className="font-semibold text-foreground">Athletic Sneakers (Phylon &amp; EVA)</span>
-                <span className="font-mono font-bold text-foreground">₹14.2L (57%)</span>
-              </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: '57%' }} />
-              </div>
+          {categoryTurnover.rows.length === 0 || categoryTurnover.total <= 0 ? (
+            <EmptyState
+              title="No category data yet"
+              description="Category turnover appears once booked orders reference catalogue designs."
+            />
+          ) : (
+            <div className="space-y-4 pt-1 text-xs">
+              {categoryTurnover.rows.map((row) => (
+                <div key={row.category}>
+                  <div className="flex items-center justify-between mb-1.5 text-xs">
+                    <span className="font-semibold text-foreground">{row.category}</span>
+                    <span className="font-mono font-bold text-foreground">
+                      {formatLakh(row.amount)} ({row.pct}%)
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${CATEGORY_BAR_COLORS[row.category] || 'bg-primary'}`}
+                      style={{ width: `${row.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5 text-xs">
-                <span className="font-semibold text-foreground">Formal Derby &amp; Crust Oxford</span>
-                <span className="font-mono font-bold text-foreground">₹6.4L (26%)</span>
-              </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-purple-600 dark:bg-purple-400 rounded-full" style={{ width: '26%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5 text-xs">
-                <span className="font-semibold text-foreground">Leather Boots &amp; Chelsea</span>
-                <span className="font-mono font-bold text-foreground">₹4.2L (17%)</span>
-              </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 rounded-full" style={{ width: '17%' }} />
-              </div>
-            </div>
-          </div>
+          )}
         </Panel>
 
         {/* Manufacturing Punctuality */}
         <Panel
-          title="Agra &amp; Kanpur Hub Dispatch Punctuality"
-          subtitle="Contractor batch commitments vs actual warehouse receipt"
+          title="Manufacturer Dispatch Punctuality"
+          subtitle="Plant on-time delivery rates and current order load"
         >
-          <div className="space-y-3 pt-1 text-xs">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-              <div>
-                <span className="font-bold text-foreground block">Apex Footwear Works</span>
-                <span className="text-muted-foreground text-[11px]">Agra Hub • 5 Batches</span>
-              </div>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                96.4% On-Time
-              </span>
+          {manufacturerStats.length === 0 ? (
+            <EmptyState
+              icon={Factory}
+              title="No manufacturer data yet"
+              description="Manufacturing partners and their on-time delivery rates will appear here."
+            />
+          ) : (
+            <div className="space-y-3 pt-1 text-xs">
+              {manufacturerStats.map((m) => (
+                <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
+                  <div>
+                    <span className="font-bold text-foreground block">{m.name || '—'}</span>
+                    <span className="text-muted-foreground text-[11px]">
+                      {m.hub || '—'} • {m.orderCount} Order{m.orderCount === 1 ? '' : 's'} • {formatLakh(m.orderValue)}
+                    </span>
+                  </div>
+                  {m.onTimeRate > 0 ? (
+                    <span
+                      className={`font-mono font-bold px-2 py-0.5 rounded border ${
+                        m.onTimeRate >= 90
+                          ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800'
+                          : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800'
+                      }`}
+                    >
+                      {m.onTimeRate}% On-Time
+                    </span>
+                  ) : (
+                    <span className="font-mono text-muted-foreground">—</span>
+                  )}
+                </div>
+              ))}
             </div>
-
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-              <div>
-                <span className="font-bold text-foreground block">Metro Leather Crafts</span>
-                <span className="text-muted-foreground text-[11px]">Kanpur Industrial Zone • 4 Batches</span>
-              </div>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                94.1% On-Time
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-              <div>
-                <span className="font-bold text-foreground block">Taj Heritage Craft</span>
-                <span className="text-muted-foreground text-[11px]">Agra Unit 1 • 3 Batches</span>
-              </div>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                92.8% On-Time
-              </span>
-            </div>
-          </div>
+          )}
         </Panel>
       </div>
 

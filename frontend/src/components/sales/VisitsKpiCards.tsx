@@ -288,7 +288,7 @@ export const VisitsKpiCards: React.FC<VisitsKpiCardsProps> = ({
   ordersBookedAmount,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Route Stops */}
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <RouteMap3D />
@@ -296,12 +296,13 @@ export const VisitsKpiCards: React.FC<VisitsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Route Stops">
             Total Route Stops
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${totalStopsCount} Stores`}
           >
-            <span className="tabular-nums">{totalStopsCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal">Stores</span>
+            <span className="tabular-nums whitespace-nowrap">{totalStopsCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal whitespace-nowrap">Stores</span>
           </p>
           <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Assigned route itinerary">
             Assigned route itinerary
@@ -316,12 +317,13 @@ export const VisitsKpiCards: React.FC<VisitsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Completed Visits">
             Completed Visits
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${completedVisitsCount} Done`}
           >
-            <span className="tabular-nums">{completedVisitsCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">Done</span>
+            <span className="tabular-nums whitespace-nowrap">{completedVisitsCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">Done</span>
           </p>
           <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Physical store visits">
             Physical store visits
@@ -336,12 +338,13 @@ export const VisitsKpiCards: React.FC<VisitsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Pending Stops">
             Pending Stops
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${pendingStopsCount} Pending`}
           >
-            <span className="tabular-nums">{pendingStopsCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal">Pending</span>
+            <span className="tabular-nums whitespace-nowrap">{pendingStopsCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">Pending</span>
           </p>
           <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Remaining market queue">
             Remaining market queue
@@ -357,7 +360,7 @@ export const VisitsKpiCards: React.FC<VisitsKpiCardsProps> = ({
             Orders Booked on Route
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-display wrap-anywhere"
             title={typeof ordersBookedAmount === 'number' ? `₹${(ordersBookedAmount / 100000).toFixed(2)}L` : String(ordersBookedAmount)}
           >
             <span className="tabular-nums">

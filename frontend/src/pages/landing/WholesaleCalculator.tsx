@@ -133,14 +133,17 @@ export const WholesaleCalculator: React.FC<WholesaleCalculatorProps> = ({ onOpen
                   {activeCurve.ratio.join(' : ')}
                 </span>
               </div>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-center">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-center overflow-x-auto">
                 {activeCurve.sizes.map((sz, i) => (
                   <div key={sz} className="p-2 rounded-lg bg-white border border-slate-200/80 shadow-2xs">
-                    <div className="text-[10px] font-bold text-slate-400">{sz}</div>
-                    <div className="text-sm font-black text-slate-900 tabular-nums">
-                      {activeCurve.ratio[i]} <span className="text-[10px] font-normal text-slate-500">prs</span>
+                    <div className="whitespace-nowrap text-[11px] font-bold text-slate-400">{sz}</div>
+                    <div className="whitespace-nowrap text-sm font-black text-slate-900 tabular-nums">
+                      {activeCurve.ratio[i]} <span className="text-[11px] font-normal text-slate-500">prs</span>
                     </div>
-                    <div className="text-[9px] font-mono text-emerald-600 mt-0.5 truncate">
+                    <div
+                      title={`${(activeCurve.ratio[i] * cartonCount).toLocaleString('en-IN')} pairs total`}
+                      className="whitespace-nowrap text-[11px] font-mono text-emerald-600 mt-0.5"
+                    >
                       {(activeCurve.ratio[i] * cartonCount).toLocaleString('en-IN')} tot
                     </div>
                   </div>
@@ -174,7 +177,7 @@ export const WholesaleCalculator: React.FC<WholesaleCalculatorProps> = ({ onOpen
                 onChange={(e) => setCartonCount(Number(e.target.value))}
                 className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
-              <div className="flex justify-between text-[10px] sm:text-[11px] text-slate-400 font-mono mt-1">
+              <div className="flex justify-between text-[11px] text-slate-400 font-mono mt-1">
                 <span>5 (120 Prs)</span>
                 <span>50 (1,200 Prs)</span>
                 <span>150 (3,600 Prs)</span>
@@ -225,7 +228,7 @@ export const WholesaleCalculator: React.FC<WholesaleCalculatorProps> = ({ onOpen
           <div className="lg:col-span-5 bg-slate-900 text-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-xl space-y-5 sm:space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400 block">
                   Commercial Ledger Projection
                 </span>
                 <h3 className="text-lg font-bold text-white">Pre-Pack Wholesale Order</h3>
@@ -280,7 +283,7 @@ export const WholesaleCalculator: React.FC<WholesaleCalculatorProps> = ({ onOpen
                   <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Retail Shelf Revenue</span>
                 </span>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[11px] font-bold">
                   {marginPercentage}% Gross Margin
                 </span>
               </div>

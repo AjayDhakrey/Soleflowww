@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../../context/AppContext';
 import { useCustomerMetrics, formatIndianCurrency } from '../../../hooks/useCustomerMetrics';
 import { Customer } from '../../../types';
+import {supabase, isDemoModeActive} from '../../../lib/supabase';
 import {
   Users,
   ChevronLeft,
@@ -27,6 +28,23 @@ interface TotalCustomersInsightPageProps {
   onNavigate: (path: string) => void;
   fromPath?: string;
 }
+
+// Empty buckets for the last 6 months (oldest first)
+const buildMonthBuckets = () => {
+  const months: { key: string; month: string; count: number }[] = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      month: d.toLocaleString('en-IN', { month: 'short' }),
+      count: 0,
+    });
+  }
+  return months;
+};
+
+const monthKeyOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
 export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps> = ({
   onNavigate,
@@ -128,15 +146,47 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
     return name.slice(0, 2).toUpperCase();
   };
 
-  // Mock monthly acquisition histogram
-  const monthlyAcquisition = [
-    { month: 'Oct', count: 1 },
-    { month: 'Nov', count: 1 },
-    { month: 'Dec', count: 2 },
-    { month: 'Jan', count: 1 },
-    { month: 'Feb', count: 1 },
-    { month: 'Mar', count: 1 },
-  ];
+  // Monthly acquisition histogram — real client created_at data from Supabase
+  // (zeros while loading and on error/empty; buckets fill in once fetched)
+  const [monthlyAcquisition, setMonthlyAcquisition] = useState<{ month: string; count: number }[]>(() =>
+    buildMonthBuckets().map(({ month, count }) => ({ month, count }))
+  );
+  const [newCustomersGrowth, setNewCustomersGrowth] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const now = new Date();
+      const thisKey = monthKeyOf(now);
+      const prevKey = monthKeyOf(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      const buckets = buildMonthBuckets();
+      let thisMonth = 0;
+      let prevMonth = 0;
+      try {
+        if (supabase && !isDemoModeActive) {
+          const { data, error } = await supabase.from('customers').select('created_at');
+          if (error) throw error;
+          (data || []).forEach((row: any) => {
+            if (!row?.created_at) return;
+            const key = monthKeyOf(new Date(row.created_at));
+            const bucket = buckets.find((b) => b.key === key);
+            if (bucket) bucket.count += 1;
+            if (key === thisKey) thisMonth += 1;
+            if (key === prevKey) prevMonth += 1;
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to load monthly acquisition:', err);
+      }
+      if (cancelled) return;
+      setMonthlyAcquisition(buckets.map(({ month, count }) => ({ month, count })));
+      setNewCustomersGrowth(prevMonth > 0 ? Math.round(((thisMonth - prevMonth) / prevMonth) * 100) : null);
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const maxMonthCount = Math.max(...monthlyAcquisition.map((m) => m.count), 3);
 
   return (
@@ -195,12 +245,12 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4">
         {/* Total Customers */}
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Total Accounts">Total Accounts</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.totalCustomers}`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums wrap-anywhere">
               {metrics.totalCustomers}
             </h3>
             {metrics.trends.totalCustomers && (
@@ -218,7 +268,7 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Active (Last 90d)">Active (Last 90d)</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.activeCustomers}`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums wrap-anywhere">
               {metrics.activeCustomers}
             </h3>
             <span className="text-xs font-medium text-muted-foreground shrink-0">
@@ -234,12 +284,14 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="New This Month">New This Month</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-blue-600 dark:text-blue-400 tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.newCustomersThisMonth}`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-blue-600 dark:text-blue-400 tracking-tight tabular-nums wrap-anywhere">
               {metrics.newCustomersThisMonth}
             </h3>
-            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
-              +14% vs last mo.
-            </span>
+            {newCustomersGrowth !== null && (
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                {newCustomersGrowth >= 0 ? '+' : ''}{newCustomersGrowth}% vs last mo.
+              </span>
+            )}
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Onboarded in current billing cycle">
             Onboarded in current billing cycle
@@ -250,7 +302,7 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
         <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
           <p className="text-xs font-semibold text-muted-foreground truncate" title="Inactive / Zero Orders">Inactive / Zero Orders</p>
           <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-muted-foreground tracking-tight tabular-nums truncate">
+            <h3 title={`${metrics.inactiveCustomers}`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-muted-foreground tracking-tight tabular-nums wrap-anywhere">
               {metrics.inactiveCustomers}
             </h3>
           </div>
@@ -298,7 +350,7 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
 
           <div className="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
             <span>Total network size: <strong className="text-foreground">{metrics.totalCustomers} Accounts</strong></span>
-            <span>Avg onboarding: <strong className="text-foreground">1.2 stores/mo</strong></span>
+            <span>Avg onboarding: <strong className="text-foreground">{(monthlyAcquisition.reduce((sum, m) => sum + m.count, 0) / 6).toFixed(1)} stores/mo</strong></span>
           </div>
         </div>
 
@@ -566,8 +618,8 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
 
                       {/* Salesman */}
                       <td className="py-3.5 px-4">
-                        <p className="font-medium text-foreground">{cust.salespersonName || 'Rahul Sharma'}</p>
-                        <p className="text-[11px] text-muted-foreground">{cust.tier || 'Tier-1 Wholesale'}</p>
+                        <p className="font-medium text-foreground">{cust.salespersonName || 'Unassigned'}</p>
+                        <p className="text-[11px] text-muted-foreground">{cust.tier || '—'}</p>
                       </td>
 
                       {/* Orders */}
@@ -589,7 +641,7 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
 
                       {/* Last Order */}
                       <td className="py-3.5 px-4 text-muted-foreground text-xs whitespace-nowrap">
-                        {cust.lastOrderDate || 'Recent'}
+                        {cust.lastOrderDate || '—'}
                       </td>
 
                       {/* Status */}

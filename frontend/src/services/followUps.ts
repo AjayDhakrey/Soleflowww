@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, isDemoModeActive } from '../lib/supabase';
 import { FollowUpItem } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -11,10 +11,10 @@ export function mapFollowUpRow(row: any): FollowUpItem {
   return {
     id: row.id,
     customerId: row.client_id,
-    customerName: 'Client Store',
-    customerCity: 'Agra',
-    phone: '+91 98000 00000',
-    reason: row.type || row.reason || 'Payment Follow-up',
+    customerName: row.customerName || row.customer_name || '',
+    customerCity: row.customerCity || row.customer_city || '',
+    phone: row.phone || '',
+    reason: row.type || row.reason || '',
     date: row.due_date || dueDate.toLocaleDateString('en-IN'),
     time: row.due_time || dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     relatedOrder: row.order_id || undefined,
@@ -26,7 +26,7 @@ export function mapFollowUpRow(row: any): FollowUpItem {
 
 export const followUpsService = {
   async fetchFollowUps(filters?: { status?: string; salespersonId?: string }): Promise<FollowUpItem[]> {
-    if (!supabase) return MOCK_FOLLOWUPS;
+    if (!supabase || isDemoModeActive) return isDemoModeActive ? MOCK_FOLLOWUPS : [];
 
     try {
       let query = supabase
@@ -44,16 +44,16 @@ export const followUpsService = {
       const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
 
-      if (!data || data.length === 0) return MOCK_FOLLOWUPS;
+      if (!data || data.length === 0) return [];
       return data.map(mapFollowUpRow);
     } catch (err) {
-      console.warn('Error fetching follow-ups from Supabase:', err);
-      return MOCK_FOLLOWUPS;
+      console.error('Error fetching follow-ups from Supabase:', err);
+      return [];
     }
   },
 
   async createFollowUp(data: Partial<FollowUpRow>): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
 
     try {
       const { data: res, error } = await supabase
@@ -70,7 +70,7 @@ export const followUpsService = {
   },
 
   async completeFollowUp(id: string): Promise<{ success: boolean; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase || isDemoModeActive) return { success: true };
 
     try {
       const { error } = await supabase

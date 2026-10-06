@@ -250,7 +250,7 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
   onNavigateValue,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Orders */}
       <div
         role="button"
@@ -263,12 +263,13 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Orders">
             Total Orders
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${totalOrdersCount} Batches`}
           >
-            <span className="tabular-nums">{totalOrdersCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal">
+            <span className="tabular-nums whitespace-nowrap">{totalOrdersCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
               Batches
             </span>
           </p>
@@ -290,12 +291,13 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="In Production">
             In Production
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${inProductionCount} Batches`}
           >
-            <span className="tabular-nums">{inProductionCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal">
+            <span className="tabular-nums whitespace-nowrap">{inProductionCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
               Batches
             </span>
           </p>
@@ -317,12 +319,13 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Ready to Dispatch">
             Ready to Dispatch
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${readyDispatchCount} Batches`}
           >
-            <span className="tabular-nums">{readyDispatchCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal">
+            <span className="tabular-nums whitespace-nowrap">{readyDispatchCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
               Batches
             </span>
           </p>
@@ -345,7 +348,7 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
             Total Consignment Value
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display wrap-anywhere"
             title={typeof totalConsignmentValue === 'number' ? `₹${(totalConsignmentValue / 100000).toFixed(2)}L` : String(totalConsignmentValue)}
           >
             <span className="tabular-nums">

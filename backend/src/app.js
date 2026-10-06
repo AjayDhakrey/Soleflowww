@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { adminRouter } from './routes/admin.js';
+import { platformRouter } from './routes/platform.js';
 import { reportsRouter } from './routes/reports.js';
 import { documentsRouter } from './routes/documents.js';
 import { aiRouter } from './routes/ai.js';
@@ -25,9 +26,9 @@ app.use(
   })
 );
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-  : ['http://localhost:3000', 'http://localhost:5173', 'https://soleflow.vercel.app'];
+const defaultOrigins = ['http://localhost:3000', 'http://localhost:5173', 'https://soleflow.vercel.app'];
+const envOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
 app.use(
   cors({
@@ -68,6 +69,7 @@ app.get('/api/health', (_req, res) => {
 
 // 5. Modular API Routes
 app.use('/api/admin', adminRouter);
+app.use('/api/platform', platformRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api', documentsRouter); // Allows both /api/documents/orders/:id/pdf and /api/orders/:id/pdf

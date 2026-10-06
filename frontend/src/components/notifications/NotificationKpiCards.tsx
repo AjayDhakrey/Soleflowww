@@ -199,15 +199,18 @@ export const NotificationKpiCards: React.FC<NotificationKpiCardsProps> = ({
   const criticalDisplay = typeof criticalCount === 'number' ? `${criticalCount} Critical` : criticalCount;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-4 md:gap-5">
       {/* 1. Total Notifications */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none min-w-0 overflow-hidden">
         <BellNotification3D badgeCount={unreadCount} />
         <div className="flex-1 min-w-0">
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
             Total Notifications
           </span>
-          <p className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 truncate">
+          <p
+            className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 wrap-anywhere"
+            title={String(totalCount)}
+          >
             <span className="tabular-nums">{totalCount}</span>
           </p>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
@@ -217,13 +220,16 @@ export const NotificationKpiCards: React.FC<NotificationKpiCardsProps> = ({
       </div>
 
       {/* 2. Unread Alerts */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none min-w-0 overflow-hidden">
         <HourglassAlert3D />
         <div className="flex-1 min-w-0">
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
             Unread Alerts
           </span>
-          <p className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 truncate">
+          <p
+            className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 wrap-anywhere"
+            title={String(unreadCount)}
+          >
             <span className="tabular-nums">{unreadCount}</span>
           </p>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">
@@ -233,13 +239,16 @@ export const NotificationKpiCards: React.FC<NotificationKpiCardsProps> = ({
       </div>
 
       {/* 3. Urgent Action Required */}
-      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none">
+      <div className="group relative rounded-2xl p-5 sm:p-6 flex items-center gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none min-w-0 overflow-hidden">
         <UrgentWarning3D />
         <div className="flex-1 min-w-0">
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400 block truncate">
             Urgent Action Required
           </span>
-          <p className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 truncate">
+          <p
+            className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 wrap-anywhere"
+            title={criticalDisplay}
+          >
             {criticalDisplay}
           </p>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate">

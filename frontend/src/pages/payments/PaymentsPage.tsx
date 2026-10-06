@@ -157,7 +157,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
       customerCode: cust.id,
       gstin: cust.gstin,
       phone: cust.phone,
-      address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || 'Agra'}, Uttar Pradesh`,
+      address: cust.address ? `${cust.address}, ${cust.city}, ${cust.state}` : `${cust.city || '—'}, Uttar Pradesh`,
     };
   }, [selectedReceiptPayment, customers]);
 
@@ -336,16 +336,20 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
                           </div>
                         </TableCell>
                         <TableCell className="py-4">
-                          <span
-                            className={`inline-flex items-center gap-1.5 font-mono font-bold text-xs px-2.5 py-1 rounded-lg ${
-                              isCritical
-                                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60'
-                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60'
-                            }`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`} />
-                            {cust.overdueDays || 12} Days Overdue
-                          </span>
+                          {(cust.overdueDays || 0) > 0 ? (
+                            <span
+                              className={`inline-flex items-center gap-1.5 font-mono font-bold text-xs px-2.5 py-1 rounded-lg ${
+                                isCritical
+                                  ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60'
+                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60'
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`} />
+                              {cust.overdueDays} Days Overdue
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground font-mono">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="py-4">
                           <div className="text-xs font-medium text-slate-800 dark:text-slate-200">
@@ -475,16 +479,16 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
                         </TableCell>
                         <TableCell className="py-4">
                           <div className="font-semibold text-foreground text-sm">{p.customerName}</div>
-                          <div className="text-xs text-muted-foreground">{p.customerCity || 'Agra'}</div>
+                          <div className="text-xs text-muted-foreground">{p.customerCity || '—'}</div>
                         </TableCell>
                         <TableCell className="py-4">
                           <span className="font-medium text-foreground text-xs block">{p.paymentMethod}</span>
                           <span className="font-mono text-[11px] text-muted-foreground truncate max-w-[160px] block">
-                            {p.utrRef || p.chequeNo || 'Direct Deposit'}
+                            {p.utrRef || p.chequeNo || ''}
                           </span>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground py-4">
-                          {p.collectedBy || 'Sales Rep'}
+                          {p.collectedBy || '—'}
                         </TableCell>
                         <TableCell className="py-4">
                           <span

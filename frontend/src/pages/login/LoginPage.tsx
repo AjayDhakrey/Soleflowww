@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, User, Users, Shield, Building2, Phone, MapPin, FileText, CheckCircle2 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../auth/AuthProvider';
 
 import loginBackground from '../../assets/images/login/background_image.png';
@@ -19,7 +18,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onForgotPassword,
   onBackToLanding,
 }) => {
-  const { login: appLogin } = useApp();
   const { signIn, signUp, quickDemoLogin } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
@@ -84,9 +82,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         return;
       }
 
-      appLogin(email, password);
-      const determinedRole = email.toLowerCase().includes('sales') ? 'salesperson' : 'admin';
-      onSuccess(determinedRole);
+      onSuccess(res.role === 'salesperson' ? 'salesperson' : 'admin');
     } catch (err: any) {
       setIsLoading(false);
       setError(err?.message || 'Login failed. Please check your credentials.');
@@ -151,7 +147,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         setVerificationEmail(email);
         setNeedsVerification(true);
       } else {
-        appLogin(email, password);
         onSuccess('admin');
       }
     } catch (err: any) {
@@ -188,7 +183,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       console.warn('Demo login fallback:', e);
     } finally {
       setIsLoading(false);
-      appLogin(demoEmail, demoPass);
       onSuccess(demoRole === 'salesperson' ? 'salesperson' : 'admin');
     }
   };

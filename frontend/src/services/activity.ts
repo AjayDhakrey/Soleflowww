@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, isDemoModeActive } from '../lib/supabase';
 import { AuditEvent } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -10,22 +10,22 @@ export function mapActivityRow(row: any): AuditEvent {
   const metadata = typeof row.metadata === 'object' && row.metadata !== null ? row.metadata : {};
   return {
     id: row.id,
-    actor: row.actor || row.actor_name || 'User',
-    actorRole: (row.actorRole || row.actor_role || metadata.actorRole || 'Trader / Admin') as AuditEvent['actorRole'],
+    actor: row.actor || row.actor_name || '',
+    actorRole: (row.actorRole || row.actor_role || metadata.actorRole || '') as AuditEvent['actorRole'],
     action: row.action,
-    recordType: (row.record_type || row.recordType || row.entity_type || 'Client') as AuditEvent['recordType'],
+    recordType: (row.record_type || row.recordType || row.entity_type || '') as AuditEvent['recordType'],
     recordId: row.record_id || row.recordId || row.entity_id || '',
-    recordTitle: row.summary || row.recordTitle || row.entity_title || row.record_id || 'Record',
+    recordTitle: row.summary || row.recordTitle || row.entity_title || row.record_id || '',
     oldValue: row.oldValue || metadata.oldValue || undefined,
-    newValue: row.newValue || metadata.newValue || row.summary || row.action,
-    timestamp: row.created_at ? new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (row.timestamp || 'Now'),
-    source: (row.source || metadata.source || 'Web App') as AuditEvent['source'],
+    newValue: row.newValue || metadata.newValue || row.summary || row.action || '',
+    timestamp: row.created_at ? new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (row.timestamp || ''),
+    source: (row.source || metadata.source || '') as AuditEvent['source'],
   };
 }
 
 export const activityService = {
   async fetchActivityEvents(filters?: { entityType?: string; entityId?: string; limit?: number }): Promise<AuditEvent[]> {
-    if (!supabase) return MOCK_AUDIT_LOGS;
+    if (!supabase || isDemoModeActive) return isDemoModeActive ? MOCK_AUDIT_LOGS : [];
 
     try {
       let query = supabase
@@ -44,25 +44,25 @@ export const activityService = {
       const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
 
-      if (!data || data.length === 0) return MOCK_AUDIT_LOGS;
+      if (!data || data.length === 0) return [];
       return data.map(mapActivityRow);
     } catch (err) {
-      console.warn('Error fetching activity events from Supabase:', err);
-      return MOCK_AUDIT_LOGS;
+      console.error('Error fetching activity events from Supabase:', err);
+      return [];
     }
   },
 
   async logActivityEvent(event: any): Promise<boolean> {
-    if (!supabase) return true;
+    if (!supabase || isDemoModeActive) return true;
 
     try {
       const { error } = await supabase.from('activity_events').insert([
         {
-          actor: event.actor || event.actor_name || 'System User',
+          actor: event.actor || event.actor_name || '',
           actor_id: event.actor_id || null,
           action: event.action || 'Updated',
           record_type: event.record_type || event.recordType || event.entity_type || 'General',
-          record_id: event.record_id || event.recordId || event.entity_id || 'ID-0',
+          record_id: event.record_id || event.recordId || event.entity_id || '',
           client_id: event.client_id || event.clientId || null,
           order_id: event.order_id || event.orderId || null,
           design_id: event.design_id || event.designId || null,

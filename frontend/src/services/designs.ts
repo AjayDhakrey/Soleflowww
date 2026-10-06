@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, isDemoModeActive } from '../lib/supabase';
 import { ShoeDesign, DesignShareRecord } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -12,21 +12,21 @@ export type DesignRow = Database['public']['Tables']['designs']['Row'];
 export function fromDesignRow(row: any): ShoeDesign {
   return {
     id: row.id,
-    articleCode: row.articleCode || row.article_code || 'ART-00',
-    name: row.name || 'Shoe Model',
-    category: (row.category || 'Athletic Sneakers') as ShoeDesign['category'],
+    articleCode: row.articleCode || row.article_code || '',
+    name: row.name || '',
+    category: (row.category || '') as ShoeDesign['category'],
     price: Number(row.price ?? row.wholesale_price ?? 0),
-    moqPairs: Number(row.moqPairs ?? row.moq_pairs ?? 120),
-    moqCartons: Number(row.moqCartons ?? row.moq_cartons ?? 10),
-    sizes: Array.isArray(row.sizes) ? row.sizes : [6, 7, 8, 9, 10],
-    colors: Array.isArray(row.colors) ? row.colors : ['Slate Grey', 'Midnight Black'],
+    moqPairs: Number(row.moqPairs ?? row.moq_pairs ?? 0),
+    moqCartons: Number(row.moqCartons ?? row.moq_cartons ?? 0),
+    sizes: Array.isArray(row.sizes) ? row.sizes : [],
+    colors: Array.isArray(row.colors) ? row.colors : [],
     status: (row.status || 'Available') as ShoeDesign['status'],
     tags: Array.isArray(row.tags) ? row.tags : [],
-    subline: row.subline || `ART: ${row.articleCode || row.article_code || 'ART-00'} (${row.upperMaterial || row.upper_material || 'Molded'})`,
-    image: row.image || row.image_url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
-    soleType: row.soleType || row.sole_type || 'Molded TPR Outsole',
-    pairsPerCarton: Number(row.pairsPerCarton ?? row.pairs_per_carton ?? 12),
-    upperMaterial: row.upperMaterial || row.upper_material || 'Synthetic Microfibre Leather',
+    subline: row.subline || '',
+    image: row.image || row.image_url || '',
+    soleType: row.soleType || row.sole_type || '',
+    pairsPerCarton: Number(row.pairsPerCarton ?? row.pairs_per_carton ?? 0),
+    upperMaterial: row.upperMaterial || row.upper_material || '',
     marginBadge: row.marginBadge || row.margin_badge || undefined,
     velocityBadge: row.velocityBadge || row.velocity_badge || undefined,
     isArchived: Boolean(row.archived_at),
@@ -84,12 +84,12 @@ export const designsService = {
   /**
    * Fetch active designs for catalog display (salespeople + admin)
    */
-  async fetchDesigns(filters?: { category?: string; status?: string; search?: string }): Promise<ShoeDesign[]> {
+  async fetchDesigns(filters?: { category?: string; status?: string; search?: string; orgId?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
-      if (!allowDemo) throw new Error('Supabase database client is not configured.');
+    if (!supabase || !isConfigured || isDemoModeActive) {
+      if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
       return MOCK_DESIGNS;
     }
 
@@ -98,6 +98,10 @@ export const designsService = {
       .select('*')
       .is('archived_at', null)
       .order('created_at', { ascending: false });
+
+    if (filters?.orgId) {
+      query = query.eq('org_id', filters.orgId);
+    }
 
     if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
       query = query.eq('category', filters.category);
@@ -149,8 +153,8 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
-      if (!allowDemo) throw new Error('Supabase database client is not configured.');
+    if (!supabase || !isConfigured || isDemoModeActive) {
+      if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
       return MOCK_DESIGNS;
     }
 
@@ -193,8 +197,8 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
-      if (!allowDemo) throw new Error('Supabase database client is not configured.');
+    if (!supabase || !isConfigured || isDemoModeActive) {
+      if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
       return MOCK_DESIGNS.find((d) => d.id === id) || null;
     }
 
@@ -223,7 +227,7 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
+    if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) {
         return { success: false, error: 'Database connection is not configured.' };
       }
@@ -271,7 +275,7 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
+    if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
       return { success: true };
     }
@@ -313,7 +317,7 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
+    if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
       return { success: true };
     }
@@ -336,7 +340,7 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
+    if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
       return { success: true };
     }
@@ -359,7 +363,7 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
+    if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { canDelete: false, reason: 'Database is not connected.', orderCount: 0 };
       return { canDelete: true, reason: null, orderCount: 0 };
     }
@@ -391,7 +395,7 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
-    if (!supabase || !isConfigured) {
+    if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database is not connected.' };
       return { success: true };
     }
@@ -449,7 +453,7 @@ export const designsService = {
       return { success: false, error: 'Image size exceeds 10 MB limit.' };
     }
 
-    if (!supabase || !isConfigured) {
+    if (!supabase || !isConfigured || isDemoModeActive) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve({ success: true, url: reader.result as string });
@@ -534,7 +538,7 @@ export const designsService = {
   },
 
   async fetchDesignShares(): Promise<DesignShareRecord[]> {
-    if (!supabase) return MOCK_DESIGN_SHARES;
+    if (!supabase || isDemoModeActive) return isDemoModeActive ? MOCK_DESIGN_SHARES : [];
 
     try {
       const { data, error } = await supabase
@@ -543,27 +547,27 @@ export const designsService = {
         .order('created_at', { ascending: false });
 
       if (error) throw parseSupabaseError(error);
-      if (!data || data.length === 0) return MOCK_DESIGN_SHARES;
+      if (!data || data.length === 0) return [];
 
       return data.map((d: any) => ({
         id: d.id,
-        sharedBy: d.shared_by || 'Trader Admin',
-        sharedByRole: 'Sales Desk',
-        targetClientId: d.client_id || 'Unknown',
-        targetClientName: 'Wholesale Client',
-        targetPhone: '+91 98000 00000',
-        designsCount: 3,
-        designIds: [],
-        designNames: ['Runner Classic'],
-        timestamp: new Date(d.created_at).toLocaleDateString('en-IN'),
-        channel: d.channel || 'WhatsApp',
+        sharedBy: d.shared_by || d.sharedBy || '',
+        sharedByRole: d.shared_by_role || d.sharedByRole || '',
+        targetClientId: d.client_id || '',
+        targetClientName: d.client_name || '',
+        targetPhone: d.client_phone || '',
+        designsCount: Array.isArray(d.design_ids) ? d.design_ids.length : 0,
+        designIds: Array.isArray(d.design_ids) ? d.design_ids : [],
+        designNames: Array.isArray(d.design_names) ? d.design_names : [],
+        timestamp: d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN') : '',
+        channel: (d.channel || '') as DesignShareRecord['channel'],
         wasViewed: d.view_count > 0,
         viewCount: d.view_count || 0,
         wasOrdered: false,
       }));
     } catch (err) {
-      console.warn('Error fetching design shares from Supabase:', err);
-      return MOCK_DESIGN_SHARES;
+      console.error('Error fetching design shares from Supabase:', err);
+      return [];
     }
   },
 };

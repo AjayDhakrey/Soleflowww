@@ -68,7 +68,7 @@ export const VisitsPage: React.FC = () => {
         totalStopsCount={fieldVisits.length}
         completedVisitsCount={completedVisits}
         pendingStopsCount={Math.max(0, fieldVisits.length - completedVisits)}
-        ordersBookedAmount={ordersBookedAmount || '₹18.08L'}
+        ordersBookedAmount={ordersBookedAmount || '₹0'}
       />
 
       {/* 3. Quick Check-in Panel */}

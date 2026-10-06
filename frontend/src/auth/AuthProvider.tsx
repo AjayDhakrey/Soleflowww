@@ -49,13 +49,13 @@ interface AuthContextType {
   allowDemo: boolean;
   hasRealSession: boolean;
   canManageCatalog: boolean;
-  signIn: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  signIn: (email: string, pass: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   signUp: (params: SignUpParams) => Promise<{ success: boolean; needsEmailVerification?: boolean; error?: string }>;
   signOut: () => Promise<void>;
   resetPasswordForEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; message: string }>;
   switchDemoRole: (role: UserRole) => void;
-  quickDemoLogin: (demoRole: 'superadmin' | 'admin' | 'salesperson') => { success: boolean };
+  quickDemoLogin: (demoRole: 'superadmin' | 'admin' | 'salesperson') => { success: boolean; role?: UserRole };
   clearAuthError: () => void;
   refreshProfile: () => Promise<void>;
 }
@@ -484,11 +484,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn('LocalStorage save session warning:', e);
     }
 
-    return { success: true };
+    return { success: true, role: assignedRole };
   };
 
   // Sign In implementation
-  const signIn = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+  const signIn = async (email: string, pass: string): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
     setAuthError(null);
     setIsLoading(true);
 
@@ -537,7 +537,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             JSON.stringify({ isLoggedIn: true, role: prof.role, email: prof.email, userId: prof.id })
           );
           setIsLoading(false);
-          return { success: true };
+          return { success: true, role: prof.role };
         }
       }
 

@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { CustomerRowActionMenu } from '../../components/customers/CustomerRowActionMenu';
 import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from '../../components/payments/ReceiptTemplate';
+import { clientsService } from '../../services/clients';
 
 interface CustomerDetailPageProps {
   customerId: string;
@@ -47,13 +48,22 @@ interface CustomerDetailPageProps {
   initialTab?: string;
 }
 
-const STORE_THUMBNAILS: Record<string, string> = {
-  'ABC Footwear': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80',
-  'Regal Footwear Hub': 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=120&q=80',
-  'Delhi Walkways Hub': 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=120&q=80',
-  'Kanpur Leather Mart': 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=120&q=80',
-  'ABC Footwear Hub': 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=120&q=80',
-};
+// Map Supabase client_notes rows to the local note shape (real data only)
+const mapClientNotes = (rows: any[]): Array<{ id: string; author: string; text: string; date: string }> =>
+  (rows || []).map((n: any) => ({
+    id: String(n.id),
+    author: n.author_name || '—',
+    text: n.note || '',
+    date: n.created_at
+      ? new Date(n.created_at).toLocaleString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '—',
+  }));
 
 export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
   customerId,
@@ -68,6 +78,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     followUps,
     designs,
     currentUser,
+    isSupabaseActive,
     setSelectedCustomer,
     setIsCreateOrderModalOpen,
     setIsPaymentModalOpen,
@@ -95,20 +106,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'invoices' | 'payments'>('all');
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
-  const [localNotes, setLocalNotes] = useState<Array<{ id: string; author: string; text: string; date: string }>>([
-    {
-      id: 'note-1',
-      author: 'Rahul Sharma (Sales)',
-      text: 'Visited store. Ramesh ji requested next summer Derby catalog with sample lot by first week of October.',
-      date: '28 Sep 2024, 04:30 PM',
-    },
-    {
-      id: 'note-2',
-      author: 'Accounts Desk',
-      text: 'Verified ₹1,00,000 NEFT realization against INV-0144. Cleared bilty hold.',
-      date: '25 Sep 2024, 11:15 AM',
-    },
-  ]);
+  const [localNotes, setLocalNotes] = useState<Array<{ id: string; author: string; text: string; date: string }>>([]);
 
   const [newFollowUpText, setNewFollowUpText] = useState('');
   const [newFollowUpDate, setNewFollowUpDate] = useState(new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]);
@@ -126,6 +124,19 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
       setActiveTab(initialTab);
     }
   }, [initialTab]);
+
+  // Load real client notes from Supabase (stays empty until notes are saved)
+  useEffect(() => {
+    if (!customer?.id || !isSupabaseActive) return;
+    let cancelled = false;
+    clientsService.fetchClientNotes(customer.id).then((rows) => {
+      if (!cancelled && rows) setLocalNotes(mapClientNotes(rows));
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customer?.id, isSupabaseActive]);
 
   // Orders for this customer
   const customerOrders = useMemo(() => {
@@ -151,60 +162,59 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     );
   }, [customer, followUps]);
 
-  // Real Ledger Entries
+  // Earliest open follow-up for this customer
+  const nextFollowUp = useMemo(() => {
+    const open = customerFollowUps.filter((fu) => fu.status !== 'completed');
+    return [...open].sort((a, b) => (new Date(a.date).getTime() || 0) - (new Date(b.date).getTime() || 0))[0];
+  }, [customerFollowUps]);
+
+  // Real Ledger Entries — built only from actual invoices and realized payments
   const ledgerEntries = useMemo<LedgerEntry[]>(() => {
     if (!customer) return [];
 
     const entries: LedgerEntry[] = [];
-    const baseInvoiced = customer.totalBusiness || 0;
-    const basePaid = customer.totalPaid || 0;
-    const currentDue = customer.amountDue || 0;
-
-    let balance = currentDue;
 
     customerPayments.forEach((pay) => {
       entries.push({
         id: `pay-${pay.id}`,
-        date: pay.paymentDate || '2024-09-28',
+        date: pay.paymentDate || '—',
         type: 'payment',
         typeLabel: `Payment Realized (${pay.paymentMethod || 'Bank'})`,
-        refNo: pay.receiptNumber || pay.utrRef || 'RCP-8821',
-        particulars: `Bank / Cheque credit realization via ${pay.chequeBank || 'HDFC Bank'}`,
+        refNo: pay.receiptNumber || pay.utrRef || '—',
+        particulars: `${pay.paymentMethod || 'Bank'} realization${pay.chequeBank ? ` • ${pay.chequeBank}` : ''}`,
         debit: 0,
         credit: pay.paymentAmount || 0,
-        runningBalance: balance,
+        runningBalance: 0,
       });
     });
 
     customerOrders.forEach((ord) => {
       entries.push({
         id: `ord-${ord.id}`,
-        date: ord.orderDate || '2024-09-25',
+        date: ord.orderDate || '—',
         type: 'invoice',
         typeLabel: `Tax Invoice (${ord.items?.length || 1} Articles)`,
         refNo: ord.id,
-        particulars: `Consignment Bilty #${ord.batchNumber || '88921-AGR'} • ${ord.pairsCount} Pairs`,
+        particulars: `${ord.pairsCount} Pairs${ord.batchNumber ? ` • Bilty #${ord.batchNumber}` : ''}`,
         debit: ord.netPayable || ord.subtotal || 0,
         credit: 0,
-        runningBalance: balance,
+        runningBalance: 0,
       });
     });
 
-    if (entries.length === 0) {
-      entries.push({
-        id: 'opening-bal',
-        date: '2024-04-01',
-        type: 'opening',
-        typeLabel: 'Opening Financial Balance',
-        refNo: 'BAL-2627',
-        particulars: 'Brought forward from previous wholesale billing cycle',
-        debit: baseInvoiced,
-        credit: basePaid,
-        runningBalance: currentDue,
-      });
-    }
+    // Chronological running balance: oldest first, debits grow the outstanding due.
+    const timeOf = (d: string) => {
+      const ms = new Date(d).getTime();
+      return Number.isNaN(ms) ? 0 : ms;
+    };
+    entries.sort((a, b) => timeOf(a.date) - timeOf(b.date));
+    let balance = 0;
+    entries.forEach((e) => {
+      balance += e.debit - e.credit;
+      e.runningBalance = balance;
+    });
 
-    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return entries.reverse();
   }, [customer, customerOrders, customerPayments]);
 
   const filteredLedger = useMemo(() => {
@@ -246,11 +256,12 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
   const isOverdue = (customer.amountDue || 0) > 0 && (customer.overdueDays > 0 || customer.status === 'overdue');
   const isCleared = (customer.ordersCount > 0 || (customer.totalBusiness || 0) > 0) && (customer.amountDue || 0) <= 0;
   const limitUsage = customer.creditLimit > 0 ? Math.round(((customer.amountDue || 0) / customer.creditLimit) * 100) : 0;
-  const thumb = STORE_THUMBNAILS[customer.businessName] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80';
+  const topModels = customer.topSellingModels || [];
+  const recentActivity = customer.activityHistory || [];
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNoteText.trim()) return;
+    if (!newNoteText.trim() || !customer) return;
     const note = {
       id: `note-${Date.now()}`,
       author: currentUser.name,
@@ -260,6 +271,14 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     setLocalNotes([note, ...localNotes]);
     setNewNoteText('');
     showToast('Note added to client file');
+    if (isSupabaseActive) {
+      clientsService.addClientNote(customer.id, note.text).then((ok) => {
+        if (!ok) return;
+        clientsService.fetchClientNotes(customer.id).then((rows) => {
+          if (rows) setLocalNotes(mapClientNotes(rows));
+        });
+      });
+    }
   };
 
   const handleAddFollowUp = (e: React.FormEvent) => {
@@ -340,14 +359,14 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                   </span>
                 )}
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-                  {customer.tier || 'Tier-1 Wholesale'}
+                  {customer.tier || '—'}
                 </span>
               </div>
 
               <p className="text-xs sm:text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-2">
-                <span>Proprietor: <strong className="text-foreground">{customer.propName || 'Store Manager'}</strong></span>
+                <span>Proprietor: <strong className="text-foreground">{customer.propName || '—'}</strong></span>
                 <span>•</span>
-                <span>GSTIN: <strong className="font-mono text-foreground">{customer.gstin || '09AAACA1234F1Z5'}</strong></span>
+                <span>GSTIN: <strong className="font-mono text-foreground">{customer.gstin || '—'}</strong></span>
               </p>
             </div>
           </div>
@@ -398,7 +417,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
         <div className="pt-3 border-t border-border flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 text-foreground">
             <MapPin size={14} className="text-muted-foreground" />
-            <span>{customer.city}, {customer.state} ({customer.cluster || 'Leather Market Hub'})</span>
+            <span>{customer.city}, {customer.state} ({customer.cluster || '—'})</span>
           </span>
 
           <a
@@ -421,7 +440,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
 
           <span className="inline-flex items-center gap-1.5">
             <Building2 size={14} />
-            <span>Sales Rep: <strong className="text-foreground">{customer.salespersonName || 'Rahul Sharma (North Zone)'}</strong></span>
+            <span>Sales Rep: <strong className="text-foreground">{customer.salespersonName || 'Unassigned'}</strong></span>
           </span>
         </div>
       </div>
@@ -436,9 +455,9 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
         isOverdue={isOverdue}
         isCleared={isCleared}
         dueCaption={isOverdue ? `${customer.overdueDays} days overdue` : 'Ledger in good standing'}
-        creditLimit={formatIndianCurrency(customer.creditLimit || 500000, true)}
+        creditLimit={customer.creditLimit > 0 ? formatIndianCurrency(customer.creditLimit, true) : '—'}
         limitUsage={limitUsage}
-        paymentTerms={customer.paymentTerms || '30% Adv + 70% Bilty'}
+        paymentTerms={customer.paymentTerms || 'Not set'}
       />
 
       {/* 4. Detail Navigation Tabs (9 Tabs, URL-synced) */}
@@ -496,20 +515,22 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60">
                   <p className="text-muted-foreground font-medium">Sanctioned Payment Terms</p>
-                  <p className="text-sm font-bold text-foreground mt-0.5">{customer.paymentTerms || '30% Advance + 70% Bilty'}</p>
+                  <p className="text-sm font-bold text-foreground mt-0.5">{customer.paymentTerms || 'Not set'}</p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60">
                   <p className="text-muted-foreground font-medium">Sanctioned Credit Limit</p>
-                  <p className="text-sm font-bold text-foreground mt-0.5">{formatIndianCurrency(customer.creditLimit || 500000)}</p>
+                  <p className="text-sm font-bold text-foreground mt-0.5">{customer.creditLimit > 0 ? formatIndianCurrency(customer.creditLimit) : '—'}</p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60">
                   <p className="text-muted-foreground font-medium">Last Order Date</p>
-                  <p className="text-sm font-bold text-foreground mt-0.5">{customer.lastOrderDate || '25 Sep 2024'}</p>
+                  <p className="text-sm font-bold text-foreground mt-0.5">{customer.lastOrderDate || '—'}</p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60">
                   <p className="text-muted-foreground font-medium">Last Realized Payment</p>
                   <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                    +{formatIndianCurrency(customer.lastPaymentAmount || 100000)} ({customer.lastPaymentDate || '28 Sep 2024'})
+                    {customer.lastPaymentAmount
+                      ? `+${formatIndianCurrency(customer.lastPaymentAmount)} (${customer.lastPaymentDate || '—'})`
+                      : '—'}
                   </p>
                 </div>
               </div>
@@ -518,7 +539,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
               <div className="pt-2">
                 <p className="text-xs font-semibold text-muted-foreground mb-1">Billing &amp; Consignment Dispatch Address</p>
                 <p className="text-xs text-foreground bg-muted/30 p-3 rounded-xl border border-border/60 leading-relaxed">
-                  {customer.address || `${customer.businessName}, Shop 12, Leather Market Complex, Hing Ki Mandi, ${customer.city}, ${customer.state} - 282003`}
+                  {customer.address || '—'}
                 </p>
               </div>
             </div>
@@ -539,19 +560,25 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {(customer.topSellingModels || [
-                  { name: 'Runner Classic Pro', pairs: 1240, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' },
-                  { name: 'Aero Knit Trainer', pairs: 860, image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=300&q=80' },
-                  { name: 'Verona Derby Oxford', pairs: 610, image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=300&q=80' },
-                ]).map((model, idx) => (
-                  <div key={idx} className="p-3 rounded-xl border border-border bg-muted/20 flex flex-col items-center text-center">
-                    <img src={model.image} alt={model.name} className="w-20 h-16 object-cover rounded-lg border border-border mb-2" />
-                    <p className="text-xs font-bold text-foreground truncate w-full">{model.name}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">{model.pairs} Pairs Ordered</p>
-                  </div>
-                ))}
-              </div>
+              {topModels.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No sales data yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {topModels.map((model, idx) => (
+                    <div key={idx} className="p-3 rounded-xl border border-border bg-muted/20 flex flex-col items-center text-center">
+                      {model.image ? (
+                        <img src={model.image} alt={model.name} className="w-20 h-16 object-cover rounded-lg border border-border mb-2" />
+                      ) : (
+                        <div className="w-20 h-16 rounded-lg border border-border mb-2 bg-muted flex items-center justify-center text-[11px] font-bold text-muted-foreground">
+                          {model.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <p className="text-xs font-bold text-foreground truncate w-full">{model.name}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">{model.pairs} Pairs Ordered</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -564,15 +591,21 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                 <span>Next Scheduled Action</span>
               </h3>
 
-              <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-xs space-y-1.5">
-                <div className="flex items-center justify-between font-bold text-amber-900 dark:text-amber-200">
-                  <span>Seasonal Re-order Call</span>
-                  <span>In 3 Days</span>
+              {nextFollowUp ? (
+                <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-xs space-y-1.5">
+                  <div className="flex items-center justify-between font-bold text-amber-900 dark:text-amber-200">
+                    <span>{nextFollowUp.reason || 'Client Check-in'}</span>
+                    <span>{nextFollowUp.date || '—'}</span>
+                  </div>
+                  {(nextFollowUp.notes || nextFollowUp.time) && (
+                    <p className="text-amber-800 dark:text-amber-300">
+                      {nextFollowUp.notes || nextFollowUp.time}
+                    </p>
+                  )}
                 </div>
-                <p className="text-amber-800 dark:text-amber-300">
-                  Field visit by {customer.salespersonName || 'Rahul Sharma'} to showcase Diwali festive sample line and review bilty clearance.
-                </p>
-              </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">No action scheduled.</p>
+              )}
             </div>
 
             {/* Recent Activity Timeline */}
@@ -583,37 +616,19 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
               </h3>
 
               <div className="divide-y divide-border/60">
-                {(customer.activityHistory || [
-                  {
-                    id: 'act-1',
-                    type: 'payment',
-                    title: 'Received ₹1,00,000 payment',
-                    description: 'Direct NEFT credit into HDFC Trade Account.',
-                    timestamp: '28 Sep, 02:45 PM',
-                  },
-                  {
-                    id: 'act-2',
-                    type: 'order_dispatched',
-                    title: 'Order ORD-0148 dispatched',
-                    description: '420 Pairs handed over to SafeX Logistics.',
-                    timestamp: '25 Sep, 11:15 AM',
-                  },
-                  {
-                    id: 'act-3',
-                    type: 'shared_designs',
-                    title: 'Shared Summer Lookbook',
-                    description: '14 new articles viewed by client.',
-                    timestamp: '20 Sep, 05:20 PM',
-                  },
-                ]).slice(0, 4).map((act, idx) => (
-                  <div key={idx} className="py-3 text-xs space-y-1">
-                    <div className="flex items-center justify-between font-bold text-foreground">
-                      <span>{act.title}</span>
-                      <span className="text-[11px] font-normal text-muted-foreground">{act.timestamp}</span>
+                {recentActivity.slice(0, 4).length === 0 ? (
+                  <p className="py-6 text-center text-xs text-muted-foreground">No activity yet.</p>
+                ) : (
+                  recentActivity.slice(0, 4).map((act, idx) => (
+                    <div key={idx} className="py-3 text-xs space-y-1">
+                      <div className="flex items-center justify-between font-bold text-foreground">
+                        <span>{act.title}</span>
+                        <span className="text-[11px] font-normal text-muted-foreground">{act.timestamp}</span>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">{act.description}</p>
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">{act.description}</p>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -664,7 +679,16 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredLedger.map((entry) => (
+                {filteredLedger.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      <FileText size={36} className="mx-auto mb-2 text-muted-foreground/40" />
+                      <p className="font-bold text-foreground">No transactions yet</p>
+                      <p className="text-xs mt-1">Billed invoices and realized payments for this client will appear here.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredLedger.map((entry) => (
                   <tr key={entry.id} className="hover:bg-muted/30 transition-colors">
                     <td className="py-3.5 px-4 md:px-6 font-mono text-xs">{entry.date}</td>
                     <td className="py-3.5 px-4">
@@ -712,7 +736,8 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                       {formatIndianCurrency(entry.runningBalance)}
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -862,7 +887,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                         {formatIndianCurrency(pay.paymentAmount || 0)}
                       </td>
                       <td className="py-3.5 px-4 font-medium text-foreground">{pay.paymentMethod || 'UPI'}</td>
-                      <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{pay.utrRef || 'HDFC992144'}</td>
+                      <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">{pay.utrRef || '—'}</td>
                       <td className="py-3.5 px-4 text-xs font-medium text-blue-600 dark:text-blue-400">{pay.orderNumber || pay.orderId || 'General'}</td>
                       <td className="py-3.5 px-4 text-center">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50">
@@ -935,31 +960,37 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {(customer.topSellingModels || [
-              { name: 'Runner Classic Pro', pairs: 1240, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' },
-              { name: 'Aero Knit Trainer', pairs: 860, image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=300&q=80' },
-              { name: 'Verona Derby Oxford', pairs: 610, image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=300&q=80' },
-            ]).map((m, idx) => (
-              <div key={idx} className="p-4 rounded-xl border border-border bg-surface shadow-2xs space-y-3">
-                <img src={m.image} alt={m.name} className="w-full h-36 object-cover rounded-lg border border-border" />
-                <div>
-                  <h4 className="font-bold text-sm text-foreground">{m.name}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">Total Quantity: <strong className="text-foreground">{m.pairs} Pairs</strong></p>
+          {topModels.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No sales data yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {topModels.map((m, idx) => (
+                <div key={idx} className="p-4 rounded-xl border border-border bg-surface shadow-2xs space-y-3">
+                  {m.image ? (
+                    <img src={m.image} alt={m.name} className="w-full h-36 object-cover rounded-lg border border-border" />
+                  ) : (
+                    <div className="w-full h-36 rounded-lg border border-border bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
+                      {m.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-bold text-sm text-foreground">{m.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Total Quantity: <strong className="text-foreground">{m.pairs} Pairs</strong></p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCustomer(customer);
+                      setIsCreateOrderModalOpen(true);
+                    }}
+                    className="w-full py-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold text-xs hover:bg-blue-100 transition-colors cursor-pointer"
+                  >
+                    Book New Lot
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCustomer(customer);
-                    setIsCreateOrderModalOpen(true);
-                  }}
-                  className="w-full py-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold text-xs hover:bg-blue-100 transition-colors cursor-pointer"
-                >
-                  Book New Lot
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -1067,44 +1098,19 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
           </h3>
 
           <div className="divide-y divide-border/60">
-            {(customer.activityHistory || [
-              {
-                id: 'act-1',
-                type: 'payment',
-                title: 'Payment Realization ₹1,00,000',
-                description: 'NEFT credit into trade bank account. Verified by admin.',
-                timestamp: '28 Sep 2024, 02:45 PM',
-              },
-              {
-                id: 'act-2',
-                type: 'order_dispatched',
-                title: 'Consignment Bilty ORD-0148 Handed to Logistics',
-                description: '420 Pairs packed across 14 Cartons safely handed over to SafeX Logistics (LR #88921-AGR).',
-                timestamp: '25 Sep 2024, 11:15 AM',
-              },
-              {
-                id: 'act-3',
-                type: 'shared_designs',
-                title: 'Shared Digital Footwear Lookbook',
-                description: 'Sent WhatsApp catalogue token for Autumn/Winter collection.',
-                timestamp: '20 Sep 2024, 05:20 PM',
-              },
-              {
-                id: 'act-4',
-                type: 'call',
-                title: 'Telephonic Payment Reminder',
-                description: 'Sales rep followed up regarding balance payment.',
-                timestamp: '18 Sep 2024, 10:30 AM',
-              },
-            ]).map((item, idx) => (
-              <div key={idx} className="py-3.5 text-xs space-y-1">
-                <div className="flex items-center justify-between font-bold text-foreground">
-                  <span>{item.title}</span>
-                  <span className="text-[11px] font-normal text-muted-foreground">{item.timestamp}</span>
+            {recentActivity.length === 0 ? (
+              <p className="py-8 text-center text-xs text-muted-foreground">No activity yet.</p>
+            ) : (
+              recentActivity.map((item, idx) => (
+                <div key={idx} className="py-3.5 text-xs space-y-1">
+                  <div className="flex items-center justify-between font-bold text-foreground">
+                    <span>{item.title}</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">{item.timestamp}</span>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
-                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -1119,7 +1125,9 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             customerCode: customer?.id,
             gstin: customer?.gstin,
             phone: customer?.phone,
-            address: customer?.address ? `${customer.address}, ${customer.city}, ${customer.state}` : `${customer?.city || 'Agra'}, Uttar Pradesh`,
+            address: customer?.address
+              ? `${customer.address}, ${customer.city}, ${customer.state}`
+              : [customer?.city, customer?.state].filter(Boolean).join(', '),
           }}
           status={mapPaymentStatusToReceiptStatus(selectedReceiptPayment.status)}
         />

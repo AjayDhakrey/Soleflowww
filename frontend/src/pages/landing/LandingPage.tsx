@@ -50,7 +50,6 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../auth/AuthProvider';
 import { FootwearMotionStage } from './FootwearMotionStage';
 
@@ -151,8 +150,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   isAlreadyLoggedIn = false,
   onReturnToDashboard,
 }) => {
-  const { login, register } = useApp();
-  const { signIn, quickDemoLogin } = useAuth();
+  const { signIn, signUp, quickDemoLogin } = useAuth();
   const [isDemoLoggingIn, setIsDemoLoggingIn] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
@@ -171,8 +169,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [signupRole, setSignupRole] = useState<'admin' | 'salesperson'>('admin');
   const [signupBusinessName, setSignupBusinessName] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
-  const [signupZone, setSignupZone] = useState('Agra Footwear Belt');
   const [signupError, setSignupError] = useState('');
+  const [signupNotice, setSignupNotice] = useState('');
   const [isSubmittingSignup, setIsSubmittingSignup] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
 
@@ -218,28 +216,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const calcPotentialRevenue = calcTotalPairs * calcRetailMrp;
   const calcMargin = Math.max(0, Math.round(((calcPotentialRevenue - calcTotalLandedCost) / calcPotentialRevenue) * 100)) || 18;
 
-  const prefillSignup = (role: 'admin' | 'salesperson') => {
+  // Role choice only — the signup form itself stays blank (no fabricated identities).
+  const selectSignupRole = (role: 'admin' | 'salesperson') => {
     setSignupRole(role);
-    if (role === 'admin') {
-      setSignupName('Rajesh Verma');
-      setSignupEmail('rajesh@vermafootwear.com');
-      setSignupBusinessName('Verma Footwear Distributors');
-      setSignupPhone('+91 98290 12345');
-      setSignupZone('Agra Footwear Belt');
-    } else {
-      setSignupName('Vikram Malhotra');
-      setSignupEmail('vikram@apexfootwear.com');
-      setSignupBusinessName('Apex Field Sales Operations');
-      setSignupPhone('+91 98111 87654');
-      setSignupZone('North Zone (Delhi-NCR & UP)');
-    }
-    setSignupPassword('soleflow2026');
-    setSignupConfirmPassword('soleflow2026');
+    setSignupError('');
+    setSignupNotice('');
   };
 
-  const handleFormSignup = (e: React.FormEvent) => {
+  const handleFormSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
+    setSignupNotice('');
 
     if (!signupName.trim() || !signupEmail.trim() || !signupPassword) {
       setSignupError('Please fill in all required fields.');
@@ -258,25 +245,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
     setIsSubmittingSignup(true);
 
-    setTimeout(() => {
-      const success = register({
-        name: signupName,
+    try {
+      const res = await signUp({
         email: signupEmail,
         password: signupPassword,
-        role: signupRole,
-        businessName: signupBusinessName || (signupRole === 'admin' ? 'Apex Footwear Hub' : 'Field Sales Operations'),
+        fullName: signupName,
         phone: signupPhone,
-        zone: signupZone,
+        businessName: signupBusinessName || signupName,
       });
 
       setIsSubmittingSignup(false);
-      if (success) {
-        setIsAuthModalOpen(false);
-        onLoginSuccess(signupRole);
-      } else {
-        setSignupError('Failed to create account. Please try again.');
+
+      if (!res.success) {
+        setSignupError(res.error || 'Failed to create account. Please try again.');
+        return;
       }
-    }, 450);
+
+      if (res.needsEmailVerification) {
+        setSignupNotice(`Check your inbox — we sent a verification link to ${signupEmail}. Please confirm your email to activate your account.`);
+        return;
+      }
+
+      setIsAuthModalOpen(false);
+      onLoginSuccess(signupRole);
+    } catch (err: any) {
+      setIsSubmittingSignup(false);
+      setSignupError(err?.message || 'Failed to create account. Please try again.');
+    }
   };
 
   const handleDemoLogin = async (demoRole: 'superadmin' | 'admin' | 'salesperson') => {
@@ -306,7 +301,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     } catch (e) {
       console.warn('Demo auth API login fallback to local state', e);
     } finally {
-      login(demoEmail, demoPass);
       setIsDemoLoggingIn(false);
       setIsAuthModalOpen(false);
       onLoginSuccess(demoRole === 'salesperson' ? 'salesperson' : 'admin');
@@ -317,14 +311,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     handleDemoLogin(role);
   };
 
-  const handleFormLogin = (e: React.FormEvent) => {
+  const handleFormLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const success = login(email, password);
-    if (success) {
-      onLoginSuccess(email.includes('sales') ? 'salesperson' : 'admin');
+    const res = await signIn(email, password);
+    if (res.success) {
+      onLoginSuccess(res.role === 'salesperson' ? 'salesperson' : 'admin');
     } else {
-      setAuthError('Invalid credentials. Please use demo buttons or correct password.');
+      setAuthError(res.error || 'Invalid credentials. Please try again.');
     }
   };
 
@@ -519,12 +513,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             {/* Right Hero Stats Card (5 cols) */}
             <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="w-full max-w-sm rounded-3xl bg-slate-900/50 backdrop-blur-md border border-white/15 p-5 sm:p-6 space-y-4 shadow-2xl text-left">
+              <div className="w-full max-w-sm min-w-0 overflow-hidden rounded-3xl bg-slate-900/50 backdrop-blur-md border border-white/15 p-5 sm:p-6 space-y-4 shadow-2xl text-left">
                 <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
                     <Building className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-base sm:text-lg font-black text-white">350+</div>
                     <div className="text-xs text-slate-300">Businesses trust us</div>
                   </div>
@@ -534,7 +528,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 shrink-0">
                     <Package className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-base sm:text-lg font-black text-white">1M+</div>
                     <div className="text-xs text-slate-300">Pairs managed</div>
                   </div>
@@ -544,7 +538,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
                     <Users className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-base sm:text-lg font-black text-white">5,000+</div>
                     <div className="text-xs text-slate-300">Active Dealers</div>
                   </div>
@@ -554,7 +548,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
                     <BarChart3 className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-base sm:text-lg font-black text-white">99%</div>
                     <div className="text-xs text-slate-300">Order accuracy</div>
                   </div>
@@ -589,7 +583,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* 5 Translucent Feature Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-4">
               {/* Card 1 */}
               <div
                 className="p-5 rounded-2xl hover:bg-white/90 transition-all text-left space-y-3 shadow-xs"
@@ -894,7 +888,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* 5 Connected Step Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3 relative">
               {[
                 {
                   icon: Boxes,
@@ -993,28 +987,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <div className="w-2 h-2 rounded-full bg-rose-500" />
                       <div className="w-2 h-2 rounded-full bg-amber-500" />
                       <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <div className="mx-auto text-[9px] text-slate-400 font-mono">SoleFlow Admin</div>
+                      <div className="mx-auto text-[11px] text-slate-400 font-mono">SoleFlow Admin</div>
                     </div>
 
                     <div className="p-4 space-y-3 bg-slate-900 text-white">
                       <div className="grid grid-cols-3 gap-2">
                         <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
-                          <div className="text-[9px] text-slate-400">Total Orders</div>
+                          <div className="text-[11px] text-slate-400">Total Orders</div>
                           <div className="text-sm font-bold text-white font-mono">245</div>
                         </div>
                         <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
-                          <div className="text-[9px] text-slate-400">Inventory Value</div>
+                          <div className="text-[11px] text-slate-400">Inventory Value</div>
                           <div className="text-sm font-bold text-white font-mono">₹48,20,000</div>
                         </div>
                         <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
-                          <div className="text-[9px] text-slate-400">Active Dealers</div>
+                          <div className="text-[11px] text-slate-400">Active Dealers</div>
                           <div className="text-sm font-bold text-white font-mono">186</div>
                         </div>
                       </div>
 
                       {/* Mock Chart */}
                       <div className="p-3 rounded-lg bg-slate-800/60 border border-slate-700 space-y-2">
-                        <div className="text-[10px] font-bold text-slate-300">Sales Overview</div>
+                        <div className="text-[11px] font-bold text-slate-300">Sales Overview</div>
                         <div className="h-16 flex items-end justify-between gap-1 pt-2">
                           {[35, 55, 40, 75, 60, 90, 80].map((h, i) => (
                             <div key={i} className="flex-1 bg-blue-500/80 rounded-t-xs" style={{ height: `${h}%` }} />
@@ -1029,15 +1023,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-1" />
                     <div className="text-[11px] font-bold">SoleFlow Mobile</div>
                     <div className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                      <div className="text-[9px] text-slate-400">Live Orders</div>
+                      <div className="text-[11px] text-slate-400">Live Orders</div>
                       <div className="text-sm font-mono font-bold text-blue-400">245 Active</div>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                      <div className="text-[9px] text-slate-400">Inventory Stock</div>
+                      <div className="text-[11px] text-slate-400">Inventory Stock</div>
                       <div className="text-xs font-mono font-bold text-emerald-400">₹48,20,000</div>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 space-y-1">
-                      <div className="text-[9px] text-slate-400">Dealers</div>
+                      <div className="text-[11px] text-slate-400">Dealers</div>
                       <div className="text-xs font-mono font-bold">186 Connected</div>
                     </div>
                   </div>
@@ -1072,7 +1066,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* 5 Business Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-4">
               {[
                 {
                   title: 'Wholesalers',
@@ -1503,7 +1497,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                         1-Click Instant Demo Login:
                       </span>
-                      <span className="text-[10px] text-slate-400 font-normal">No password required</span>
+                      <span className="text-[11px] text-slate-400 font-normal">No password required</span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <button
@@ -1586,25 +1580,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => prefillSignup('admin')}
+                      onClick={() => selectSignupRole('admin')}
                       className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                         signupRole === 'admin'
                           ? 'bg-blue-50 border-blue-300 text-blue-700'
                           : 'bg-slate-50 border-slate-200 text-slate-600'
                       }`}
                     >
-                      Fill as Wholesaler / Admin
+                      Wholesaler / Admin
                     </button>
                     <button
                       type="button"
-                      onClick={() => prefillSignup('salesperson')}
+                      onClick={() => selectSignupRole('salesperson')}
                       className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                         signupRole === 'salesperson'
                           ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
                           : 'bg-slate-50 border-slate-200 text-slate-600'
                       }`}
                     >
-                      Fill as Field Rep
+                      Field Rep
                     </button>
                   </div>
 
@@ -1615,7 +1609,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         type="text"
                         value={signupName}
                         onChange={(e) => setSignupName(e.target.value)}
-                        placeholder="Vikram Malhotra"
+                        placeholder="Your full name"
                         className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
                         required
                       />
@@ -1627,7 +1621,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         type="email"
                         value={signupEmail}
                         onChange={(e) => setSignupEmail(e.target.value)}
-                        placeholder="vikram@apexfootwear.com"
+                        placeholder="you@yourbusiness.com"
                         className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
                         required
                       />
@@ -1639,7 +1633,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         type="text"
                         value={signupBusinessName}
                         onChange={(e) => setSignupBusinessName(e.target.value)}
-                        placeholder="Apex Footwear Wholesale"
+                        placeholder="Your business / firm name"
                         className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-slate-900 focus:outline-blue-600"
                       />
                     </div>
@@ -1671,6 +1665,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
 
                   {signupError && <div className="text-xs font-semibold text-rose-600">{signupError}</div>}
+
+                  {signupNotice && (
+                    <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{signupNotice}</span>
+                    </div>
+                  )}
 
                   <button
                     type="submit"

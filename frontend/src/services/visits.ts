@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, isDemoModeActive } from '../lib/supabase';
 import { FieldVisitItem } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -10,10 +10,10 @@ export function mapFieldVisitRow(row: any): FieldVisitItem {
   return {
     id: row.id,
     customerId: row.client_id,
-    customerName: row.customerName || 'Client Store',
-    location: row.location || 'Agra Footwear Market',
-    time: row.visit_time || (row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : '10:30 AM'),
-    purpose: row.purpose || 'Routine Relationship Visit',
+    customerName: row.customerName || row.customer_name || '',
+    location: row.location || '',
+    time: row.visit_time || (row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : ''),
+    purpose: row.purpose || '',
     status: (row.status || 'today') as FieldVisitItem['status'],
     outcome: (row.outcome as FieldVisitItem['outcome']) || undefined,
     notes: row.notes || undefined,
@@ -22,7 +22,7 @@ export function mapFieldVisitRow(row: any): FieldVisitItem {
 
 export const visitsService = {
   async fetchVisits(filters?: { status?: string; salespersonId?: string }): Promise<FieldVisitItem[]> {
-    if (!supabase) return MOCK_FIELD_VISITS;
+    if (!supabase || isDemoModeActive) return isDemoModeActive ? MOCK_FIELD_VISITS : [];
 
     try {
       let query = supabase
@@ -40,11 +40,11 @@ export const visitsService = {
       const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
 
-      if (!data || data.length === 0) return MOCK_FIELD_VISITS;
+      if (!data || data.length === 0) return [];
       return data.map(mapFieldVisitRow);
     } catch (err) {
-      console.warn('Error fetching field visits from Supabase:', err);
-      return MOCK_FIELD_VISITS;
+      console.error('Error fetching field visits from Supabase:', err);
+      return [];
     }
   },
 

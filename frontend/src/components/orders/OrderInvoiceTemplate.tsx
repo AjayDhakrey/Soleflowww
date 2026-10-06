@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Order, OrderItem } from '../../types';
+import { Order, OrderItem, Organization } from '../../types';
+import { useAuth } from '../../auth/AuthProvider';
 import {
   DEFAULT_RECEIPT_COMPANY,
   ReceiptCompanyInfo,
@@ -67,6 +68,23 @@ export function generateInvoiceFileName(
   }
 
   return ['Invoice', orderNo, cleanCustomer, amountStr, dateStr].filter(Boolean).join('_');
+}
+
+/**
+ * Company identity comes from the signed-in user's real organization —
+ * nothing fabricated prints on documents (same pattern as useReceiptData).
+ */
+function buildOrgCompanyInfo(org: Organization | null | undefined): ReceiptCompanyInfo {
+  return {
+    ...DEFAULT_RECEIPT_COMPANY,
+    brandName: org?.name || 'SoleFlow',
+    legalName: org?.name || '',
+    tagline: '',
+    address: [org?.city, org?.state].filter(Boolean).join(', '),
+    gstin: org?.gstin || '',
+    phone: org?.phone || '',
+    logoUrl: '/assets/images/shoeconnect-logo.png',
+  };
 }
 
 function formatDate(value: string | Date | undefined): string {
@@ -202,11 +220,11 @@ export function exportInvoiceToWord(
         </td>
         <td class="party-box">
           <div class="party-label">Factory &amp; Route Logistics</div>
-          <div class="party-name">${order.manufacturerName || 'Partner Foundry'}</div>
+          <div class="party-name">${order.manufacturerName || '—'}</div>
           <div style="font-size: 8.5pt; color: #475569;">
-            Plant: ${order.manufacturerPlant || 'Agra Hub'}<br/>
-            Assigned Rep: <strong>${order.salespersonName || 'Direct Trade'}</strong><br/>
-            Payment Terms: <strong>${order.paymentStatus || 'Payment Pending'}</strong><br/>
+            Plant: ${order.manufacturerPlant || '—'}<br/>
+            Assigned Rep: <strong>${order.salespersonName || 'Unassigned'}</strong><br/>
+            Payment Status: <strong>${order.paymentStatus || '—'}</strong><br/>
             Batch Code: <span style="font-family: monospace;">${order.batchNumber || order.id}</span>
           </div>
         </td>
@@ -677,7 +695,8 @@ export const OrderInvoiceTemplate: React.FC<OrderInvoiceTemplateProps> = ({
   customer,
   generatedAt,
 }) => {
-  const co: ReceiptCompanyInfo = { ...DEFAULT_RECEIPT_COMPANY, ...company };
+  const { org } = useAuth();
+  const co: ReceiptCompanyInfo = { ...buildOrgCompanyInfo(org), ...company };
   const printedAt = generatedAt ?? new Date();
   const items = order.items && order.items.length > 0 ? order.items : [];
 
@@ -753,11 +772,11 @@ export const OrderInvoiceTemplate: React.FC<OrderInvoiceTemplateProps> = ({
 
           <div className="inv-party-card">
             <div className="inv-party-label">Foundry &amp; Commercial Terms</div>
-            <div className="inv-party-name">{order.manufacturerName || 'Foundry Line'}</div>
+            <div className="inv-party-name">{order.manufacturerName || '—'}</div>
             <div className="inv-party-details">
-              <div>Manufacturing Plant: <strong>{order.manufacturerPlant || 'Agra Hub'}</strong></div>
-              <div>Sales Representative: <strong>{order.salespersonName || 'Direct Desk'}</strong></div>
-              <div>Payment Terms: <strong>{order.paymentStatus || 'Payment Pending'}</strong></div>
+              <div>Manufacturing Plant: <strong>{order.manufacturerPlant || '—'}</strong></div>
+              <div>Sales Representative: <strong>{order.salespersonName || 'Unassigned'}</strong></div>
+              <div>Payment Status: <strong>{order.paymentStatus || '—'}</strong></div>
               <div>Total Consignment Units: <strong>{order.pairsCount || 0} Pairs ({order.cartonsCount || 0} Ctns)</strong></div>
             </div>
           </div>
@@ -932,6 +951,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
   onClose,
   ...props
 }) => {
+  const { org } = useAuth();
   const [fileFormat, setFileFormat] = useState<'pdf' | 'word'>('pdf');
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -953,7 +973,12 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
   const handleDownload = async () => {
     if (fileFormat === 'word') {
-      exportInvoiceToWord(props.order, props.company, props.customer, suggestedBaseName);
+      exportInvoiceToWord(
+        props.order,
+        { ...buildOrgCompanyInfo(org), ...props.company },
+        props.customer,
+        suggestedBaseName
+      );
       return;
     }
 
@@ -965,11 +990,11 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
       // @ts-ignore
       const html2pdfModule = (await import('html2pdf.js')).default || (await import('html2pdf.js'));
       const opt = {
-        margin: [8, 8, 8, 8],
+        margin: [8, 8, 8, 8] as [number, number, number, number],
         filename: `${suggestedBaseName}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
       };
       await html2pdfModule().set(opt).from(element).save();
     } catch (err) {

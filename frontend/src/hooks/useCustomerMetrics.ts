@@ -176,20 +176,25 @@ export function useCustomerMetrics(): CustomerMetricsResult {
       })
       .reduce((sum, p) => sum + (p.paymentAmount || 0), 0);
 
-    // Due this week (approx 15-25% of active non-overdue receivables or payment terms ending soon)
+    // Due this week — computed from real customer rows (payment terms due soon,
+    // or 1-7 days past due). No percentage-of-receivables guessing.
     const dueThisWeek = roleFilteredCustomers
-      .filter((c) => (c.amountDue || 0) > 0 && c.status === 'due_soon')
-      .reduce((sum, c) => sum + (c.amountDue || 0), 0) || Math.round(totalReceivables * 0.18);
+      .filter(
+        (c) =>
+          (c.amountDue || 0) > 0 &&
+          (c.status === 'due_soon' || (c.overdueDays >= 1 && c.overdueDays <= 7))
+      )
+      .reduce((sum, c) => sum + (c.amountDue || 0), 0);
 
     // Averages
     const avgDaysOverdue =
       overdueCustomersList.length > 0
         ? Math.round(
-            overdueCustomersList.reduce((sum, c) => sum + (c.overdueDays || 15), 0) / overdueCustomersList.length
+            overdueCustomersList.reduce((sum, c) => sum + (c.overdueDays || 0), 0) / overdueCustomersList.length
           )
         : 0;
 
-    const avgDaysToPay = 18; // Benchmark industry average wholesale payment cycle
+    const avgDaysToPay = 0; // Not yet computable from payment history
 
     // Reorder opportunities: Cleared accounts with no order in the last 60 days
     const reorderOpportunities = clearedCustomersList.filter((c) => {
@@ -324,10 +329,10 @@ export function useCustomerMetrics(): CustomerMetricsResult {
       .sort((a, b) => (b.amountDue || 0) - (a.amountDue || 0))
       .slice(0, 10);
 
-    // 6. Realistic Trends calculation
-    // Total Customers trend: customers added this month vs last month
-    const newCustomersThisMonth = Math.max(1, Math.round(totalCustomers * 0.15));
-    const custTrendPct = Math.round((newCustomersThisMonth / Math.max(1, totalCustomers - newCustomersThisMonth)) * 100);
+    // 6. Trends — only shown when actually computable; no fabricated growth numbers.
+    // New customers this month: requires created_at on customer rows (not available yet).
+    const newCustomersThisMonth = 0;
+    const custTrendPct = 0;
     const totalCustomersTrend: CustomerMetricTrend = {
       value: `↑ +${custTrendPct}%`,
       isPositive: true,
@@ -336,7 +341,7 @@ export function useCustomerMetrics(): CustomerMetricsResult {
     };
 
     // Total Receivables trend: change vs 30 days ago (Receivables UP is RED/negative for cashflow)
-    const recTrendPct = 8;
+    const recTrendPct = 0;
     const totalReceivablesTrend: CustomerMetricTrend = {
       value: `↑ +${recTrendPct}%`,
       isPositive: false, // red because receivables went up
@@ -345,7 +350,7 @@ export function useCustomerMetrics(): CustomerMetricsResult {
     };
 
     // Overdue Accounts trend: accounts that became overdue in last 7 days
-    const newOverdueThisWeek = Math.min(overdueAccounts, 1);
+    const newOverdueThisWeek = 0;
     const overdueTrend: CustomerMetricTrend = {
       value: `↑ +${newOverdueThisWeek}`,
       isPositive: false, // red because overdue went up
@@ -354,7 +359,7 @@ export function useCustomerMetrics(): CustomerMetricsResult {
     };
 
     // Cleared Accounts trend: accounts cleared this month vs last month (Cleared UP is GREEN)
-    const clearedThisMonth = Math.min(clearedAccounts, 2);
+    const clearedThisMonth = 0;
     const clearedTrend: CustomerMetricTrend = {
       value: `↑ +${clearedThisMonth}`,
       isPositive: true, // green

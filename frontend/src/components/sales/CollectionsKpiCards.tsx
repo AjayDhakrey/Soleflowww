@@ -269,7 +269,7 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
   onNavigateCheques,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Assigned Receivables */}
       <div
         role="button"
@@ -283,7 +283,7 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
             Total Assigned Receivables
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display wrap-anywhere"
             title={`₹${(totalAssignedDue / 100000).toFixed(2)}L`}
           >
             ₹{(totalAssignedDue / 100000).toFixed(2)}L
@@ -306,12 +306,13 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
           <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Overdue Stores">
             Overdue Stores
           </span>
+          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate flex items-baseline gap-1.5"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${pendingStoresCount} Accounts`}
           >
-            <span className="tabular-nums">{pendingStoresCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal">Accounts</span>
+            <span className="tabular-nums whitespace-nowrap">{pendingStoresCount}</span>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal whitespace-nowrap">Accounts</span>
           </p>
           <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Need field collection visits">
             Need field collection visits
@@ -332,7 +333,7 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
             Collected This Month
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display wrap-anywhere"
             title={`₹${(collectedThisMonth / 100000).toFixed(2)}L`}
           >
             ₹{(collectedThisMonth / 100000).toFixed(2)}L
@@ -356,7 +357,7 @@ export const CollectionsKpiCards: React.FC<CollectionsKpiCardsProps> = ({
             Cheques in Clearing
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display wrap-anywhere"
             title={`₹${(chequesInClearingAmount / 100000).toFixed(2)}L`}
           >
             ₹{(chequesInClearingAmount / 100000).toFixed(2)}L

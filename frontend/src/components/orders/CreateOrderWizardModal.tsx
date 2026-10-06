@@ -108,11 +108,13 @@ export const CreateOrderWizardModal: React.FC = () => {
     }
   };
 
+  // Business defaults (no UI override yet): 12 pairs per master carton and a
+  // 12% GST footwear slab. Rate always comes from the article's catalog price.
   const totalPairs = sizeMatrix.reduce((s, i) => s + i.pairs, 0);
   const totalCartons = Math.floor(totalPairs / 12);
   const looseTotal = totalPairs % 12;
 
-  const ratePerPair = currentDesign ? currentDesign.price : 650;
+  const ratePerPair = currentDesign?.price || 0;
   const subtotal = totalPairs * ratePerPair;
   const discountAmount = Math.round((subtotal * tradeDiscountPercent) / 100);
   const taxableSubtotal = subtotal - discountAmount;
@@ -123,16 +125,21 @@ export const CreateOrderWizardModal: React.FC = () => {
   const handleFinish = async () => {
     if (!currentCust || !currentDesign || !currentMfg) return;
 
+    if (!ratePerPair) {
+      alert('The selected article has no wholesale rate configured. Set a catalog price before booking the order.');
+      return;
+    }
+
     const isOverride = tradeDiscountPercent > appSettings.defaultTradeDiscount;
     if (isOverride && !discountReason.trim()) {
       alert('Please provide a justification reason for requesting a special discount above the standard rate.');
       return;
     }
 
-    const orderId = `PO-${Math.floor(1000 + Math.random() * 9000)}`;
-
+    // Order id and batch number are generated server-side (create_order_draft
+    // RPC) — never fabricate them on the client. Margin-override requests are
+    // raised from the order drawer once the real order id exists.
     createOrder({
-      id: orderId,
       customerId: currentCust.id,
       customerName: currentCust.businessName,
       customerCity: currentCust.city,
@@ -169,16 +176,7 @@ export const CreateOrderWizardModal: React.FC = () => {
         },
       ],
       expectedDelivery: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      batchNumber: `BL-${Math.floor(10000 + Math.random() * 90000)}`,
     });
-
-    if (isOverride) {
-      try {
-        await discountRequestsService.requestDiscount(orderId, tradeDiscountPercent, discountReason);
-      } catch (err) {
-        console.warn('Note: Discount request queued in local state:', err);
-      }
-    }
 
     setIsCreateOrderModalOpen(false);
   };

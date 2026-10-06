@@ -18,16 +18,7 @@ adminRouter.post('/users/invite', async (req, res, next) => {
     }
 
     if (!supabaseAdmin) {
-      return res.status(200).json({
-        success: true,
-        message: `[Demo Mode] Simulated user invite email dispatched to ${email}`,
-        user: {
-          id: `user-sim-${Date.now()}`,
-          email,
-          role,
-          name: name || email.split('@')[0],
-        },
-      });
+      return res.status(503).json({ error: 'Server not configured' });
     }
 
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
@@ -61,10 +52,10 @@ adminRouter.post('/users/invite', async (req, res, next) => {
           id: authUser.user.id,
           user_id: authUser.user.id,
           name: name || email.split('@')[0],
-          phone: phone || '+91 98000 00000',
+          phone: phone || null,
           email,
-          zone: zone || 'North Zone',
-          cluster: cluster || 'Agra & Kanpur Clusters',
+          zone: zone || null,
+          cluster: cluster || null,
           status: 'In Market',
           roleTitle: 'Field Sales Rep',
         });
@@ -107,12 +98,7 @@ adminRouter.post('/invite', async (req, res, next) => {
     }
 
     if (!supabaseAdmin) {
-      return res.status(200).json({
-        success: true,
-        message: `[Demo Mode] Simulated invite sent to ${email}`,
-        token: 'demo-token-' + Date.now(),
-        orgId: targetOrgId || 'demo-org',
-      });
+      return res.status(503).json({ error: 'Server not configured' });
     }
 
     if (!targetOrgId) {

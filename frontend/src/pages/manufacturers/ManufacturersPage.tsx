@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Manufacturer } from '../../types';
+import { Manufacturer, Order } from '../../types';
+import { manufacturersService } from '../../services/manufacturers';
+import { ordersService } from '../../services/orders';
 import ManufacturersKpiCards from '../../components/manufacturers/ManufacturersKpiCards';
+import { EmptyState } from '../../components/ui';
+import { Icons } from '../../lib/icons';
 import {
-  Users,
-  TrendingUp,
-  Truck,
-  ShieldCheck,
   ChevronRight,
   Clock,
   Building2,
@@ -15,120 +15,79 @@ import {
   MoreVertical,
   Layers,
   MapPin,
-  CheckCircle2,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface ManufacturersPageProps {
   onNavigate: (path: string) => void;
 }
 
-const PLANT_DATA = [
-  {
-    id: 'mfg-1',
-    name: 'Apex Footwear Works',
-    status: 'Active Plants',
-    statusType: 'active',
-    hubLocation: 'Agra Hub, UP • Est. 2011',
-    specialization: 'Vulcanized Sneakers & Strobel Running Shoes',
-    utilization: 74,
-    capacityText: '74% (8,200 prs/mo)',
-    barColor: 'bg-emerald-500',
-    onTime: '96.4%',
-    qcPass: '99.2%',
-    activeMolds: 14,
-    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=160&q=80',
-  },
-  {
-    id: 'mfg-2',
-    name: 'Metro Leather Crafts',
-    status: 'Near Full',
-    statusType: 'near_full',
-    hubLocation: 'Kanpur Industrial Zone, UP',
-    specialization: 'Goodyear Welt Derby & Oiled Chelsea Boots',
-    utilization: 88,
-    capacityText: '88% (4,500 prs/mo)',
-    barColor: 'bg-amber-500',
-    onTime: '94.1%',
-    qcPass: '98.7%',
-    activeMolds: 14,
-    image: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=160&q=80',
-  },
-  {
-    id: 'mfg-3',
-    name: 'Zenith Polyurethanes',
-    status: 'Active Plants',
-    statusType: 'active',
-    hubLocation: 'Dongguan Technical Park • Tooling Hub',
-    specialization: 'Dual-density EVA Outsoles & Mold Tooling',
-    utilization: 65,
-    capacityText: '65% (15,000 prs/mo)',
-    barColor: 'bg-teal-500',
-    onTime: '98.2%',
-    qcPass: '99.6%',
-    activeMolds: 14,
-    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=160&q=80',
-  },
-  {
-    id: 'mfg-4',
-    name: 'Taj Heritage Craft',
-    status: 'Active Plants',
-    statusType: 'active',
-    hubLocation: 'Agra Unit 1 • Traditional Crust Finishing',
-    specialization: 'Italian Hand Crust Patina & Blake Stitching',
-    utilization: 62,
-    capacityText: '62% (3,800 prs/mo)',
-    barColor: 'bg-purple-600',
-    onTime: '92.8%',
-    qcPass: '99%',
-    activeMolds: 14,
-    image: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=160&q=80',
-  },
-];
+const getInitials = (name: string | undefined): string => {
+  return (
+    (name || '')
+      .replace(/__AUDIT_TEST__/g, '')
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || '—'
+  );
+};
 
-const BATCH_ORDERS = [
-  {
-    id: 'ORD-0148',
-    initials: 'AF',
-    customerStore: 'ABC Footwear',
-    location: 'Agra',
-    date: '24 Sep 2026',
-    articles: 'Runner Classic',
-    volume: '200 Pairs (16 Ctns)',
-    status: 'In Production',
-    statusType: 'in_production',
-    netValue: '₹2,66,000',
-  },
-  {
-    id: 'ORD-0146',
-    initials: 'DW',
-    customerStore: 'Delhi Walkways Hub',
-    location: 'New Delhi',
-    date: '22 Sep 2026',
-    articles: 'AeroGlide Knit Runner',
-    volume: '120 Pairs (10 Ctns)',
-    status: 'Delivered',
-    statusType: 'delivered',
-    netValue: '₹1,47,840',
-  },
-  {
-    id: 'ORD-0145',
-    initials: 'AF',
-    customerStore: 'ABC Footwear Hub',
-    location: 'Agra',
-    date: '19 Sep 2026',
-    articles: 'Verona Derby & Runners',
-    volume: '320 Pairs (26 Ctns)',
-    status: 'Under Review',
-    statusType: 'under_review',
-    netValue: '₹6,12,864',
-  },
-];
+const getStatusType = (status: string): 'in_production' | 'delivered' | 'under_review' => {
+  if (status === 'Delivered') return 'delivered';
+  if (['Draft', 'Submitted', 'Under Review'].includes(status)) return 'under_review';
+  return 'in_production';
+};
 
 export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate }) => {
   const { showToast } = useApp();
-  const [selectedPlantId, setSelectedPlantId] = useState('mfg-1');
+  const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
 
-  const selectedPlant = PLANT_DATA.find((p) => p.id === selectedPlantId) || PLANT_DATA[0];
+  // Real data only: plants and orders come from the server, never from fixtures.
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([manufacturersService.fetchManufacturers(), ordersService.fetchOrders()])
+      .then(([mfgs, ords]) => {
+        if (cancelled) return;
+        setManufacturers(mfgs);
+        setOrders(ords);
+        setSelectedPlantId(mfgs[0]?.id ?? null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selectedPlant =
+    manufacturers.find((p) => p.id === selectedPlantId) || manufacturers[0];
+
+  const plantOrders = selectedPlant
+    ? orders.filter((o) => o.manufacturerId === selectedPlant.id)
+    : [];
+
+  const totalCapacityPairs = manufacturers.reduce(
+    (sum, m) => sum + (m.monthlyCapacityPairs || 0),
+    0
+  );
+  const avgOnTimeRate =
+    manufacturers.length > 0
+      ? manufacturers.reduce((sum, m) => sum + (m.onTimeDeliveryRate || 0), 0) / manufacturers.length
+      : 0;
+  const avgQcPassRatio =
+    manufacturers.length > 0
+      ? manufacturers.reduce((sum, m) => sum + (m.qcPassRatio || 0), 0) / manufacturers.length
+      : 0;
 
   const getStatusBadge = (statusType: string, label: string) => {
     switch (statusType) {
@@ -181,153 +140,168 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
             Manufacturing Plants &amp; Foundries
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Agra &amp; Kanpur OEM partner foundries, production line utilization, and QC ratings.
+            OEM partner plants &amp; foundries, production line utilization, and QC ratings.
           </p>
         </div>
       </div>
 
       {/* 3. 4 KPI Summary Cards Row */}
       <ManufacturersKpiCards
-        totalUnitsCount="4 Units"
-        cumulativeCapacity="32K Prs/Mo"
-        onTimeRate="95%"
-        qcPassRate="99.2%"
+        totalUnitsCount={manufacturers.length}
+        cumulativeCapacity={
+          totalCapacityPairs > 0 ? `${totalCapacityPairs.toLocaleString('en-IN')} Prs/Mo` : '—'
+        }
+        onTimeRate={manufacturers.length > 0 ? `${avgOnTimeRate.toFixed(1)}%` : '—'}
+        qcPassRate={manufacturers.length > 0 ? `${avgQcPassRatio.toFixed(1)}%` : '—'}
       />
 
       {/* 4. Plants 2x2 Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {PLANT_DATA.map((plant) => {
-          const isSelected = selectedPlantId === plant.id;
+      {!isLoading && manufacturers.length === 0 ? (
+        <EmptyState
+          icon={Icons.Manufacturers}
+          title="No manufacturers added yet"
+          description="Add your partner plants & foundries to allocate production batches."
+        />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {manufacturers.map((plant) => {
+            const isSelected = selectedPlant?.id === plant.id;
+            const loadPct = Math.min(100, Math.max(0, plant.loadPercentage || 0));
 
-          return (
-            <div
-              key={plant.id}
-              onClick={() => setSelectedPlantId(plant.id)}
-              className={`bg-surface border rounded-2xl p-5 md:p-6 shadow-2xs transition-all duration-150 cursor-pointer ${
-                isSelected
-                  ? 'border-blue-500 ring-2 ring-blue-500/20'
-                  : 'border-border hover:border-border/80 hover:shadow-sm'
-              }`}
-            >
-              {/* Plant Header */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3.5">
-                  <img
-                    src={plant.image}
-                    alt={plant.name}
-                    className="w-12 h-12 rounded-full object-cover border border-border shrink-0"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight">
-                        {plant.name}
-                      </h3>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                          plant.statusType === 'near_full'
-                            ? 'bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/50'
-                            : 'bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50'
-                        }`}
-                      >
-                        {plant.status}
-                      </span>
+            return (
+              <div
+                key={plant.id}
+                onClick={() => setSelectedPlantId(plant.id)}
+                className={`bg-surface border rounded-2xl p-5 md:p-6 shadow-2xs transition-all duration-150 cursor-pointer ${
+                  isSelected
+                    ? 'border-blue-500 ring-2 ring-blue-500/20'
+                    : 'border-border hover:border-border/80 hover:shadow-sm'
+                }`}
+              >
+                {/* Plant Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border border-border flex items-center justify-center text-sm font-bold shrink-0">
+                      {getInitials(plant.companyName)}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                      <MapPin size={13} className="text-blue-500 shrink-0" />
-                      <span>{plant.hubLocation}</span>
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+                          {plant.companyName || '—'}
+                        </h3>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                            plant.status === 'Near Full'
+                              ? 'bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/50'
+                              : plant.status === 'Maintenance'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50'
+                              : 'bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50'
+                          }`}
+                        >
+                          {plant.status || '—'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <MapPin size={13} className="text-blue-500 shrink-0" />
+                        <span>
+                          {`${plant.hubLocation || '—'}${plant.estYear ? ` • Est. ${plant.estYear}` : ''}`}
+                        </span>
+                      </div>
                     </div>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showToast(`Analytics for ${plant.companyName || 'plant'}`);
+                    }}
+                    className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 transition-colors"
+                  >
+                    <BarChart2 size={18} />
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    showToast(`Analytics for ${plant.name}`);
-                  }}
-                  className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 transition-colors"
-                >
-                  <BarChart2 size={18} />
-                </button>
-              </div>
-
-              {/* Core Specialization Box */}
-              <div className="p-3.5 bg-muted/40 rounded-xl border border-border mt-4 text-xs">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">
-                  Core Specialization
-                </span>
-                <span className="font-semibold text-foreground block mt-0.5">
-                  {plant.specialization}
-                </span>
-              </div>
-
-              {/* Assembly Line Utilization */}
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="text-muted-foreground font-medium">Assembly Line Utilization</span>
-                  <span className="font-bold text-foreground">
-                    {plant.capacityText}
+                {/* Core Specialization Box */}
+                <div className="p-3.5 bg-muted/40 rounded-xl border border-border mt-4 text-xs">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">
+                    Core Specialization
+                  </span>
+                  <span className="font-semibold text-foreground block mt-0.5">
+                    {plant.primarySpecialization || '—'}
                   </span>
                 </div>
-                <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${plant.barColor}`}
-                    style={{ width: `${plant.utilization}%` }}
-                  />
+
+                {/* Assembly Line Utilization */}
+                <div className="mt-4">
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <span className="text-muted-foreground font-medium">Assembly Line Utilization</span>
+                    <span className="font-bold text-foreground">
+                      {`${loadPct}% (${(plant.monthlyCapacityPairs || 0).toLocaleString('en-IN')} prs/mo)`}
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        loadPct >= 85 ? 'bg-amber-500' : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${loadPct}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 3 Metric Pills */}
+                <div className="grid grid-cols-3 gap-2.5 pt-4 text-center">
+                  {/* On-Time */}
+                  <div className="p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                      <Clock size={15} />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block leading-tight">
+                        ON-TIME
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5">
+                        {plant.onTimeDeliveryRate || 0}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* QC Pass */}
+                  <div className="p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
+                      <ShieldCheck size={15} />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block leading-tight">
+                        QC PASS
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5">
+                        {plant.qcPassRatio || 0}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Active Molds */}
+                  <div className="p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
+                      <Building2 size={15} />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block leading-tight">
+                        ACTIVE MOLDS
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5">
+                        {plant.moldsActiveCount ?? 0}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* 3 Metric Pills */}
-              <div className="grid grid-cols-3 gap-2.5 pt-4 text-center">
-                {/* On-Time */}
-                <div className="p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Clock size={15} />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block leading-tight">
-                      ON-TIME
-                    </span>
-                    <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5">
-                      {plant.onTime}
-                    </span>
-                  </div>
-                </div>
-
-                {/* QC Pass */}
-                <div className="p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-                    <ShieldCheck size={15} />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block leading-tight">
-                      QC PASS
-                    </span>
-                    <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5">
-                      {plant.qcPass}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Active Molds */}
-                <div className="p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
-                    <Building2 size={15} />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block leading-tight">
-                      ACTIVE MOLDS
-                    </span>
-                    <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5">
-                      {plant.activeMolds}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* 5. Bottom Panel: Active Batches Allocated */}
       <div className="bg-surface border border-border rounded-2xl shadow-2xs overflow-hidden">
@@ -338,10 +312,10 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
             </div>
             <div>
               <h3 className="text-base font-bold text-foreground leading-tight">
-                Active Batches Allocated to {selectedPlant.name}
+                Active Batches Allocated to {selectedPlant?.companyName || '—'}
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                3 wholesale orders scheduled on factory assembly floor
+                {plantOrders.length} wholesale order{plantOrders.length === 1 ? '' : 's'} allocated to this plant
               </p>
             </div>
           </div>
@@ -371,73 +345,90 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {BATCH_ORDERS.map((order) => (
-                <tr
-                  key={order.id}
-                  onClick={() => onNavigate('/admin/orders')}
-                  className="hover:bg-muted/40 transition-colors cursor-pointer"
-                >
-                  {/* Order ID */}
-                  <td className="py-3.5 px-4 md:px-6">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
-                      {order.id}
-                    </span>
-                  </td>
-
-                  {/* Customer Store */}
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
-                        {order.initials}
-                      </div>
-                      <div>
-                        <div className="font-bold text-foreground text-xs sm:text-sm leading-tight">
-                          {order.customerStore}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          {order.location}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Date */}
-                  <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">
-                    {order.date}
-                  </td>
-
-                  {/* Articles */}
-                  <td className="py-3.5 px-4">
-                    <div className="font-medium text-foreground text-xs sm:text-sm leading-tight">
-                      {order.articles}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">
-                      {order.volume}
-                    </div>
-                  </td>
-
-                  {/* Status */}
-                  <td className="py-3.5 px-4">
-                    {getStatusBadge(order.statusType, order.status)}
-                  </td>
-
-                  {/* Net Value */}
-                  <td className="py-3.5 px-4 text-right font-bold font-mono text-foreground text-xs sm:text-sm">
-                    {order.netValue}
-                  </td>
-
-                  {/* Actions */}
-                  <td className="py-3.5 px-4 md:px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={() => showToast(`Actions for ${order.id}`)}
-                      className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                    >
-                      <MoreVertical size={16} />
-                    </button>
+              {plantOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7}>
+                    <EmptyState
+                      icon={Icons.Orders}
+                      title="No orders allocated to this plant yet"
+                      description="Orders assigned to this manufacturer will appear here."
+                    />
                   </td>
                 </tr>
-              ))}
+              ) : (
+                plantOrders.map((order) => {
+                  const firstItem = order.items?.[0];
+                  const articles = firstItem?.designName || firstItem?.articleCode || '—';
+
+                  return (
+                    <tr
+                      key={order.id}
+                      onClick={() => onNavigate('/admin/orders')}
+                      className="hover:bg-muted/40 transition-colors cursor-pointer"
+                    >
+                      {/* Order ID */}
+                      <td className="py-3.5 px-4 md:px-6">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
+                          {order.id}
+                        </span>
+                      </td>
+
+                      {/* Customer Store */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
+                            {getInitials(order.customerName)}
+                          </div>
+                          <div>
+                            <div className="font-bold text-foreground text-xs sm:text-sm leading-tight">
+                              {order.customerName || '—'}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              {order.customerCity || '—'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Date */}
+                      <td className="py-3.5 px-4 font-mono text-xs text-muted-foreground">
+                        {order.orderDate || '—'}
+                      </td>
+
+                      {/* Articles */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-medium text-foreground text-xs sm:text-sm leading-tight">
+                          {articles}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          {`${Number(order.pairsCount || 0)} Pairs (${Number(order.cartonsCount || 0)} Ctns)`}
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3.5 px-4">
+                        {getStatusBadge(getStatusType(order.status), order.status)}
+                      </td>
+
+                      {/* Net Value */}
+                      <td className="py-3.5 px-4 text-right font-bold font-mono text-foreground text-xs sm:text-sm">
+                        ₹{Number(order.netPayable || 0).toLocaleString('en-IN')}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 md:px-6 text-right" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => showToast(`Actions for ${order.id}`)}
+                          className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

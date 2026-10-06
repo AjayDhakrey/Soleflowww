@@ -248,7 +248,7 @@ export const FollowUpsKpiCards: React.FC<FollowUpsKpiCardsProps> = ({
   priorityCount,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Scheduled */}
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ScheduledTasks3D />
@@ -257,7 +257,7 @@ export const FollowUpsKpiCards: React.FC<FollowUpsKpiCardsProps> = ({
             Total Scheduled
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display wrap-anywhere"
             title={String(totalScheduledCount)}
           >
             <span className="tabular-nums">{totalScheduledCount}</span>
@@ -276,7 +276,7 @@ export const FollowUpsKpiCards: React.FC<FollowUpsKpiCardsProps> = ({
             Pending Action
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display wrap-anywhere"
             title={String(pendingCount)}
           >
             <span className="tabular-nums">{pendingCount}</span>
@@ -295,7 +295,7 @@ export const FollowUpsKpiCards: React.FC<FollowUpsKpiCardsProps> = ({
             Completed
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display wrap-anywhere"
             title={String(completedCount)}
           >
             <span className="tabular-nums">{completedCount}</span>
@@ -314,7 +314,7 @@ export const FollowUpsKpiCards: React.FC<FollowUpsKpiCardsProps> = ({
             Priority Reminders
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 mt-0.5 font-display wrap-anywhere"
             title={String(priorityCount)}
           >
             <span className="tabular-nums">{priorityCount}</span>

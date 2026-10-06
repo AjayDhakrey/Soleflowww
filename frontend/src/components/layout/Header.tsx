@@ -9,7 +9,10 @@ interface HeaderProps {
 }
 
 import { useAuth } from '../../auth/AuthProvider';
-import { Shield, Building2, ChevronDown, Check } from 'lucide-react';
+import { useViewMode, useReadOnly } from '../../context/ViewModeContext';
+import { usePlatformAccounts } from '../../hooks/usePlatformAccounts';
+import { ViewModeBanner } from '../common/ViewModeBanner';
+import { Shield, Building2, ChevronDown, Check, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Organization } from '../../types';
 
@@ -34,19 +37,12 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   } = useApp();
 
   const { org, isSuperAdmin, isDemoAccount, activeOrgId, setActiveOrgId } = useAuth();
+  const { isReadOnly, viewOrgId, viewOrgName, enterViewMode, exitViewMode } = useViewMode();
+  const { data: platformAccounts = [] } = usePlatformAccounts();
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
-  const [orgList, setOrgList] = useState<Organization[]>([]);
   const orgDropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (isSuperAdmin && supabase) {
-      supabase.from('organizations').select('*').then(({ data }) => {
-        if (data) setOrgList(data as Organization[]);
-      });
-    }
-  }, [isSuperAdmin]);
-
-  const activeOrgName = orgList.find((o) => o.id === activeOrgId)?.name || org?.name || 'Selected Business';
+  const activeDisplayOrgName = viewOrgName || (platformAccounts.find((o) => o.org_id === activeOrgId)?.name) || org?.name || 'My Workspace';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -105,7 +101,6 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const q = searchQuery.toLowerCase().trim();
@@ -140,24 +135,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
 
   return (
     <div className="sticky top-0 z-20">
-      {/* Super Admin Active Tenant Amber Banner */}
-      {isSuperAdmin && activeOrgId && (
-        <div className="bg-amber-500 text-slate-950 px-4 py-1.5 text-xs font-semibold flex items-center justify-between border-b border-amber-600/30 shadow-xs select-none">
-          <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-slate-950" />
-            <span>
-              Viewing: <strong>{activeOrgName}</strong> — Platform Admin Mode (Tenant Isolated)
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setActiveOrgId(null)}
-            className="text-[11px] bg-slate-950 text-amber-300 hover:bg-slate-900 px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer"
-          >
-            Exit to All Businesses
-          </button>
-        </div>
-      )}
+      {/* Super Admin Read-Only View Mode Sticky Amber Banner */}
+      <ViewModeBanner onExitNavigate={() => onNavigate('/platform/accounts')} />
 
       <header className="h-[72px] bg-surface border-b border-border px-4 md:px-8 flex items-center justify-between gap-4">
         {/* Left: Mobile Drawer Trigger + Search Bar in one line */}
@@ -250,7 +229,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                           }}
                           className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted cursor-pointer"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground">
+                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
                             <Icons.Designs size={16} strokeWidth={1.75} />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -282,7 +261,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                           }}
                           className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted cursor-pointer"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground">
+                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
                             <Icons.Orders size={16} strokeWidth={1.75} />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -308,16 +287,26 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
       <div className="flex items-center gap-3 shrink-0">
         {/* + New Action Menu */}
         <div className="relative hidden lg:block" ref={newMenuRef}>
-          <Button
-            variant="primary"
-            size="md"
-            icon={Icons.Add}
-            onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
-          >
-            New
-          </Button>
+          {isReadOnly ? (
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-muted text-muted-foreground text-xs font-semibold rounded-xl border border-border cursor-not-allowed opacity-75"
+              title="Actions disabled in Read-Only View Mode"
+            >
+              <Lock size={14} className="text-amber-500" />
+              <span>Read-Only</span>
+            </div>
+          ) : (
+            <Button
+              variant="primary"
+              size="md"
+              icon={Icons.Add}
+              onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
+            >
+              New
+            </Button>
+          )}
 
-          {isNewMenuOpen && (
+          {isNewMenuOpen && !isReadOnly && (
             <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
               <button
                 type="button"
@@ -390,62 +379,65 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
               type="button"
               onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
               className={`h-11 px-3 rounded-full border flex items-center gap-2 transition-colors cursor-pointer text-xs font-semibold ${
-                activeOrgId
-                  ? 'border-amber-400 bg-amber-50 text-amber-900'
+                isReadOnly || activeOrgId
+                  ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200'
                   : 'border-border bg-surface hover:bg-muted text-foreground'
               }`}
               title="Platform Business Switcher"
             >
-              <Building2 size={15} className={activeOrgId ? 'text-amber-700' : 'text-primary'} />
-              <span className="max-w-[130px] truncate">
-                {activeOrgId ? activeOrgName : 'All Businesses'}
+              <Building2 size={15} className={`shrink-0 ${isReadOnly || activeOrgId ? 'text-amber-600 dark:text-amber-400' : 'text-primary'}`} />
+              <span title={activeDisplayOrgName} className="max-w-[130px] truncate">
+                {activeDisplayOrgName}
               </span>
-              <ChevronDown size={14} className="text-muted-foreground" />
+              <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
             </button>
 
             {isOrgDropdownOpen && (
               <div className="absolute right-0 top-full mt-2 w-64 bg-surface border border-border rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-1.5 border-b border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="px-3 py-1.5 border-b border-border text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   Switch Active Business
                 </div>
                 <div className="max-h-60 overflow-y-auto divide-y divide-border/50 mt-1">
                   <button
                     type="button"
-                    onClick={() => {
-                      setActiveOrgId(null);
+                    onClick={async () => {
+                      await exitViewMode();
                       setIsOrgDropdownOpen(false);
+                      onNavigate('/platform/accounts');
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl hover:bg-muted cursor-pointer transition-colors ${
-                      !activeOrgId ? 'bg-primary/10 text-primary font-bold' : 'text-foreground'
+                      !isReadOnly ? 'bg-primary/10 text-primary font-bold' : 'text-foreground'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <Shield size={14} className="text-primary" />
-                      <span>All Businesses (Platform)</span>
+                      <span>My workspace (Platform)</span>
                     </div>
-                    {!activeOrgId && <Check size={14} />}
+                    {!isReadOnly && <Check size={14} />}
                   </button>
 
-                  {orgList.map((o) => (
+                  {platformAccounts.map((o) => (
                     <button
-                      key={o.id}
+                      key={o.org_id}
                       type="button"
-                      onClick={() => {
-                        setActiveOrgId(o.id);
+                      onClick={async () => {
+                        await enterViewMode(o.org_id, o.name);
                         setIsOrgDropdownOpen(false);
+                        onNavigate('/admin/dashboard');
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl hover:bg-muted cursor-pointer transition-colors ${
-                        activeOrgId === o.id ? 'bg-amber-100/70 text-amber-900 font-bold' : 'text-foreground'
+                        viewOrgId === o.org_id ? 'bg-amber-100/70 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 font-bold' : 'text-foreground'
                       }`}
                     >
-                      <div className="flex items-center gap-2 truncate">
+                      {/* zoom-proof: truncate is inert on a flex container; the name span keeps truncate */}
+                      <div className="flex items-center gap-2 min-w-0 flex-wrap">
                         <Building2 size={14} className="text-muted-foreground shrink-0" />
-                        <span className="truncate">{o.name}</span>
+                        <span title={o.name} className="truncate">{o.name}</span>
                         {o.is_demo && (
-                          <span className="text-[8px] px-1 py-0.2 bg-amber-200 text-amber-800 rounded font-bold">DEMO</span>
+                          <span className="whitespace-nowrap text-[8px] px-1 py-0.2 bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded font-bold">DEMO</span>
                         )}
                       </div>
-                      {activeOrgId === o.id && <Check size={14} className="text-amber-800 shrink-0" />}
+                      {viewOrgId === o.org_id && <Check size={14} className="text-amber-800 dark:text-amber-300 shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -464,7 +456,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           >
             <Icons.Notifications size={20} strokeWidth={1.75} />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface">
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center border-2 border-surface">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -501,7 +493,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-foreground truncate">
+                        <p title={n.title} className="text-xs font-semibold text-foreground truncate">
                           {n.title}
                         </p>
                         {!n.read && (
@@ -526,15 +518,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             className="rounded-full border border-border px-3 py-1.5 bg-surface hover:bg-muted flex items-center gap-2.5 cursor-pointer transition-colors select-none"
           >
             <Avatar name={currentUser.name} size="sm" />
-            <div className="hidden sm:block text-left">
-              <p className="text-xs font-semibold text-foreground leading-tight">
+            <div className="hidden sm:block text-left min-w-0">
+              <p title={currentUser.name} className="text-xs font-semibold text-foreground leading-tight truncate">
                 {currentUser.name}
               </p>
-              <p className="text-[10px] leading-tight text-muted-foreground capitalize">
+              <p className="text-[11px] leading-tight text-muted-foreground capitalize truncate">
                 {currentUser.role === 'admin' ? 'Admin' : 'Salesman'}
               </p>
             </div>
-            <Icons.ChevronDown size={14} className="text-muted-foreground hidden sm:block" />
+            <Icons.ChevronDown size={14} className="shrink-0 text-muted-foreground hidden sm:block" />
           </div>
 
           {isProfileMenuOpen && (

@@ -413,7 +413,7 @@ export const CollectedBank3D = () => (
    ========================================================================= */
 export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
   totalReceivables,
-  receivablesCaption = 'Across 5 active wholesale stores',
+  receivablesCaption = 'Across active stores',
   dueThisWeek,
   dueThisWeekCaption = 'Current billing cycle commitments',
   criticalAmount,
@@ -422,7 +422,7 @@ export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
   collectedCaption = 'MTD bank verified realizations',
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Receivables */}
       <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-emerald-100/90 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <TotalReceivablesWallet3D />
@@ -431,7 +431,7 @@ export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
             Total Receivables
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 mt-0.5 font-display wrap-anywhere"
             title={totalReceivables}
           >
             {totalReceivables}
@@ -450,7 +450,7 @@ export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
             Due This Week
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display wrap-anywhere"
             title={dueThisWeek}
           >
             {dueThisWeek}
@@ -469,7 +469,7 @@ export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
             Critical (≤ 30 Days)
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-400 mt-0.5 font-display wrap-anywhere"
             title={criticalAmount}
           >
             {criticalAmount}
@@ -488,7 +488,7 @@ export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
             Collected (This Month)
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 mt-0.5 font-display truncate"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 mt-0.5 font-display wrap-anywhere"
             title={collectedThisMonth}
           >
             {collectedThisMonth}
