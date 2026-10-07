@@ -17,6 +17,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import { AnalogTimePicker } from '../../components/ui';
 
 interface FollowUpsPageProps {
   onNavigate?: (path: string) => void;
@@ -244,7 +245,7 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground block mb-1">Scheduled Date</label>
                   <input
@@ -255,13 +256,11 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Target Time</label>
-                  <input
-                    type="text"
+                  <AnalogTimePicker
+                    label="Target Time (Analog Clock)"
                     value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    placeholder="e.g. 11:30 AM"
-                    className="w-full h-11 px-3 text-xs bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    onChange={setTime}
+                    placeholder="Set meeting time"
                   />
                 </div>
               </div>

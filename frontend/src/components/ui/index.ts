@@ -12,3 +12,4 @@ export * from './Avatar';
 export * from './EmptyState';
 export * from './Breadcrumbs';
 export * from './PageHeader';
+export * from './AnalogTimePicker';

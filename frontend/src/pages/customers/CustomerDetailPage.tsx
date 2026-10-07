@@ -40,6 +40,7 @@ import {
 import { CustomerRowActionMenu } from '../../components/customers/CustomerRowActionMenu';
 import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from '../../components/payments/ReceiptTemplate';
 import { clientsService } from '../../services/clients';
+import { AnalogTimePicker } from '../../components/ui';
 
 interface CustomerDetailPageProps {
   customerId: string;
@@ -111,6 +112,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
 
   const [newFollowUpText, setNewFollowUpText] = useState('');
   const [newFollowUpDate, setNewFollowUpDate] = useState(new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]);
+  const [newFollowUpTime, setNewFollowUpTime] = useState('11:00 AM');
 
   // Update URL search params when tab changes without full page reload
   const handleTabChange = (tabKey: string) => {
@@ -287,7 +289,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
       phone: customer.phone,
       reason: 'Scheduled Interaction & Order Discussion',
       date: newFollowUpDate || new Date().toISOString().split('T')[0],
-      time: '11:00 AM',
+      time: newFollowUpTime || '11:00 AM',
       notes: newFollowUpText.trim(),
       amountDue: customer.amountDue,
       status: 'today',
@@ -1029,14 +1031,24 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
           <div className="lg:col-span-5 bg-surface border border-border rounded-2xl p-5 shadow-2xs space-y-3">
             <h3 className="text-sm font-bold text-foreground">Schedule Next Interaction</h3>
             <form onSubmit={handleAddFollowUp} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-muted-foreground mb-1 font-medium">Follow-up Date</label>
-                <input
-                  type="date"
-                  value={newFollowUpDate}
-                  onChange={(e) => setNewFollowUpDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-xl text-foreground"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-muted-foreground mb-1 font-medium">Follow-up Date</label>
+                  <input
+                    type="date"
+                    value={newFollowUpDate}
+                    onChange={(e) => setNewFollowUpDate(e.target.value)}
+                    className="w-full h-11 px-3 bg-background border border-border rounded-xl text-foreground text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <AnalogTimePicker
+                    label="Follow-up Time"
+                    value={newFollowUpTime}
+                    onChange={setNewFollowUpTime}
+                    placeholder="Set time"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-muted-foreground mb-1 font-medium">Objective &amp; Notes</label>
