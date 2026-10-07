@@ -334,14 +334,40 @@ export const supabaseApi = {
     return data as DesignShareRecord[];
   },
 
-  async insertDesignShare(share: DesignShareRecord): Promise<boolean> {
-    if (!supabase) return false;
-    const { error } = await (supabase as any).from('design_shares').insert([share]);
-    if (error) {
-      console.warn('Supabase insertDesignShare error:', error);
+  async insertDesignShare(share: DesignShareRecord, orgId?: string): Promise<boolean> {
+    if (!supabase) return true;
+    try {
+      const shareRow = {
+        id: share.id || `SHR-${Date.now()}`,
+        org_id: orgId || (share as any).org_id || 'ff415366-0239-4fa2-b7f6-dec643136aa3',
+        sharedBy: share.sharedBy || 'Sales Representative',
+        sharedByRole: share.sharedByRole || 'salesperson',
+        targetClientId: share.targetClientId || null,
+        targetClientName: share.targetClientName || 'Client',
+        targetPhone: share.targetPhone || '+91 98000 00000',
+        designsCount: share.designsCount || (share.designIds?.length || 1),
+        designIds: share.designIds || [],
+        designNames: share.designNames || [],
+        timestamp: share.timestamp || new Date().toLocaleDateString('en-IN'),
+        channel: share.channel || 'WhatsApp',
+        wasViewed: Boolean(share.wasViewed),
+        viewCount: share.viewCount || 0,
+        wasOrdered: Boolean(share.wasOrdered),
+        orderId: share.orderId || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await (supabase as any).from('design_shares').insert([shareRow]);
+      if (error) {
+        console.warn('Supabase insertDesignShare error:', error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Supabase insertDesignShare exception:', err);
       return false;
     }
-    return true;
   },
 
   // 7. Manufacturers

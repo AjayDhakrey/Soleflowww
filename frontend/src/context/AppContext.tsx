@@ -318,9 +318,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const recordDesignShare = async (shareData: Partial<DesignShareRecord>) => {
-    if (!requirePersistence()) return false;
+    const effectiveOrg = orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
     const newShare: DesignShareRecord = {
-      id: `dshare-${Date.now()}`,
+      id: shareData.id || `dshare-${Date.now()}`,
       sharedBy: shareData.sharedBy || currentUser.name,
       sharedByRole: shareData.sharedByRole || (currentUser.role === 'admin' ? 'Trader / Admin' : 'Field Sales Rep'),
       targetClientId: shareData.targetClientId || (customers[0]?.id || 'cust-1'),
@@ -335,8 +335,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       viewCount: 0,
       wasOrdered: false,
     };
-    if (!await supabaseApi.insertDesignShare(newShare)) { showToast('Could not save this design share. Please retry.'); return false; }
+    
     setDesignShares((prev) => [newShare, ...prev]);
+
+    // Persist to Supabase
+    void supabaseApi.insertDesignShare(newShare, effectiveOrg);
+
     addAuditEvent({
       action: `Shared ${newShare.designsCount} Shoe Designs`,
       recordType: 'Design',

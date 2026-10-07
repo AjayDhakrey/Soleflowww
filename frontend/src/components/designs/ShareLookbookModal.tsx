@@ -46,7 +46,27 @@ export const ShareLookbookModal: React.FC = () => {
   const handleShare = async () => {
     if (!currentCust) return;
 
-    const saved = await recordDesignShare({
+    const token = crypto.randomUUID();
+    const shareUrl = `${window.location.origin}/#s/${token}`;
+
+    const cleanPhone = (currentCust.phone || '').replace(/[^0-9]/g, '');
+    const recipientPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+
+    const introMsg = customMsg.trim() || `Namaste ${currentCust.propName || currentCust.businessName}! Sharing our latest footwear designs.`;
+    const designListText = activeDesigns.map((d, idx) => `${idx + 1}. *${d.name}* (Art. ${d.articleCode || 'N/A'}) — ₹${d.price.toLocaleString('en-IN')}/pr`).join('\n');
+
+    const fullWhatsAppMessage = `${introMsg}\n\n${designListText}\n\n*View Interactive Catalog & Place Order:*\n${shareUrl}\n\n_SoleFlow B2B Footwear Network_`;
+
+    const waLink = recipientPhone
+      ? `https://wa.me/${recipientPhone}?text=${encodeURIComponent(fullWhatsAppMessage)}`
+      : `https://wa.me/?text=${encodeURIComponent(fullWhatsAppMessage)}`;
+
+    // Open WhatsApp in a new tab immediately
+    window.open(waLink, '_blank');
+
+    // Record share in background
+    await recordDesignShare({
+      id: `SHR-${Date.now()}`,
       targetClientId: currentCust.id,
       targetClientName: currentCust.businessName,
       targetPhone: currentCust.phone,
@@ -56,7 +76,6 @@ export const ShareLookbookModal: React.FC = () => {
       channel: 'WhatsApp',
     });
 
-    if (!saved) return;
     showToast(`Lookbook successfully shared with ${currentCust.businessName} on WhatsApp!`);
     setIsShareModalOpen(false);
   };

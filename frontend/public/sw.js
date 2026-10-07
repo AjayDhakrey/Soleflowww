@@ -1,10 +1,10 @@
 // SoleFlow Service Worker for Offline Caching & PWA Support
-const CACHE_NAME = 'soleflow-cache-v1';
+const CACHE_NAME = 'soleflow-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.ico'
+  '/favicon.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -34,12 +34,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests and skip Supabase API / Auth calls to ensure live data
+  // Only handle GET requests
   if (event.request.method !== 'GET') return;
+
+  // Only handle standard HTTP/HTTPS schemes (ignore chrome-extension, blob, data, etc.)
+  if (!event.request.url.startsWith('http://') && !event.request.url.startsWith('https://')) {
+    return;
+  }
+
   const url = new URL(event.request.url);
 
+  // Network-only for API and Supabase calls to ensure live data
   if (url.origin.includes('supabase.co') || url.pathname.startsWith('/api/')) {
-    // Network-only for API calls
     return;
   }
 
@@ -51,14 +57,14 @@ self.addEventListener('fetch', (event) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+              cache.put(event.request, responseToCache).catch(() => {});
+            }).catch(() => {});
           }
           return networkResponse;
         })
         .catch(() => cachedResponse);
 
       return cachedResponse || fetchPromise;
-    })
+    }).catch(() => fetch(event.request))
   );
 });
