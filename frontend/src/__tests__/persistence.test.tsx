@@ -6,11 +6,12 @@ import { AppProvider, useApp } from '../context/AppContext';
 
 const mocks = vi.hoisted(() => ({
   auth: { hasRealSession: true, isLoggedIn: true, isDemoAccount: false, user: { id: 'user-a', name: 'Owner', role: 'admin' }, profile: { org_id: 'org-a' } },
-  customers: vi.fn(), orders: vi.fn(), payments: vi.fn(), empty: vi.fn(), createClient: vi.fn(), createOrder: vi.fn(), recordPayment: vi.fn(), createFollowUp: vi.fn(), completeFollowUp: vi.fn(),
+  customers: vi.fn(), orders: vi.fn(), payments: vi.fn(), salesTeam: vi.fn(), updateSalesman: vi.fn(), empty: vi.fn(), createClient: vi.fn(), createOrder: vi.fn(), recordPayment: vi.fn(), createFollowUp: vi.fn(), completeFollowUp: vi.fn(),
 }));
 vi.mock('../auth/AuthProvider', () => ({ useAuth: () => mocks.auth }));
 vi.mock('../context/ViewModeContext', () => ({ useEffectiveOrgId: () => mocks.auth.profile.org_id, useReadOnly: () => false }));
-vi.mock('../lib/supabase', () => ({ isSupabaseConfigured: () => true, supabaseApi: { getCustomers: mocks.customers, getOrders: mocks.orders, getPayments: mocks.payments, getAuditLogs: mocks.empty, getDesignShares: mocks.empty, getManufacturers: mocks.empty, getSalesTeam: mocks.empty } }));
+vi.mock('../lib/supabase', () => ({ isSupabaseConfigured: () => true, supabaseApi: { getCustomers: mocks.customers, getOrders: mocks.orders, getPayments: mocks.payments, getAuditLogs: mocks.empty, getDesignShares: mocks.empty, getManufacturers: mocks.empty, getSalesTeam: mocks.salesTeam } }));
+vi.mock('../services/salesmen', () => ({ salesmenService: { updateSalesman: mocks.updateSalesman } }));
 vi.mock('../services/clients', () => ({ clientsService: { createClient: mocks.createClient }, mapClientRowToCustomer: (row: any) => row }));
 vi.mock('../services/orders', () => ({ ordersService: { createOrderDraft: mocks.createOrder } }));
 vi.mock('../services/payments', () => ({ paymentsService: { recordPayment: mocks.recordPayment } }));
@@ -26,9 +27,33 @@ beforeEach(() => {
   mocks.auth.hasRealSession = true; mocks.auth.isDemoAccount = false;
   mocks.auth.user.id = 'user-a'; mocks.auth.profile.org_id = 'org-a';
   mocks.empty.mockResolvedValue([]); mocks.customers.mockResolvedValue([]); mocks.orders.mockResolvedValue([]); mocks.payments.mockResolvedValue([]);
+  mocks.salesTeam.mockResolvedValue([]);
 });
 afterEach(cleanup);
 describe('Account data persistence', () => {
+  it('keeps the real account identity when a role switch is attempted', async () => {
+    mount(); await waitFor(() => expect(app.currentUser.id).toBe('user-a'));
+    await act(async () => { app.switchRole('salesperson'); });
+    expect(app.currentUser.id).toBe('user-a'); expect(localStorage.getItem('soleflow_auth_session')).toBeNull();
+  });
+  it('persists a dispatched route stop before updating the checklist and restores it on reload', async () => {
+    mocks.salesTeam.mockResolvedValue([{ id: 'rep-a', tasksChecklist: [] }]);
+    mocks.updateSalesman.mockResolvedValue({ success: true });
+    const view = mount(); await waitFor(() => expect(app.salesTeam.length).toBe(1));
+    const task = { id: 'stop-a', title: 'Visit saved store', completed: false } as any;
+    await act(async () => { expect(await app.addSalesTask('rep-a', task)).toBe(true); });
+    expect(mocks.updateSalesman).toHaveBeenCalledWith('rep-a', { tasksChecklist: [task] });
+    expect(app.salesTeam[0].tasksChecklist).toEqual([task]);
+    view.unmount(); mocks.salesTeam.mockResolvedValue([{ id: 'rep-a', tasksChecklist: [task] }]); mount();
+    await waitFor(() => expect(app.salesTeam[0]?.tasksChecklist).toEqual([task]));
+  });
+  it('does not show a dispatched stop when the database rejects it', async () => {
+    mocks.salesTeam.mockResolvedValue([{ id: 'rep-a', tasksChecklist: [] }]);
+    mocks.updateSalesman.mockResolvedValue({ success: false, error: 'Write denied' });
+    mount(); await waitFor(() => expect(app.salesTeam.length).toBe(1));
+    await act(async () => { expect(await app.addSalesTask('rep-a', { id: 'stop-a' } as any)).toBe(false); });
+    expect(app.salesTeam[0].tasksChecklist).toEqual([]);
+  });
   it('uses the saved database ID and reloads the customer after remount', async () => {
     const customer = { id: 'database-client-id', businessName: 'Saved store' };
     mocks.createClient.mockResolvedValue({ success: true, data: customer });

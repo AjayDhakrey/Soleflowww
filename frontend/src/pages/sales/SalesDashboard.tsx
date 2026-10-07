@@ -659,9 +659,8 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                         variant="ghost"
                         size="sm"
                         icon={Icons.Check}
-                        onClick={() => {
-                          completeFollowUp(f.id);
-                          showToast(`Follow-up with ${f.customerName} marked complete!`);
+                        onClick={async () => {
+                          if (await completeFollowUp(f.id)) showToast(`Follow-up with ${f.customerName} marked complete!`);
                         }}
                       >
                         Done

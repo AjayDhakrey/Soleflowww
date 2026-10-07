@@ -362,7 +362,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
               Signed in as <span className="font-semibold text-foreground">{currentUser.email || currentUser.name}</span>
             </div>
 
-            <button
+{isDemoAccount && (            <button
               type="button"
               onClick={() => {
                 const nextRole = currentUser.role === 'admin' ? 'salesperson' : 'admin';
@@ -374,7 +374,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
             >
               <Icons.Refresh size={16} strokeWidth={1.75} className="text-foreground" />
               Switch to {currentUser.role === 'admin' ? 'Salesman View' : 'Admin View'}
-            </button>
+            </button>)}
 
             <button
               type="button"

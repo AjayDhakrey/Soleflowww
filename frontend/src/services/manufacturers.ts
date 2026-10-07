@@ -70,7 +70,7 @@ export const manufacturersService = {
       const { error } = await supabase
         .from('manufacturers')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id).select('id').single();
 
       if (error) throw parseSupabaseError(error);
       return { success: true };

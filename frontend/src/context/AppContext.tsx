@@ -61,6 +61,8 @@ interface AppContextType {
   selectedCustomer: Customer | null;
   setSelectedCustomer: (cust: Customer | null) => void;
   addCustomer: (cust: Partial<Customer>) => Promise<boolean>;
+  archiveCustomer: (customerId: string) => Promise<boolean>;
+  assignCustomerSalesman: (customerId: string, salesmanId: string) => Promise<boolean>;
   designs: ShoeDesign[];
   setDesigns: React.Dispatch<React.SetStateAction<ShoeDesign[]>>;
   refreshDesigns: () => Promise<void>;
@@ -69,16 +71,17 @@ interface AppContextType {
   clearSelectedDesigns: () => void;
   orders: Order[];
   createOrder: (order: Partial<Order>) => Promise<boolean>;
-  updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<boolean>;
   manufacturers: Manufacturer[];
   salesTeam: Salesperson[];
   toggleSalesTask: (salespersonId: string, taskId: string) => void;
+  addSalesTask: (salespersonId: string, task: Salesperson['tasksChecklist'][number]) => Promise<boolean>;
   notifications: NotificationItem[];
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   followUps: FollowUpItem[];
   addFollowUp: (item: Partial<FollowUpItem>) => Promise<boolean>;
-  completeFollowUp: (id: string) => void;
+  completeFollowUp: (id: string) => Promise<boolean>;
   fieldVisits: FieldVisitItem[];
   addFieldVisit: (item: Partial<FieldVisitItem>) => Promise<boolean>;
   completeFieldVisit: (id: string, outcome: FieldVisitItem['outcome'], notes: string) => void;
@@ -281,10 +284,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isWalkthroughOpen, setIsWalkthroughOpen] = useState(false);
   const [walkthroughStep, setWalkthroughStep] = useState(0);
 
-  const addAuditEvent = (eventData: Partial<AuditEvent>) => {
+  const addAuditEvent = async (eventData: Partial<AuditEvent>) => {
     if (!isSupabaseActive || isReadOnly) return;
     const newEvent: AuditEvent = {
-      id: `aud-${Date.now()}`,
+      id: crypto.randomUUID(),
       actor: eventData.actor || currentUser.name,
       actorRole: eventData.actorRole || (currentUser.role === 'admin' ? 'Trader / Admin' : 'Field Sales Rep'),
       action: eventData.action || 'System Update',
@@ -296,10 +299,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       timestamp: 'Just now',
       source: eventData.source || 'Web App',
     };
+    if (!await supabaseApi.insertAuditLog(newEvent)) { showToast('Activity log could not be saved.'); return; }
     setAuditLogs((prev) => [newEvent, ...prev]);
-    if (isSupabaseActive) {
-      supabaseApi.insertAuditLog(newEvent);
-    }
   };
 
   const recordDesignShare = async (shareData: Partial<DesignShareRecord>) => {
@@ -384,7 +385,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [auth?.user, auth?.isLoggedIn, auth?.isLoading]);
 
   const switchRole = (role?: UserRole) => {
-
+    if (auth.hasRealSession || !auth.isDemoAccount) {
+      showToast('Your account role is managed by your organization.');
+      return;
+    }
     const targetRole: UserRole = role || (currentUser.role === 'admin' ? 'salesperson' : 'admin');
     const user = targetRole === 'admin' ? MOCK_USERS.admin : MOCK_USERS.salesperson;
     setCurrentUser(user);
@@ -528,6 +532,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     invalidateData(); showToast('Customer saved.'); return true;
   };
 
+  const archiveCustomer = async (customerId: string) => {
+    if (!requirePersistence()) return false;
+    const result = await clientsService.archiveClient(customerId);
+    if (!result.success) { showToast(result.error || 'Customer could not be archived.'); return false; }
+    setCustomers(prev => prev.filter(customer => customer.id !== customerId));
+    setSelectedCustomer(prev => prev?.id === customerId ? null : prev);
+    invalidateData(); return true;
+  };
+  const assignCustomerSalesman = async (customerId: string, salesmanId: string) => {
+    if (!requirePersistence()) return false;
+    const result = await clientsService.assignSalesman(customerId, salesmanId);
+    if (!result.success) { showToast(result.error || 'Assignment could not be saved.'); return false; }
+    const rep = salesTeam.find(item => item.id === salesmanId);
+    const update = (customer: Customer) => customer.id === customerId ? { ...customer, salespersonId: salesmanId, salespersonName: rep?.name || '' } : customer;
+    setCustomers(prev => prev.map(update));
+    setSelectedCustomer(prev => prev ? update(prev) : prev);
+    invalidateData(); return true;
+  };
+
   const createOrder = async (input: Partial<Order>) => {
     if (!requirePersistence()) return false;
     const result = await ordersService.createOrderDraft({ order: input, items: input.items || [] });
@@ -541,11 +564,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateOrderStatus = async (orderId: string, status: Order['status']) => {
-    if (!requirePersistence()) return;
+    if (!requirePersistence()) return false;
     const result = await ordersService.advanceOrderStatus({ orderId, newStatus: status });
-    if (!result.success) { showToast(result.error || 'Status could not be saved.'); return; }
+    if (!result.success) { showToast(result.error || 'Status could not be saved.'); return false; }
     setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status } : order));
-    invalidateData(); showToast('Order status saved.');
+    invalidateData(); showToast('Order status saved.'); return true;
   };
 
   const toggleSalesTask = async (salespersonId: string, taskId: string) => {
@@ -556,6 +579,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const result = await salesmenService.updateSalesman(salespersonId, { tasksChecklist });
     if (!result.success) { showToast(result.error || 'Task could not be saved.'); return; }
     setSalesTeam(prev => prev.map(item => item.id === salespersonId ? { ...item, tasksChecklist } : item));
+  };
+
+  const addSalesTask = async (salespersonId: string, task: Salesperson['tasksChecklist'][number]) => {
+    if (!requirePersistence()) return false;
+    const rep = salesTeam.find(item => item.id === salespersonId);
+    if (!rep) return false;
+    const tasksChecklist = [...(rep.tasksChecklist || []), task];
+    const result = await salesmenService.updateSalesman(salespersonId, { tasksChecklist });
+    if (!result.success) { showToast(result.error || 'Route stop could not be saved.'); return false; }
+    setSalesTeam(prev => prev.map(item => item.id === salespersonId ? { ...item, tasksChecklist } : item));
+    invalidateData();
+    return true;
   };
 
   const markNotificationAsRead = async (id: string) => {
@@ -574,10 +609,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setFollowUps(prev => [saved, ...prev]); showToast('Follow-up saved.'); return true;
   };
   const completeFollowUp = async (id: string) => {
-    if (!requirePersistence()) return;
+    if (!requirePersistence()) return false;
     const result = await followUpsService.completeFollowUp(id);
-    if (!result.success) { showToast(result.error || 'Follow-up could not be completed.'); return; }
+    if (!result.success) { showToast(result.error || 'Follow-up could not be completed.'); return false; }
     setFollowUps(prev => prev.map(f => f.id === id ? { ...f, status: 'completed' } : f));
+    return true;
   };
   const addFieldVisit = async (input: Partial<FieldVisitItem>) => {
     if (!requirePersistence()) return false;
@@ -624,6 +660,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectedCustomer,
         setSelectedCustomer,
         addCustomer,
+        archiveCustomer,
+        assignCustomerSalesman,
         designs,
         setDesigns,
         refreshDesigns,
@@ -636,6 +674,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         manufacturers,
         salesTeam,
         toggleSalesTask,
+        addSalesTask,
         notifications,
         markNotificationAsRead,
         markAllNotificationsAsRead,

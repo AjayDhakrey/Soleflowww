@@ -47,7 +47,7 @@ interface SalesTeamPageProps {
 }
 
 export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
-  const { salesTeam, toggleSalesTask, showToast } = useApp();
+  const { salesTeam, toggleSalesTask, addSalesTask, showToast } = useApp();
   const [selectedRepId, setSelectedRepId] = useState<string>(salesTeam[0]?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'In Market' | 'Office/HQ'>('All');
@@ -93,7 +93,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
     return activeRep.tasksChecklist;
   }, [activeRep, taskFilter]);
 
-  const handleCreateStop = (e: React.FormEvent) => {
+  const handleCreateStop = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStopTitle.trim()) return;
 
@@ -109,7 +109,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
       type: newStopType,
     };
 
-    activeRep.tasksChecklist.push(newTask);
+    if (!await addSalesTask(activeRep.id, newTask)) return;
     showToast(`New stop "${newStopTitle}" dispatched to ${activeRep.name}'s route.`);
     setNewStopTitle('');
     setNewStopDesc('');

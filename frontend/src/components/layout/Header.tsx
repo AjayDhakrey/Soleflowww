@@ -538,7 +538,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 </p>
                 <p className="text-xs text-muted-foreground">{currentUser.email}</p>
               </div>
-              <button
+{isDemoAccount && (              <button
                 type="button"
                 onClick={() => {
                   const nextRole = currentUser.role === 'admin' ? 'salesperson' : 'admin';
@@ -550,7 +550,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
               >
                 <Icons.Refresh size={14} className="text-foreground" />
                 Switch to {currentUser.role === 'admin' ? 'Sales View' : 'Admin View'}
-              </button>
+              </button>)}
 
               {/* Quick Dark Mode Toggle */}
               <div

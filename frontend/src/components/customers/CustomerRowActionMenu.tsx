@@ -36,10 +36,17 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
     setIsPaymentModalOpen,
     setIsShareModalOpen,
     showToast,
+    addFollowUp,
+    archiveCustomer,
+    assignCustomerSalesman,
+    salesTeam,
   } = useApp();
 
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [assignedRep, setAssignedRep] = useState(customer.salespersonId || '');
+  const [isAssigning, setIsAssigning] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close on click outside or Escape
@@ -113,10 +120,10 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
     window.location.href = `tel:${customer.phone}`;
   };
 
-  const handleScheduleFollowUp = (e: React.MouseEvent) => {
+  const handleScheduleFollowUp = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
-    showToast(`Follow-up scheduled with ${customer.businessName}`);
+    await addFollowUp({ customerId: customer.id, customerName: customer.businessName, customerCity: customer.city, phone: customer.phone, reason: 'call', status: 'today', date: new Date().toISOString(), notes: 'Follow-up scheduled from customer menu' });
   };
 
   const handleCopyId = (e: React.MouseEvent) => {
@@ -133,19 +140,36 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
   const handleAssignSalesman = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
-    showToast(`Sales representative reassignment requested for ${customer.businessName}`);
+    setIsAssignOpen(true);
   };
 
-  const handleArchive = (e: React.MouseEvent) => {
+  const handleArchive = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
     if (window.confirm(`Are you sure you want to archive ${customer.businessName}?`)) {
-      showToast(`${customer.businessName} has been archived`);
+      if (await archiveCustomer(customer.id)) showToast(`${customer.businessName} has been archived`);
     }
   };
 
   return (
     <div className="relative inline-block text-left" ref={menuRef} onClick={(e) => e.stopPropagation()}>
+      {isAssignOpen && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Assign sales representative">
+        <div className="w-full max-w-sm rounded-xl bg-surface p-5 shadow-xl space-y-4">
+          <h3 className="font-semibold">Assign {customer.businessName}</h3>
+          <select aria-label="Sales representative" className="w-full border border-border rounded-lg p-2 bg-surface" value={assignedRep} onChange={e => setAssignedRep(e.target.value)}>
+            <option value="">Select representative</option>
+            {salesTeam.map(rep => <option key={rep.id} value={rep.id}>{rep.name}</option>)}
+          </select>
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => setIsAssignOpen(false)}>Cancel</button>
+            <button type="button" disabled={!assignedRep || isAssigning} onClick={async () => {
+              setIsAssigning(true);
+              try { if (await assignCustomerSalesman(customer.id, assignedRep)) { setIsAssignOpen(false); showToast('Sales representative assignment saved.'); } }
+              finally { setIsAssigning(false); }
+            }}>{isAssigning ? 'Saving…' : 'Save assignment'}</button>
+          </div>
+        </div>
+      </div>}
       <button
         type="button"
         aria-haspopup="true"

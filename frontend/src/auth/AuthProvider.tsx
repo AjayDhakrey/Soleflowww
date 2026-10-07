@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, Organization } from '../types';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, setDemoModeActive } from '../lib/supabase';
 import { MOCK_USERS } from '../data/mockData';
 
 export interface UserProfile {
@@ -101,7 +101,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<UserRole>('salesperson');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [hasRealSession, setHasRealSession] = useState<boolean>(false);
+  const [hasRealSession, setRealSession] = useState<boolean>(false);
+  const setHasRealSession = (active: boolean) => {
+    if (active) setDemoModeActive(false);
+    setRealSession(active);
+  };
 
   // Helper to map DB profile to App User model
   const mapProfileToUser = (prof: UserProfile): User => {
@@ -185,7 +189,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const stored = localStorage.getItem(AUTH_STORAGE_KEY);
           if (stored) {
             const data = JSON.parse(stored);
-            if (data?.isLoggedIn && (data.user?.is_demo_account || allowDemo)) {
+            if (data?.isLoggedIn && data.user?.is_demo_account) {
+              setDemoModeActive(true);
               const activeRole: UserRole = data.role === 'salesperson' ? 'salesperson' : 'admin';
               const activeUser = data.user || (activeRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin);
               setUser(activeUser);
@@ -379,6 +384,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Quick Instant Demo Login
   const quickDemoLogin = (demoRole: 'superadmin' | 'admin' | 'salesperson') => {
+    setDemoModeActive(true);
     setAuthError(null);
     setIsLoading(false);
 
@@ -446,13 +452,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthError(null);
     setIsLoading(true);
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const isDemoEmail =
-      normalizedEmail === 'admin@soleflow.com' ||
-      normalizedEmail === 'sales@soleflow.com' ||
-      normalizedEmail === 'superadmin@soleflow.com' ||
-      normalizedEmail.includes('soleflow.com');
-
     try {
       // 1. If real Supabase client is configured, attempt Supabase Auth
       if (supabase && isConfigured) {
@@ -462,17 +461,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (error) {
-          // If Supabase auth fails and this is a demo email, fall back to instant demo session
-          if (isDemoEmail && allowDemo) {
-            console.warn('Supabase Auth demo account error; activating demo mode:', error.message);
-            const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
-              ? 'superadmin'
-              : normalizedEmail.includes('sales')
-              ? 'salesperson'
-              : 'admin';
-            return quickDemoLogin(roleForDemo);
-          }
-
           setAuthError(error.message);
           setIsLoading(false);
           return { success: false, error: error.message };
@@ -495,29 +483,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Offline / Demo mode fallback
-      if (isDemoEmail && allowDemo) {
-        const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
-          ? 'superadmin'
-          : normalizedEmail.includes('sales')
-          ? 'salesperson'
-          : 'admin';
-        return quickDemoLogin(roleForDemo);
-      }
-
       setAuthError('Authentication failed.');
       setIsLoading(false);
       return { success: false, error: 'Authentication failed. Please check your credentials.' };
     } catch (err: any) {
       console.error('Sign in unexpected error:', err);
-      if (isDemoEmail && allowDemo) {
-        const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
-          ? 'superadmin'
-          : normalizedEmail.includes('sales')
-          ? 'salesperson'
-          : 'admin';
-        return quickDemoLogin(roleForDemo);
-      }
       const msg = err?.message || 'Login failed. Please check your credentials.';
       setAuthError(msg);
       setIsLoading(false);
@@ -527,6 +497,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sign Out implementation
   const signOut = async (): Promise<void> => {
+    setDemoModeActive(false);
     setIsLoading(true);
     if (supabase) {
       try {
@@ -582,8 +553,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Demo role switch (strictly restricted to demo mode)
   const switchDemoRole = (newRole: UserRole) => {
-    if (!allowDemo) {
-      console.warn('Role switching is only permitted in Demo Mode.');
+    if (hasRealSession || !(profile?.is_demo_account || user?.is_demo_account)) {
       return;
     }
     const newUser = newRole === 'admin' ? MOCK_USERS.admin : MOCK_USERS.salesperson;
@@ -606,7 +576,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasRealSession(false);
     localStorage.setItem(
       AUTH_STORAGE_KEY,
-      JSON.stringify({ isLoggedIn: true, role: newRole, email: newUser.email })
+      JSON.stringify({ isLoggedIn: true, role: newRole, email: newUser.email, user: { ...newUser, is_demo_account: true } })
     );
   };
 

@@ -1,7 +1,7 @@
 -- Run through an administrative SQL connection. All fixtures roll back.
 BEGIN;
 DO $$
-DECLARE v_actor uuid; v_org uuid; v_client jsonb; v_design jsonb; v_order jsonb; v_payment jsonb; v_key text;
+DECLARE v_actor uuid; v_org uuid; v_client jsonb; v_design jsonb; v_order jsonb; v_payment jsonb; v_key text; v_team text;
 BEGIN
     SELECT p.id,p.org_id INTO v_actor,v_org FROM public.profiles p JOIN auth.users u ON u.id=p.id WHERE p.role='admin' AND NOT p.is_super_admin ORDER BY p.created_at DESC LIMIT 1;
     IF v_actor IS NULL THEN RAISE EXCEPTION 'A real admin account is required for this test'; END IF;
@@ -17,11 +17,26 @@ BEGIN
     IF v_payment->>'status' <> 'verified' THEN RAISE EXCEPTION 'Cash payment not verified'; END IF;
     IF NOT EXISTS(SELECT 1 FROM public.payment_allocations WHERE payment_id=v_payment->>'id' AND order_id=v_order->>'id' AND amount=500) THEN RAISE EXCEPTION 'Payment allocation missing'; END IF;
     IF (public.record_payment(p_client_id=>v_client->>'id',p_amount=>500,p_method=>'Cash',p_idempotency_key=>v_key)->>'id') <> v_payment->>'id' THEN RAISE EXCEPTION 'Payment retry duplicated'; END IF;
+    IF v_order->>'status'='Draft' THEN PERFORM public.advance_order_status(v_order->>'id','Submitted'); END IF;
+    PERFORM public.advance_order_status(v_order->>'id','Confirmed');
+    PERFORM public.advance_order_status(v_order->>'id','In Production');
+    PERFORM public.advance_order_status(v_order->>'id','Ready');
+    PERFORM public.advance_order_status(v_order->>'id','Dispatched');
+    PERFORM public.advance_order_status(v_order->>'id','Delivered');
+    IF NOT EXISTS(SELECT 1 FROM public.orders WHERE id=v_order->>'id' AND status='Delivered') THEN RAISE EXCEPTION 'Order stage did not persist'; END IF;
+    v_team:=gen_random_uuid()::text;
+    INSERT INTO public.sales_team(id,org_id,name,"roleTitle") VALUES(v_team,v_org,'Persistence rep','Field Sales Rep');
+    PERFORM public.set_sales_tasks(v_team,'[{"id":"test-stop","title":"Saved stop","completed":false}]'::jsonb);
+    PERFORM public.assign_salesman(v_client->>'id',v_team);
+    IF NOT EXISTS(SELECT 1 FROM public.sales_team WHERE id=v_team AND "tasksChecklist"->0->>'id'='test-stop') OR NOT EXISTS(SELECT 1 FROM public.customers WHERE id=v_client->>'id' AND "salespersonId"=v_team) THEN RAISE EXCEPTION 'Checklist or assignment did not persist'; END IF;
+    INSERT INTO public.client_notes(client_id,author_id,author_name,note) VALUES(v_client->>'id',v_actor,'Test','Saved note');
     INSERT INTO public.follow_ups(client_id,owner_id,owner_name,due_at,type,status) VALUES(v_client->>'id',v_actor,'Test',now(),'call','pending');
     UPDATE public.follow_ups SET status='completed' WHERE client_id=v_client->>'id';
     INSERT INTO public.field_visits(client_id,salesperson_name,visit_date,purpose,status) VALUES(v_client->>'id','Test',current_date,'Persistence test','planned');
     UPDATE public.field_visits SET status='completed' WHERE client_id=v_client->>'id';
     IF NOT EXISTS(SELECT 1 FROM public.follow_ups WHERE client_id=v_client->>'id' AND status='completed') OR NOT EXISTS(SELECT 1 FROM public.field_visits WHERE client_id=v_client->>'id' AND status='completed') THEN RAISE EXCEPTION 'Follow-up or visit update missing'; END IF;
+    PERFORM public.archive_client(v_client->>'id');
+    IF NOT EXISTS(SELECT 1 FROM public.customers WHERE id=v_client->>'id' AND archived_at IS NOT NULL) THEN RAISE EXCEPTION 'Archive did not persist'; END IF;
     PERFORM set_config('request.jwt.claim.sub',(SELECT id::text FROM public.profiles WHERE role='admin' AND org_id<>v_org LIMIT 1),true);
     BEGIN
         PERFORM public.record_payment(p_client_id=>v_client->>'id',p_amount=>1,p_method=>'Cash');

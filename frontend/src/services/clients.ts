@@ -233,7 +233,7 @@ export const clientsService = {
       const { error } = await supabase
         .from('customers')
         .update(rowUpdates)
-        .eq('id', clientId);
+        .eq('id', clientId).select('id').single();
 
       if (error) throw parseSupabaseError(error);
       return { success: true };

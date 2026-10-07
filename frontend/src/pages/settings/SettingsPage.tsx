@@ -182,7 +182,7 @@ export const SettingsPage: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase.from('org_invites').delete().eq('id', inviteId);
+      const { error } = await supabase.from('org_invites').delete().eq('id', inviteId).select('id').single();
       if (error) {
         showToast(`Failed: ${error.message}`);
       } else {
@@ -210,7 +210,7 @@ export const SettingsPage: React.FC = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ is_active: nextStatus })
-        .eq('id', memberId);
+        .eq('id', memberId).select('id').single();
 
       if (error) {
         showToast(`Failed: ${error.message}`);
@@ -393,7 +393,7 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {/* Role Switcher Demo */}
-          <Panel
+{isDemoAccount && (          <Panel
             title="Active Session Role"
             subtitle="Switch between wholesale trader administrative control and field representative view"
           >
@@ -419,7 +419,7 @@ export const SettingsPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </Panel>
+          </Panel>)}
 
           <div className="flex justify-end">
             <Button type="submit" variant="primary" icon={Icons.Check}>

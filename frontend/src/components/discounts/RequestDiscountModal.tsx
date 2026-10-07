@@ -27,7 +27,7 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
   orderId: preselectedOrderId,
   onSuccess,
 }) => {
-  const { orders, showToast, updateOrderStatus } = useApp();
+  const { orders, showToast } = useApp();
   const [selectedOrderId, setSelectedOrderId] = useState<string>(preselectedOrderId || '');
   const [requestedPercent, setRequestedPercent] = useState<number>(9.5);
   const [reason, setReason] = useState('');
@@ -93,9 +93,6 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
         reason,
         currentOrder
       );
-      if (updateOrderStatus) {
-        updateOrderStatus(currentOrder.id, 'Under Review');
-      }
       showToast(`Special margin request submitted for Order #${currentOrder.id}!`);
       onSuccess(created);
       onClose();

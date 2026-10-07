@@ -46,7 +46,7 @@ export const notificationsService = {
       const { error } = await supabase
         .from('notifications')
         .update({ read_at: new Date().toISOString() })
-        .eq('id', id);
+        .eq('id', id).select('id').single();
 
       if (error) throw parseSupabaseError(error);
       return true;

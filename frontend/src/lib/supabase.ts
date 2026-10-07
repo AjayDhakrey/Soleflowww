@@ -36,7 +36,9 @@ const rawAnonKey =
   import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-export const isDemoModeActive = import.meta.env.VITE_DEMO_MODE === 'true';
+// A demo build must not divert a real signed-in account's writes into memory.
+export let isDemoModeActive = false;
+export const setDemoModeActive = (active: boolean) => { isDemoModeActive = active; };
 
 const supabaseUrl = rawUrl || FALLBACK_SUPABASE_URL;
 const supabaseAnonKey = rawAnonKey || FALLBACK_SUPABASE_ANON_KEY;
@@ -91,6 +93,7 @@ export const supabaseApi = {
     let query = (supabase as any)
       .from('customers')
       .select('*')
+      .is('archived_at', null)
       .order('created_at', { ascending: false });
     if (orgId) query = query.eq('org_id', orgId);
     const { data, error } = await query;

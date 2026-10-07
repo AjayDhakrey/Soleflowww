@@ -94,7 +94,7 @@ export const designsService = {
    */
   async fetchDesigns(filters?: { category?: string; status?: string; search?: string; orgId?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
@@ -159,7 +159,7 @@ export const designsService = {
    */
   async fetchAllDesigns(options?: { includeArchived?: boolean; onlyArchived?: boolean; search?: string; orgId?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
@@ -204,7 +204,7 @@ export const designsService = {
 
   async fetchDesignById(id: string): Promise<ShoeDesign | null> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
@@ -234,7 +234,7 @@ export const designsService = {
    */
   async createDesignV2(form: any): Promise<{ success: boolean; data?: ShoeDesign; error?: string }> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) {
@@ -282,7 +282,7 @@ export const designsService = {
    */
   async updateDesignV2(id: string, changes: any): Promise<{ success: boolean; data?: ShoeDesign; error?: string }> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
@@ -324,7 +324,7 @@ export const designsService = {
    */
   async archiveDesignV2(id: string): Promise<{ success: boolean; error?: string }> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
@@ -347,7 +347,7 @@ export const designsService = {
    */
   async restoreDesignV2(id: string): Promise<{ success: boolean; error?: string }> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };
@@ -370,7 +370,7 @@ export const designsService = {
    */
   async checkDesignDeletable(id: string): Promise<{ canDelete: boolean; reason: string | null; orderCount: number; shareCount?: number }> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { canDelete: false, reason: 'Database is not connected.', orderCount: 0 };
@@ -402,7 +402,7 @@ export const designsService = {
    */
   async deleteDesignV2(id: string): Promise<{ success: boolean; error?: string }> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    const allowDemo = isDemoModeActive;
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database is not connected.' };

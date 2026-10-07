@@ -166,7 +166,7 @@ export interface Order {
   manufacturerPlant: string;
   expectedDelivery: string;
   paymentStatus: 'Paid' | 'Advance Deposited' | 'Payment Pending' | 'Overdue';
-  status: 'Draft' | 'Submitted' | 'Under Review' | 'Approved' | 'In Production' | 'Ready QC' | 'Ready to Dispatch' | 'Dispatched' | 'Delivered' | 'Cancelled';
+  status: 'Draft' | 'Submitted' | 'Under Review' | 'Approved' | 'Confirmed' | 'In Production' | 'Ready' | 'Ready QC' | 'Ready to Dispatch' | 'Dispatched' | 'Delivered' | 'Cancelled';
   orderDate: string;
   batchNumber?: string;
   timeline: OrderTimelineEvent[];

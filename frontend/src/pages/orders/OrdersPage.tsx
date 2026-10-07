@@ -111,6 +111,8 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
 
         const statusMap: Record<string, { status: OrderDisplayItem['status']; statusType: OrderDisplayItem['statusType'] }> = {
           'In Production': { status: 'In Production', statusType: 'in_production' },
+          'Ready': { status: 'Ready to Dispatch', statusType: 'ready_dispatch' },
+          'Confirmed': { status: 'In Production', statusType: 'in_production' },
           'Ready to Dispatch': { status: 'Ready to Dispatch', statusType: 'ready_dispatch' },
           'Ready QC': { status: 'Ready to Dispatch', statusType: 'ready_dispatch' },
           'Dispatched': { status: 'Ready to Dispatch', statusType: 'ready_dispatch' },
@@ -567,16 +569,11 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (selectedOrder.status === 'In Production') {
-                      updateOrderStatus(selectedOrder.id, 'Ready to Dispatch');
-                      showToast(`${selectedOrder.id} marked as Ready to Dispatch!`);
-                    } else if (selectedOrder.status === 'Ready to Dispatch') {
-                      updateOrderStatus(selectedOrder.id, 'Delivered');
-                      showToast(`${selectedOrder.id} marked as Delivered!`);
-                    } else {
-                      showToast(`Consignment ${selectedOrder.id} is already completed.`);
-                    }
+                  onClick={async () => {
+                    const nextStage: Partial<Record<Order['status'], Order['status']>> = { Draft: 'Submitted', Submitted: 'Confirmed', 'Under Review': 'Confirmed', Confirmed: 'In Production', Approved: 'In Production', 'In Production': 'Ready', Ready: 'Dispatched', 'Ready QC': 'Dispatched', 'Ready to Dispatch': 'Dispatched', Dispatched: 'Delivered' };
+                    const next = nextStage[selectedOrder.status];
+                    if (!next) { showToast('No next stage is available for this order.'); return; }
+                    if (await updateOrderStatus(selectedOrder.id, next)) setSelectedOrder({ ...selectedOrder, status: next });
                   }}
                   className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold cursor-pointer shadow-xs"
                 >
