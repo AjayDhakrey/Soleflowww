@@ -7,6 +7,7 @@ export const AddCustomerModal: React.FC = () => {
   const { isAddCustomerModalOpen, setIsAddCustomerModalOpen, addCustomer } = useApp();
 
   const [businessName, setBusinessName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [propName, setPropName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
@@ -33,10 +34,11 @@ export const AddCustomerModal: React.FC = () => {
 
   if (!isAddCustomerModalOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!businessName.trim() || !phone.trim()) return;
-    addCustomer({
+    if (isSaving || !businessName.trim() || !phone.trim()) return;
+    setIsSaving(true);
+    const saved = await addCustomer({
       businessName: businessName.trim(),
       propName: propName.trim(),
       phone: phone.trim(),
@@ -48,6 +50,8 @@ export const AddCustomerModal: React.FC = () => {
       creditLimit: Number(creditLimit) || 0,
       paymentTerms,
     });
+    setIsSaving(false);
+    if (!saved) return;
     setBusinessName('');
     setPropName('');
     setPhone('');
@@ -216,8 +220,8 @@ export const AddCustomerModal: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" icon={Icons.Check}>
-              Save Client
+            <Button type="submit" variant="primary" icon={Icons.Check} disabled={isSaving}>
+              {isSaving ? 'Saving…' : 'Save Client'}
             </Button>
           </div>
         </form>

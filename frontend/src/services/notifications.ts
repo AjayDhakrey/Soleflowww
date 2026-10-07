@@ -18,15 +18,17 @@ export function mapNotificationRow(row: any): NotificationItem {
 }
 
 export const notificationsService = {
-  async fetchNotifications(): Promise<NotificationItem[]> {
+  async fetchNotifications(orgId?: string): Promise<NotificationItem[]> {
     if (!supabase || isDemoModeActive) return [];
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(30);
+      if (orgId) query = query.eq('org_id', orgId);
+      const { data, error } = await query;
 
       if (error) throw parseSupabaseError(error);
       if (!data || data.length === 0) return [];

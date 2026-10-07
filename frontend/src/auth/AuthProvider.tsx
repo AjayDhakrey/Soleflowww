@@ -136,108 +136,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load profile from Supabase profiles table
   const fetchUserProfile = async (userId: string, email: string): Promise<{ profile: UserProfile; organization: Organization | null }> => {
-    const fallbackRole: UserRole =
-      email.toLowerCase().includes('admin') || email === 'soleflow.admin@gmail.com' ? 'admin' : 'salesperson';
-    const fallbackName = fallbackRole === 'admin' ? 'Vikram Malhotra' : 'Rahul Sharma';
-
-    const fallbackOrg: Organization = {
-      id: 'default-org-uuid',
-      name: 'SoleFlow Footwear',
-      status: 'active',
-      is_demo: false,
-    };
-
-    if (!supabase) {
-      return {
-        profile: {
-          id: userId,
-          email,
-          name: fallbackName,
-          role: fallbackRole,
-          org_id: fallbackOrg.id,
-          is_super_admin: false,
-          is_demo_account: false,
-        },
-        organization: fallbackOrg,
-      };
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (error || !data) {
-        return {
-          profile: {
-            id: userId,
-            email,
-            name: fallbackName,
-            role: fallbackRole,
-            org_id: fallbackOrg.id,
-            is_super_admin: false,
-            is_demo_account: false,
-          },
-          organization: fallbackOrg,
-        };
-      }
-
-      const assignedRole: UserRole = (data.role as UserRole) || fallbackRole;
-      const assignedName = (data as any).name || (data as any).full_name || fallbackName;
-      const userOrgId = data.org_id || null;
-
-      let loadedOrg: Organization | null = null;
-      if (userOrgId) {
-        const { data: orgData } = await supabase
-          .from('organizations')
-          .select('*')
-          .eq('id', userOrgId)
-          .maybeSingle();
-        
-        if (orgData) {
-          loadedOrg = orgData as Organization;
-        }
-      }
-
-      return {
-        profile: {
-          id: data.id || userId,
-          email: email || (data as any).email,
-          name: assignedName,
-          role: assignedRole,
-          role_label: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
-          phone: data.phone,
-          zone: data.zone,
-          avatar_url: (data as any).avatar_url,
-          org_id: userOrgId,
-          is_super_admin: Boolean((data as any).is_super_admin),
-          is_demo_account: Boolean((data as any).is_demo_account),
-        },
-        organization: loadedOrg,
-      };
-    } catch (err) {
-      console.error('Error loading profile from Supabase:', err);
-      return {
-        profile: {
-          id: userId,
-          email,
-          name: fallbackName,
-          role: fallbackRole,
-          org_id: fallbackOrg.id,
-          is_super_admin: false,
-          is_demo_account: false,
-        },
-        organization: fallbackOrg,
-      };
-    }
+    if (!supabase) throw new Error('Database service is not configured.');
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (error || !data || !data.org_id) throw new Error(error?.message || 'Your account has no business profile. Please contact support.');
+    if (data.is_active === false) throw new Error('Your account has been deactivated.');
+    const { data: organization, error: orgError } = await supabase.from('organizations').select('*').eq('id', data.org_id).single();
+    if (orgError || !organization) throw new Error(orgError?.message || 'Your business workspace could not be loaded.');
+    return { profile: { ...data, email, name: (data as any).name || data.full_name || email.split('@')[0], role: data.role as UserRole }, organization: organization as Organization };
   };
 
 
   // Initial Auth Check
   useEffect(() => {
     let isMounted = true;
+    let authGeneration = 0;
 
     const initAuth = async () => {
       setIsLoading(true);
@@ -255,7 +167,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setRole(prof.role);
               setUser(mapProfileToUser(prof));
               setHasRealSession(true);
+              setIsLoading(false);
             }
+            return;
           } else {
             if (isMounted) setHasRealSession(false);
           }
@@ -266,14 +180,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // 2. Check local stored session fallback (for demo mode only)
-      if (isMounted && !user && allowDemo) {
+      if (isMounted) {
         try {
           const stored = localStorage.getItem(AUTH_STORAGE_KEY);
           if (stored) {
             const data = JSON.parse(stored);
-            if (data && data.isLoggedIn) {
+            if (data?.isLoggedIn && (data.user?.is_demo_account || allowDemo)) {
               const activeRole: UserRole = data.role === 'salesperson' ? 'salesperson' : 'admin';
-              const activeUser = activeRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin;
+              const activeUser = data.user || (activeRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin);
               setUser(activeUser);
               setRole(activeRole);
               setProfile({
@@ -282,7 +196,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: activeUser.name,
                 role: activeRole,
                 org_id: 'demo-org-uuid',
-                is_super_admin: false,
+                is_super_admin: Boolean(activeUser.is_super_admin),
                 is_demo_account: true,
               });
               setOrg({
@@ -308,19 +222,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen to Supabase Auth state changes
     if (supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          const email = session.user.email || 'user@soleflow.com';
-          const { profile: prof, organization: userOrg } = await fetchUserProfile(session.user.id, email);
-          setProfile(prof);
-          setOrg(userOrg);
-          setRole(prof.role);
-          setUser(mapProfileToUser(prof));
-          setHasRealSession(true);
-          localStorage.setItem(
-            AUTH_STORAGE_KEY,
-            JSON.stringify({ isLoggedIn: true, role: prof.role, email: prof.email, userId: prof.id })
-          );
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const generation = ++authGeneration;
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+          // Supabase callbacks run under an auth lock; defer database requests.
+          setTimeout(async () => {
+            try {
+              const email = session.user.email || 'user@soleflow.com';
+              const { profile: prof, organization: userOrg } = await fetchUserProfile(session.user.id, email);
+              if (!isMounted || generation !== authGeneration) return;
+              setProfile(prof);
+              setOrg(userOrg);
+              setRole(prof.role);
+              setUser(mapProfileToUser(prof));
+              setHasRealSession(true);
+              localStorage.setItem(
+                AUTH_STORAGE_KEY,
+                JSON.stringify({ isLoggedIn: true, role: prof.role, email: prof.email, userId: prof.id })
+              );
+            } catch (err: any) {
+              if (isMounted && generation === authGeneration) {
+                setAuthError(err.message);
+                setHasRealSession(false);
+                setUser(null);
+                setProfile(null);
+                setOrg(null);
+              }
+            }
+          }, 0);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
@@ -534,7 +463,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (error) {
           // If Supabase auth fails and this is a demo email, fall back to instant demo session
-          if (isDemoEmail) {
+          if (isDemoEmail && allowDemo) {
             console.warn('Supabase Auth demo account error; activating demo mode:', error.message);
             const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
               ? 'superadmin'
@@ -567,7 +496,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // 2. Offline / Demo mode fallback
-      if (isDemoEmail) {
+      if (isDemoEmail && allowDemo) {
         const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
           ? 'superadmin'
           : normalizedEmail.includes('sales')
@@ -581,7 +510,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'Authentication failed. Please check your credentials.' };
     } catch (err: any) {
       console.error('Sign in unexpected error:', err);
-      if (isDemoEmail) {
+      if (isDemoEmail && allowDemo) {
         const roleForDemo: 'superadmin' | 'admin' | 'salesperson' = normalizedEmail.includes('super')
           ? 'superadmin'
           : normalizedEmail.includes('sales')

@@ -128,80 +128,11 @@ export const paymentsService = {
         p_org_id: params.orgId || null,
       });
 
-      if (!error && data) {
-        return { success: true, data };
-      }
-      if (error) {
-        console.warn('record_payment RPC returned error, proceeding to table persistence fallback:', error.message || error);
-      }
-    } catch (rpcErr: any) {
-      console.warn('record_payment RPC exception, proceeding to direct table fallback:', rpcErr?.message || rpcErr);
-    }
-
-    // 2. Direct table insert fallback to guarantee payment persistence in public.payments
-    try {
-      const receiptNum = params.receiptNumber || `SF-REC-${Math.floor(10000 + Math.random() * 90000)}`;
-      const beforeDue = Number(params.amountDueBefore ?? 0);
-      const payAmount = Number(params.amount ?? 0);
-      const afterDue = Math.max(0, beforeDue - payAmount);
-      const paymentId = `pay-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-
-      const paymentRow: any = {
-        id: paymentId,
-        receiptNumber: receiptNum,
-        customerId: params.clientId,
-        customerName: params.customerName || 'Customer Store',
-        customerCity: params.customerCity || 'Agra',
-        orderId: params.orderId || null,
-        orderNumber: params.orderNumber || null,
-        amountDueBefore: beforeDue,
-        paymentAmount: payAmount,
-        amountDueAfter: afterDue,
-        paymentDate: params.paymentDate || new Date().toISOString().split('T')[0],
-        paymentMethod: params.method || 'UPI',
-        utrRef: params.reference || 'Direct Deposit',
-        collectedBy: params.collectedBy || 'Sales Rep',
-        notes: params.notes || '',
-        sentSms: true,
-        status: params.method === 'Cheque' ? 'pending_clearance' : 'verified',
-        cheque_no: params.chequeNo || null,
-        cheque_bank: params.chequeBank || null,
-        cheque_date: params.chequeDate || null,
-      };
-
-      if (params.orgId) {
-        paymentRow.org_id = params.orgId;
-      }
-
-      const { data: insertData, error: insertErr } = await (supabase as any)
-        .from('payments')
-        .insert([paymentRow])
-        .select()
-        .single();
-
-      if (insertErr) {
-        console.error('Direct payment insert error:', insertErr);
-        throw parseSupabaseError(insertErr);
-      }
-
-      // Proactively update customer balance in public.customers
-      try {
-        await (supabase as any)
-          .from('customers')
-          .update({
-            amountDue: afterDue,
-            lastPaymentDate: 'Today',
-            lastPaymentAmount: payAmount,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', params.clientId);
-      } catch (custUpdateErr) {
-        console.warn('Customer balance update warning:', custUpdateErr);
-      }
-
-      return { success: true, data: insertData || paymentRow };
-    } catch (directErr: any) {
-      return { success: false, error: directErr?.message || 'Failed to record payment' };
+      if (error) throw parseSupabaseError(error);
+      if (!data) throw new Error('No payment was saved.');
+      return { success: true, data };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to record payment' };
     }
   },
 

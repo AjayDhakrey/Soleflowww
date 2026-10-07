@@ -1,4 +1,5 @@
 import {supabase, isDemoModeActive} from '../lib/supabase';
+import { currentStorageOrg } from './designImageUrl';
 import { parseSupabaseError } from './apiError';
 
 export const storageService = {
@@ -11,24 +12,18 @@ export const storageService = {
     }
 
     try {
-      const cleanName = fileName || `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const orgId = await currentStorageOrg();
+      const cleanName = `${orgId}/${fileName || `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`}`;
       const { data, error } = await supabase.storage
         .from('design-images')
         .upload(cleanName, file, {
           cacheControl: '3600',
-          upsert: true,
+          upsert: false,
         });
 
       if (error) throw parseSupabaseError(error);
 
-      const { data: publicUrlData } = supabase.storage
-        .from('design-images')
-        .getPublicUrl(cleanName);
-
-      return {
-        success: true,
-        url: publicUrlData.publicUrl,
-      };
+      return { success: true, url: 'storage://design-images/' + data.path };
     } catch (err: any) {
       return { success: false, error: err?.message || 'Failed to upload image' };
     }
@@ -43,7 +38,8 @@ export const storageService = {
     }
 
     try {
-      const cleanName = fileName || `receipts/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const orgId = await currentStorageOrg();
+      const cleanName = `${orgId}/${fileName || `receipts/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`}`;
       const { data, error } = await supabase.storage
         .from('payment-receipts')
         .upload(cleanName, file, {

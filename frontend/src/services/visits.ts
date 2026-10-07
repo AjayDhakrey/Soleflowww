@@ -39,8 +39,8 @@ export function sanitizeVisitStatus(rawStatus?: string): 'planned' | 'completed'
 }
 
 export const visitsService = {
-  async fetchVisits(filters?: { status?: string; salespersonId?: string }): Promise<FieldVisitItem[]> {
-    if (!supabase) return MOCK_FIELD_VISITS;
+  async fetchVisits(filters?: { status?: string; salespersonId?: string; orgId?: string }): Promise<FieldVisitItem[]> {
+    if (!supabase) return [];
 
     try {
       let query = (supabase as any)
@@ -48,6 +48,7 @@ export const visitsService = {
         .select('*, customers(businessName, city, state)')
         .order('visit_date', { ascending: false });
 
+      if (filters?.orgId) query = query.eq('org_id', filters.orgId);
       if (filters?.status && filters.status !== 'all') {
         const dbStatus = sanitizeVisitStatus(filters.status);
         query = query.eq('status', dbStatus);
@@ -57,29 +58,17 @@ export const visitsService = {
       }
 
       const { data, error } = await query;
-      if (error) {
-        // Fallback to simple select if join fails
-        const fallbackRes = await (supabase as any)
-          .from('field_visits')
-          .select('*')
-          .order('visit_date', { ascending: false });
-        if (!fallbackRes.error && fallbackRes.data && fallbackRes.data.length > 0) {
-          return fallbackRes.data.map(mapFieldVisitRow);
-        }
-        console.warn('Supabase fetchVisits warning:', error);
-        return MOCK_FIELD_VISITS;
-      }
-
-      if (!data || data.length === 0) return MOCK_FIELD_VISITS;
+      if (error) throw parseSupabaseError(error);
+      if (!data) return [];
       return data.map(mapFieldVisitRow);
     } catch (err) {
       console.warn('Error fetching field visits from Supabase:', err);
-      return MOCK_FIELD_VISITS;
+      return [];
     }
   },
 
   async createVisit(data: any): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase) return { success: false, error: 'Database service is not configured.' };
 
     try {
       const rawPurpose = data.purpose || 'Store Visit';
@@ -189,7 +178,7 @@ export const visitsService = {
     outcome: FieldVisitItem['outcome'] = 'Interested',
     notes: string = ''
   ): Promise<{ success: boolean; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase) return { success: false, error: 'Database service is not configured.' };
 
     try {
       const { error } = await (supabase as any)
@@ -199,7 +188,7 @@ export const visitsService = {
           outcome: outcome || 'Interested',
           notes: notes || null,
         })
-        .eq('id', id);
+        .eq('id', id).select('id').single();
 
       if (error) {
         console.warn('Supabase completeVisit warning:', error);

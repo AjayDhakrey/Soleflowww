@@ -86,12 +86,14 @@ export const supabaseApi = {
   },
 
   // 1. Customers / Clients
-  async getCustomers(): Promise<Customer[] | null> {
+  async getCustomers(orgId?: string): Promise<Customer[] | null> {
     if (!supabase) return null;
-    const { data, error } = await (supabase as any)
+    let query = (supabase as any)
       .from('customers')
       .select('*')
       .order('created_at', { ascending: false });
+    if (orgId) query = query.eq('org_id', orgId);
+    const { data, error } = await query;
     if (error) {
       console.error('Supabase getCustomers error:', error);
       return null;
@@ -132,12 +134,14 @@ export const supabaseApi = {
   },
 
   // 2. Orders
-  async getOrders(): Promise<Order[] | null> {
+  async getOrders(orgId?: string): Promise<Order[] | null> {
     if (!supabase) return null;
-    const { data, error } = await (supabase as any)
+    let query = (supabase as any)
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false });
+    if (orgId) query = query.eq('org_id', orgId);
+    const { data, error } = await query;
     if (error) {
       console.warn('Supabase getOrders error:', error);
       return null;
@@ -168,6 +172,14 @@ export const supabaseApi = {
     return true;
   },
 
+  async assignOrderManufacturer(orderId: string, manufacturerId: string): Promise<boolean> {
+    if (!supabase) return false;
+    const { data: manufacturer, error: lookupError } = await supabase.from('manufacturers').select('companyName, hubLocation').eq('id', manufacturerId).single();
+    if (lookupError || !manufacturer) return false;
+    const { data, error } = await supabase.from('orders').update({ manufacturerId, manufacturerName: manufacturer.companyName, manufacturerPlant: manufacturer.hubLocation }).eq('id', orderId).select('id').single();
+    return !error && Boolean(data);
+  },
+
   // 3. Shoe Designs
   async getDesigns(): Promise<ShoeDesign[] | null> {
     if (!supabase) return null;
@@ -183,17 +195,19 @@ export const supabaseApi = {
   },
 
   // 4. Payments
-  async getPayments(): Promise<PaymentReceipt[] | null> {
+  async getPayments(orgId?: string): Promise<PaymentReceipt[] | null> {
     if (!supabase) return null;
-    const { data, error } = await (supabase as any)
+    let query = (supabase as any)
       .from('payments')
       .select('*')
       .order('created_at', { ascending: false });
+    if (orgId) query = query.eq('org_id', orgId);
+    const { data, error } = await query;
     if (error) {
       console.warn('Supabase getPayments error:', error);
       return null;
     }
-    return data as PaymentReceipt[];
+    return (data || []).map((row: any) => ({ ...row, chequeNo: row.cheque_no, chequeBank: row.cheque_bank, chequeDate: row.cheque_date, chequeClearedAt: row.cheque_cleared_at, chequeBounceReason: row.cheque_bounce_reason })) as PaymentReceipt[];
   },
 
   async insertPayment(payment: PaymentReceipt): Promise<boolean> {
@@ -207,12 +221,14 @@ export const supabaseApi = {
   },
 
   // 5. Audit Logs
-  async getAuditLogs(): Promise<AuditEvent[] | null> {
+  async getAuditLogs(orgId?: string): Promise<AuditEvent[] | null> {
     if (!supabase) return null;
-    const { data, error } = await (supabase as any)
+    let query = (supabase as any)
       .from('audit_logs')
       .select('*')
       .order('created_at', { ascending: false });
+    if (orgId) query = query.eq('org_id', orgId);
+    const { data, error } = await query;
     if (error) {
       console.warn('Supabase getAuditLogs error:', error);
       return null;
@@ -231,12 +247,14 @@ export const supabaseApi = {
   },
 
   // 6. Design Shares
-  async getDesignShares(): Promise<DesignShareRecord[] | null> {
+  async getDesignShares(orgId?: string): Promise<DesignShareRecord[] | null> {
     if (!supabase) return null;
-    const { data, error } = await (supabase as any)
+    let query = (supabase as any)
       .from('design_shares')
       .select('*')
       .order('created_at', { ascending: false });
+    if (orgId) query = query.eq('org_id', orgId);
+    const { data, error } = await query;
     if (error) {
       console.warn('Supabase getDesignShares error:', error);
       return null;
@@ -255,9 +273,11 @@ export const supabaseApi = {
   },
 
   // 7. Manufacturers
-  async getManufacturers(): Promise<Manufacturer[] | null> {
+  async getManufacturers(orgId?: string): Promise<Manufacturer[] | null> {
     if (!supabase) return null;
-    const { data, error } = await (supabase as any).from('manufacturers').select('*');
+    let query = (supabase as any).from('manufacturers').select('*');
+    if (orgId) query = query.eq('org_id', orgId);
+    const { data, error } = await query;
     if (error) {
       console.warn('Supabase getManufacturers error:', error);
       return null;
@@ -266,9 +286,11 @@ export const supabaseApi = {
   },
 
   // 8. Sales Team
-  async getSalesTeam(): Promise<Salesperson[] | null> {
+  async getSalesTeam(orgId?: string): Promise<Salesperson[] | null> {
     if (!supabase) return null;
-    const { data, error } = await (supabase as any).from('sales_team').select('*');
+    let query = (supabase as any).from('sales_team').select('*');
+    if (orgId) query = query.eq('org_id', orgId);
+    const { data, error } = await query;
     if (error) {
       console.warn('Supabase getSalesTeam error:', error);
       return null;

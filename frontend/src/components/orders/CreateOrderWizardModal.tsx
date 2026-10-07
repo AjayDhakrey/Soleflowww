@@ -17,6 +17,7 @@ export const CreateOrderWizardModal: React.FC = () => {
   } = useApp();
 
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isSaving, setIsSaving] = useState(false);
   const [selectedCustId, setSelectedCustId] = useState(
     selectedCustomer ? selectedCustomer.id : customers[0]?.id || ''
   );
@@ -123,6 +124,7 @@ export const CreateOrderWizardModal: React.FC = () => {
   const commercialBalance = Math.max(0, netTotalPayable - advanceAmount);
 
   const handleFinish = async () => {
+    if (isSaving) return;
     if (!currentCust || !currentDesign || !currentMfg) return;
 
     if (!ratePerPair) {
@@ -139,7 +141,8 @@ export const CreateOrderWizardModal: React.FC = () => {
     // Order id and batch number are generated server-side (create_order_draft
     // RPC) — never fabricate them on the client. Margin-override requests are
     // raised from the order drawer once the real order id exists.
-    createOrder({
+    setIsSaving(true);
+    const saved = await createOrder({
       customerId: currentCust.id,
       customerName: currentCust.businessName,
       customerCity: currentCust.city,
@@ -178,6 +181,8 @@ export const CreateOrderWizardModal: React.FC = () => {
       expectedDelivery: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
     });
 
+    setIsSaving(false);
+    if (!saved) return;
     setIsCreateOrderModalOpen(false);
   };
 
@@ -553,8 +558,9 @@ export const CreateOrderWizardModal: React.FC = () => {
               variant="primary"
               icon={Icons.Check}
               onClick={handleFinish}
+              disabled={isSaving}
             >
-              Generate Order Consignment
+              {isSaving ? 'Saving…' : 'Generate Order Consignment'}
             </Button>
           )}
         </div>

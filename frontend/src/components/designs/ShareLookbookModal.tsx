@@ -43,19 +43,10 @@ export const ShareLookbookModal: React.FC = () => {
   const chosenDesigns = designs.filter((d) => selectedDesignIds.includes(d.id));
   const activeDesigns = chosenDesigns.length > 0 ? chosenDesigns : designs.slice(0, 3);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!currentCust) return;
 
-    currentCust.activityHistory.unshift({
-      id: `act-share-${Date.now()}`,
-      type: 'shared_designs',
-      title: `${currentUser.name} shared ${activeDesigns.length} shoe designs via WhatsApp`,
-      description: `Sent digital catalog lookbook link to ${currentCust.propName}'s WhatsApp (${currentCust.phone}).`,
-      timestamp: 'Just now',
-      badge: 'WhatsApp Sent',
-    });
-
-    recordDesignShare({
+    const saved = await recordDesignShare({
       targetClientId: currentCust.id,
       targetClientName: currentCust.businessName,
       targetPhone: currentCust.phone,
@@ -65,6 +56,7 @@ export const ShareLookbookModal: React.FC = () => {
       channel: 'WhatsApp',
     });
 
+    if (!saved) return;
     showToast(`Lookbook successfully shared with ${currentCust.businessName} on WhatsApp!`);
     setIsShareModalOpen(false);
   };

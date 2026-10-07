@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { resolveDesignImage } from '../../services/designImageUrl';
 import { ShoeDesign } from '../../types';
 import {
   Footprints,
@@ -48,15 +49,16 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
 
           if (!rpcError && data && (data as any).success) {
             const rawData = data as any;
+            const sharedDesigns = await Promise.all((rawData.designs || []).map(async (design: ShoeDesign) => ({ ...design, image: await resolveDesignImage(design.image) })));
             if (isMounted) {
-              setDesigns(rawData.designs || []);
+              setDesigns(sharedDesigns);
               setClientInfo(rawData.client || null);
               // Use the sharing org's real sales phone when the share payload provides one
               setSalesPhone(
                 rawData.salesPhone || rawData.sales_phone || rawData.client?.phone || rawData.org?.phone || null
               );
-              if (rawData.designs?.length > 0) {
-                setSelectedDesign(rawData.designs[0]);
+              if (sharedDesigns.length > 0) {
+                setSelectedDesign(sharedDesigns[0]);
               }
               setIsLoading(false);
               return;

@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, isDemoModeActive } from '../lib/supabase';
 import { ShoeDesign, DesignShareRecord } from '../types';
+import { resolveDesignImage, currentStorageOrg } from './designImageUrl';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
 import { MOCK_DESIGNS, MOCK_DESIGN_SHARES } from '../data/mockData';
@@ -33,6 +34,12 @@ export function fromDesignRow(row: any): ShoeDesign {
     isArchived: Boolean(row.archived_at),
     createdAt: row.created_at || undefined,
   };
+}
+
+async function hydrateDesign(row: any): Promise<ShoeDesign> {
+  const design = fromDesignRow(row);
+  design.image = await resolveDesignImage(design.image);
+  return design;
 }
 
 // Backward-compatible alias
@@ -123,7 +130,7 @@ export const designsService = {
       throw parseSupabaseError(error);
     }
 
-    const liveList = (data || []).map(fromDesignRow);
+    const liveList = await Promise.all((data || []).map(hydrateDesign));
 
     // Only merge mocks if demo mode is explicitly enabled
     if (allowDemo) {
@@ -150,7 +157,7 @@ export const designsService = {
   /**
    * Admin variant: fetch all designs with optional archived filter
    */
-  async fetchAllDesigns(options?: { includeArchived?: boolean; onlyArchived?: boolean; search?: string }): Promise<ShoeDesign[]> {
+  async fetchAllDesigns(options?: { includeArchived?: boolean; onlyArchived?: boolean; search?: string; orgId?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
@@ -164,6 +171,7 @@ export const designsService = {
       .select('*')
       .order('created_at', { ascending: false });
 
+    if (options?.orgId) query = query.eq('org_id', options.orgId);
     if (options?.onlyArchived) {
       query = query.not('archived_at', 'is', null);
     } else if (!options?.includeArchived) {
@@ -183,7 +191,7 @@ export const designsService = {
       throw parseSupabaseError(error);
     }
 
-    const liveList = (data || []).map(fromDesignRow);
+    const liveList = await Promise.all((data || []).map(hydrateDesign));
 
     if (allowDemo) {
       const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
@@ -212,7 +220,7 @@ export const designsService = {
 
       if (error) throw parseSupabaseError(error);
       if (!data) return null;
-      return fromDesignRow(data);
+      return await hydrateDesign(data);
     } catch (err) {
       if (allowDemo) {
         return MOCK_DESIGNS.find((d) => d.id === id) || null;
@@ -261,7 +269,7 @@ export const designsService = {
       const { data: res, error } = await supabase.rpc('create_design', rpcArgs);
 
       if (error) throw error;
-      return { success: true, data: fromDesignRow(res) };
+      return { success: true, data: await hydrateDesign(res) };
     } catch (err: any) {
       const userMsg = formatDesignError(err);
       console.error('Supabase create_design error:', err);
@@ -303,7 +311,7 @@ export const designsService = {
       });
 
       if (error) throw error;
-      return { success: true, data: fromDesignRow(res) };
+      return { success: true, data: await hydrateDesign(res) };
     } catch (err: any) {
       const userMsg = formatDesignError(err);
       console.error('Failed to update design:', err);
@@ -465,30 +473,21 @@ export const designsService = {
 
     try {
       const ext = file.name.split('.').pop() || 'jpg';
-      const fileName = `designs/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
+      const orgId = await currentStorageOrg();
+      const fileName = `${orgId}/designs/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
 
       const { data, error } = await supabase.storage
         .from('design-images')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: true,
+          upsert: false,
         });
 
       if (error) throw error;
 
-      const { data: publicUrlData } = supabase.storage
-        .from('design-images')
-        .getPublicUrl(data.path);
-
-      return { success: true, url: publicUrlData.publicUrl };
+      return { success: true, url: 'storage://design-images/' + data.path };
     } catch (err: any) {
-      console.warn('Storage upload failed; using FileReader Data URL fallback:', err);
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve({ success: true, url: reader.result as string });
-        reader.onerror = () => resolve({ success: false, error: 'Failed to read image file.' });
-        reader.readAsDataURL(file);
-      });
+      return { success: false, error: err?.message || 'Image could not be saved. Please retry.' };
     }
   },
 

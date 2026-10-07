@@ -299,6 +299,7 @@ export const clientsService = {
         {
           client_id: clientId,
           note,
+          author_name: 'Team member',
         },
       ]);
       if (error) throw parseSupabaseError(error);

@@ -54,6 +54,10 @@ export const SettingsPage: React.FC = () => {
   const [gstin, setGstin] = useState(org?.gstin || '');
   const [hubCity, setHubCity] = useState(org?.city || '');
   const [orgState, setOrgState] = useState(org?.state || '');
+  useEffect(() => {
+    setCompanyName(org?.name || ''); setGstin(org?.gstin || '');
+    setHubCity(org?.city || ''); setOrgState(org?.state || '');
+  }, [org]);
 
   // Team Management
   const [members, setMembers] = useState<MemberItem[]>([]);
@@ -243,7 +247,7 @@ export const SettingsPage: React.FC = () => {
           state: orgState || null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', targetOrgId);
+        .eq('id', targetOrgId).select('id').single();
 
       if (error) {
         showToast(`Failed: ${error.message}`);

@@ -260,7 +260,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
   const topModels = customer.topSellingModels || [];
   const recentActivity = customer.activityHistory || [];
 
-  const handleAddNote = (e: React.FormEvent) => {
+  const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNoteText.trim() || !customer) return;
     const note = {
@@ -269,23 +269,18 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
       text: newNoteText.trim(),
       date: 'Just now',
     };
-    setLocalNotes([note, ...localNotes]);
+    if (!isSupabaseActive) { showToast('Sign in to a real account to save notes.'); return; }
+    if (!await clientsService.addClientNote(customer.id, note.text)) { showToast('Note could not be saved. Please retry.'); return; }
+    const rows = await clientsService.fetchClientNotes(customer.id);
+    setLocalNotes(mapClientNotes(rows));
     setNewNoteText('');
-    showToast('Note added to client file');
-    if (isSupabaseActive) {
-      clientsService.addClientNote(customer.id, note.text).then((ok) => {
-        if (!ok) return;
-        clientsService.fetchClientNotes(customer.id).then((rows) => {
-          if (rows) setLocalNotes(mapClientNotes(rows));
-        });
-      });
-    }
+    showToast('Note saved to client file');
   };
 
-  const handleAddFollowUp = (e: React.FormEvent) => {
+  const handleAddFollowUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFollowUpText.trim() || !customer) return;
-    addFollowUp({
+    const saved = await addFollowUp({
       customerId: customer.id,
       customerName: customer.businessName,
       customerCity: customer.city,
@@ -297,6 +292,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
       amountDue: customer.amountDue,
       status: 'today',
     });
+    if (!saved) return;
     setNewFollowUpText('');
   };
 

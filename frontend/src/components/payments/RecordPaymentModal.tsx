@@ -29,6 +29,7 @@ export const RecordPaymentModal: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [sendSms, setSendSms] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentAttemptId, setPaymentAttemptId] = useState(() => crypto.randomUUID());
 
   // Success Receipt State
   const [createdPayment, setCreatedPayment] = useState<PaymentReceipt | null>(null);
@@ -37,6 +38,7 @@ export const RecordPaymentModal: React.FC = () => {
   // Sync selected customer & reset fields on modal open
   useEffect(() => {
     if (isPaymentModalOpen) {
+      setPaymentAttemptId(crypto.randomUUID());
       setCreatedPayment(null);
       setIsPreviewModalOpen(false);
       const initialCust = selectedCustomer || customers.find((c) => c.amountDue > 0) || customers[0];
@@ -58,7 +60,7 @@ export const RecordPaymentModal: React.FC = () => {
       setTargetOrderId('auto_fifo');
       setIsSubmitting(false);
     }
-  }, [isPaymentModalOpen, selectedCustomer, customers]);
+  }, [isPaymentModalOpen]);
 
   if (!isPaymentModalOpen) return null;
 
@@ -84,7 +86,7 @@ export const RecordPaymentModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentCust) return;
+    if (!currentCust || isSubmitting || createdPayment) return;
 
     if (payAmt <= 0) {
       showToast('Please enter a valid payment amount greater than zero.');
@@ -115,6 +117,7 @@ export const RecordPaymentModal: React.FC = () => {
       // Receipt number & payment id are owned by the server (record_payment RPC
       // generates the receipt number) — send only the real collection fields.
       const newPayment: Partial<PaymentReceipt> = {
+        id: paymentAttemptId,
         customerId: currentCust.id,
         customerName: currentCust.businessName,
         customerCity: currentCust.city,
@@ -134,9 +137,9 @@ export const RecordPaymentModal: React.FC = () => {
         status: paymentMethod === 'Cheque' ? 'pending_clearance' : 'verified',
       };
 
-      await recordPayment(newPayment);
+      const saved = await recordPayment(newPayment);
       // Display snapshot: identifiers stay empty until the server assigns them.
-      setCreatedPayment({ id: '', receiptNumber: '', ...newPayment } as PaymentReceipt);
+      setCreatedPayment(saved);
     } catch (err: any) {
       showToast(err?.message || 'Failed to record payment entry.');
     } finally {

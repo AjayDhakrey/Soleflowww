@@ -135,6 +135,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
 
   return (
     <div className="sticky top-0 z-20">
+      {isDemoAccount && <div role="status" className="bg-amber-50 text-amber-900 border-b border-amber-200 px-4 py-2 text-sm">Demo workspace — sample data only. Sign in with your own account to save business records.</div>}
       {/* Super Admin Read-Only View Mode Sticky Amber Banner */}
       <ViewModeBanner onExitNavigate={() => onNavigate('/platform/accounts')} />
 

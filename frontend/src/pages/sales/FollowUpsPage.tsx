@@ -35,12 +35,12 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
   const completedCount = useMemo(() => followUps.filter((f) => f.status === 'completed').length, [followUps]);
   const pendingCount = useMemo(() => followUps.filter((f) => f.status !== 'completed').length, [followUps]);
 
-  const handleCreateFollowUp = (e: React.FormEvent) => {
+  const handleCreateFollowUp = async (e: React.FormEvent) => {
     e.preventDefault();
     const cust = customers.find((c) => c.id === selectedCustId) || customers[0];
     if (!cust) return;
 
-    addFollowUp({
+    const saved = await addFollowUp({
       customerId: cust.id,
       customerName: cust.businessName,
       customerCity: cust.city,
@@ -53,6 +53,7 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
       status: 'today',
     });
 
+    if (!saved) return;
     setIsModalOpen(false);
     setNotes('');
   };

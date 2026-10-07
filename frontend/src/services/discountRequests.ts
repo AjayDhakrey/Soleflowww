@@ -1,5 +1,5 @@
 import {supabase, isDemoModeActive} from '../lib/supabase';
-import { DiscountRequest, DiscountRequestStats } from '../types';
+import { DiscountRequest, DiscountRequestStats, Order } from '../types';
 import { parseSupabaseError } from './apiError';
 
 // Helper to map DB snake_case row to CamelCase DiscountRequest
@@ -119,7 +119,7 @@ export const discountRequestsService = {
       if (error) throw parseSupabaseError(error);
 
       if (!data || data.length === 0) {
-        return inMemoryRequests.filter((r) => !filters?.status || filters.status === 'all' || r.status === filters.status);
+        return [];
       }
 
       return data.map((row: any) => {
@@ -136,11 +136,7 @@ export const discountRequestsService = {
       });
     } catch (err) {
       console.error('Error fetching discount requests from Supabase:', err);
-      let list = [...inMemoryRequests];
-      if (filters?.status && filters.status !== 'all') {
-        list = list.filter((r) => r.status === filters.status);
-      }
-      return list;
+      throw err;
     }
   },
 
@@ -161,7 +157,7 @@ export const discountRequestsService = {
         .single();
 
       if (error) throw parseSupabaseError(error);
-      if (!data) return inMemoryRequests.find((r) => r.id === id) || null;
+      if (!data) return null;
 
       const mapped = mapDiscountRequestRow(data);
       if (data.orders) {
@@ -170,8 +166,8 @@ export const discountRequestsService = {
         if (data.orders.salespersonName) mapped.salesmanName = data.orders.salespersonName;
       }
       return mapped;
-    } catch {
-      return inMemoryRequests.find((r) => r.id === id) || null;
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -225,73 +221,10 @@ export const discountRequestsService = {
       return fallbackRequest;
     }
 
-    // 1. First attempt the transaction RPC on Supabase
-    try {
-      const { data, error } = await supabase.rpc('request_discount', {
-        p_order_id: orderId,
-        p_requested_percent: requestedPercent,
-        p_reason: reason.trim(),
-      });
-
-      if (!error && data) {
-        const mapped = mapDiscountRequestRow(data);
-        if (orderSnapshot?.customerName && !mapped.clientName) mapped.clientName = orderSnapshot.customerName;
-        if (orderSnapshot?.customerCity && !mapped.clientCity) mapped.clientCity = orderSnapshot.customerCity;
-        if (orderSnapshot?.salespersonName && !mapped.salesmanName) mapped.salesmanName = orderSnapshot.salespersonName;
-        inMemoryRequests = [mapped, ...inMemoryRequests.filter((r) => r.id !== mapped.id)];
-        return mapped;
-      }
-
-      if (error) {
-        console.warn('request_discount RPC notice, attempting direct table persistence fallback:', error.message || error);
-      }
-    } catch (rpcErr: any) {
-      console.warn('request_discount RPC exception:', rpcErr?.message || rpcErr);
-    }
-
-    // 2. Direct table insert fallback to guarantee persistence in public.discount_requests
-    try {
-      const userRes = await supabase.auth.getUser();
-      const userId = userRes.data?.user?.id || '00000000-0000-0000-0000-000000000000';
-
-      const dbPayload: any = {
-        id: fallbackRequest.id,
-        order_id: orderId,
-        client_id: fallbackRequest.clientId,
-        requested_by: userId,
-        salesman_id: fallbackRequest.salesmanId,
-        default_percent: fallbackRequest.defaultPercent,
-        requested_percent: fallbackRequest.requestedPercent,
-        order_subtotal: fallbackRequest.orderSubtotal,
-        pairs: fallbackRequest.pairs,
-        product_summary: fallbackRequest.productSummary,
-        margin_concession: fallbackRequest.marginConcession,
-        projected_margin_percent: fallbackRequest.projectedMarginPercent,
-        reason: fallbackRequest.reason,
-        status: 'pending',
-      };
-
-      const { data: insertData, error: insertErr } = await (supabase as any)
-        .from('discount_requests')
-        .insert([dbPayload])
-        .select()
-        .single();
-
-      if (!insertErr && insertData) {
-        const mapped = mapDiscountRequestRow(insertData);
-        if (orderSnapshot?.customerName) mapped.clientName = orderSnapshot.customerName;
-        if (orderSnapshot?.customerCity) mapped.clientCity = orderSnapshot.customerCity;
-        if (orderSnapshot?.salespersonName) mapped.salesmanName = orderSnapshot.salespersonName;
-        inMemoryRequests = [mapped, ...inMemoryRequests.filter((r) => r.id !== mapped.id)];
-        return mapped;
-      }
-    } catch (dbErr: any) {
-      console.warn('Direct discount_requests insert warning:', dbErr?.message || dbErr);
-    }
-
-    // 3. Resilient fallback: ensure in-memory state is recorded so UI never crashes on authorization submission
-    inMemoryRequests = [fallbackRequest, ...inMemoryRequests.filter((r) => r.id !== fallbackRequest.id)];
-    return fallbackRequest;
+    const { data, error } = await supabase.rpc('request_discount', { p_order_id: orderId, p_requested_percent: requestedPercent, p_reason: reason.trim() });
+    if (error) throw parseSupabaseError(error);
+    if (!data) throw new Error('Discount request was not saved.');
+    return mapDiscountRequestRow(data);
   },
 
   async approveDiscountRequest(requestId: string, approvedPercent?: number, note?: string): Promise<DiscountRequest> {
@@ -310,50 +243,10 @@ export const discountRequestsService = {
       return inMemoryRequests[index];
     }
 
-    try {
-      const { data, error } = await supabase.rpc('approve_discount_request', {
-        p_request_id: requestId,
-        p_approved_percent: approvedPercent ?? null,
-        p_note: note || null,
-      });
-
-      if (error) {
-        console.warn('approve_discount_request RPC returned error, using local fallback:', error);
-        const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-        if (index !== -1) {
-          const finalPct = approvedPercent ?? inMemoryRequests[index].requestedPercent;
-          inMemoryRequests[index] = {
-            ...inMemoryRequests[index],
-            status: 'approved',
-            approvedPercent: finalPct,
-            decisionNote: note || '',
-            decidedAt: new Date().toISOString(),
-          };
-          return inMemoryRequests[index];
-        }
-        throw parseSupabaseError(error);
-      }
-      const mapped = mapDiscountRequestRow(data);
-      const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-      if (index !== -1) inMemoryRequests[index] = mapped;
-      else inMemoryRequests.unshift(mapped);
-      return mapped;
-    } catch (err: any) {
-      console.warn('approveDiscountRequest error, falling back:', err);
-      const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-      if (index !== -1) {
-        const finalPct = approvedPercent ?? inMemoryRequests[index].requestedPercent;
-        inMemoryRequests[index] = {
-          ...inMemoryRequests[index],
-          status: 'approved',
-          approvedPercent: finalPct,
-          decisionNote: note || '',
-          decidedAt: new Date().toISOString(),
-        };
-        return inMemoryRequests[index];
-      }
-      throw err;
-    }
+    const { data, error } = await supabase.rpc('approve_discount_request', { p_request_id: requestId, p_approved_percent: approvedPercent ?? null, p_note: note || null });
+    if (error) throw parseSupabaseError(error);
+    if (!data) throw new Error('Discount decision was not saved.');
+    return mapDiscountRequestRow(data);
   },
 
   async rejectDiscountRequest(requestId: string, note: string): Promise<DiscountRequest> {
@@ -374,44 +267,10 @@ export const discountRequestsService = {
       return inMemoryRequests[index];
     }
 
-    try {
-      const { data, error } = await supabase.rpc('reject_discount_request', {
-        p_request_id: requestId,
-        p_note: note,
-      });
-
-      if (error) {
-        console.warn('reject_discount_request RPC returned error, using local fallback:', error);
-        const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-        if (index !== -1) {
-          inMemoryRequests[index] = {
-            ...inMemoryRequests[index],
-            status: 'rejected',
-            decisionNote: note,
-            decidedAt: new Date().toISOString(),
-          };
-          return inMemoryRequests[index];
-        }
-        throw parseSupabaseError(error);
-      }
-      const mapped = mapDiscountRequestRow(data);
-      const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-      if (index !== -1) inMemoryRequests[index] = mapped;
-      return mapped;
-    } catch (err: any) {
-      console.warn('rejectDiscountRequest error, falling back:', err);
-      const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-      if (index !== -1) {
-        inMemoryRequests[index] = {
-          ...inMemoryRequests[index],
-          status: 'rejected',
-          decisionNote: note,
-          decidedAt: new Date().toISOString(),
-        };
-        return inMemoryRequests[index];
-      }
-      throw err;
-    }
+    const { data, error } = await supabase.rpc('reject_discount_request', { p_request_id: requestId, p_note: note });
+    if (error) throw parseSupabaseError(error);
+    if (!data) throw new Error('Discount decision was not saved.');
+    return mapDiscountRequestRow(data);
   },
 
   async cancelDiscountRequest(requestId: string): Promise<DiscountRequest> {
@@ -427,41 +286,10 @@ export const discountRequestsService = {
       return inMemoryRequests[index];
     }
 
-    try {
-      const { data, error } = await supabase.rpc('cancel_discount_request', {
-        p_request_id: requestId,
-      });
-
-      if (error) {
-        console.warn('cancel_discount_request RPC returned error, using local fallback:', error);
-        const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-        if (index !== -1) {
-          inMemoryRequests[index] = {
-            ...inMemoryRequests[index],
-            status: 'cancelled',
-            decidedAt: new Date().toISOString(),
-          };
-          return inMemoryRequests[index];
-        }
-        throw parseSupabaseError(error);
-      }
-      const mapped = mapDiscountRequestRow(data);
-      const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-      if (index !== -1) inMemoryRequests[index] = mapped;
-      return mapped;
-    } catch (err: any) {
-      console.warn('cancelDiscountRequest error, falling back:', err);
-      const index = inMemoryRequests.findIndex((r) => r.id === requestId);
-      if (index !== -1) {
-        inMemoryRequests[index] = {
-          ...inMemoryRequests[index],
-          status: 'cancelled',
-          decidedAt: new Date().toISOString(),
-        };
-        return inMemoryRequests[index];
-      }
-      throw err;
-    }
+    const { data, error } = await supabase.rpc('cancel_discount_request', { p_request_id: requestId });
+    if (error) throw parseSupabaseError(error);
+    if (!data) throw new Error('Discount decision was not saved.');
+    return mapDiscountRequestRow(data);
   },
 
   async getDiscountStats(): Promise<DiscountRequestStats> {

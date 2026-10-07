@@ -29,7 +29,7 @@ export const VisitsPage: React.FC = () => {
       .reduce((sum, o) => sum + Number(o.netPayable || 0), 0);
   }, [orders, currentUser]);
 
-  const handleAddVisit = (e: React.FormEvent) => {
+  const handleAddVisit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cust = customers.find((c) => c.id === selectedCustId) || customers[0];
     if (!cust) return;
@@ -39,7 +39,7 @@ export const VisitsPage: React.FC = () => {
       return;
     }
 
-    addFieldVisit({
+    const saved = await addFieldVisit({
       customerId: cust.id,
       customerName: cust.businessName,
       location: `${cust.city}, ${cust.state}`,
@@ -50,6 +50,7 @@ export const VisitsPage: React.FC = () => {
       status: 'completed',
     });
 
+    if (!saved) return;
     setPurpose('');
     setNotes('');
   };

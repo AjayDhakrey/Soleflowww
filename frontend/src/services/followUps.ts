@@ -64,9 +64,9 @@ export function mapFollowUpRow(row: any): FollowUpItem {
   return {
     id: String(row.id),
     customerId: row.client_id,
-    customerName: row.customerName || row.customer_name || 'Client Store',
-    customerCity: row.customerCity || row.customer_city || 'Agra',
-    phone: row.phone || '',
+    customerName: row.customers?.businessName || row.customerName || row.customer_name || 'Client Store',
+    customerCity: row.customers?.city || row.customerCity || row.customer_city || 'Agra',
+    phone: row.customers?.phone || row.phone || '',
     reason: customReason,
     date: row.due_date || dueDate.toISOString().split('T')[0],
     time: row.due_time || dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -119,15 +119,16 @@ export function parseIsoDueAt(dateStr?: string, timeStr?: string): string {
 }
 
 export const followUpsService = {
-  async fetchFollowUps(filters?: { status?: string; salespersonId?: string }): Promise<FollowUpItem[]> {
-    if (!supabase) return MOCK_FOLLOWUPS;
+  async fetchFollowUps(filters?: { status?: string; salespersonId?: string; orgId?: string }): Promise<FollowUpItem[]> {
+    if (!supabase) return [];
 
     try {
       let query = (supabase as any)
         .from('follow_ups')
-        .select('*')
+        .select('*, customers(businessName, city, phone)')
         .order('due_at', { ascending: true });
 
+      if (filters?.orgId) query = query.eq('org_id', filters.orgId);
       if (filters?.status && filters.status !== 'all') {
         const dbStatus = sanitizeFollowUpStatus(filters.status);
         query = query.eq('status', dbStatus);
@@ -139,19 +140,19 @@ export const followUpsService = {
       const { data, error } = await query;
       if (error) {
         console.warn('Supabase fetchFollowUps warning:', error);
-        return MOCK_FOLLOWUPS;
+        return [];
       }
 
-      if (!data || data.length === 0) return MOCK_FOLLOWUPS;
+      if (!data || data.length === 0) return [];
       return data.map(mapFollowUpRow);
     } catch (err) {
       console.warn('Error fetching follow-ups from Supabase:', err);
-      return MOCK_FOLLOWUPS;
+      return [];
     }
   },
 
   async createFollowUp(data: any): Promise<{ success: boolean; data?: any; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase) return { success: false, error: 'Database service is not configured.' };
 
     try {
       const rawReason = data.reason || data.type || 'Follow-up';
@@ -163,6 +164,7 @@ export const followUpsService = {
       const payload = {
         client_id: data.client_id || data.customerId,
         due_at: parseIsoDueAt(data.due_at || data.date, data.time),
+        owner_id: data.owner_id || null,
         owner_name: data.owner_name || data.ownerName || 'Field Rep',
         type: sanitizeFollowUpType(rawReason),
         status: sanitizeFollowUpStatus(data.status),
@@ -188,13 +190,13 @@ export const followUpsService = {
   },
 
   async completeFollowUp(id: string): Promise<{ success: boolean; error?: string }> {
-    if (!supabase) return { success: true };
+    if (!supabase) return { success: false, error: 'Database service is not configured.' };
 
     try {
       const { error } = await (supabase as any)
         .from('follow_ups')
         .update({ status: 'completed', updated_at: new Date().toISOString() })
-        .eq('id', id);
+        .eq('id', id).select('id').single();
 
       if (error) {
         console.warn('Supabase completeFollowUp warning:', error);

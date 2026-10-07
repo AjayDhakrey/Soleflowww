@@ -33,6 +33,13 @@ import { followUpsService } from '../services/followUps';
 import { designsService } from '../services/designs';
 import { notificationsService } from '../services/notifications';
 import { useAuth } from '../auth/AuthProvider';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffectiveOrgId, useReadOnly } from './ViewModeContext';
+import { clientsService, mapClientRowToCustomer } from '../services/clients';
+import { ordersService } from '../services/orders';
+import { salesmenService } from '../services/salesmen';
+import { mapFollowUpRow } from '../services/followUps';
+import { mapFieldVisitRow } from '../services/visits';
 
 interface AppContextType {
   currentUser: User;
@@ -53,7 +60,7 @@ interface AppContextType {
   customers: Customer[];
   selectedCustomer: Customer | null;
   setSelectedCustomer: (cust: Customer | null) => void;
-  addCustomer: (cust: Partial<Customer>) => void;
+  addCustomer: (cust: Partial<Customer>) => Promise<boolean>;
   designs: ShoeDesign[];
   setDesigns: React.Dispatch<React.SetStateAction<ShoeDesign[]>>;
   refreshDesigns: () => Promise<void>;
@@ -61,7 +68,7 @@ interface AppContextType {
   toggleSelectDesign: (id: string) => void;
   clearSelectedDesigns: () => void;
   orders: Order[];
-  createOrder: (order: Partial<Order>) => void;
+  createOrder: (order: Partial<Order>) => Promise<boolean>;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
   manufacturers: Manufacturer[];
   salesTeam: Salesperson[];
@@ -70,19 +77,19 @@ interface AppContextType {
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   followUps: FollowUpItem[];
-  addFollowUp: (item: Partial<FollowUpItem>) => void;
+  addFollowUp: (item: Partial<FollowUpItem>) => Promise<boolean>;
   completeFollowUp: (id: string) => void;
   fieldVisits: FieldVisitItem[];
-  addFieldVisit: (item: Partial<FieldVisitItem>) => void;
+  addFieldVisit: (item: Partial<FieldVisitItem>) => Promise<boolean>;
   completeFieldVisit: (id: string, outcome: FieldVisitItem['outcome'], notes: string) => void;
   payments: PaymentReceipt[];
-  recordPayment: (payment: Partial<PaymentReceipt>) => void;
+  recordPayment: (payment: Partial<PaymentReceipt>) => Promise<PaymentReceipt>;
   // Audit Logs & Traceability
   auditLogs: AuditEvent[];
   addAuditEvent: (event: Partial<AuditEvent>) => void;
   // Design Shares
   designShares: DesignShareRecord[];
-  recordDesignShare: (share: Partial<DesignShareRecord>) => void;
+  recordDesignShare: (share: Partial<DesignShareRecord>) => Promise<boolean>;
   // Interactive Demonstration Walkthrough Mode
   isWalkthroughOpen: boolean;
   setIsWalkthroughOpen: (open: boolean) => void;
@@ -198,76 +205,70 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
     }
   }, [isDarkMode]);
-  const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(MOCK_CUSTOMERS[0]);
-  const [designs, setDesigns] = useState<ShoeDesign[]>(MOCK_DESIGNS);
-  const [selectedDesignIds, setSelectedDesignIds] = useState<string[]>(['sf-1024', 'sf-884', 'sf-512']);
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
-  const [manufacturers, setManufacturers] = useState<Manufacturer[]>(MOCK_MANUFACTURERS);
-  const [salesTeam, setSalesTeam] = useState<Salesperson[]>(MOCK_SALES_TEAM);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [designs, setDesigns] = useState<ShoeDesign[]>([]);
+  const [selectedDesignIds, setSelectedDesignIds] = useState<string[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
+  const [salesTeam, setSalesTeam] = useState<Salesperson[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [followUps, setFollowUps] = useState<FollowUpItem[]>(MOCK_FOLLOWUPS);
-  const [fieldVisits, setFieldVisits] = useState<FieldVisitItem[]>(MOCK_FIELD_VISITS);
+  const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
+  const [fieldVisits, setFieldVisits] = useState<FieldVisitItem[]>([]);
   const [payments, setPayments] = useState<PaymentReceipt[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditEvent[]>(MOCK_AUDIT_LOGS);
-  const [designShares, setDesignShares] = useState<DesignShareRecord[]>(MOCK_DESIGN_SHARES);
+  const [auditLogs, setAuditLogs] = useState<AuditEvent[]>([]);
+  const [designShares, setDesignShares] = useState<DesignShareRecord[]>([]);
 
   const auth = useAuth();
-  const isSupabaseActive = isSupabaseConfigured();
+  const isSupabaseActive = isSupabaseConfigured() && auth.hasRealSession;
+  const orgId = useEffectiveOrgId();
+  const isReadOnly = useReadOnly();
+  const queryClient = useQueryClient();
+  const requirePersistence = () => {
+    if (!isSupabaseActive || !orgId) { showToast('Sign in to a real account to save data. Demo changes cannot be saved.'); return false; }
+    if (isReadOnly) { showToast('This workspace is in read-only view mode.'); return false; }
+    return true;
+  };
+  const invalidateData = () => { void queryClient.invalidateQueries(); };
 
-  // Hydrate from live Supabase database when configured and user has an active authenticated session
+  // Clear account state before loading; discard requests from an earlier account.
   useEffect(() => {
-    if (isSupabaseActive && auth?.hasRealSession && auth?.isLoggedIn) {
-      supabaseApi.getCustomers().then((data) => {
-        if (data && data.length > 0) {
-          setCustomers(data);
-          setSelectedCustomer(data[0]);
-        }
-      });
-      designsService.fetchDesigns().then((data) => {
-        if (data) setDesigns(data);
-      }).catch((err) => {
-        console.warn('Initial designs fetch error:', err);
-      });
-      supabaseApi.getOrders().then((data) => {
-        if (data && data.length > 0) setOrders(data);
-      });
-      supabaseApi.getPayments().then((data) => {
-        if (data && data.length > 0) setPayments(data);
-      });
-      followUpsService.fetchFollowUps().then((data) => {
-        if (data && data.length > 0) setFollowUps(data);
-      }).catch((err) => {
-        console.warn('Initial follow-ups fetch error:', err);
-      });
-      visitsService.fetchVisits().then((data) => {
-        if (data && data.length > 0) setFieldVisits(data);
-      }).catch((err) => {
-        console.warn('Initial visits fetch error:', err);
-      });
-      notificationsService.fetchNotifications().then((data) => {
-        if (data) setNotifications(data);
-      }).catch((err) => {
-        console.warn('Initial notifications fetch error:', err);
-      });
-      supabaseApi.getAuditLogs().then((data) => {
-        if (data && data.length > 0) setAuditLogs(data);
-      });
-      supabaseApi.getDesignShares().then((data) => {
-        if (data && data.length > 0) setDesignShares(data);
-      });
-      supabaseApi.getManufacturers().then((data) => {
-        if (data && data.length > 0) setManufacturers(data);
-      });
-      supabaseApi.getSalesTeam().then((data) => {
-        if (data && data.length > 0) setSalesTeam(data);
-      });
+    let cancelled = false;
+    setCustomers([]); setSelectedCustomer(null); setDesigns([]); setOrders([]);
+    setManufacturers([]); setSalesTeam([]); setNotifications([]); setFollowUps([]);
+    setFieldVisits([]); setPayments([]); setAuditLogs([]); setDesignShares([]);
+    setSelectedDesignIds([]);
+    queryClient.clear();
+    if (!auth.hasRealSession && auth.isDemoAccount) {
+      setCustomers(MOCK_CUSTOMERS); setDesigns(MOCK_DESIGNS); setOrders(MOCK_ORDERS);
+      setManufacturers(MOCK_MANUFACTURERS); setSalesTeam(MOCK_SALES_TEAM);
+      setFollowUps(MOCK_FOLLOWUPS); setFieldVisits(MOCK_FIELD_VISITS);
+      setAuditLogs(MOCK_AUDIT_LOGS); setDesignShares(MOCK_DESIGN_SHARES);
+      return;
     }
-  }, [isSupabaseActive, auth?.hasRealSession, auth?.isLoggedIn, auth?.user?.id]);
+    if (isSupabaseActive && orgId) {
+      const load = async (fetcher: () => Promise<any>, setter: (data: any) => void) => {
+        try { const data = await fetcher(); if (!cancelled && data !== null) setter(data); }
+        catch (err) { if (!cancelled) showToast('Could not load workspace data. Please retry.'); console.error(err); }
+      };
+      void load(() => supabaseApi.getCustomers(orgId), data => { setCustomers(data); setSelectedCustomer(data[0] || null); });
+      void load(() => designsService.fetchDesigns({ orgId }), setDesigns);
+      void load(() => supabaseApi.getOrders(orgId), setOrders);
+      void load(() => supabaseApi.getPayments(orgId), setPayments);
+      void load(() => followUpsService.fetchFollowUps({ orgId }), setFollowUps);
+      void load(() => visitsService.fetchVisits({ orgId }), setFieldVisits);
+      void load(() => notificationsService.fetchNotifications(orgId), setNotifications);
+      void load(() => supabaseApi.getAuditLogs(orgId), setAuditLogs);
+      void load(() => supabaseApi.getDesignShares(orgId), setDesignShares);
+      void load(() => supabaseApi.getManufacturers(orgId), setManufacturers);
+      void load(() => supabaseApi.getSalesTeam(orgId), setSalesTeam);
+    }
+    return () => { cancelled = true; };
+  }, [isSupabaseActive, orgId, auth.user?.id, auth.isDemoAccount]);
 
   const refreshDesigns = async () => {
     try {
-      const live = await designsService.fetchDesigns();
+      const live = await designsService.fetchDesigns({ orgId: orgId || undefined });
       if (live) {
         setDesigns(live);
       }
@@ -281,6 +282,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [walkthroughStep, setWalkthroughStep] = useState(0);
 
   const addAuditEvent = (eventData: Partial<AuditEvent>) => {
+    if (!isSupabaseActive || isReadOnly) return;
     const newEvent: AuditEvent = {
       id: `aud-${Date.now()}`,
       actor: eventData.actor || currentUser.name,
@@ -300,7 +302,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const recordDesignShare = (shareData: Partial<DesignShareRecord>) => {
+  const recordDesignShare = async (shareData: Partial<DesignShareRecord>) => {
+    if (!requirePersistence()) return false;
     const newShare: DesignShareRecord = {
       id: `dshare-${Date.now()}`,
       sharedBy: shareData.sharedBy || currentUser.name,
@@ -317,10 +320,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       viewCount: 0,
       wasOrdered: false,
     };
+    if (!await supabaseApi.insertDesignShare(newShare)) { showToast('Could not save this design share. Please retry.'); return false; }
     setDesignShares((prev) => [newShare, ...prev]);
-    if (isSupabaseActive) {
-      supabaseApi.insertDesignShare(newShare);
-    }
     addAuditEvent({
       action: `Shared ${newShare.designsCount} Shoe Designs`,
       recordType: 'Design',
@@ -328,6 +329,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordTitle: `${newShare.targetClientName} (${newShare.channel})`,
       newValue: `Shared via ${newShare.channel} to ${newShare.targetPhone}`,
     });
+    return true;
   };
 
   // Modals state
@@ -517,456 +519,95 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSelectedDesignIds([]);
   };
 
-  const addCustomer = (custData: Partial<Customer>) => {
-    const newCust: Customer = {
-      id: `cust-${Date.now()}`,
-      businessName: custData.businessName || 'New Wholesale Store',
-      propName: custData.propName || 'Proprietor',
-      phone: custData.phone || '+91 98000 00000',
-      whatsapp: custData.whatsapp || '+91 98000 00000',
-      email: custData.email || 'retail@store.com',
-      city: custData.city || 'Agra',
-      state: custData.state || 'Uttar Pradesh',
-      cluster: custData.cluster || 'Agra Footwear Cluster',
-      address: custData.address || 'Central Market',
-      gstin: custData.gstin || '09AAAAA0000A1Z5',
-      salespersonId: currentUser.id,
-      salespersonName: currentUser.name,
-      paymentTerms: custData.paymentTerms || '30% Advance + 70% Bilty',
-      creditLimit: custData.creditLimit || 500000,
-      totalBusiness: 0,
-      totalPaid: 0,
-      amountDue: 0,
-      overdueDays: 0,
-      status: 'active',
-      ordersCount: 0,
-      lastOrderDate: 'Never',
-      lastPaymentDate: 'None',
-      lastPaymentAmount: 0,
-      tier: 'Standard Retail',
-      activityHistory: [
-        {
-          id: `act-${Date.now()}`,
-          type: 'note',
-          title: 'Account Registered on SoleFlow',
-          description: `Onboarded by ${currentUser.name} on standard wholesale terms.`,
-          timestamp: 'Just now',
-        },
-      ],
-    };
+  const addCustomer = async (input: Partial<Customer>) => {
+    if (!requirePersistence()) return false;
+    const result = await clientsService.createClient(input);
+    if (!result.success || !result.data) { showToast(result.error || 'Customer could not be saved.'); return false; }
+    const saved = mapClientRowToCustomer(result.data);
+    setCustomers(prev => [saved, ...prev]); setSelectedCustomer(saved);
+    invalidateData(); showToast('Customer saved.'); return true;
+  };
 
-    setCustomers((prev) => [newCust, ...prev]);
-    setSelectedCustomer(newCust);
-    if (isSupabaseActive) {
-      supabaseApi.insertCustomer(newCust).then((ok) => {
-        if (ok) {
-          showToast(`✅ Customer '${newCust.businessName}' saved to Supabase!`);
-        } else {
-          showToast(`⚠️ Cloud save failed for '${newCust.businessName}' (saved locally)`);
-        }
-      });
-    } else {
-      showToast(`Added customer: ${newCust.businessName}`);
+  const createOrder = async (input: Partial<Order>) => {
+    if (!requirePersistence()) return false;
+    const result = await ordersService.createOrderDraft({ order: input, items: input.items || [] });
+    if (!result.success || !result.data?.id) { showToast(result.error || 'Order could not be saved.'); return false; }
+    const saved = { ...input, ...result.data } as Order;
+    if (input.manufacturerId && !await supabaseApi.assignOrderManufacturer(saved.id, input.manufacturerId)) {
+      showToast('Order saved; factory assignment failed. Assign a factory from the order details.');
     }
+    setOrders(prev => [saved, ...prev]); invalidateData();
+    showToast('Order saved.'); return true;
+  };
 
-    addAuditEvent({
-      action: 'Created Client Account',
-      recordType: 'Client',
-      recordId: newCust.id,
-      recordTitle: newCust.businessName,
-      newValue: `Registered: ${newCust.city}, Terms: ${newCust.paymentTerms}`,
+  const updateOrderStatus = async (orderId: string, status: Order['status']) => {
+    if (!requirePersistence()) return;
+    const result = await ordersService.advanceOrderStatus({ orderId, newStatus: status });
+    if (!result.success) { showToast(result.error || 'Status could not be saved.'); return; }
+    setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status } : order));
+    invalidateData(); showToast('Order status saved.');
+  };
+
+  const toggleSalesTask = async (salespersonId: string, taskId: string) => {
+    if (!requirePersistence()) return;
+    const rep = salesTeam.find(item => item.id === salespersonId);
+    if (!rep) return;
+    const tasksChecklist = rep.tasksChecklist.map(task => task.id === taskId ? { ...task, completed: !task.completed } : task);
+    const result = await salesmenService.updateSalesman(salespersonId, { tasksChecklist });
+    if (!result.success) { showToast(result.error || 'Task could not be saved.'); return; }
+    setSalesTeam(prev => prev.map(item => item.id === salespersonId ? { ...item, tasksChecklist } : item));
+  };
+
+  const markNotificationAsRead = async (id: string) => {
+    if (!requirePersistence() || !await notificationsService.markAsRead(id)) return;
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+  const markAllNotificationsAsRead = async () => {
+    if (!requirePersistence() || !await notificationsService.markAllAsRead()) return;
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+  const addFollowUp = async (input: Partial<FollowUpItem>) => {
+    if (!requirePersistence()) return false;
+    const result = await followUpsService.createFollowUp({ ...input, owner_id: auth.user?.id, owner_name: currentUser.name });
+    if (!result.success || !result.data) { showToast(result.error || 'Follow-up could not be saved.'); return false; }
+    const saved = { ...input, ...mapFollowUpRow(result.data), customerName: input.customerName || '', customerCity: input.customerCity || '', phone: input.phone || '' };
+    setFollowUps(prev => [saved, ...prev]); showToast('Follow-up saved.'); return true;
+  };
+  const completeFollowUp = async (id: string) => {
+    if (!requirePersistence()) return;
+    const result = await followUpsService.completeFollowUp(id);
+    if (!result.success) { showToast(result.error || 'Follow-up could not be completed.'); return; }
+    setFollowUps(prev => prev.map(f => f.id === id ? { ...f, status: 'completed' } : f));
+  };
+  const addFieldVisit = async (input: Partial<FieldVisitItem>) => {
+    if (!requirePersistence()) return false;
+    const result = await visitsService.createVisit({ ...input, salesperson_id: currentUser.id, salesperson_name: currentUser.name });
+    if (!result.success || !result.data) { showToast(result.error || 'Visit could not be saved.'); return false; }
+    const saved = { ...mapFieldVisitRow(result.data), customerName: input.customerName || '' };
+    setFieldVisits(prev => [saved, ...prev.filter(v => v.id !== saved.id)]); showToast('Visit saved.'); return true;
+  };
+  const completeFieldVisit = async (id: string, outcome: FieldVisitItem['outcome'] = 'Order Created', notes = '') => {
+    if (!requirePersistence()) return;
+    const result = await visitsService.completeVisit(id, outcome, notes);
+    if (!result.success) { showToast(result.error || 'Visit could not be completed.'); return; }
+    setFieldVisits(prev => prev.map(v => v.id === id ? { ...v, status: 'completed', outcome, notes } : v));
+  };
+  const recordPayment = async (input: Partial<PaymentReceipt>): Promise<PaymentReceipt> => {
+    if (!requirePersistence()) throw new Error('Sign in to an editable account to save payments.');
+    if (!input.customerId) throw new Error('Select a customer.');
+    const result = await paymentsService.recordPayment({
+      clientId: input.customerId, amount: Number(input.paymentAmount), method: input.paymentMethod,
+      reference: input.utrRef, paymentDate: input.paymentDate, notes: input.notes,
+      chequeNo: input.chequeNo, chequeBank: input.chequeBank, chequeDate: input.chequeDate,
+      allocations: input.orderId ? [{ orderId: input.orderId, amount: Number(input.paymentAmount) }] : [],
+      idempotencyKey: input.id || crypto.randomUUID(), orgId: orgId || undefined,
     });
-  };
-
-  const createOrder = (orderData: Partial<Order>) => {
-    const orderNumber = orderData.id || `ORD-0${149 + orders.length}`;
-    const calculatedPairs = orderData.pairsCount ?? (orderData.items?.reduce((sum, item) => sum + (item.totalPairs || 0), 0) ?? 0);
-    const calculatedCartons = orderData.cartonsCount ?? (orderData.items?.reduce((sum, item) => sum + (item.totalCartons || 0), 0) ?? 0);
-    const subtotal = orderData.subtotal ?? (orderData.items?.reduce((sum, item) => sum + (item.itemSubtotal || 0), 0) ?? 0);
-    const tradeDiscountPercent = orderData.tradeDiscountPercent ?? 0;
-    const tradeDiscountAmount = orderData.tradeDiscountAmount ?? Math.round((subtotal * tradeDiscountPercent) / 100);
-    const taxableSubtotal = orderData.taxableSubtotal ?? (subtotal - tradeDiscountAmount);
-    const gstPercent = orderData.gstPercent ?? 12;
-    const gstAmount = orderData.gstAmount ?? Math.round((taxableSubtotal * gstPercent) / 100);
-    const netPayable = orderData.netPayable ?? (taxableSubtotal + gstAmount);
-    const advanceDeposited = orderData.advanceDeposited ?? 0;
-    const balanceDue = orderData.balanceDue ?? Math.max(0, netPayable - advanceDeposited);
-
-    const newOrder: Order = {
-      id: orderNumber,
-      customerId: orderData.customerId || (customers[0]?.id || 'cust-1'),
-      customerName: orderData.customerName || (customers[0]?.businessName || 'Retail Customer'),
-      propName: orderData.propName || (customers[0]?.propName || ''),
-      customerCity: orderData.customerCity || (customers[0]?.city || 'Agra'),
-      customerState: orderData.customerState || (customers[0]?.state || 'Uttar Pradesh'),
-      salespersonId: currentUser.id,
-      salespersonName: currentUser.name,
-      items: orderData.items || [],
-      pairsCount: calculatedPairs,
-      cartonsCount: calculatedCartons,
-      wholesaleRate: orderData.wholesaleRate ?? (calculatedPairs > 0 ? Math.round(subtotal / calculatedPairs) : 0),
-      subtotal,
-      tradeDiscountPercent,
-      tradeDiscountAmount,
-      taxableSubtotal,
-      gstPercent,
-      gstAmount,
-      netPayable,
-      advanceDeposited,
-      balanceDue,
-      manufacturerId: orderData.manufacturerId || (manufacturers[0]?.id || 'mfg-1'),
-      manufacturerName: orderData.manufacturerName || (manufacturers[0]?.companyName || 'Apex Footwear Works'),
-      manufacturerPlant: orderData.manufacturerPlant || (manufacturers[0]?.hubLocation || 'Agra Unit 2'),
-      expectedDelivery: orderData.expectedDelivery || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      paymentStatus: advanceDeposited > 0 ? (advanceDeposited >= netPayable ? 'Paid' : 'Advance Deposited') : 'Payment Pending',
-      status: orderData.status || (currentUser.role === 'admin' ? 'Approved' : 'Submitted'),
-      orderDate: 'Today',
-      batchNumber: orderData.batchNumber || `SF-90${orders.length + 3}`,
-      timeline: [
-        { step: 'Created', date: 'Today, Just Now', completed: true },
-        { step: 'Submitted', date: 'Today, Just Now', completed: true, active: true },
-        { step: 'Approved', date: 'Pending Trader Review', completed: (orderData.status || (currentUser.role === 'admin' ? 'Approved' : 'Submitted')) === 'Approved' },
-        { step: 'In Production', date: 'Queued at Plant', completed: false },
-        { step: 'Ready QC', date: 'Est. 10 Days', completed: false },
-        { step: 'Dispatched', date: 'Bilty Pending', completed: false },
-        { step: 'Delivered', date: 'Destination Godown', completed: false },
-      ],
-    };
-
-    setOrders((prev) => [newOrder, ...prev]);
-    if (isSupabaseActive) {
-      supabaseApi.insertOrder(newOrder);
-    }
-
-    addAuditEvent({
-      action: 'Created Wholesale Order',
-      recordType: 'Order',
-      recordId: newOrder.id,
-      recordTitle: `${newOrder.customerName} (${newOrder.pairsCount} Pairs)`,
-      newValue: `Net Payable: ₹${newOrder.netPayable.toLocaleString('en-IN')}, Status: ${newOrder.status}`,
-    });
-
-    // Update customer stats
-    setCustomers((prev) =>
-      prev.map((c) => {
-        if (c.id === newOrder.customerId) {
-          const updatedCust = {
-            ...c,
-            ordersCount: c.ordersCount + 1,
-            totalBusiness: c.totalBusiness + newOrder.netPayable,
-            amountDue: c.amountDue + newOrder.balanceDue,
-            activityHistory: [
-              {
-                id: `act-ord-${Date.now()}`,
-                type: 'order_confirmed' as const,
-                title: `Order ${newOrder.id} Booked (${newOrder.pairsCount} Pairs)`,
-                description: `Created for ₹${newOrder.netPayable.toLocaleString('en-IN')} with ₹${newOrder.advanceDeposited.toLocaleString('en-IN')} advance recorded.`,
-                timestamp: 'Just now',
-              },
-              ...c.activityHistory,
-            ],
-          };
-          if (isSupabaseActive) {
-            supabaseApi.updateCustomer(updatedCust.id, updatedCust);
-          }
-          return updatedCust;
-        }
-        return c;
-      })
-    );
-
-    showToast(`Order ${newOrder.id} successfully created!`);
-  };
-
-  const updateOrderStatus = (orderId: string, status: Order['status']) => {
-    setOrders((prev) =>
-      prev.map((ord) => {
-        if (ord.id === orderId) {
-          addAuditEvent({
-            action: 'Updated Order Status',
-            recordType: 'Order',
-            recordId: ord.id,
-            recordTitle: `${ord.customerName} - ${ord.id}`,
-            oldValue: `Status: ${ord.status}`,
-            newValue: `Status: ${status}`,
-          });
-          if (isSupabaseActive) {
-            supabaseApi.updateOrderStatus(orderId, status);
-          }
-          return { ...ord, status };
-        }
-        return ord;
-      })
-    );
-    showToast(`Order ${orderId} status updated to: ${status}`);
-  };
-
-  const toggleSalesTask = (salespersonId: string, taskId: string) => {
-    setSalesTeam((prev) =>
-      prev.map((rep) => {
-        if (rep.id === salespersonId) {
-          const updated = rep.tasksChecklist.map((task) =>
-            task.id === taskId ? { ...task, completed: !task.completed } : task
-          );
-          return { ...rep, tasksChecklist: updated };
-        }
-        return rep;
-      })
-    );
-  };
-
-  const markNotificationAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-    if (isSupabaseActive) {
-      notificationsService.markAsRead(id);
-    }
-  };
-
-  const markAllNotificationsAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read: true }))
-    );
-    if (isSupabaseActive) {
-      notificationsService.markAllAsRead();
-    }
-  };
-
-  const addFollowUp = (item: Partial<FollowUpItem>) => {
-    const newFollowUp: FollowUpItem = {
-      id: item.id || `fu-${Date.now()}`,
-      customerId: item.customerId || (customers[0]?.id ?? ''),
-      customerName: item.customerName || (customers[0]?.businessName ?? 'Client Store'),
-      customerCity: item.customerCity || (customers[0]?.city ?? 'Agra'),
-      phone: item.phone || (customers[0]?.phone ?? ''),
-      reason: item.reason || 'Follow-up for payment & orders',
-      date: item.date || new Date().toISOString().split('T')[0],
-      time: item.time || '11:00 AM',
-      relatedOrder: item.relatedOrder,
-      amountDue: item.amountDue,
-      notes: item.notes || '',
-      status: (item.status as any) || 'today',
-    };
-
-    setFollowUps((prev) => [newFollowUp, ...prev]);
-    if (isSupabaseActive) {
-      followUpsService.createFollowUp({
-        client_id: newFollowUp.customerId,
-        date: newFollowUp.date,
-        time: newFollowUp.time,
-        owner_name: currentUser.name || 'Sales Rep',
-        type: newFollowUp.reason,
-        status: newFollowUp.status,
-        outcome: newFollowUp.notes,
-        priority: 'normal',
-      }).then((res) => {
-        if (res.success) {
-          showToast(`✅ Follow-up saved to Supabase for ${newFollowUp.customerName}!`);
-        } else {
-          showToast(`Follow-up scheduled for ${newFollowUp.customerName}!`);
-        }
-      });
-    } else {
-      showToast(`Follow-up scheduled for ${newFollowUp.customerName}!`);
-    }
-
-    addAuditEvent({
-      action: 'Scheduled Follow-up',
-      recordType: 'Client',
-      recordId: newFollowUp.customerId,
-      recordTitle: `${newFollowUp.customerName} (${newFollowUp.reason})`,
-      newValue: `Scheduled for ${newFollowUp.date} at ${newFollowUp.time}`,
-    });
-  };
-
-  const completeFollowUp = (id: string) => {
-    setFollowUps((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, status: 'completed' } : f))
-    );
-    if (isSupabaseActive) {
-      followUpsService.completeFollowUp(id);
-    }
-    showToast('Follow-up marked as completed!');
-  };
-
-  const addFieldVisit = (item: Partial<FieldVisitItem>) => {
-    const newVisit: FieldVisitItem = {
-      id: item.id || `vis-${Date.now()}`,
-      customerId: item.customerId || (customers[0]?.id ?? ''),
-      customerName: item.customerName || (customers[0]?.businessName ?? 'Client Store'),
-      location: item.location || (customers[0]?.city ?? 'Agra Marketplace'),
-      time: item.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      purpose: item.purpose || 'Store check-in & order discussion',
-      status: (item.status as any) || 'completed',
-      outcome: item.outcome || 'Interested',
-      notes: item.notes || '',
-    };
-
-    setFieldVisits((prev) => [newVisit, ...prev]);
-
-    if (isSupabaseActive) {
-      visitsService
-        .createVisit({
-          client_id: newVisit.customerId,
-          salesperson_id: currentUser.id,
-          salesperson_name: currentUser.name,
-          visit_date: new Date().toISOString().split('T')[0],
-          purpose: newVisit.purpose,
-          location: newVisit.location,
-          outcome: newVisit.outcome,
-          notes: newVisit.notes,
-          status: newVisit.status as any,
-        })
-        .then((res) => {
-          if (res.success) {
-            showToast(`✅ Store visit saved to Supabase for ${newVisit.customerName}!`);
-          } else {
-            console.warn('Field visit Supabase save error:', res.error);
-            showToast(`⚠️ Visit saved locally (${res.error || 'Sync pending'})`);
-          }
-        })
-        .catch((err) => {
-          console.warn('Field visit Supabase exception:', err);
-          showToast(`Store visit recorded for ${newVisit.customerName}!`);
-        });
-    } else {
-      showToast(`Store visit recorded for ${newVisit.customerName}!`);
-    }
-
-    addAuditEvent({
-      action: 'Logged Field Visit',
-      recordType: 'Client',
-      recordId: newVisit.customerId,
-      recordTitle: `${newVisit.customerName} - ${newVisit.purpose}`,
-      newValue: `Outcome: ${newVisit.outcome || 'Check-in'} at ${newVisit.location}`,
-    });
-  };
-
-  const completeFieldVisit = (
-    id: string,
-    outcome: FieldVisitItem['outcome'] = 'Order Created',
-    notes: string = ''
-  ) => {
-    setFieldVisits((prev) =>
-      prev.map((v) =>
-        v.id === id ? { ...v, status: 'completed', outcome, notes } : v
-      )
-    );
-    if (isSupabaseActive) {
-      visitsService.completeVisit(id, outcome, notes).then((res) => {
-        if (res.success) {
-          showToast(`✅ Visit completed & saved to Supabase!`);
-        } else {
-          showToast(`Visit completed • Outcome: ${outcome}`);
-        }
-      });
-    } else {
-      showToast(`Visit completed • Outcome: ${outcome}`);
-    }
-  };
-
-  const recordPayment = async (p: Partial<PaymentReceipt>) => {
-    const cust = customers.find((c) => c.id === p.customerId) || (p.customerId ? { id: p.customerId, businessName: p.customerName || 'Store', amountDue: p.amountDueBefore || 0, totalPaid: 0, city: p.customerCity || 'Agra' } as Customer : customers[0]);
-    const payAmount = Number(p.paymentAmount) || 0;
-    const beforeDue = cust ? cust.amountDue : (p.amountDueBefore ?? 0);
-    const afterDue = Math.max(0, beforeDue - payAmount);
-    const receiptNum = p.receiptNumber || `SF-REC-${Math.floor(10000 + Math.random() * 90000)}`;
-
-    const newReceipt: PaymentReceipt = {
-      id: p.id || `pay-${Date.now()}`,
-      receiptNumber: receiptNum,
-      customerId: cust?.id || p.customerId || '',
-      customerName: cust?.businessName || p.customerName || 'Customer Store',
-      customerCity: cust?.city || p.customerCity || 'Agra',
-      orderId: p.orderId,
-      orderNumber: p.orderNumber,
-      amountDueBefore: beforeDue,
-      paymentAmount: payAmount,
-      amountDueAfter: afterDue,
-      paymentDate: p.paymentDate || new Date().toISOString().split('T')[0],
-      paymentMethod: p.paymentMethod || 'UPI',
-      utrRef: p.utrRef || '',
-      collectedBy: currentUser.name,
-      notes: p.notes || '',
-      sentSms: p.sentSms !== false,
-      status: p.paymentMethod === 'Cheque' ? 'pending_clearance' : 'verified',
-      chequeNo: p.chequeNo,
-      chequeBank: p.chequeBank,
-      chequeDate: p.chequeDate,
-    };
-
-    setPayments((prev) => [newReceipt, ...prev]);
-
-    if (isSupabaseActive && cust?.id) {
-      try {
-        await paymentsService.recordPayment({
-          clientId: cust.id,
-          amount: payAmount,
-          customerName: newReceipt.customerName,
-          customerCity: newReceipt.customerCity,
-          amountDueBefore: beforeDue,
-          amountDueAfter: afterDue,
-          collectedBy: newReceipt.collectedBy,
-          orderId: newReceipt.orderId,
-          orderNumber: newReceipt.orderNumber,
-          method: newReceipt.paymentMethod,
-          reference: newReceipt.utrRef,
-          paymentDate: newReceipt.paymentDate,
-          notes: newReceipt.notes,
-          chequeNo: newReceipt.chequeNo,
-          chequeBank: newReceipt.chequeBank,
-          chequeDate: newReceipt.chequeDate,
-          receiptNumber: newReceipt.receiptNumber,
-          orgId: (auth as any)?.profile?.org_id || undefined,
-        });
-      } catch (err) {
-        console.error('Error saving payment to Supabase:', err);
-      }
-    }
-
-    addAuditEvent({
-      action: 'Recorded Payment Collection',
-      recordType: 'Payment',
-      recordId: newReceipt.receiptNumber,
-      recordTitle: `${newReceipt.customerName} - ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} (${newReceipt.paymentMethod})`,
-      oldValue: `Outstanding: ₹${newReceipt.amountDueBefore.toLocaleString('en-IN')}`,
-      newValue: `Outstanding: ₹${newReceipt.amountDueAfter.toLocaleString('en-IN')} (Ref: ${newReceipt.utrRef || newReceipt.chequeNo || 'Realized'})`,
-    });
-
-    // Update customer balances locally if verified immediately
-    if (newReceipt.status === 'verified') {
-      setCustomers((prev) =>
-        prev.map((c) => {
-          if (c.id === newReceipt.customerId) {
-            const newDue = Math.max(0, c.amountDue - payAmount);
-            return {
-              ...c,
-              amountDue: newDue,
-              totalPaid: c.totalPaid + payAmount,
-              lastPaymentDate: 'Today',
-              lastPaymentAmount: payAmount,
-              status: newDue === 0 ? ('active' as const) : c.status,
-              overdueDays: newDue === 0 ? 0 : c.overdueDays,
-              activityHistory: [
-                {
-                  id: `act-pay-${Date.now()}`,
-                  type: 'payment' as const,
-                  title: `Received ₹${payAmount.toLocaleString('en-IN')} payment via ${newReceipt.paymentMethod}`,
-                  description: `Ref: ${newReceipt.utrRef || newReceipt.chequeNo || 'Direct'}. Remaining Due: ₹${newDue.toLocaleString('en-IN')}.`,
-                  timestamp: 'Just now',
-                  refNumber: newReceipt.utrRef || newReceipt.chequeNo,
-                },
-                ...c.activityHistory,
-              ],
-            };
-          }
-          return c;
-        })
-      );
-    }
-
-    showToast(`Payment of ₹${newReceipt.paymentAmount.toLocaleString('en-IN')} recorded successfully!`);
+    if (!result.success || !result.data) throw new Error(result.error || 'Payment could not be saved.');
+    const saved = { ...result.data, chequeNo: result.data.cheque_no, chequeBank: result.data.cheque_bank, chequeDate: result.data.cheque_date } as PaymentReceipt;
+    setPayments(prev => [saved, ...prev.filter(p => p.id !== saved.id)]);
+    const liveCustomers = await supabaseApi.getCustomers(orgId || undefined);
+    if (liveCustomers) setCustomers(liveCustomers);
+    invalidateData(); showToast('Payment saved.'); return saved;
   };
 
   return (

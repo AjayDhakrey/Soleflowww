@@ -67,10 +67,9 @@ export const salesmenService = {
     if (!supabase || isDemoModeActive) return { success: true };
 
     try {
-      const { error } = await supabase
-        .from('sales_team')
-        .update(updates)
-        .eq('id', id);
+      const { error } = updates.tasksChecklist
+        ? await supabase.rpc('set_sales_tasks', { p_salesman_id: id, p_tasks: updates.tasksChecklist })
+        : await supabase.from('sales_team').update(updates).eq('id', id).select('id').single();
 
       if (error) throw parseSupabaseError(error);
       return { success: true };
