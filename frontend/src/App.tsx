@@ -97,6 +97,13 @@ const AppContent: React.FC = () => {
     showToast,
     setIsMobileSidebarOpen,
     isDarkMode,
+    setSalesTeam,
+    setCustomers,
+    setOrders,
+    setPayments,
+    setFollowUps,
+    setFieldVisits,
+    setNotifications,
   } = useApp();
 
   const { user: authUser, role: authRole } = useAuth();
@@ -127,9 +134,21 @@ const AppContent: React.FC = () => {
   });
   const [activeShareToken, setActiveShareToken] = useState<string>('');
 
-  // Live Supabase Realtime subscriptions for orders and notifications
-  useRealtimeSubscriptions(authUser?.id, (msg) => {
-    showToast(msg);
+  // Live Supabase Realtime subscriptions with instant multi-table sync
+  useRealtimeSubscriptions({
+    userId: authUser?.id || currentUser?.id,
+    userRole: authRole || currentUser?.role,
+    userName: authUser?.name || currentUser?.name,
+    onNotification: (msg) => {
+      showToast(msg);
+    },
+    setSalesTeam,
+    setCustomers,
+    setOrders,
+    setPayments,
+    setFollowUps,
+    setFieldVisits,
+    setNotifications,
   });
 
   // Live Supabase Realtime synchronization for shoe designs catalog

@@ -58,6 +58,7 @@ interface AppContextType {
   }) => boolean;
   logout: () => void;
   customers: Customer[];
+  setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
   selectedCustomer: Customer | null;
   setSelectedCustomer: (cust: Customer | null) => void;
   addCustomer: (cust: Partial<Customer>) => Promise<boolean>;
@@ -70,25 +71,33 @@ interface AppContextType {
   toggleSelectDesign: (id: string) => void;
   clearSelectedDesigns: () => void;
   orders: Order[];
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   createOrder: (order: Partial<Order>) => Promise<boolean>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<boolean>;
   manufacturers: Manufacturer[];
+  setManufacturers: React.Dispatch<React.SetStateAction<Manufacturer[]>>;
   salesTeam: Salesperson[];
+  setSalesTeam: React.Dispatch<React.SetStateAction<Salesperson[]>>;
   toggleSalesTask: (salespersonId: string, taskId: string) => void;
   addSalesTask: (salespersonId: string, task: Salesperson['tasksChecklist'][number]) => Promise<boolean>;
   notifications: NotificationItem[];
+  setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   followUps: FollowUpItem[];
+  setFollowUps: React.Dispatch<React.SetStateAction<FollowUpItem[]>>;
   addFollowUp: (item: Partial<FollowUpItem>) => Promise<boolean>;
   completeFollowUp: (id: string) => Promise<boolean>;
   fieldVisits: FieldVisitItem[];
+  setFieldVisits: React.Dispatch<React.SetStateAction<FieldVisitItem[]>>;
   addFieldVisit: (item: Partial<FieldVisitItem>) => Promise<boolean>;
   completeFieldVisit: (id: string, outcome: FieldVisitItem['outcome'], notes: string) => void;
   payments: PaymentReceipt[];
+  setPayments: React.Dispatch<React.SetStateAction<PaymentReceipt[]>>;
   recordPayment: (payment: Partial<PaymentReceipt>) => Promise<PaymentReceipt>;
   // Audit Logs & Traceability
   auditLogs: AuditEvent[];
+  setAuditLogs: React.Dispatch<React.SetStateAction<AuditEvent[]>>;
   addAuditEvent: (event: Partial<AuditEvent>) => void;
   // Design Shares
   designShares: DesignShareRecord[];
@@ -703,6 +712,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         register,
         logout,
         customers,
+        setCustomers,
         selectedCustomer,
         setSelectedCustomer,
         addCustomer,
@@ -715,24 +725,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleSelectDesign,
         clearSelectedDesigns,
         orders,
+        setOrders,
         createOrder,
         updateOrderStatus,
         manufacturers,
+        setManufacturers,
         salesTeam,
+        setSalesTeam,
         toggleSalesTask,
         addSalesTask,
         notifications,
+        setNotifications,
         markNotificationAsRead,
         markAllNotificationsAsRead,
         followUps,
+        setFollowUps,
         addFollowUp,
         completeFollowUp,
         fieldVisits,
+        setFieldVisits,
         addFieldVisit,
         completeFieldVisit,
         payments,
+        setPayments,
         recordPayment,
         auditLogs,
+        setAuditLogs,
         addAuditEvent,
         designShares,
         recordDesignShare,
