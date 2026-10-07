@@ -27,7 +27,7 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
   orderId: preselectedOrderId,
   onSuccess,
 }) => {
-  const { orders, showToast } = useApp();
+  const { orders, showToast, updateOrderStatus } = useApp();
   const [selectedOrderId, setSelectedOrderId] = useState<string>(preselectedOrderId || '');
   const [requestedPercent, setRequestedPercent] = useState<number>(9.5);
   const [reason, setReason] = useState('');
@@ -90,13 +90,17 @@ export const RequestDiscountModal: React.FC<RequestDiscountModalProps> = ({
       const created = await discountRequestsService.requestDiscount(
         currentOrder.id,
         requestedPercent,
-        reason
+        reason,
+        currentOrder
       );
+      if (updateOrderStatus) {
+        updateOrderStatus(currentOrder.id, 'Under Review');
+      }
       showToast(`Special margin request submitted for Order #${currentOrder.id}!`);
       onSuccess(created);
       onClose();
     } catch (err: any) {
-      showToast(err.message || 'Failed to submit discount request.');
+      showToast(err?.message || 'Failed to submit discount request.');
     } finally {
       setIsSubmitting(false);
     }
