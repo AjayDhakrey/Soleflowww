@@ -53,8 +53,77 @@ export const isSupabaseConfigured = (): boolean => {
 };
 
 export const supabase = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+      },
+    })
   : null;
+
+// =========================================================================
+// BFCache (Back-Forward Cache) & Page Lifecycle Management
+// Prevents "WebSocket connection failed: Page entered Back-Forward Cache"
+// =========================================================================
+if (typeof window !== 'undefined' && supabase) {
+  const handlePageHide = () => {
+    try {
+      if (supabase?.realtime) {
+        supabase.realtime.disconnect();
+      }
+    } catch {
+      // Ignore cleanup error on page hide
+    }
+  };
+
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (event.persisted) {
+      try {
+        if (supabase?.realtime && !supabase.realtime.isConnected()) {
+          supabase.realtime.connect();
+        }
+      } catch {
+        // Ignore reconnection error on page restore
+      }
+    }
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      try {
+        if (supabase?.realtime && !supabase.realtime.isConnected()) {
+          supabase.realtime.connect();
+        }
+      } catch {
+        // Ignore visibility reconnect error
+      }
+    }
+  };
+
+  // Back-Forward cache enter/leave listeners
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('pageshow', handlePageShow);
+
+  // Page Lifecycle API (freeze / resume)
+  document.addEventListener('freeze', handlePageHide);
+  document.addEventListener('resume', () => {
+    try {
+      if (supabase?.realtime && !supabase.realtime.isConnected()) {
+        supabase.realtime.connect();
+      }
+    } catch {
+      // Ignore resume reconnect error
+    }
+  });
+
+  // Re-establish connection if tab becomes visible again
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+}
 
 // =========================================================================
 // SUPABASE DATA API SERVICE HELPERS
