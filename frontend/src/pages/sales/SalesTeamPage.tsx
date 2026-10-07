@@ -38,6 +38,7 @@ import {
   Avatar,
   StatusBadge,
   Button,
+  AnalogTimePicker,
 } from '../../components/ui';
 import { SalesTeamKpiCards } from '../../components/sales/SalesTeamKpiCards';
 import { Salesperson, SalespersonTask } from '../../types';
@@ -58,7 +59,6 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
   const [newStopTitle, setNewStopTitle] = useState('');
   const [newStopDesc, setNewStopDesc] = useState('');
   const [newStopTime, setNewStopTime] = useState('16:30');
-  const scheduledTimeRef = useRef<HTMLInputElement>(null);
   const [newStopType, setNewStopType] = useState<'visit' | 'cheque' | 'followup' | 'meeting'>('visit');
 
   const activeRep = useMemo(() => {
@@ -730,30 +730,14 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="scheduled-stop-time" className="text-xs font-semibold text-foreground block mb-1">
-                    Scheduled Time
-                  </label>
-                  <div className="relative">
-                  <input
-                    ref={scheduledTimeRef}
-                    id="scheduled-stop-time"
-                    type="time"
-                    required
+                  <AnalogTimePicker
+                    label="Scheduled Time"
                     value={newStopTime}
-                    onChange={(e) => setNewStopTime(e.target.value)}
-                    className="w-full h-9 pl-3 pr-10 text-xs rounded-xl bg-surface border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono [&::-webkit-calendar-picker-indicator]:hidden"
+                    onChange={setNewStopTime}
+                    placeholder="Set time"
                   />
-                  <button type="button" aria-label="Choose scheduled time" onClick={() => {
-                    const input = scheduledTimeRef.current;
-                    if (!input) return;
-                    input.focus();
-                    try { input.showPicker?.(); } catch { /* Keep keyboard entry available if the native picker is unsupported. */ }
-                  }} className="absolute right-0 top-0 h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-primary rounded-r-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                    <Clock size={16} />
-                  </button>
-                  </div>
                 </div>
 
                 <div>
