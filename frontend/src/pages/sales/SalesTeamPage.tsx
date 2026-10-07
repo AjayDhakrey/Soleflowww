@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   Users,
@@ -57,7 +57,8 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
   const [isAddStopOpen, setIsAddStopOpen] = useState(false);
   const [newStopTitle, setNewStopTitle] = useState('');
   const [newStopDesc, setNewStopDesc] = useState('');
-  const [newStopTime, setNewStopTime] = useState('04:30 PM');
+  const [newStopTime, setNewStopTime] = useState('16:30');
+  const scheduledTimeRef = useRef<HTMLInputElement>(null);
   const [newStopType, setNewStopType] = useState<'visit' | 'cheque' | 'followup' | 'meeting'>('visit');
 
   const activeRep = useMemo(() => {
@@ -99,7 +100,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
 
     const newTask: SalespersonTask = {
       id: `task-${Date.now()}`,
-      time: newStopTime,
+      time: new Date(`2000-01-01T${newStopTime}`).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
       title: newStopTitle,
       description: newStopDesc || 'Dispatched via Admin Field Console',
       verifiedGps: false,
@@ -731,16 +732,28 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-foreground block mb-1">
+                  <label htmlFor="scheduled-stop-time" className="text-xs font-semibold text-foreground block mb-1">
                     Scheduled Time
                   </label>
+                  <div className="relative">
                   <input
-                    type="text"
+                    ref={scheduledTimeRef}
+                    id="scheduled-stop-time"
+                    type="time"
+                    required
                     value={newStopTime}
                     onChange={(e) => setNewStopTime(e.target.value)}
-                    placeholder="04:30 PM"
-                    className="w-full h-9 px-3 text-xs rounded-xl bg-surface border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
+                    className="w-full h-9 pl-3 pr-10 text-xs rounded-xl bg-surface border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono [&::-webkit-calendar-picker-indicator]:hidden"
                   />
+                  <button type="button" aria-label="Choose scheduled time" onClick={() => {
+                    const input = scheduledTimeRef.current;
+                    if (!input) return;
+                    input.focus();
+                    try { input.showPicker?.(); } catch { /* Keep keyboard entry available if the native picker is unsupported. */ }
+                  }} className="absolute right-0 top-0 h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-primary rounded-r-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                    <Clock size={16} />
+                  </button>
+                  </div>
                 </div>
 
                 <div>
