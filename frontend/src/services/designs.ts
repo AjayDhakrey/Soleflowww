@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured, isDemoModeActive } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, isDemoModeActive, toValidOrgId } from '../lib/supabase';
 import { ShoeDesign, DesignShareRecord } from '../types';
 import { resolveDesignImage, currentStorageOrg } from './designImageUrl';
 import { Database } from '../types/database.types';
@@ -108,7 +108,7 @@ export const designsService = {
       .order('created_at', { ascending: false });
 
     if (filters?.orgId) {
-      query = query.eq('org_id', filters.orgId);
+      query = query.eq('org_id', toValidOrgId(filters.orgId));
     }
 
     if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
@@ -171,7 +171,7 @@ export const designsService = {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (options?.orgId) query = query.eq('org_id', options.orgId);
+    if (options?.orgId) query = query.eq('org_id', toValidOrgId(options.orgId));
     if (options?.onlyArchived) {
       query = query.not('archived_at', 'is', null);
     } else if (!options?.includeArchived) {

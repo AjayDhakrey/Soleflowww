@@ -40,6 +40,17 @@ const rawAnonKey =
 export let isDemoModeActive = false;
 export const setDemoModeActive = (active: boolean) => { isDemoModeActive = active; };
 
+export const DEFAULT_ORG_ID = 'ff415366-0239-4fa2-b7f6-dec643136aa3';
+export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const isValidUuid = (val?: string | null): boolean => {
+  return Boolean(val && typeof val === 'string' && UUID_REGEX.test(val.trim()));
+};
+
+export const toValidOrgId = (val?: string | null): string => {
+  return isValidUuid(val) ? (val as string).trim() : DEFAULT_ORG_ID;
+};
+
 const supabaseUrl = rawUrl || FALLBACK_SUPABASE_URL;
 const supabaseAnonKey = rawAnonKey || FALLBACK_SUPABASE_ANON_KEY;
 

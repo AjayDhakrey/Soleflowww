@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, Organization } from '../types';
-import { supabase, isSupabaseConfigured, setDemoModeActive } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, setDemoModeActive, DEFAULT_ORG_ID, toValidOrgId } from '../lib/supabase';
 import { MOCK_USERS } from '../data/mockData';
 
 export interface UserProfile {
@@ -200,12 +200,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: activeUser.email,
                 name: activeUser.name,
                 role: activeRole,
-                org_id: 'demo-org-uuid',
+                org_id: DEFAULT_ORG_ID,
                 is_super_admin: Boolean(activeUser.is_super_admin),
                 is_demo_account: true,
               });
               setOrg({
-                id: 'demo-org-uuid',
+                id: DEFAULT_ORG_ID,
                 name: 'Demo Footwear Traders',
                 status: 'active',
                 is_demo: true,
@@ -412,8 +412,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       is_super_admin: isSuper,
       isDemoAccount: true,
       is_demo_account: true,
-      org_id: 'demo-org-uuid',
-      orgId: 'demo-org-uuid',
+      org_id: DEFAULT_ORG_ID,
+      orgId: DEFAULT_ORG_ID,
     };
 
     setUser(demoUser);
@@ -425,10 +425,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       role: assignedRole,
       is_super_admin: isSuper,
       is_demo_account: true,
-      org_id: 'demo-org-uuid',
+      org_id: DEFAULT_ORG_ID,
     });
     setOrg({
-      id: 'demo-org-uuid',
+      id: DEFAULT_ORG_ID,
       name: isSuper ? 'Demo Platform View (All Businesses)' : 'Demo Footwear Traders',
       status: 'active',
       is_demo: true,
@@ -564,11 +564,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: newUser.email,
       name: newUser.name,
       role: newRole,
-      org_id: 'demo-org-uuid',
+      org_id: DEFAULT_ORG_ID,
       is_demo_account: true,
     });
     setOrg({
-      id: 'demo-org-uuid',
+      id: DEFAULT_ORG_ID,
       name: 'Demo Footwear Traders',
       status: 'active',
       is_demo: true,
@@ -592,7 +592,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     role,
     org,
-    orgId: org?.id || profile?.org_id || null,
+    orgId: toValidOrgId(org?.id || profile?.org_id),
     activeOrgId,
     setActiveOrgId,
     isSuperAdmin,

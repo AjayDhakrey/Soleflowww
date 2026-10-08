@@ -1,4 +1,4 @@
-import {supabase, isDemoModeActive} from '../lib/supabase';
+import { supabase, isDemoModeActive, toValidOrgId } from '../lib/supabase';
 import { PaymentReceipt } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -50,7 +50,7 @@ export const paymentsService = {
         .order('created_at', { ascending: false });
 
       if (filters?.orgId) {
-        query = query.eq('org_id', filters.orgId);
+        query = query.eq('org_id', toValidOrgId(filters.orgId));
       }
       if (filters?.clientId) {
         query = query.eq('customerId', filters.clientId);
@@ -111,7 +111,7 @@ export const paymentsService = {
       }
     })();
 
-    const effectiveOrgId = params.orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
+    const effectiveOrgId = toValidOrgId(params.orgId);
 
     // 1. First attempt the multi-tenant record_payment RPC with exact signature matching (including p_org_id)
     try {
@@ -277,7 +277,7 @@ export const paymentsService = {
         .select('*');
 
       if (orgId) {
-        query = query.eq('org_id', orgId);
+        query = query.eq('org_id', toValidOrgId(orgId));
       }
 
       const { data, error } = await query;
@@ -299,7 +299,7 @@ export const paymentsService = {
         .order('amount_due', { ascending: false });
 
       if (orgId) {
-        query = query.eq('org_id', orgId);
+        query = query.eq('org_id', toValidOrgId(orgId));
       }
 
       const { data, error } = await query;

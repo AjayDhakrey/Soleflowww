@@ -1,4 +1,4 @@
-import { supabase, isDemoModeActive } from '../lib/supabase';
+import { supabase, isDemoModeActive, toValidOrgId } from '../lib/supabase';
 import { Order, OrderItem, OrderTimelineEvent } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -70,7 +70,7 @@ export const ordersService = {
       let query = supabase.from('v_order_financials').select('*');
 
       if (filters?.orgId) {
-        query = query.eq('org_id', filters.orgId);
+        query = query.eq('org_id', toValidOrgId(filters.orgId));
       }
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('order_status', filters.status);

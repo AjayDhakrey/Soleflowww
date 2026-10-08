@@ -1,4 +1,4 @@
-import { supabase, isDemoModeActive } from '../lib/supabase';
+import { supabase, isDemoModeActive, toValidOrgId } from '../lib/supabase';
 import { FollowUpItem } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -128,7 +128,7 @@ export const followUpsService = {
         .select('*, customers(businessName, city, phone)')
         .order('due_at', { ascending: true });
 
-      if (filters?.orgId) query = query.eq('org_id', filters.orgId);
+      if (filters?.orgId) query = query.eq('org_id', toValidOrgId(filters.orgId));
       if (filters?.status && filters.status !== 'all') {
         const dbStatus = sanitizeFollowUpStatus(filters.status);
         query = query.eq('status', dbStatus);

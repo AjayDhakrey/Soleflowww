@@ -1,4 +1,4 @@
-import { supabase, isDemoModeActive } from '../lib/supabase';
+import { supabase, isDemoModeActive, toValidOrgId } from '../lib/supabase';
 import { FieldVisitItem } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -48,7 +48,7 @@ export const visitsService = {
         .select('*, customers(businessName, city, state)')
         .order('visit_date', { ascending: false });
 
-      if (filters?.orgId) query = query.eq('org_id', filters.orgId);
+      if (filters?.orgId) query = query.eq('org_id', toValidOrgId(filters.orgId));
       if (filters?.status && filters.status !== 'all') {
         const dbStatus = sanitizeVisitStatus(filters.status);
         query = query.eq('status', dbStatus);

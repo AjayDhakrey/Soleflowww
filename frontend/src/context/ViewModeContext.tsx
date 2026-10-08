@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, toValidOrgId } from '../lib/supabase';
 import { useAuth } from '../auth/AuthProvider';
 
 export interface ViewModeState {
@@ -166,6 +166,6 @@ export function useReadOnly(): boolean {
 export function useEffectiveOrgId(): string | null {
   const { viewOrgId } = useViewMode();
   const { orgId, org } = useAuth();
-  if (viewOrgId) return viewOrgId;
-  return orgId || org?.id || null;
+  if (viewOrgId) return toValidOrgId(viewOrgId);
+  return toValidOrgId(orgId || org?.id);
 }

@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, toValidOrgId } from '../lib/supabase';
 
 // Store a durable object path. Signed URLs are renewed whenever catalog data loads.
 export async function resolveDesignImage(image: string): Promise<string> {
@@ -13,10 +13,14 @@ export async function resolveDesignImage(image: string): Promise<string> {
 }
 
 export async function currentStorageOrg(): Promise<string> {
-  if (!supabase) throw new Error('Storage service is not configured.');
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Sign in to upload files.');
-  const { data, error } = await supabase.from('profiles').select('org_id').eq('id', user.id).single();
-  if (error || !data?.org_id) throw new Error('No organization is linked to this account.');
-  return data.org_id;
+  if (!supabase) return toValidOrgId(null);
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return toValidOrgId(null);
+    const { data, error } = await supabase.from('profiles').select('org_id').eq('id', user.id).single();
+    if (error || !data?.org_id) return toValidOrgId(null);
+    return toValidOrgId(data.org_id);
+  } catch {
+    return toValidOrgId(null);
+  }
 }

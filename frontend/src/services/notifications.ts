@@ -1,4 +1,4 @@
-import {supabase, isDemoModeActive} from '../lib/supabase';
+import { supabase, isDemoModeActive, toValidOrgId } from '../lib/supabase';
 import { NotificationItem } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -27,7 +27,7 @@ export const notificationsService = {
         .select('*')
         .order('created_at', { ascending: false })
         .limit(30);
-      if (orgId) query = query.eq('org_id', orgId);
+      if (orgId) query = query.eq('org_id', toValidOrgId(orgId));
       const { data, error } = await query;
 
       if (error) throw parseSupabaseError(error);

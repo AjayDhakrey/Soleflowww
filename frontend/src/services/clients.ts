@@ -1,4 +1,4 @@
-import { supabase, isDemoModeActive } from '../lib/supabase';
+import { supabase, isDemoModeActive, toValidOrgId } from '../lib/supabase';
 import { Customer, CustomerActivity } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError, AppError } from './apiError';
@@ -136,7 +136,7 @@ export const clientsService = {
       let query = supabase.from('v_client_financials').select('*');
 
       if (filters?.orgId) {
-        query = query.eq('org_id', filters.orgId);
+        query = query.eq('org_id', toValidOrgId(filters.orgId));
       }
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('client_status', filters.status);
