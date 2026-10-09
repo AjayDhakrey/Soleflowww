@@ -1,6 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import {defineConfig} from 'vite';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
   return {
@@ -8,8 +12,15 @@ export default defineConfig(() => {
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
     resolve: {
       alias: {
-        '@': import.meta.dirname,
+        '@': path.resolve(__dirname, './src'),
+        'react': path.resolve(__dirname, '../node_modules/react'),
+        'react-dom': path.resolve(__dirname, '../node_modules/react-dom'),
+        'react/jsx-runtime': path.resolve(__dirname, '../node_modules/react/jsx-runtime'),
       },
+      dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom', '@tanstack/react-query', '@supabase/supabase-js', 'lucide-react'],
     },
     server: {
       host: '0.0.0.0',
