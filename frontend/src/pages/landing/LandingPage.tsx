@@ -49,7 +49,6 @@ import {
   Play,
   CheckCircle,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../auth/AuthProvider';
 import { FootwearMotionStage } from './FootwearMotionStage';
 
@@ -1295,21 +1294,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           <span className="text-slate-500 font-mono text-sm">{isOpen ? '−' : '+'}</span>
                         </button>
 
-                        <AnimatePresence initial={false}>
-                          {isOpen && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="overflow-hidden"
-                            >
-                              <div className="px-3.5 pb-3 pt-1 text-[11px] text-slate-600 leading-relaxed border-t border-slate-100">
-                                {faq.a}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        {isOpen && (
+                          <div className="overflow-hidden transition-all duration-200">
+                            <div className="px-3.5 pb-3 pt-1 text-[11px] text-slate-600 leading-relaxed border-t border-slate-100">
+                              {faq.a}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1443,15 +1434,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ========================================================================= */}
       {/* AUTHENTICATION MODAL (Login / Sign up)                                    */}
       {/* ========================================================================= */}
-      <AnimatePresence>
-        {isAuthModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 text-left space-y-5 relative max-h-[90vh] overflow-y-auto"
-            >
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+          <div
+            className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 text-left space-y-5 relative max-h-[90vh] overflow-y-auto"
+          >
               {/* Close Button */}
               <button
                 onClick={() => setIsAuthModalOpen(false)}
@@ -1682,52 +1669,46 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </button>
                 </form>
               )}
-            </motion.div>
+            </div>
           </div>
         )}
-      </AnimatePresence>
 
       {/* ========================================================================= */}
       {/* WATCH DEMO VIDEO MODAL                                                    */}
       {/* ========================================================================= */}
-      <AnimatePresence>
-        {isVideoModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/90 backdrop-blur-lg">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-4xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-700 relative"
-            >
-              {/* Modal Header */}
-              <div className="p-4 bg-slate-950 flex items-center justify-between text-white border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                  <Play className="w-4 h-4 text-blue-400 fill-current" />
-                  <span className="text-xs sm:text-sm font-bold">SoleFlow B2B Platform Walkthrough</span>
-                </div>
-                <button
-                  onClick={() => setIsVideoModalOpen(false)}
-                  className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center cursor-pointer transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+      {isVideoModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/90 backdrop-blur-lg">
+          <div
+            className="w-full max-w-4xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-700 relative"
+          >
+            {/* Modal Header */}
+            <div className="p-4 bg-slate-950 flex items-center justify-between text-white border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-blue-400 fill-current" />
+                <span className="text-xs sm:text-sm font-bold">SoleFlow B2B Platform Walkthrough</span>
               </div>
+              <button
+                onClick={() => setIsVideoModalOpen(false)}
+                className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-              {/* Video Player */}
-              <div className="aspect-video bg-black">
-                <video
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  controls
-                  playsInline
-                >
-                  <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
-                </video>
-              </div>
-            </motion.div>
+            {/* Video Player */}
+            <div className="aspect-video bg-black">
+              <video
+                className="w-full h-full object-cover"
+                autoPlay
+                controls
+                playsInline
+              >
+                <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+              </video>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };

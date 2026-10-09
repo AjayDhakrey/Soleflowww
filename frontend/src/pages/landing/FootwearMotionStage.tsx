@@ -18,7 +18,6 @@ import {
   Check,
   Tag,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 
 // Images
 import heroFootwearImg from '../../assets/images/hero_footwear_editorial_1790321154027.jpg';
@@ -312,15 +311,8 @@ export const FootwearMotionStage: React.FC<FootwearMotionStageProps> = ({
                 >
                   {/* Active Product: Smooth Sliding Indicator with Electric Blue Border & Soft Blue Glow */}
                   {isActive && (
-                    <motion.div
-                      layoutId="activeFootwearTab"
-                      className="absolute inset-0 bg-white rounded-xl sm:rounded-2xl border border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)] pointer-events-none z-0"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 420,
-                        damping: 32,
-                        mass: 0.8,
-                      }}
+                    <div
+                      className="absolute inset-0 bg-white rounded-xl sm:rounded-2xl border border-blue-500 shadow-[0_0_24px_rgba(59,130,246,0.55)] pointer-events-none z-0 transition-all duration-200"
                     />
                   )}
 
