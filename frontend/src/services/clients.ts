@@ -142,7 +142,7 @@ export const clientsService = {
         query = query.eq('client_status', filters.status);
       }
       if (filters?.tier && filters.tier !== 'all') {
-        query = query.eq('tier', filters.tier);
+        query = (query as any).eq('tier', filters.tier);
       }
       if (filters?.salespersonId) {
         query = query.eq('salesman_id', filters.salespersonId);

@@ -243,7 +243,7 @@ export const discountRequestsService = {
       return inMemoryRequests[index];
     }
 
-    const { data, error } = await supabase.rpc('approve_discount_request', { p_request_id: requestId, p_approved_percent: approvedPercent ?? null, p_note: note || null });
+    const { data, error } = await supabase.rpc('approve_discount_request', { p_request_id: requestId, p_approved_percent: approvedPercent ?? undefined, p_note: note || undefined });
     if (error) throw parseSupabaseError(error);
     if (!data) throw new Error('Discount decision was not saved.');
     return mapDiscountRequestRow(data);

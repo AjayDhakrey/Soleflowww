@@ -282,7 +282,14 @@ export const paymentsService = {
 
       const { data, error } = await query;
       if (error) throw parseSupabaseError(error);
-      return data || [];
+      return (data || []).map((row: any): SalesmanCollectionsSummary => ({
+        salesman_id: row.salesman_id || '',
+        salesman_name: row.salesman_name || 'Sales Representative',
+        collected_this_month: Number(row.collected_this_month || 0),
+        cheques_in_transit: Number(row.cheques_in_transit || 0),
+        total_pending_client_balance: Number(row.total_pending_client_balance || 0),
+        pending_accounts_count: Number(row.pending_accounts_count || 0),
+      }));
     } catch (err) {
       console.warn('Error fetching salesman collections view:', err);
       return [];
