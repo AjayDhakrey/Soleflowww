@@ -26,7 +26,7 @@ import {
   MOCK_AUDIT_LOGS,
   MOCK_DESIGN_SHARES,
 } from '../data/mockData';
-import { supabaseApi, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, supabaseApi, isSupabaseConfigured } from '../lib/supabase';
 import { paymentsService } from '../services/payments';
 import { visitsService } from '../services/visits';
 import { followUpsService } from '../services/followUps';
