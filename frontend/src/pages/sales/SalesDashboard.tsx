@@ -82,15 +82,23 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
     year: 'numeric',
   });
 
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) return { text: 'Good morning', icon: '👞' };
+    if (hr < 17) return { text: 'Good afternoon', icon: '👟' };
+    return { text: 'Good evening', icon: '👞' };
+  };
+  const greeting = getGreeting();
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
       {/* 1. Header with Greeting, Period Selector, and Quick Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl select-none">👞</span>
+            <span className="text-2xl select-none">{greeting.icon}</span>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-              Good morning, {currentUser.name}
+              {greeting.text}, {currentUser.name}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">

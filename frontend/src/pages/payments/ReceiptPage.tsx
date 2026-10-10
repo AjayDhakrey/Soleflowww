@@ -111,7 +111,7 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
     const phoneWithCode = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
     const receiptLink = `${window.location.origin}/receipts/${receipt.id}`;
     
-    const msg = `*Payment Receipt — ${company?.brandName || 'ShoeConnect'}*\n\n` +
+    const msg = `*Payment Receipt — ${company?.brandName || 'SoleFlow'}*\n\n` +
       `Dear ${receipt.customerName},\n` +
       `We have received your payment of *₹${Number(receipt.paymentAmount).toLocaleString('en-IN')}* via *${receipt.paymentMethod}* on ${receipt.paymentDate}.\n` +
       `Receipt No: *${receipt.receiptNumber}*\n` +

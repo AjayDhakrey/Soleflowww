@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase, isDemoModeActive } from '../../lib/supabase';
+import { MOCK_DESIGNS } from '../../data/mockData';
 import { resolveDesignImage } from '../../services/designImageUrl';
 import { ShoeDesign } from '../../types';
 import {
@@ -66,7 +67,19 @@ export const PublicLookbookPage: React.FC<PublicLookbookPageProps> = ({
           }
         }
 
-        // Invalid/expired token or database unavailable — no mock fallback
+        // In demo mode or if RPC returned no rows for demo share tokens, fallback to sample catalogue
+        if (isDemoModeActive || !supabase) {
+          if (isMounted) {
+            setDesigns(MOCK_DESIGNS.slice(0, 6));
+            setClientInfo({ businessName: 'Wholesale Retailer Partner', city: 'Agra Footwear Hub' });
+            setSalesPhone('+919876543210');
+            if (MOCK_DESIGNS.length > 0) setSelectedDesign(MOCK_DESIGNS[0]);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Invalid/expired token or database unavailable
         if (isMounted) {
           setError('This link is invalid or has expired');
           setIsLoading(false);

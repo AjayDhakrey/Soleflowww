@@ -423,7 +423,7 @@ export const CreateOrderWizardModal: React.FC = () => {
                 <div>
                   <span className="text-xs text-muted-foreground font-semibold block">Total Consignment Volume</span>
                   <span className="text-lg font-bold text-foreground tabular-nums">
-                    {totalPairs} Pairs ({totalCartons} Master Cartons)
+                    {totalPairs} Pairs ({totalCartons} Master Cartons{looseTotal > 0 ? ` + ${looseTotal} Loose Prs` : ''})
                   </span>
                 </div>
                 <div className="text-right">

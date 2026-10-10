@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   TrendingUp,
   Plus,
+  Pencil,
   Share2,
   DollarSign,
   Download,
@@ -82,6 +83,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     isSupabaseActive,
     addFollowUp,
     setSelectedCustomer,
+    openEditCustomerModal,
     setIsCreateOrderModalOpen,
     setIsPaymentModalOpen,
     setIsShareModalOpen,
@@ -385,6 +387,15 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
+              onClick={() => openEditCustomerModal(customer)}
+              className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            >
+              <Pencil size={15} className="text-amber-500" />
+              <span>Edit Details</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => {
                 setSelectedCustomer(customer);
                 setIsShareModalOpen(true);
@@ -517,10 +528,20 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
           <div className="lg:col-span-7 space-y-6">
             {/* Business & Commercial Terms */}
             <div className="bg-surface border border-border rounded-2xl p-5 shadow-2xs space-y-4">
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Building2 size={16} className="text-blue-600 dark:text-blue-400" />
-                <span>Commercial &amp; Billing Terms</span>
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Building2 size={16} className="text-blue-600 dark:text-blue-400" />
+                  <span>Commercial &amp; Billing Terms</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => openEditCustomerModal(customer)}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
+                >
+                  <Pencil size={12} />
+                  <span>Edit Terms &amp; Profile</span>
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60">

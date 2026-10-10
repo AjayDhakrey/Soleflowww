@@ -33,7 +33,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       >
         <img
           src={projectLogo}
-          alt="SoleFlow ShoeConnect Logo"
+          alt="SoleFlow Logo"
           className="w-full h-full object-contain rounded-lg"
         />
       </div>
@@ -41,7 +41,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {showText && (
         <div className="min-w-0">
           <h2 className="font-display text-sm font-bold text-foreground truncate">
-            ShoeConnect
+            SoleFlow
           </h2>
           {subtitle ? (
             <p className="text-[10px] text-muted-foreground/55 truncate mt-0.5">

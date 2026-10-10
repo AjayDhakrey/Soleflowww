@@ -918,7 +918,7 @@ export const OrderInvoiceTemplate: React.FC<OrderInvoiceTemplateProps> = ({
         {/* Footer & Signatures */}
         <div className="inv-foot">
           <div style={{ fontSize: 11, color: 'var(--inv-muted)', maxWidth: 360, lineHeight: 1.45 }}>
-            Thank you for partnering with ShoeConnect. Please quote Invoice No.{' '}
+            Thank you for partnering with SoleFlow. Please quote Invoice No.{' '}
             <strong style={{ fontFamily: 'monospace' }}>{order.id}</strong> on all ledger settlement vouchers.
           </div>
 

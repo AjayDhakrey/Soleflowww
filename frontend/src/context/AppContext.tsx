@@ -62,6 +62,7 @@ interface AppContextType {
   selectedCustomer: Customer | null;
   setSelectedCustomer: (cust: Customer | null) => void;
   addCustomer: (cust: Partial<Customer>) => Promise<boolean>;
+  updateCustomer: (customerId: string, changes: Partial<Customer>) => Promise<boolean>;
   archiveCustomer: (customerId: string) => Promise<boolean>;
   assignCustomerSalesman: (customerId: string, salesmanId: string) => Promise<boolean>;
   designs: ShoeDesign[];
@@ -114,6 +115,11 @@ interface AppContextType {
   setIsCreateOrderModalOpen: (open: boolean) => void;
   isAddCustomerModalOpen: boolean;
   setIsAddCustomerModalOpen: (open: boolean) => void;
+  isEditCustomerModalOpen: boolean;
+  setIsEditCustomerModalOpen: (open: boolean) => void;
+  customerToEdit: Customer | null;
+  setCustomerToEdit: (cust: Customer | null) => void;
+  openEditCustomerModal: (cust: Customer) => void;
   isShareModalOpen: boolean;
   setIsShareModalOpen: (open: boolean) => void;
   // Sidebar state
@@ -355,8 +361,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false);
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
+  const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const openEditCustomerModal = (cust: Customer) => {
+    setCustomerToEdit(cust);
+    setIsEditCustomerModalOpen(true);
+  };
 
   // Sidebar collapse & mobile state
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
@@ -396,11 +409,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (auth?.user) {
       setCurrentUser(auth.user);
-      setIsLoggedIn(auth.isLoggedIn);
-    } else if (auth && !auth.isLoading && !auth.isLoggedIn) {
-      setIsLoggedIn(false);
+      setIsLoggedIn(true);
+    } else if (auth && !auth.isLoading && !auth.isLoggedIn && !auth.isDemoAccount) {
+      try {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!stored) {
+          setIsLoggedIn(false);
+        }
+      } catch (e) {
+        setIsLoggedIn(false);
+      }
     }
-  }, [auth?.user, auth?.isLoggedIn, auth?.isLoading]);
+  }, [auth?.user, auth?.isLoggedIn, auth?.isLoading, auth?.isDemoAccount]);
 
   const switchRole = (role?: UserRole) => {
     if (auth.hasRealSession || !auth.isDemoAccount) {
@@ -462,6 +482,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.error('Failed to save session:', e);
     }
+
+    // Synchronize to AuthProvider as well
+    try {
+      if (auth?.quickDemoLogin) {
+        const demoRole = isSuper ? 'superadmin' : (user.role === 'salesperson' ? 'salesperson' : 'admin');
+        auth.quickDemoLogin(demoRole);
+      }
+    } catch (e) {
+      console.warn('Failed to sync demo login to auth provider:', e);
+    }
+
     showToast(`Welcome back, ${user.name}`);
     return true;
   };
@@ -523,11 +554,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsMobileSidebarOpen(false);
     try {
       localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem('soleflow_active_path');
     } catch (e) {
       console.error('Failed to clear session:', e);
     }
     setIsLoggedIn(false);
-    window.location.hash = '#login';
+    try {
+      auth?.signOut?.();
+    } catch (e) {
+      console.warn('Sign out sync error:', e);
+    }
+    window.location.hash = '#landing';
     showToast('Signed out of SoleFlow');
   };
 
@@ -548,6 +585,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = mapClientRowToCustomer(result.data);
     setCustomers(prev => [saved, ...prev]); setSelectedCustomer(saved);
     invalidateData(); showToast('Customer saved.'); return true;
+  };
+
+  const updateCustomer = async (customerId: string, input: Partial<Customer>) => {
+    if (!requirePersistence()) return false;
+    const result = await clientsService.updateClient(customerId, input);
+    if (!result.success) { showToast(result.error || 'Customer could not be updated.'); return false; }
+    const update = (customer: Customer) => customer.id === customerId ? { ...customer, ...input } : customer;
+    setCustomers(prev => prev.map(update));
+    setSelectedCustomer(prev => (prev?.id === customerId ? { ...prev, ...input } : prev));
+    invalidateData();
+    showToast('Customer details updated.');
+    addAuditEvent({
+      action: 'Updated Customer Details',
+      recordType: 'Client',
+      recordId: customerId,
+      recordTitle: input.businessName || 'Client Profile',
+      newValue: `Updated details for ${input.businessName || customerId}`,
+    });
+    return true;
   };
 
   const archiveCustomer = async (customerId: string) => {
@@ -720,6 +776,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectedCustomer,
         setSelectedCustomer,
         addCustomer,
+        updateCustomer,
         archiveCustomer,
         assignCustomerSalesman,
         designs,
@@ -768,6 +825,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsCreateOrderModalOpen,
         isAddCustomerModalOpen,
         setIsAddCustomerModalOpen,
+        isEditCustomerModalOpen,
+        setIsEditCustomerModalOpen,
+        customerToEdit,
+        setCustomerToEdit,
+        openEditCustomerModal,
         isShareModalOpen,
         setIsShareModalOpen,
         isSidebarCollapsed,

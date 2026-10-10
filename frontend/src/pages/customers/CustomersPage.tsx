@@ -12,6 +12,7 @@ import {
   Search,
   Store,
   Eye,
+  Pencil,
 } from 'lucide-react';
 
 import { CustomerRowActionMenu } from '../../components/customers/CustomerRowActionMenu';
@@ -33,6 +34,7 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
     customers,
     selectedCustomer,
     setSelectedCustomer,
+    openEditCustomerModal,
     setIsPaymentModalOpen,
     setIsAddCustomerModalOpen,
     currentUser,
@@ -331,6 +333,17 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
                           >
                             <Eye size={14} />
                             <span>Details</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditCustomerModal(c);
+                            }}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                          >
+                            <Pencil size={13} />
+                            <span>Edit</span>
                           </button>
                           <CustomerRowActionMenu
                             customer={c}

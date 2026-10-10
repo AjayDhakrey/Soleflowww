@@ -226,14 +226,20 @@ export const clientsService = {
   },
 
   async updateClient(clientId: string, updates: any): Promise<{ success: boolean; error?: string }> {
-    if (!supabase || isDemoModeActive) return { success: true };
+    if (!supabase || isDemoModeActive) {
+      const idx = MOCK_CUSTOMERS.findIndex((c) => c.id === clientId);
+      if (idx !== -1) {
+        Object.assign(MOCK_CUSTOMERS[idx], updates);
+      }
+      return { success: true };
+    }
 
     try {
       const rowUpdates = toCustomerRow(updates);
       const { error } = await supabase
         .from('customers')
         .update(rowUpdates)
-        .eq('id', clientId).select('id').single();
+        .eq('id', clientId);
 
       if (error) throw parseSupabaseError(error);
       return { success: true };

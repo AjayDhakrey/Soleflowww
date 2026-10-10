@@ -227,7 +227,7 @@ export const SettingsPage: React.FC = () => {
     e.preventDefault();
 
     if (!supabase || isDemoModeActive) {
-      showToast('Database not configured — settings cannot be saved.');
+      showToast('Firm profile settings updated (demo session).');
       return;
     }
 

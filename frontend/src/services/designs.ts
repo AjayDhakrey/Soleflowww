@@ -304,6 +304,7 @@ export const designsService = {
       if (changes.image !== undefined) payload.image = changes.image;
       if (changes.soleType !== undefined) payload.soleType = changes.soleType;
       if (changes.upperMaterial !== undefined) payload.upperMaterial = changes.upperMaterial;
+      if (changes.pairsPerCarton !== undefined) payload.pairsPerCarton = Number(changes.pairsPerCarton);
 
       const { data: res, error } = await supabase.rpc('update_design', {
         p_design_id: id,

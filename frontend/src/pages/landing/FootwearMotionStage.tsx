@@ -54,7 +54,7 @@ interface ShoeModel {
   retailMrp: string;
   hsn: string;
   material: string;
-  cartonRatio: string;
+  sizeRatio: string;
   weight: string;
   qcTest: string;
   rebound: string;
@@ -85,7 +85,7 @@ const SHOE_MODELS: ShoeModel[] = [
     retailMrp: '₹1,899',
     hsn: '6404',
     material: 'Engineered Jacquard Knit + Injected Phylon Sole',
-    cartonRatio: '24 Prs · 2:4:6:6:4:2 (EU 40-45)',
+    sizeRatio: '24 Prs · 2:4:6:6:4:2 (EU 40-45)',
     weight: '310g · Featherweight',
     qcTest: '180,000 SATRA TM92 Flex Cycles',
     rebound: '68.5% Energy Return',
@@ -114,7 +114,7 @@ const SHOE_MODELS: ShoeModel[] = [
     retailMrp: '₹2,999',
     hsn: '6403',
     material: 'Full-Grain Burnished Crust Calfskin + Leather Sole',
-    cartonRatio: '20 Prs · 2:4:6:5:3 (EU 39-44)',
+    sizeRatio: '20 Prs · 2:4:6:5:3 (EU 39-44)',
     weight: '440g · Structured',
     qcTest: '90,000 Wet/Dry Flex Cycles',
     rebound: 'Full Goodyear Shank Support',
@@ -143,7 +143,7 @@ const SHOE_MODELS: ShoeModel[] = [
     retailMrp: '₹3,499',
     hsn: '6403',
     material: 'Hydrophobic Oiled Nubuck + Deep Lugged Commando Rubber',
-    cartonRatio: '18 Prs · 2:4:6:4:2 (EU 41-46)',
+    sizeRatio: '18 Prs · 2:4:6:4:2 (EU 41-46)',
     weight: '590g · Heavy Duty',
     qcTest: '-20°C Flex Crack Resistance',
     rebound: 'Triple-Density Vibram Compound',
@@ -172,7 +172,7 @@ const SHOE_MODELS: ShoeModel[] = [
     retailMrp: '₹1,499',
     hsn: '6404',
     material: 'Seamless 360° Monofilament Stretch Knit + Supercritical EVA',
-    cartonRatio: '24 Prs · 3:4:5:5:4:3 (EU 38-43)',
+    sizeRatio: '24 Prs · 3:4:5:5:4:3 (EU 38-43)',
     weight: '284g · Featherweight',
     qcTest: '150,000 Dynamic Stride Cycles',
     rebound: '71.2% High Resiliency PU',

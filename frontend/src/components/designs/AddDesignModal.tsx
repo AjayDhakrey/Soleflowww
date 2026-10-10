@@ -104,6 +104,56 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
 
   if (!isOpen) return null;
 
+  const handlePairsPerCartonChange = (val: number | string) => {
+    const newPack = Math.max(1, Math.round(Number(val) || 12));
+    setPairsPerCarton(newPack);
+    const ctns = Math.max(1, Math.round(Number(moqCartons) || 1));
+    setMoqCartons(ctns);
+    setMoqPairs(ctns * newPack);
+  };
+
+  const handleMoqCartonsChange = (val: number | string) => {
+    const rawVal = String(val).replace(/[^0-9]/g, '');
+    const ctns = rawVal ? Math.max(1, parseInt(rawVal, 10)) : '';
+    setMoqCartons(ctns);
+    const pack = Number(pairsPerCarton) || 12;
+    if (typeof ctns === 'number' && ctns > 0) {
+      setMoqPairs(ctns * pack);
+    }
+  };
+
+  const handleMoqPairsChange = (val: number | string) => {
+    setMoqPairs(val);
+    const pairs = Number(val);
+    const pack = Number(pairsPerCarton) || 12;
+    if (!isNaN(pairs) && pairs > 0 && pack > 0) {
+      // Cartons must ALWAYS be whole integers (e.g., 56 pairs = 5 cartons, never 4.6)
+      const fullCartons = Math.max(1, Math.ceil(pairs / pack));
+      setMoqCartons(fullCartons);
+    }
+  };
+
+  const handleMoqPairsBlur = () => {
+    const pairs = Number(moqPairs) || 12;
+    const pack = Number(pairsPerCarton) || 12;
+    const fullCartons = Math.max(1, Math.ceil(pairs / pack));
+    setMoqCartons(fullCartons);
+    setMoqPairs(fullCartons * pack);
+  };
+
+  const adjustMoqCartons = (delta: number) => {
+    const current = Math.max(1, Math.round(Number(moqCartons) || 1));
+    const next = Math.max(1, current + delta);
+    handleMoqCartonsChange(next);
+  };
+
+  const alignToFullCartons = (roundUp = true) => {
+    const pack = Number(pairsPerCarton) || 12;
+    const pairs = Number(moqPairs) || pack;
+    const ctns = roundUp ? Math.ceil(pairs / pack) : Math.max(1, Math.floor(pairs / pack));
+    handleMoqCartonsChange(ctns);
+  };
+
   const toggleSize = (sz: number) => {
     setSelectedSizes((prev) =>
       prev.includes(sz) ? prev.filter((s) => s !== sz) : [...prev, sz].sort((a, b) => a - b)
@@ -206,6 +256,7 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         price: numPrice,
         moqPairs: Number(moqPairs) || 24,
         moqCartons: Number(moqCartons) || 2,
+        pairsPerCarton: Number(pairsPerCarton) || 12,
         sizes: selectedSizes,
         colors,
         soleType: soleType.trim(),
@@ -231,6 +282,7 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         price: numPrice,
         moqPairs: Number(moqPairs) || 24,
         moqCartons: Number(moqCartons) || 2,
+        pairsPerCarton: Number(pairsPerCarton) || 12,
         sizes: selectedSizes,
         colors,
         soleType: soleType.trim(),
@@ -456,47 +508,127 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Wholesale Price (₹) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-emerald-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  />
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Wholesale Price (₹) <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-sm font-bold text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        className="w-full pl-7 pr-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-emerald-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        MOQ Cartons
+                      </label>
+                      <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                        ({pairsPerCarton} prs/ctn)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => adjustMoqCartons(-1)}
+                        className="w-8 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center cursor-pointer transition-colors"
+                        title="Decrease by 1 carton"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={moqCartons}
+                        onChange={(e) => handleMoqCartonsChange(e.target.value)}
+                        className="flex-1 px-2 py-2 text-sm text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => adjustMoqCartons(1)}
+                        className="w-8 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center cursor-pointer transition-colors"
+                        title="Increase by 1 carton"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      MOQ Pairs (Total)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={moqPairs}
+                      onChange={(e) => handleMoqPairsChange(e.target.value)}
+                      onBlur={handleMoqPairsBlur}
+                      className="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    MOQ Pairs
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={moqPairs}
-                    onChange={(e) => setMoqPairs(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                {/* Carton Pack Size Options & Live Calculation Pill */}
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Pack size:</span>
+                    {[12, 10, 24, 8].map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => handlePairsPerCartonChange(size)}
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                          Number(pairsPerCarton) === size
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-400'
+                        }`}
+                      >
+                        {size} prs/ctn
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    {Number(moqCartons) > 0 && (
+                      <span>
+                        📦 {moqCartons} Ctn{Number(moqCartons) > 1 ? 's' : ''} × {pairsPerCarton} = <strong className="text-indigo-600 font-extrabold">{moqPairs} Pairs</strong>
+                        {Number(price) > 0 && (
+                          <span className="text-slate-400 font-normal ml-1">
+                            (₹{(Number(price) * (Number(moqPairs) || 0)).toLocaleString('en-IN')})
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    MOQ Cartons
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={moqCartons}
-                    onChange={(e) => setMoqCartons(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
+                {/* Mismatched carton & pair warning / alignment */}
+                {Number(moqPairs) > 0 && Number(pairsPerCarton) > 0 && Number(moqPairs) % Number(pairsPerCarton) !== 0 && (
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-[11px] text-amber-700 dark:text-amber-300">
+                    <span>
+                      ⚠️ {moqPairs} pairs requires {Math.ceil(Number(moqPairs) / Number(pairsPerCarton))} full cartons ({Math.ceil(Number(moqPairs) / Number(pairsPerCarton)) * Number(pairsPerCarton)} pairs total).
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => alignToFullCartons(true)}
+                      className="ml-2 font-bold underline hover:text-amber-900 cursor-pointer shrink-0"
+                    >
+                      Snap to {Math.ceil(Number(moqPairs) / Number(pairsPerCarton))} Cartons ({Math.ceil(Number(moqPairs) / Number(pairsPerCarton)) * Number(pairsPerCarton)} prs)
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

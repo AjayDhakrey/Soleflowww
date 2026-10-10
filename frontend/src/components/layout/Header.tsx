@@ -21,6 +21,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     currentUser,
     switchRole,
     customers,
+    selectedCustomer,
+    setSelectedCustomer,
     orders,
     designs,
     notifications,
@@ -195,7 +197,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                         <div
                           key={c.id}
                           onClick={() => {
-                            onNavigate(currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers');
+                            setSelectedCustomer(c);
+                            const basePath = currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers';
+                            onNavigate(`${basePath}/${c.id}`);
                             setIsSearchOpen(false);
                           }}
                           className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted cursor-pointer"
@@ -257,7 +261,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                         <div
                           key={o.id}
                           onClick={() => {
-                            onNavigate(currentUser.role === 'admin' ? '/admin/orders' : '/sales/orders');
+                            const basePath = currentUser.role === 'admin' ? '/admin/orders' : '/sales/orders';
+                            onNavigate(`${basePath}?inspect=${encodeURIComponent(o.id)}`);
                             setIsSearchOpen(false);
                           }}
                           className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted cursor-pointer"
@@ -325,7 +330,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                   type="button"
                   onClick={() => {
                     setIsNewMenuOpen(false);
-                    onNavigate('/designs');
+                    onNavigate(currentUser.role === 'admin' ? '/admin/designs' : '/sales/designs');
                     setTimeout(() => {
                       window.dispatchEvent(new CustomEvent('open-add-design-modal'));
                     }, 50);

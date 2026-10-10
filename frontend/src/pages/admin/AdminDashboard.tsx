@@ -67,15 +67,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     year: 'numeric',
   });
 
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) return { text: 'Good morning', icon: '☀️' };
+    if (hr < 17) return { text: 'Good afternoon', icon: '🌤️' };
+    return { text: 'Good evening', icon: '🌙' };
+  };
+  const greeting = getGreeting();
+
   return (
     <div className="p-4 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 max-w-[1720px] w-full mx-auto pb-20 md:pb-10 bg-background text-foreground animate-in fade-in duration-200">
       {/* 1. Header with Greeting, Period Filter, and Action Buttons */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/80 pb-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="text-2xl select-none">☀️</span>
+            <span className="text-2xl select-none">{greeting.icon}</span>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Good morning, {currentUser.name}
+              {greeting.text}, {currentUser.name}
             </h1>
             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />

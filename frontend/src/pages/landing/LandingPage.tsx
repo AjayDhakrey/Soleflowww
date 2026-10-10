@@ -178,7 +178,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   // Wholesale calculator state
   const [calcSizeCurve, setCalcSizeCurve] = useState<'mens' | 'womens' | 'unisex'>('mens');
-  const [calcCartons, setCalcCartons] = useState<number>(4);
+  const [calcTotalPairs, setCalcTotalPairs] = useState<number>(48);
   const [calcPricePerPair, setCalcPricePerPair] = useState<number>(1250);
   const [calcRetailMrp, setCalcRetailMrp] = useState<number>(2499);
 
@@ -186,28 +186,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     mens: {
       name: "Men's Pro Runner (EU 39-44)",
       sizes: ['6', '7', '8', '9', '10', '11'],
-      ratio: [6, 12, 12, 8, 6, 4],
-      pairsPerCarton: 12,
-      baseRatio: [1.5, 3, 3, 2, 1.5, 1],
+      weights: [1.5, 3, 3, 2, 1.5, 1],
     },
     womens: {
       name: "Women's Comfort Curve (EU 36-41)",
       sizes: ['4', '5', '6', '7', '8', '9'],
-      ratio: [4, 10, 14, 10, 6, 4],
-      pairsPerCarton: 12,
-      baseRatio: [1, 2.5, 3.5, 2.5, 1.5, 1],
+      weights: [1, 2.5, 3.5, 2.5, 1.5, 1],
     },
     unisex: {
       name: 'Universal Sneaker Assortment',
       sizes: ['5', '6', '7', '8', '9', '10'],
-      ratio: [6, 8, 12, 12, 6, 4],
-      pairsPerCarton: 12,
-      baseRatio: [1.5, 2, 3, 3, 1.5, 1],
+      weights: [1.5, 2, 3, 3, 1.5, 1],
     },
   };
 
   const activeCalcCurve = calcCurves[calcSizeCurve];
-  const calcTotalPairs = calcCartons * activeCalcCurve.pairsPerCarton;
+  const curveWeightSum = activeCalcCurve.weights.reduce((a, b) => a + b, 0);
   const calcTotalOrderValue = calcTotalPairs * calcPricePerPair;
   const calcGst = Math.round(calcTotalOrderValue * 0.12);
   const calcFreight = 2500;
@@ -315,6 +309,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     setAuthError('');
     const res = await signIn(email, password);
     if (res.success) {
+      setIsAuthModalOpen(false);
       onLoginSuccess(res.role === 'salesperson' ? 'salesperson' : 'admin');
     } else {
       setAuthError(res.error || 'Invalid credentials. Please try again.');
@@ -322,12 +317,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   const openAuth = (mode: 'login' | 'signup') => {
-    if (onNavigateToLogin) {
-      onNavigateToLogin(mode);
-    } else {
-      setAuthMode(mode);
-      setIsAuthModalOpen(true);
-    }
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
   };
 
   // Frequently Asked Questions
@@ -342,7 +333,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     },
     {
       q: 'Can I manage inventory and wholesale orders?',
-      a: 'Yes. You can add shoes with size curves, colors, and prices, track live stock across warehouses, and generate master carton wholesale orders with automatic GST and landed cost calculations.',
+      a: 'Yes. You can add shoes with size curves, colors, and prices, track live stock across warehouses, and generate wholesale orders with automatic GST and landed cost calculations.',
     },
     {
       q: 'Do I need technical knowledge?',
@@ -450,13 +441,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               {/* CTA Buttons */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  onClick={() => openAuth('signup')}
-                  className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
-                >
-                  <span>Get started free</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                {isAlreadyLoggedIn ? (
+                  <button
+                    onClick={onReturnToDashboard}
+                    className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Go to Dashboard</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => openAuth('signup')}
+                    className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Get started free</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
 
                 <button
                   onClick={() => setIsVideoModalOpen(true)}
@@ -726,7 +727,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   Plan Your Wholesale Order &amp; Profit
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Choose sizes, carton quantity and selling price. SoleFlow automatically shows your total order cost,
+                  Choose sizes, order quantity and selling price. SoleFlow automatically shows your total order cost,
                   GST, freight and expected margin.
                 </p>
 
@@ -768,7 +769,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <tr>
                         <td className="py-2.5 text-slate-600 font-semibold">Pairs per size</td>
                         {activeCalcCurve.sizes.map((s, idx) => {
-                          const pairsForSize = Math.round(activeCalcCurve.baseRatio[idx] * calcCartons);
+                          const pairsForSize = Math.round((activeCalcCurve.weights[idx] / curveWeightSum) * calcTotalPairs);
                           return (
                             <td key={s} className="py-2.5 text-center font-bold text-slate-900">
                               {pairsForSize}
@@ -781,23 +782,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
 
                 <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-700">Total pairs</span>
-                  <span className="text-slate-900 font-mono font-black">{calcTotalPairs}</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-700">Cartons (12 pairs)</span>
+                  <span className="text-slate-700">Order Quantity</span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setCalcCartons(Math.max(1, calcCartons - 1))}
+                      onClick={() => setCalcTotalPairs(Math.max(12, calcTotalPairs - 12))}
                       className="w-6 h-6 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-800 flex items-center justify-center font-bold cursor-pointer"
+                      title="Decrease pairs"
                     >
                       -
                     </button>
-                    <span className="font-mono text-blue-600 font-bold px-1">{calcCartons}</span>
+                    <span className="font-mono text-blue-600 font-bold px-1.5">{calcTotalPairs} Pairs</span>
                     <button
-                      onClick={() => setCalcCartons(calcCartons + 1)}
+                      onClick={() => setCalcTotalPairs(calcTotalPairs + 12)}
                       className="w-6 h-6 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-800 flex items-center justify-center font-bold cursor-pointer"
+                      title="Increase pairs"
                     >
                       +
                     </button>
@@ -1554,6 +1552,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   >
                     Sign In
                   </button>
+
+                  <div className="pt-2 text-center border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAuthModalOpen(false);
+                        onNavigateToLogin?.('login');
+                      }}
+                      className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+                    >
+                      Prefer dedicated full-screen login page? Open login page →
+                    </button>
+                  </div>
                 </form>
               ) : (
                 /* Sign Up Form */
@@ -1667,6 +1678,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   >
                     {isSubmittingSignup ? 'Activating Account...' : 'Get Started Now'}
                   </button>
+
+                  <div className="pt-2 text-center border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAuthModalOpen(false);
+                        onNavigateToLogin?.('signup');
+                      }}
+                      className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+                    >
+                      Prefer dedicated full-screen signup page? Open signup page →
+                    </button>
+                  </div>
                 </form>
               )}
             </div>

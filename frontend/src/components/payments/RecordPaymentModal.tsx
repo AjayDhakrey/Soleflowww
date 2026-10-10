@@ -153,7 +153,7 @@ export const RecordPaymentModal: React.FC = () => {
     const cleanPhone = phone.length === 10 ? `91${phone}` : phone;
     const receiptLink = `${window.location.origin}/receipts/${createdPayment.id}`;
 
-    const msg = `*Payment Receipt — ShoeConnect*\n\n` +
+    const msg = `*Payment Receipt — SoleFlow*\n\n` +
       `Dear ${createdPayment.customerName},\n` +
       `We have received your payment of *₹${createdPayment.paymentAmount.toLocaleString('en-IN')}* via *${createdPayment.paymentMethod}* on ${createdPayment.paymentDate}.\n` +
       `Receipt No: *${createdPayment.receiptNumber}*\n` +

@@ -36,6 +36,7 @@ import {
 import { RecordPaymentModal } from './components/payments/RecordPaymentModal';
 import { CreateOrderWizardModal } from './components/orders/CreateOrderWizardModal';
 import { AddCustomerModal } from './components/customers/AddCustomerModal';
+import { EditCustomerModal } from './components/customers/EditCustomerModal';
 import { ShareLookbookModal } from './components/designs/ShareLookbookModal';
 import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
 import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
@@ -92,7 +93,7 @@ const getInitialPath = (defaultRole?: string): string => {
 const AppContent: React.FC = () => {
   const {
     currentUser,
-    isLoggedIn,
+    isLoggedIn: appIsLoggedIn,
     toastMessage,
     showToast,
     setIsMobileSidebarOpen,
@@ -106,7 +107,9 @@ const AppContent: React.FC = () => {
     setNotifications,
   } = useApp();
 
-  const { user: authUser, role: authRole } = useAuth();
+  const { user: authUser, role: authRole, isLoggedIn: authIsLoggedIn } = useAuth();
+  const isLoggedIn = Boolean(authUser || authIsLoggedIn || (appIsLoggedIn && currentUser));
+  const effectiveRole = authRole || currentUser?.role || 'admin';
 
   const [currentPath, setCurrentPath] = useState<string>(() =>
     getInitialPath(currentUser?.role)
@@ -325,24 +328,39 @@ const AppContent: React.FC = () => {
     );
   }
 
+  const handleLoginSuccess = (role: 'admin' | 'salesperson') => {
+    setIsMobileSidebarOpen(false);
+    const targetPath = role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
+    setCurrentPath(targetPath);
+    setUnauthView('app');
+    try {
+      localStorage.setItem('soleflow_active_path', targetPath);
+      if (window.location.hash) {
+        window.history.replaceState({ path: targetPath }, '', targetPath);
+      } else if (window.location.pathname !== targetPath) {
+        window.history.pushState({ path: targetPath }, '', targetPath);
+      }
+    } catch (e) {
+      console.warn('History navigation error:', e);
+    }
+  };
+
   // 3. Public Landing Page (Default for root URL /)
   if (unauthView === 'landing') {
     return (
       <LandingPage
         isAlreadyLoggedIn={isLoggedIn}
         onReturnToDashboard={() => {
-          const targetPath = currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
+          const targetPath = effectiveRole === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
           setCurrentPath(targetPath);
           setUnauthView('app');
-          window.location.hash = '#app';
+          try {
+            if (window.location.pathname !== targetPath) {
+              window.history.pushState({ path: targetPath }, '', targetPath);
+            }
+          } catch (e) {}
         }}
-        onLoginSuccess={(role) => {
-          setIsMobileSidebarOpen(false);
-          const targetPath = role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
-          setCurrentPath(targetPath);
-          setUnauthView('app');
-          window.location.hash = '#app';
-        }}
+        onLoginSuccess={handleLoginSuccess}
         onNavigateToLogin={(mode = 'login') => {
           window.location.hash = mode;
           setUnauthView(mode);
@@ -356,13 +374,7 @@ const AppContent: React.FC = () => {
     return (
       <LoginPage
         initialMode={unauthView === 'signup' ? 'signup' : 'login'}
-        onSuccess={(role) => {
-          setIsMobileSidebarOpen(false);
-          const targetPath = role === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
-          setCurrentPath(targetPath);
-          setUnauthView('app');
-          window.location.hash = '#app';
-        }}
+        onSuccess={handleLoginSuccess}
         onBackToLanding={() => {
           window.location.hash = '#landing';
           setUnauthView('landing');
@@ -533,6 +545,22 @@ const AppContent: React.FC = () => {
       return <SettingsPage />;
     }
 
+    // Top-level aliases for direct navigation (e.g. /designs, /orders, /customers, /payments)
+    if (currentPath === '/designs') {
+      return <DesignsPage onNavigate={handleNavigate} />;
+    }
+    if (currentPath === '/customers' || currentPath.startsWith('/customers/')) {
+      const match = currentPath.match(/\/customers\/([^?#/]+)/);
+      const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
+      return <CustomersPage onNavigate={handleNavigate} customerId={customerId} fromPath={currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'} />;
+    }
+    if (currentPath === '/orders' || currentPath.startsWith('/orders/')) {
+      return <OrdersPage onNavigate={handleNavigate} />;
+    }
+    if (currentPath === '/payments') {
+      return <PaymentsPage onNavigate={handleNavigate} />;
+    }
+
     // Fallback
     return currentUser.role === 'admin' ? (
       <AdminDashboard onNavigate={handleNavigate} />
@@ -564,6 +592,7 @@ const AppContent: React.FC = () => {
       <RecordPaymentModal />
       <CreateOrderWizardModal />
       <AddCustomerModal />
+      <EditCustomerModal />
       <ShareLookbookModal />
       <DemoWalkthroughModal onNavigate={handleNavigate} />
 

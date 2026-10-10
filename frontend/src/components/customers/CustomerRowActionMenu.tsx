@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import {
   MoreVertical,
   Eye,
+  Pencil,
   Plus,
   DollarSign,
   Share2,
@@ -32,6 +33,7 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
   const {
     currentUser,
     setSelectedCustomer,
+    openEditCustomerModal,
     setIsCreateOrderModalOpen,
     setIsPaymentModalOpen,
     setIsShareModalOpen,
@@ -79,6 +81,12 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
     setSelectedCustomer(customer);
     const basePath = currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers';
     onNavigate(`${basePath}/${customer.id}?from=${encodeURIComponent(fromPath)}`);
+  };
+
+  const handleEditCustomer = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsOpen(false);
+    openEditCustomerModal(customer);
   };
 
   const handleNewOrder = (e: React.MouseEvent) => {
@@ -203,6 +211,17 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
           >
             <Eye size={14} className="text-blue-600 dark:text-blue-400" />
             <span>View Full Details</span>
+          </button>
+
+          {/* Edit Details */}
+          <button
+            type="button"
+            onClick={handleEditCustomer}
+            className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 hover:bg-muted/70 transition-colors font-medium cursor-pointer text-blue-600 dark:text-blue-400"
+            role="menuitem"
+          >
+            <Pencil size={14} />
+            <span>Edit Customer Details</span>
           </button>
 
           {/* New Order */}
