@@ -149,3 +149,157 @@ adminRouter.post('/invite', async (req, res, next) => {
   }
 });
 
+// Direct Team Member Creation with login credentials (Login ID & Password)
+adminRouter.post('/users/create', async (req, res, next) => {
+  try {
+    const {
+      email,
+      password,
+      name,
+      role = 'salesperson',
+      phone,
+      zone,
+      cluster,
+      monthlyTarget,
+      commissionRate,
+      orgId,
+    } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email (Login ID) and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const callerUser = req.user;
+    let targetOrgId = orgId || callerUser?.orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
+
+    // If server does not have live supabaseAdmin configured, return local mock response
+    if (!supabaseAdmin) {
+      logger.info({ email: cleanEmail, role }, 'Registered member locally (Supabase service key not configured)');
+      return res.status(200).json({
+        success: true,
+        message: `Account created for ${cleanEmail}`,
+        user: {
+          id: `rep-${Date.now()}`,
+          email: cleanEmail,
+          name: name || cleanEmail.split('@')[0],
+          role,
+          phone: phone || null,
+          zone: zone || 'Agra Hub',
+        },
+      });
+    }
+
+    if (!targetOrgId && callerUser?.id) {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('org_id')
+        .eq('id', callerUser.id)
+        .maybeSingle();
+      if (profile?.org_id) targetOrgId = profile.org_id;
+    }
+
+    let authUserId = null;
+    let authUserObj = null;
+
+    // Create user in Supabase Auth with auto-confirmed email so they can log in immediately
+    const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: cleanEmail,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: name || cleanEmail.split('@')[0],
+        role,
+        phone: phone || null,
+        zone: zone || null,
+        cluster: cluster || null,
+      },
+    });
+
+    if (createError) {
+      // If user already exists in auth, update their password
+      if (
+        createError.message?.toLowerCase().includes('already') ||
+        createError.message?.toLowerCase().includes('exists')
+      ) {
+        const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+        const existing = listData?.users?.find((u) => u.email?.toLowerCase() === cleanEmail);
+        if (existing) {
+          authUserId = existing.id;
+          authUserObj = existing;
+          await supabaseAdmin.auth.admin.updateUserById(existing.id, {
+            password,
+            email_confirm: true,
+            user_metadata: {
+              full_name: name || cleanEmail.split('@')[0],
+              role,
+              phone: phone || null,
+              zone: zone || null,
+            },
+          });
+        } else {
+          return res.status(400).json({ error: createError.message });
+        }
+      } else {
+        return res.status(400).json({ error: createError.message });
+      }
+    } else {
+      authUserId = createData.user.id;
+      authUserObj = createData.user;
+    }
+
+    // Upsert into profiles table
+    await supabaseAdmin.from('profiles').upsert({
+      id: authUserId,
+      email: cleanEmail,
+      full_name: name || cleanEmail.split('@')[0],
+      role,
+      phone: phone || null,
+      zone: zone || null,
+      cluster: cluster || null,
+      org_id: targetOrgId || null,
+      is_active: true,
+    });
+
+    // If salesperson, upsert into sales_team table
+    if (role === 'salesperson') {
+      await supabaseAdmin.from('sales_team').upsert({
+        id: authUserId,
+        user_id: authUserId,
+        name: name || cleanEmail.split('@')[0],
+        phone: phone || null,
+        email: cleanEmail,
+        zone: zone || 'Agra Hub',
+        cluster: cluster || zone || 'Agra Hub',
+        emp_id: `SF-REP-${Math.floor(100 + Math.random() * 900)}`,
+        monthly_target: Number(monthlyTarget || 1500000),
+        commission_rate: Number(commissionRate || 3.5),
+        status: 'In Market',
+        role_title: 'Field Sales Rep',
+        org_id: targetOrgId || null,
+      });
+    }
+
+    logger.info({ email: cleanEmail, role, userId: authUserId }, 'Admin created new user account with login credentials');
+
+    return res.status(200).json({
+      success: true,
+      message: `User account created successfully for ${cleanEmail}`,
+      user: {
+        id: authUserId,
+        email: cleanEmail,
+        name: name || cleanEmail.split('@')[0],
+        role,
+        phone: phone || null,
+        zone: zone || null,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+

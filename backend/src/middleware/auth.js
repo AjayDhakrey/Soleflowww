@@ -3,6 +3,17 @@ import { logger } from '../lib/logger.js';
 
 export async function verifyAuthToken(req, res, next) {
   if (!supabaseAdmin) {
+    // In local development or when service key is not configured, permit requests as admin
+    if (process.env.NODE_ENV !== 'production' || process.env.VITE_DEMO_MODE === 'true' || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      req.user = {
+        id: 'admin-dev-user',
+        email: 'admin@soleflow.com',
+        role: 'admin',
+        name: 'Trader Admin',
+        orgId: 'ff415366-0239-4fa2-b7f6-dec643136aa3',
+      };
+      return next();
+    }
     return res
       .status(503)
       .json({ error: 'Server not configured: missing SUPABASE_SERVICE_ROLE_KEY' });

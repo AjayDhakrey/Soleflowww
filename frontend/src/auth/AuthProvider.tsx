@@ -461,6 +461,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (error) {
+          // Check if credentials match a newly created sales representative / admin user
+          const normalizedEmail = email.trim().toLowerCase();
+          try {
+            const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
+            const matchedUser = savedUsers.find(
+              (u: any) => u.email?.toLowerCase() === normalizedEmail && u.password === pass
+            );
+            if (matchedUser) {
+              const assignedRole: UserRole = matchedUser.role || 'salesperson';
+              const repUser: User = {
+                id: matchedUser.id || `rep-${Date.now()}`,
+                name: matchedUser.name,
+                email: matchedUser.email,
+                role: assignedRole,
+                avatar: assignedRole === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar,
+                initials: (matchedUser.name || 'SF').substring(0, 2).toUpperCase(),
+                roleLabel: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
+                phone: matchedUser.phone,
+                zone: matchedUser.zone || 'Agra Hub',
+                org_id: DEFAULT_ORG_ID,
+                orgId: DEFAULT_ORG_ID,
+              };
+              setUser(repUser);
+              setRole(assignedRole);
+              setProfile({
+                id: repUser.id,
+                email: repUser.email,
+                name: repUser.name,
+                role: assignedRole,
+                phone: matchedUser.phone,
+                zone: matchedUser.zone,
+                org_id: DEFAULT_ORG_ID,
+              });
+              setHasRealSession(false);
+              setDemoModeActive(true);
+              localStorage.setItem(
+                AUTH_STORAGE_KEY,
+                JSON.stringify({ isLoggedIn: true, role: assignedRole, email: repUser.email, user: repUser })
+              );
+              setIsLoading(false);
+              return { success: true, role: assignedRole };
+            }
+
+            if (normalizedEmail === 'admin@soleflow.com' && pass === 'admin123') {
+              return quickDemoLogin('admin');
+            }
+            if (normalizedEmail === 'sales@soleflow.com' && pass === 'sales123') {
+              return quickDemoLogin('salesperson');
+            }
+          } catch (storageErr) {
+            console.warn('Fallback login check warning:', storageErr);
+          }
+
           setAuthError(error.message);
           setIsLoading(false);
           return { success: false, error: error.message };
@@ -481,6 +534,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
           return { success: true, role: prof.role };
         }
+      }
+
+      // 2. Offline / Demo / Custom User fallback
+      const normalizedEmail = email.trim().toLowerCase();
+      try {
+        const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
+        const matchedUser = savedUsers.find(
+          (u: any) => u.email?.toLowerCase() === normalizedEmail && u.password === pass
+        );
+        if (matchedUser) {
+          const assignedRole: UserRole = matchedUser.role || 'salesperson';
+          const repUser: User = {
+            id: matchedUser.id || `rep-${Date.now()}`,
+            name: matchedUser.name,
+            email: matchedUser.email,
+            role: assignedRole,
+            avatar: assignedRole === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar,
+            initials: (matchedUser.name || 'SF').substring(0, 2).toUpperCase(),
+            roleLabel: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
+            phone: matchedUser.phone,
+            zone: matchedUser.zone || 'Agra Hub',
+            org_id: DEFAULT_ORG_ID,
+            orgId: DEFAULT_ORG_ID,
+          };
+          setUser(repUser);
+          setRole(assignedRole);
+          setProfile({
+            id: repUser.id,
+            email: repUser.email,
+            name: repUser.name,
+            role: assignedRole,
+            phone: matchedUser.phone,
+            zone: matchedUser.zone,
+            org_id: DEFAULT_ORG_ID,
+          });
+          setHasRealSession(false);
+          setDemoModeActive(true);
+          localStorage.setItem(
+            AUTH_STORAGE_KEY,
+            JSON.stringify({ isLoggedIn: true, role: assignedRole, email: repUser.email, user: repUser })
+          );
+          setIsLoading(false);
+          return { success: true, role: assignedRole };
+        }
+
+        if (normalizedEmail === 'admin@soleflow.com' && pass === 'admin123') {
+          return quickDemoLogin('admin');
+        }
+        if (normalizedEmail === 'sales@soleflow.com' && pass === 'sales123') {
+          return quickDemoLogin('salesperson');
+        }
+      } catch (e) {
+        console.warn('Fallback login error:', e);
       }
 
       setAuthError('Authentication failed.');

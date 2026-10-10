@@ -30,6 +30,7 @@ import {
   CircleDot,
   Send,
   X,
+  UserPlus,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -41,6 +42,7 @@ import {
   AnalogTimePicker,
 } from '../../components/ui';
 import { SalesTeamKpiCards } from '../../components/sales/SalesTeamKpiCards';
+import { CreateSalesRepresentativeModal } from '../../components/team/CreateSalesRepresentativeModal';
 import { Salesperson, SalespersonTask } from '../../types';
 
 interface SalesTeamPageProps {
@@ -60,6 +62,9 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
   const [newStopDesc, setNewStopDesc] = useState('');
   const [newStopTime, setNewStopTime] = useState('16:30');
   const [newStopType, setNewStopType] = useState<'visit' | 'cheque' | 'followup' | 'meeting'>('visit');
+
+  // Add Sales Representative Modal State
+  const [isCreateRepModalOpen, setIsCreateRepModalOpen] = useState(false);
 
   const activeRep = useMemo(() => {
     return salesTeam.find((r) => r.id === selectedRepId) || salesTeam[0] || {} as Salesperson;
@@ -153,6 +158,15 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
               className="hidden sm:inline-flex"
             >
               Export Routes
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              icon={UserPlus}
+              onClick={() => setIsCreateRepModalOpen(true)}
+              className="shadow-xs font-semibold"
+            >
+              + Add Representative
             </Button>
           </div>
         }
@@ -794,6 +808,13 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
           </div>
         </div>
       )}
+
+      {/* Add Sales Representative & Set Credentials Modal */}
+      <CreateSalesRepresentativeModal
+        isOpen={isCreateRepModalOpen}
+        onClose={() => setIsCreateRepModalOpen(false)}
+        defaultRole="salesperson"
+      />
     </div>
   );
 };

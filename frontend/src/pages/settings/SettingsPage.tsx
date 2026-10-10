@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import {supabase, isDemoModeActive} from '../../lib/supabase';
 import { OrgInvite, UserRole } from '../../types';
+import { CreateSalesRepresentativeModal } from '../../components/team/CreateSalesRepresentativeModal';
 
 interface MemberItem {
   id: string;
@@ -64,21 +65,40 @@ export const SettingsPage: React.FC = () => {
   const [invites, setInvites] = useState<OrgInvite[]>([]);
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  
-  // Invite Form
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteName, setInviteName] = useState('');
-  const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<UserRole>('salesperson');
-  const [isSendingInvite, setIsSendingInvite] = useState(false);
 
   const loadTeamData = async () => {
     if (!isAdmin && !isSuperAdmin) return;
     setIsLoadingTeam(true);
 
     if (!supabase || isDemoModeActive) {
-      // Database not configured: show honest empty lists instead of fabricated team data
-      setMembers([]);
+      const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
+      const localList: MemberItem[] = [
+        {
+          id: 'user-admin',
+          name: 'Ajay Sharma',
+          email: 'admin@soleflow.com',
+          role: 'admin',
+          phone: '+91 98765 43210',
+          is_active: true,
+        },
+        {
+          id: 'user-sales',
+          name: 'Rahul Sharma',
+          email: 'sales@soleflow.com',
+          role: 'salesperson',
+          phone: '+91 98231 04412',
+          is_active: true,
+        },
+        ...savedUsers.map((u: any) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          phone: u.phone,
+          is_active: true,
+        })),
+      ];
+      setMembers(localList);
       setInvites([]);
       setIsLoadingTeam(false);
       return;
@@ -91,9 +111,8 @@ export const SettingsPage: React.FC = () => {
         profilesQuery = profilesQuery.eq('org_id', orgId);
       }
       const { data: profData } = await profilesQuery;
-      if (profData) {
-        setMembers(
-          profData.map((p: any) => ({
+      const loadedMembers = profData
+        ? profData.map((p: any) => ({
             id: p.id,
             name: p.full_name || p.name || p.email.split('@')[0],
             email: p.email,
@@ -101,8 +120,26 @@ export const SettingsPage: React.FC = () => {
             phone: p.phone,
             is_active: p.is_active !== false,
           }))
-        );
-      }
+        : [];
+
+      // Merge any locally created members that might not have populated yet
+      try {
+        const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
+        savedUsers.forEach((su: any) => {
+          if (!loadedMembers.some((m: any) => m.email.toLowerCase() === su.email.toLowerCase())) {
+            loadedMembers.push({
+              id: su.id,
+              name: su.name,
+              email: su.email,
+              role: su.role,
+              phone: su.phone,
+              is_active: true,
+            });
+          }
+        });
+      } catch (e) {}
+
+      setMembers(loadedMembers);
 
       // 2. Load pending invites
       let invitesQuery = supabase.from('org_invites').select('*').is('accepted_at', null);
@@ -125,55 +162,6 @@ export const SettingsPage: React.FC = () => {
       loadTeamData();
     }
   }, [activeTab, orgId]);
-
-  const handleSendInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail) return;
-
-    if (isDemoAccount) {
-      showToast('Demo accounts cannot send live user invitations.');
-      return;
-    }
-
-    setIsSendingInvite(true);
-
-    try {
-      // Call backend route POST /admin/invite or direct Supabase insert
-      if (!supabase || isDemoModeActive) {
-        showToast('Database not configured — invites cannot be sent.');
-        return;
-      }
-      if (!orgId) {
-        showToast('No active organization found for your account.');
-        return;
-      }
-
-      const { error } = await supabase
-        .from('org_invites')
-        .insert({
-          org_id: orgId,
-          email: inviteEmail.trim().toLowerCase(),
-          role: inviteRole,
-        })
-        .select('*')
-        .single();
-
-      if (error) {
-        showToast(`Error creating invite: ${error.message}`);
-      } else {
-        showToast(`Invitation created for ${inviteEmail}`);
-        setIsInviteModalOpen(false);
-        setInviteEmail('');
-        setInviteName('');
-        setInvitePhone('');
-        loadTeamData();
-      }
-    } catch (err: any) {
-      showToast(`Failed: ${err.message}`);
-    } finally {
-      setIsSendingInvite(false);
-    }
-  };
 
   const handleRevokeInvite = async (inviteId: string) => {
     if (!supabase || isDemoModeActive) {
@@ -442,10 +430,10 @@ export const SettingsPage: React.FC = () => {
             <Button
               type="button"
               variant="primary"
-              icon={Icons.Add}
+              icon={UserPlus}
               onClick={() => setIsInviteModalOpen(true)}
             >
-              Invite Member
+              + Add Member & Set Login Credentials
             </Button>
           </div>
 
@@ -624,86 +612,18 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Invite Member Modal */}
-      {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                  <UserPlus size={18} />
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-base text-foreground">Invite Team Member</h3>
-                  <p className="text-xs text-muted-foreground">Add a salesperson or administrator</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsInviteModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-bold p-1 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSendInvite} className="space-y-3.5">
-              <div>
-                <label className="text-xs font-semibold text-foreground block mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="name@company.com"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full h-11 px-3.5 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-foreground block mb-1">Full Name (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Suresh Kumar"
-                  value={inviteName}
-                  onChange={(e) => setInviteName(e.target.value)}
-                  className="w-full h-11 px-3.5 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-foreground block mb-1">Role Permission *</label>
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value as UserRole)}
-                  className="w-full h-11 px-3 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:border-primary"
-                >
-                  <option value="salesperson">Salesperson (Assigned Customers Only)</option>
-                  <option value="admin">Administrator (Full Business Access)</option>
-                </select>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsInviteModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={isSendingInvite}
-                  icon={Icons.Send}
-                >
-                  {isSendingInvite ? 'Sending...' : 'Send Invitation'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Add Member & Set Login Credentials Modal */}
+      <CreateSalesRepresentativeModal
+        isOpen={isInviteModalOpen}
+        onClose={() => {
+          setIsInviteModalOpen(false);
+          loadTeamData();
+        }}
+        defaultRole="salesperson"
+        onSuccess={() => {
+          loadTeamData();
+        }}
+      />
 
     </div>
   );

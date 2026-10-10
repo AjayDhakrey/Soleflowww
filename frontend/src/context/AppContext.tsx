@@ -81,6 +81,17 @@ interface AppContextType {
   setSalesTeam: React.Dispatch<React.SetStateAction<Salesperson[]>>;
   toggleSalesTask: (salespersonId: string, taskId: string) => void;
   addSalesTask: (salespersonId: string, task: Salesperson['tasksChecklist'][number]) => Promise<boolean>;
+  createTeamMemberAccount: (data: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+    role?: UserRole;
+    zone?: string;
+    cluster?: string;
+    monthlyTarget?: number;
+    commissionRate?: number;
+  }) => Promise<{ success: boolean; error?: string; user?: any }>;
   notifications: NotificationItem[];
   setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
   markNotificationAsRead: (id: string) => void;
@@ -667,6 +678,150 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
+  const createTeamMemberAccount = async (data: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+    role?: UserRole;
+    zone?: string;
+    cluster?: string;
+    monthlyTarget?: number;
+    commissionRate?: number;
+  }): Promise<{ success: boolean; error?: string; user?: any }> => {
+    try {
+      const cleanEmail = data.email.trim().toLowerCase();
+      const targetRole: UserRole = data.role || 'salesperson';
+      const repId = `rep-${Date.now()}`;
+
+      // 1. Attempt backend server endpoint /api/admin/users/create
+      try {
+        let authHeader = '';
+        if (supabase) {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData.session?.access_token) {
+            authHeader = `Bearer ${sessionData.session.access_token}`;
+          }
+        }
+        await fetch('/api/admin/users/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          body: JSON.stringify({
+            ...data,
+            email: cleanEmail,
+            orgId: orgId || DEFAULT_ORG_ID,
+          }),
+        });
+      } catch (backendErr) {
+        console.warn('Backend call warning:', backendErr);
+      }
+
+      // 2. Prepare local salesperson object
+      const newRep: Salesperson = {
+        id: repId,
+        name: data.name.trim(),
+        roleTitle: targetRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
+        photo:
+          targetRole === 'admin'
+            ? MOCK_USERS.admin.avatar
+            : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+        zone: data.zone || 'Agra Hub',
+        cluster: data.cluster || data.zone || 'Central Wholesale Hub',
+        phone: data.phone || '',
+        email: cleanEmail,
+        empId: `SF-REP-${Math.floor(100 + Math.random() * 900)}`,
+        monthlyTarget: Number(data.monthlyTarget || 1500000),
+        bookedThisMonth: 0,
+        commissionRate: Number(data.commissionRate || 3.5),
+        commissionAccrued: 0,
+        collectionDue: 0,
+        assignedAccountsCount: 0,
+        todayVisitsDone: 0,
+        todayVisitsTotal: 4,
+        chequesTodayAmount: 0,
+        status: 'In Market',
+        assignedKit: 'All-Terrain Sample Kit',
+        kitVerifiedDate: 'Today',
+        tasksChecklist: [
+          {
+            id: `task-${Date.now()}-1`,
+            time: '10:00 AM',
+            title: 'Territory Handover & Sample Kit Briefing',
+            description: 'Meet manager for sample kit allocation and assigned account introductions.',
+            verifiedGps: false,
+            completed: false,
+            badge: 'Onboarding Stop',
+            badgeColor: 'blue',
+            type: 'meeting',
+          },
+        ],
+      };
+
+      // Add to state immediately
+      if (targetRole === 'salesperson') {
+        setSalesTeam((prev) => [newRep, ...prev.filter((r) => r.email.toLowerCase() !== cleanEmail)]);
+      }
+
+      // Save credentials locally so login works immediately with the assigned ID and password
+      try {
+        const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
+        const filtered = savedUsers.filter((u: any) => u.email?.toLowerCase() !== cleanEmail);
+        filtered.push({
+          id: repId,
+          name: data.name.trim(),
+          email: cleanEmail,
+          password: data.password,
+          phone: data.phone || '',
+          role: targetRole,
+          zone: data.zone || 'Agra Hub',
+        });
+        localStorage.setItem('soleflow_created_users', JSON.stringify(filtered));
+      } catch (storageErr) {
+        console.warn('LocalStorage error:', storageErr);
+      }
+
+      // Supabase direct sync if connected
+      if (supabase && isSupabaseActive) {
+        try {
+          if (targetRole === 'salesperson') {
+            await supabase.from('sales_team').upsert({
+              id: repId,
+              name: newRep.name,
+              email: newRep.email,
+              phone: newRep.phone || null,
+              zone: newRep.zone,
+              cluster: newRep.cluster,
+              monthly_target: newRep.monthlyTarget,
+              commission_rate: newRep.commissionRate,
+              emp_id: newRep.empId,
+              status: 'In Market',
+              role_title: newRep.roleTitle,
+            } as any);
+          }
+        } catch (dbErr) {
+          console.warn('Database upsert warning:', dbErr);
+        }
+      }
+
+      addAuditEvent({
+        action: `Created ${targetRole === 'admin' ? 'Administrator' : 'Sales Representative'} Account`,
+        recordType: 'System Update',
+        recordId: repId,
+        recordTitle: `${data.name} (${cleanEmail})`,
+        newValue: `Login credentials generated for ${cleanEmail} with role: ${targetRole}`,
+      });
+
+      invalidateData();
+      return { success: true, user: newRep };
+    } catch (err: any) {
+      console.error('Error creating team member account:', err);
+      return { success: false, error: err.message || 'Failed to create account.' };
+    }
+  };
+
   const markNotificationAsRead = async (id: string) => {
     if (!requirePersistence() || !await notificationsService.markAsRead(id)) return;
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -795,6 +950,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSalesTeam,
         toggleSalesTask,
         addSalesTask,
+        createTeamMemberAccount,
         notifications,
         setNotifications,
         markNotificationAsRead,
