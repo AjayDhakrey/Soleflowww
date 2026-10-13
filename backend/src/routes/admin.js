@@ -36,19 +36,26 @@ adminRouter.post('/users/invite', async (req, res, next) => {
     }
 
     if (authUser?.user) {
+      const targetOrgId = req.user?.orgId || null;
       // Upsert profile with real schema columns
-      await supabaseAdmin.from('profiles').upsert({
+      const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
         id: authUser.user.id,
         email,
         full_name: name || email.split('@')[0],
         role,
         phone: phone || null,
+        sales_team_id: role === 'salesperson' ? authUser.user.id : null,
+        org_id: targetOrgId,
         is_active: true,
       });
 
+      if (profileError) {
+        logger.error({ error: profileError }, 'Failed to upsert profile for invited user');
+      }
+
       // If salesperson, upsert into sales_team table
       if (role === 'salesperson') {
-        await supabaseAdmin.from('sales_team').upsert({
+        const { error: teamError } = await supabaseAdmin.from('sales_team').upsert({
           id: authUser.user.id,
           user_id: authUser.user.id,
           name: name || email.split('@')[0],
@@ -57,8 +64,13 @@ adminRouter.post('/users/invite', async (req, res, next) => {
           zone: zone || null,
           cluster: cluster || null,
           status: 'In Market',
-          roleTitle: 'Field Sales Rep',
+          "roleTitle": 'Field Sales Rep',
+          org_id: targetOrgId,
         });
+
+        if (teamError) {
+          logger.error({ error: teamError }, 'Failed to upsert sales_team for invited salesperson');
+        }
       }
     }
 
@@ -253,21 +265,25 @@ adminRouter.post('/users/create', async (req, res, next) => {
     }
 
     // Upsert into profiles table
-    await supabaseAdmin.from('profiles').upsert({
+    const { error: profileUpsertError } = await supabaseAdmin.from('profiles').upsert({
       id: authUserId,
       email: cleanEmail,
       full_name: name || cleanEmail.split('@')[0],
       role,
       phone: phone || null,
-      zone: zone || null,
-      cluster: cluster || null,
+      sales_team_id: role === 'salesperson' ? authUserId : null,
       org_id: targetOrgId || null,
       is_active: true,
     });
 
+    if (profileUpsertError) {
+      logger.error({ error: profileUpsertError }, 'Failed to upsert profile for user creation');
+      return res.status(400).json({ error: profileUpsertError.message });
+    }
+
     // If salesperson, upsert into sales_team table
     if (role === 'salesperson') {
-      await supabaseAdmin.from('sales_team').upsert({
+      const { error: salesTeamUpsertError } = await supabaseAdmin.from('sales_team').upsert({
         id: authUserId,
         user_id: authUserId,
         name: name || cleanEmail.split('@')[0],
@@ -275,13 +291,18 @@ adminRouter.post('/users/create', async (req, res, next) => {
         email: cleanEmail,
         zone: zone || 'Agra Hub',
         cluster: cluster || zone || 'Agra Hub',
-        emp_id: `SF-REP-${Math.floor(100 + Math.random() * 900)}`,
-        monthly_target: Number(monthlyTarget || 1500000),
-        commission_rate: Number(commissionRate || 3.5),
+        "empId": `SF-REP-${Math.floor(100 + Math.random() * 900)}`,
+        "monthlyTarget": Number(monthlyTarget || 1500000),
+        "commissionRate": Number(commissionRate || 3.5),
         status: 'In Market',
-        role_title: 'Field Sales Rep',
+        "roleTitle": 'Field Sales Rep',
         org_id: targetOrgId || null,
       });
+
+      if (salesTeamUpsertError) {
+        logger.error({ error: salesTeamUpsertError }, 'Failed to upsert sales_team for user creation');
+        return res.status(400).json({ error: salesTeamUpsertError.message });
+      }
     }
 
     logger.info({ email: cleanEmail, role, userId: authUserId }, 'Admin created new user account with login credentials');

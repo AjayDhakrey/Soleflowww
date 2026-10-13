@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({ signIn: vi.fn(), mode: vi.fn(), profile: vi.fn
 vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: () => true,
   setDemoModeActive: mocks.mode,
+  DEFAULT_ORG_ID: '00000000-0000-0000-0000-000000000001',
+  toValidOrgId: (id: string | null | undefined) => id || '00000000-0000-0000-0000-000000000001',
   supabase: {
     auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }), signInWithPassword: mocks.signIn },
     from: (table: string) => ({ select: () => ({ eq: () => ({ single: () => mocks.profile(table) }) }) }),

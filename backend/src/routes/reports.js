@@ -41,8 +41,12 @@ reportsRouter.get('/sales/csv', async (req, res, next) => {
     const orgScope = req.viewSession?.orgId || req.user.orgId;
     if (orgScope) {
       query = query.eq('org_id', orgScope);
-    } else if (req.user.role === 'salesperson') {
-      query = query.eq('salesperson_id', req.user.id);
+    }
+    
+    // When called by a sales team representative, filter specifically to their assigned orders
+    if (req.user.role === 'salesperson') {
+      const salesmanId = req.user.salesTeamId || req.user.id;
+      query = query.eq('salesman_id', salesmanId);
     }
 
     const { data: orders } = await query;
@@ -51,12 +55,15 @@ reportsRouter.get('/sales/csv', async (req, res, next) => {
     res.setHeader('Content-Disposition', 'attachment; filename="soleflow_sales_report.csv"');
 
     // Header row
-    res.write('Order ID,Client ID,Order Date,Total Pairs,Total Cartons,Subtotal,GST,Net Payable,Total Paid,Balance Due,Status\n');
+    res.write('Order ID,Client Name,Salesperson,Order Date,Net Payable,Paid Verified,Outstanding,Payment Status,Order Status\n');
 
     if (orders && orders.length > 0) {
       for (const o of orders) {
+        const orderDate = o.order_date_at
+          ? new Date(o.order_date_at).toLocaleDateString('en-IN')
+          : (o.created_at ? new Date(o.created_at).toLocaleDateString('en-IN') : '');
         res.write(
-          `"${o.order_id}","${o.client_id}","${o.order_date}",${o.total_pairs},${o.total_cartons},${o.subtotal},${o.gst_amount},${o.net_payable},${o.total_paid},${o.balance_due},"${o.status}"\n`
+          `"${o.order_id}","${o.client_name || ''}","${o.salesman_name || 'Direct'}","${orderDate}",${o.net_payable ?? 0},${o.paid_verified ?? 0},${o.outstanding ?? 0},"${o.payment_status || 'Unpaid'}","${o.order_status || 'Draft'}"\n`
         );
       }
     }
@@ -82,8 +89,12 @@ reportsRouter.get('/receivables/csv', async (req, res, next) => {
     const orgScope = req.viewSession?.orgId || req.user.orgId;
     if (orgScope) {
       query = query.eq('org_id', orgScope);
-    } else if (req.user.role === 'salesperson') {
-      query = query.eq('salesperson_id', req.user.id);
+    }
+
+    // When called by a sales team representative, filter specifically to their clients
+    if (req.user.role === 'salesperson') {
+      const salesmanId = req.user.salesTeamId || req.user.id;
+      query = query.eq('salesman_id', salesmanId);
     }
 
     const { data: receivables } = await query;
@@ -91,12 +102,12 @@ reportsRouter.get('/receivables/csv', async (req, res, next) => {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="soleflow_receivables_ageing.csv"');
 
-    res.write('Client Name,Phone,City,Salesperson,Total Business,Total Paid,Total Outstanding,0-30 Days,31-60 Days,61-90 Days,90+ Days,Status\n');
+    res.write('Client Name,Salesperson,Total Invoiced,Total Paid,Amount Due,0-30 Days,31-60 Days,61-90 Days,90+ Days,Max Age Days\n');
 
     if (receivables && receivables.length > 0) {
       for (const r of receivables) {
         res.write(
-          `"${r.client_name}","${r.phone}","${r.city}","${r.salesperson_name || 'Unassigned'}",${r.total_business},${r.total_paid},${r.total_outstanding},${r.bucket_0_30},${r.bucket_31_60},${r.bucket_61_90},${r.bucket_90_plus},"${r.status}"\n`
+          `"${r.client_name || ''}","${r.salesman_name || 'Unassigned'}",${r.total_invoiced ?? 0},${r.total_paid ?? 0},${r.amount_due ?? 0},${r.bucket_0_30 ?? 0},${r.bucket_31_60 ?? 0},${r.bucket_61_90 ?? 0},${r.bucket_90_plus ?? 0},${r.max_age_days ?? 0}\n`
         );
       }
     }

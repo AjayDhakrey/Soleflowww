@@ -21,6 +21,7 @@ import {
   DollarSign,
   Send,
   Plus,
+  Calendar,
 } from 'lucide-react';
 
 interface TotalReceivablesInsightPageProps {
@@ -36,6 +37,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
     currentUser,
     setSelectedCustomer,
     setIsPaymentModalOpen,
+    addFollowUp,
     showToast,
   } = useApp();
   const metrics = useCustomerMetrics();
@@ -103,7 +105,8 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
 
   const handleOpenClient = (cust: Customer) => {
     setSelectedCustomer(cust);
-    onNavigate(currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers');
+    const base = currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers';
+    onNavigate(`${base}/${cust.id}?from=${base}`);
   };
 
   const handleWhatsAppReminder = (cust: Customer) => {
@@ -116,7 +119,19 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
-  const handleScheduleFollowUp = (cust: Customer) => {
+  const handleScheduleFollowUp = async (cust: Customer) => {
+    await addFollowUp({
+      customerId: cust.id,
+      customerName: cust.businessName,
+      customerCity: cust.city,
+      phone: cust.phone,
+      reason: 'Payment Collection Follow-up',
+      time: '11:00 AM',
+      status: 'today',
+      date: new Date().toISOString().split('T')[0],
+      amountDue: cust.amountDue || 0,
+      notes: 'Outstanding balance collection reminder',
+    });
     showToast(`Payment collection follow-up scheduled for ${cust.businessName}`);
   };
 
@@ -591,7 +606,7 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
 
                       {/* Credit Limit Usage Progress */}
                       <td className="py-3.5 px-4">
-                        <div className="space-y-1 w-28">
+                        <div className="space-y-1 min-w-[100px] max-w-[130px] w-full">
                           <div className="flex items-center justify-between text-[11px] font-semibold">
                             <span className={limitUsage > 100 ? 'text-rose-600 dark:text-rose-400' : limitUsage >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}>
                               {limitUsage}%
@@ -641,6 +656,16 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
                             title="Send WhatsApp Reminder"
                           >
                             <MessageSquare size={15} />
+                          </button>
+
+                          {/* Schedule Follow-up */}
+                          <button
+                            type="button"
+                            onClick={() => handleScheduleFollowUp(cust)}
+                            className="p-1.5 rounded-lg border border-border hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-600 dark:text-amber-400 transition-colors cursor-pointer"
+                            title="Schedule Collection Follow-up"
+                          >
+                            <Calendar size={15} />
                           </button>
 
                           {/* Open Client */}

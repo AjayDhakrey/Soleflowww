@@ -64,6 +64,22 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
 
   // Filtered customers list
   const filteredCustomers = useMemo(() => {
+    const now = new Date();
+    const cutoff = (() => {
+      if (timeRange === 'this_month') {
+        return new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+      if (timeRange === '90d') {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 90);
+        return d;
+      }
+      if (timeRange === 'this_year') {
+        return new Date(now.getFullYear(), 0, 1);
+      }
+      return null; // 'all'
+    })();
+
     return metrics.allCustomers.filter((c) => {
       const q = search.toLowerCase();
       const matchesSearch =
@@ -83,6 +99,14 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
       if (statusFilter === 'cleared') return c.ordersCount > 0 && (c.amountDue || 0) === 0;
       if (statusFilter === 'idle') return c.status === 'idle' || c.ordersCount === 0;
 
+      // Time range filter: filter by lastOrderDate
+      if (cutoff && c.lastOrderDate) {
+        const lastOrder = new Date(c.lastOrderDate);
+        if (lastOrder < cutoff) return false;
+      } else if (cutoff && !c.lastOrderDate) {
+        return false; // no order date means outside any specific time window
+      }
+
       return true;
     }).sort((a, b) => {
       let valA: any = a[sortField];
@@ -96,7 +120,7 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
       }
       return sortOrder === 'asc' ? (valA || 0) - (valB || 0) : (valB || 0) - (valA || 0);
     });
-  }, [metrics.allCustomers, search, cityFilter, salesmanFilter, statusFilter, tierFilter, sortField, sortOrder]);
+  }, [metrics.allCustomers, search, cityFilter, salesmanFilter, statusFilter, tierFilter, timeRange, sortField, sortOrder]);
 
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) {
@@ -109,7 +133,8 @@ export const TotalCustomersInsightPage: React.FC<TotalCustomersInsightPageProps>
 
   const handleOpenClient = (cust: Customer) => {
     setSelectedCustomer(cust);
-    onNavigate(currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers');
+    const base = currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers';
+    onNavigate(`${base}/${cust.id}?from=${base}`);
   };
 
   const handleExportCSV = () => {

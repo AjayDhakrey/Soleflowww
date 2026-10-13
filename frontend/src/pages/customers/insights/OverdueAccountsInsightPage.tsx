@@ -34,6 +34,7 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
     currentUser,
     setSelectedCustomer,
     setIsPaymentModalOpen,
+    addFollowUp,
     showToast,
   } = useApp();
   const metrics = useCustomerMetrics();
@@ -86,7 +87,8 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
 
   const handleOpenClient = (cust: Customer) => {
     setSelectedCustomer(cust);
-    onNavigate(currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers');
+    const base = currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers';
+    onNavigate(`${base}/${cust.id}?from=${base}`);
   };
 
   const handleRecordPayment = (cust: Customer) => {
@@ -104,8 +106,20 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
-  const handleScheduleFollowUp = (cust: Customer) => {
-    showToast(`Priority collection follow-up assigned to ${cust.salespersonName || 'sales team'} for ${cust.businessName}`);
+  const handleScheduleFollowUp = async (cust: Customer) => {
+    await addFollowUp({
+      customerId: cust.id,
+      customerName: cust.businessName,
+      customerCity: cust.city,
+      phone: cust.phone,
+      reason: `Overdue Collection (${cust.overdueDays || 0}d past due)`,
+      time: '10:00 AM',
+      status: 'today',
+      date: new Date().toISOString().split('T')[0],
+      amountDue: cust.amountDue || 0,
+      notes: `Priority collection follow-up assigned to ${cust.salespersonName || 'sales team'}`,
+    });
+    showToast(`Priority collection follow-up scheduled for ${cust.businessName}`);
   };
 
   const handleExportCSV = () => {
@@ -141,9 +155,11 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
     return name.slice(0, 2).toUpperCase();
   };
 
-  const overLimitCount = metrics.overdueCustomersList.filter(
-    (c) => c.creditLimit > 0 && (c.amountDue || 0) > c.creditLimit
-  ).length;
+  const overLimitCount = useMemo(() => {
+    return metrics.overdueCustomersList.filter(
+      (c) => c.creditLimit > 0 && (c.amountDue || 0) > c.creditLimit
+    ).length;
+  }, [metrics.overdueCustomersList]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
@@ -549,6 +565,16 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
                           >
                             <span>₹</span>
                             <span>Pay</span>
+                          </button>
+
+                          {/* Schedule Follow-up */}
+                          <button
+                            type="button"
+                            onClick={() => handleScheduleFollowUp(cust)}
+                            className="p-1.5 rounded-lg border border-border hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-600 dark:text-amber-400 transition-colors cursor-pointer"
+                            title="Schedule Collection Follow-up"
+                          >
+                            <Calendar size={15} />
                           </button>
 
                           {/* Open Client */}

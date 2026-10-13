@@ -55,6 +55,11 @@ documentsRouter.get('/orders/:id/pdf', async (req, res, next) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
+    const userOrg = req.viewSession?.orgId || req.user.orgId;
+    if (userOrg && fin.org_id && userOrg !== fin.org_id && !req.user.isSuperAdmin) {
+      return res.status(403).json({ error: 'Access denied: Order belongs to another organization' });
+    }
+
     const { data: items } = await supabaseAdmin
       .from('order_items')
       .select('*')

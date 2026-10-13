@@ -79,6 +79,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
     payments,
     followUps,
     designs,
+    designShares,
     currentUser,
     isSupabaseActive,
     addFollowUp,
@@ -261,8 +262,57 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
   const isOverdue = (customer.amountDue || 0) > 0 && (customer.overdueDays > 0 || customer.status === 'overdue');
   const isCleared = (customer.ordersCount > 0 || (customer.totalBusiness || 0) > 0) && (customer.amountDue || 0) <= 0;
   const limitUsage = customer.creditLimit > 0 ? Math.round(((customer.amountDue || 0) / customer.creditLimit) * 100) : 0;
-  const topModels = customer.topSellingModels || [];
-  const recentActivity = customer.activityHistory || [];
+
+  // Design shares specific to this client
+  const customerDesignShares = useMemo(() => {
+    if (!customer) return [];
+    return (designShares || []).filter(
+      (ds) => ds.targetClientId === customer.id || ds.targetClientName === customer.businessName
+    );
+  }, [customer, designShares]);
+
+  // Top models: use explicit topSellingModels if present, else compute from actual customer orders
+  const topModels = useMemo(() => {
+    if (customer.topSellingModels && customer.topSellingModels.length > 0) {
+      return customer.topSellingModels;
+    }
+    const modelMap = new Map<string, { name: string; pairs: number; image: string }>();
+    customerOrders.forEach((ord) => {
+      (ord.items || []).forEach((item) => {
+        const existing = modelMap.get(item.designName) || {
+          name: item.designName,
+          pairs: 0,
+          image: item.image,
+        };
+        existing.pairs += item.totalPairs || (item.sizeBreakdown || []).reduce((acc, sb) => acc + (sb.pairs || 0), 0);
+        modelMap.set(item.designName, existing);
+      });
+    });
+    return Array.from(modelMap.values()).sort((a, b) => b.pairs - a.pairs).slice(0, 6);
+  }, [customer.topSellingModels, customerOrders]);
+
+  // Recent activity: use explicit activityHistory if present, else compute from customer orders and payments
+  const recentActivity = useMemo(() => {
+    if (customer.activityHistory && customer.activityHistory.length > 0) {
+      return customer.activityHistory;
+    }
+    const acts: Array<{ title: string; description: string; timestamp: string }> = [];
+    customerOrders.slice(0, 4).forEach((ord) => {
+      acts.push({
+        title: `Consignment ${ord.id} (${ord.status})`,
+        description: `${ord.pairsCount || 0} pairs booked • Total: ${formatIndianCurrency(ord.netPayable || ord.subtotal || 0)}`,
+        timestamp: ord.orderDate || 'Recent',
+      });
+    });
+    customerPayments.slice(0, 3).forEach((pay) => {
+      acts.push({
+        title: `Payment Realized: ${formatIndianCurrency(pay.paymentAmount || 0)}`,
+        description: `${pay.paymentMethod || 'Bank'} transfer • Ref: ${pay.receiptNumber || pay.utrRef || '—'}`,
+        timestamp: pay.paymentDate || 'Recent',
+      });
+    });
+    return acts;
+  }, [customer.activityHistory, customerOrders, customerPayments]);
 
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -359,7 +409,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                 </span>
                 {isOverdue ? (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/50">
-                    Overdue ({customer.overdueDays}d)
+                    Overdue ({customer.overdueDays ?? 0}d)
                   </span>
                 ) : isCleared ? (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
@@ -438,7 +488,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
         <div className="pt-3 border-t border-border flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 text-foreground">
             <MapPin size={14} className="text-muted-foreground" />
-            <span>{customer.city}, {customer.state} ({customer.cluster || '—'})</span>
+            <span>{customer.city}{customer.state ? `, ${customer.state}` : ''} ({customer.cluster || '—'})</span>
           </span>
 
           <a
@@ -488,7 +538,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
           { key: 'ledger', label: 'Financial Ledger', icon: FileText, count: ledgerEntries.length },
           { key: 'orders', label: 'Order History', icon: ShoppingBag, count: customerOrders.length },
           { key: 'payments', label: 'Payments', icon: DollarSign, count: customerPayments.length },
-          { key: 'designs', label: 'Designs Shared', icon: Share2 },
+          { key: 'designs', label: 'Designs Shared', icon: Share2, count: customerDesignShares.length },
           { key: 'models', label: 'Top Models', icon: Layers },
           { key: 'followups', label: 'Follow-ups & Visits', icon: Calendar, count: customerFollowUps.length },
           { key: 'notes', label: 'Internal Notes', icon: MessageSquare, count: localNotes.length },
@@ -510,7 +560,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
               <Icon size={15} />
               <span>{tab.label}</span>
               {tab.count != null && tab.count > 0 && (
-                <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold">
+                <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-bold">
                   {tab.count}
                 </span>
               )}
@@ -847,7 +897,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                       <td className="py-3.5 px-4 md:px-6 text-right">
                         <button
                           type="button"
-                          onClick={() => onNavigate(`/admin/orders?order=${ord.id}`)}
+                          onClick={() => onNavigate(`${currentUser.role === 'admin' ? '/admin' : '/sales'}/orders?order=${ord.id}`)}
                           className="p-1.5 rounded-lg border border-border hover:bg-muted text-foreground transition-colors cursor-pointer"
                           title="Inspect Order"
                         >
@@ -951,7 +1001,7 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <div>
               <h3 className="text-base font-bold text-foreground">Shared Lookbooks &amp; Design Catalogs</h3>
-              <p className="text-xs text-muted-foreground">Digital collections shared with this retailer</p>
+              <p className="text-xs text-muted-foreground">Digital collections shared specifically with {customer.businessName}</p>
             </div>
             <button
               type="button"
@@ -966,18 +1016,80 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {designs.slice(0, 6).map((d) => (
-              <div key={d.id} className="p-3.5 rounded-xl border border-border bg-muted/20 flex items-center gap-3">
-                <img src={d.image} alt={d.name} className="w-16 h-14 object-cover rounded-lg border border-border shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <span className="font-mono text-[10px] text-muted-foreground font-bold">{d.articleCode}</span>
-                  <p className="font-bold text-xs text-foreground truncate">{d.name}</p>
-                  <p className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold">{formatIndianCurrency(d.price)} / pair</p>
+          {customerDesignShares.length === 0 ? (
+            <div className="py-12 text-center text-muted-foreground space-y-2">
+              <Share2 size={36} className="mx-auto text-muted-foreground/40" />
+              <p className="font-bold text-foreground text-sm">No lookbooks shared with this store yet</p>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Dispatch seasonal catalog links or WhatsApp cards directly to {customer.businessName}.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCustomer(customer);
+                  setIsShareModalOpen(true);
+                }}
+                className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Share2 size={14} />
+                <span>Share First Catalog</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="divide-y divide-border/60 border border-border rounded-xl overflow-hidden bg-muted/15">
+                {customerDesignShares.map((ds) => (
+                  <div key={ds.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-foreground">{ds.designsCount || (ds.designIds?.length || 1)} Designs Shared</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/40">
+                          {ds.channel}
+                        </span>
+                        {ds.wasViewed && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                            Viewed ({ds.viewCount || 1}x)
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-muted-foreground text-[11px]">
+                        Shared by {ds.sharedBy} • {ds.timestamp}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCustomer(customer);
+                          setIsShareModalOpen(true);
+                        }}
+                        className="px-2.5 py-1 rounded-lg border border-border hover:bg-muted font-medium text-foreground text-xs cursor-pointer"
+                      >
+                        Reshare
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Showcase preview of available designs */}
+              <div className="pt-2">
+                <p className="text-xs font-semibold text-muted-foreground mb-3">Featured Articles in Catalog</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {designs.slice(0, 6).map((d) => (
+                    <div key={d.id} className="p-3 rounded-xl border border-border bg-muted/20 flex items-center gap-3">
+                      <img src={d.image} alt={d.name} className="w-14 h-12 object-cover rounded-lg border border-border shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <span className="font-mono text-[10px] text-muted-foreground font-bold">{d.articleCode}</span>
+                        <p className="font-bold text-xs text-foreground truncate">{d.name}</p>
+                        <p className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold">{formatIndianCurrency(d.price)} / pair</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
 

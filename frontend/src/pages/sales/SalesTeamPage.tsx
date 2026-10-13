@@ -31,6 +31,9 @@ import {
   Send,
   X,
   UserPlus,
+  Download,
+  Printer,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   PageHeader,
@@ -65,6 +68,9 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
 
   // Add Sales Representative Modal State
   const [isCreateRepModalOpen, setIsCreateRepModalOpen] = useState(false);
+
+  // Export Routes Modal State
+  const [isExportRoutesModalOpen, setIsExportRoutesModalOpen] = useState(false);
 
   const activeRep = useMemo(() => {
     return salesTeam.find((r) => r.id === selectedRepId) || salesTeam[0] || {} as Salesperson;
@@ -122,6 +128,210 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
     setIsAddStopOpen(false);
   };
 
+  const handleExportRoutesCSV = (onlyActiveRep = false) => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const targets = onlyActiveRep && activeRep?.id ? [activeRep] : salesTeam;
+
+    const headers = [
+      'Representative Name',
+      'Employee ID',
+      'Territory / Zone',
+      'Cluster',
+      'Contact Phone',
+      'Assigned Kit',
+      'Market Status',
+      'Stop Time',
+      'Stop Type',
+      'Store / Task Title',
+      'Stop Description',
+      'Completed Status',
+      'GPS Verified',
+    ];
+
+    const rows: string[][] = [];
+
+    targets.forEach((rep) => {
+      const tasks = rep.tasksChecklist || [];
+      if (tasks.length === 0) {
+        rows.push([
+          `"${rep.name}"`,
+          `"${rep.empId || ''}"`,
+          `"${rep.zone || ''}"`,
+          `"${rep.cluster || ''}"`,
+          `"${rep.phone || ''}"`,
+          `"${rep.assignedKit || ''}"`,
+          `"${rep.status || ''}"`,
+          `"-"`,
+          `"-"`,
+          `"No scheduled field stops"`,
+          `"-"`,
+          `"Pending"`,
+          `"No"`,
+        ]);
+      } else {
+        tasks.forEach((t) => {
+          rows.push([
+            `"${rep.name}"`,
+            `"${rep.empId || ''}"`,
+            `"${rep.zone || ''}"`,
+            `"${rep.cluster || ''}"`,
+            `"${rep.phone || ''}"`,
+            `"${rep.assignedKit || ''}"`,
+            `"${rep.status || ''}"`,
+            `"${t.time || ''}"`,
+            `"${t.type || 'visit'}"`,
+            `"${(t.title || '').replace(/"/g, '""')}"`,
+            `"${(t.description || '').replace(/"/g, '""')}"`,
+            `"${t.completed ? 'Completed' : 'Pending'}"`,
+            `"${t.verifiedGps ? 'Yes' : 'No'}"`,
+          ]);
+        });
+      }
+    });
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const filename = onlyActiveRep
+      ? `soleflow_route_${(activeRep.name || 'rep').toLowerCase().replace(/\s+/g, '_')}_${todayStr}.csv`
+      : `soleflow_daily_field_routes_${todayStr}.csv`;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(
+      `Exported ${rows.length} route stops for ${onlyActiveRep ? activeRep.name : `${targets.length} representatives`}!`
+    );
+    setIsExportRoutesModalOpen(false);
+  };
+
+  const handlePrintManifest = (onlyActiveRep = false) => {
+    const todayStr = new Date().toLocaleDateString('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const targets = onlyActiveRep && activeRep?.id ? [activeRep] : salesTeam;
+
+    const printWin = window.open('', '_blank');
+    if (!printWin) {
+      showToast('Popup blocked. Please allow popups to view printable manifest.');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>SoleFlow Field Route Manifest - ${todayStr}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #0f172a; }
+          h1 { margin: 0 0 4px; font-size: 20px; color: #0f172a; }
+          .header-meta { font-size: 12px; color: #64748b; margin-bottom: 20px; display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+          .rep-section { margin-bottom: 24px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; }
+          .rep-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; }
+          .rep-title { font-weight: bold; font-size: 15px; }
+          .rep-meta { font-size: 12px; color: #475569; }
+          table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+          th { text-align: left; background: #f8fafc; padding: 8px; border-bottom: 1px solid #cbd5e1; font-weight: 600; color: #334155; }
+          td { padding: 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+          .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+          .badge-completed { background: #dcfce7; color: #166534; }
+          .badge-pending { background: #fef3c7; color: #92400e; }
+          .sign-block { margin-top: 36px; display: flex; justify-content: space-between; font-size: 12px; color: #475569; border-top: 1px solid #cbd5e1; padding-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="header-meta">
+          <div>
+            <h1>SoleFlow Field Sales Route Manifest</h1>
+            <div>Date: <strong>${todayStr}</strong> &bull; Total Reps: <strong>${targets.length}</strong></div>
+          </div>
+          <div style="text-align: right;">
+            <div><strong>Dispatch Operations Console</strong></div>
+            <div>Generated: ${new Date().toLocaleTimeString('en-IN')}</div>
+          </div>
+        </div>
+
+        ${targets
+          .map((rep) => {
+            const tasks = rep.tasksChecklist || [];
+            return `
+            <div class="rep-section">
+              <div class="rep-head">
+                <div>
+                  <span class="rep-title">${rep.name}</span> (${rep.empId || 'No Emp ID'})
+                  <div class="rep-meta">${rep.zone || ''} &bull; ${rep.cluster || ''} &bull; Tel: ${rep.phone || 'N/A'}</div>
+                </div>
+                <div style="text-align: right; font-size: 12px;">
+                  Status: <strong>${rep.status || 'In Market'}</strong> &bull; Target: ₹${((rep.monthlyTarget || 0) / 100000).toFixed(1)}L
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 75px;">Time</th>
+                    <th style="width: 105px;">Type</th>
+                    <th>Stop Title / Client</th>
+                    <th>Instructions / Details</th>
+                    <th style="width: 90px;">Status</th>
+                    <th style="width: 80px;">Sign / Done</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${
+                    tasks.length === 0
+                      ? `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 16px;">No route stops dispatched for today.</td></tr>`
+                      : tasks
+                          .map(
+                            (t) => `
+                        <tr>
+                          <td><strong>${t.time || '-'}</strong></td>
+                          <td><span class="badge" style="background:#e0f2fe; color:#0369a1;">${t.type || 'Visit'}</span></td>
+                          <td><strong>${t.title || '-'}</strong></td>
+                          <td style="color: #475569;">${t.description || '-'}</td>
+                          <td>
+                            <span class="badge ${t.completed ? 'badge-completed' : 'badge-pending'}">
+                              ${t.completed ? 'Completed' : 'Pending'}
+                            </span>
+                          </td>
+                          <td style="border: 1px dashed #cbd5e1; text-align: center;">[ &nbsp; ]</td>
+                        </tr>
+                      `
+                          )
+                          .join('')
+                  }
+                </tbody>
+              </table>
+            </div>
+          `;
+          })
+          .join('')}
+
+        <div class="sign-block">
+          <div>Field Supervisor Signature: __________________________</div>
+          <div>Territory Manager Approval: __________________________</div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    setIsExportRoutesModalOpen(false);
+  };
+
   const getTaskTypeBadge = (type: string) => {
     switch (type) {
       case 'visit':
@@ -154,7 +364,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
               variant="secondary"
               size="sm"
               icon={FileText}
-              onClick={() => showToast('Exported today’s field route manifest (PDF/Excel).')}
+              onClick={() => setIsExportRoutesModalOpen(true)}
               className="hidden sm:inline-flex"
             >
               Export Routes
@@ -805,6 +1015,135 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Export Daily Route Manifest Modal */}
+      {isExportRoutesModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-lg bg-surface border border-border rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  <FileSpreadsheet size={19} />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-base text-foreground">
+                    Export Field Route Manifest
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Download spreadsheets or print daily route manifests for field dispatch operations.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsExportRoutesModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground text-sm font-bold p-1 cursor-pointer transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Overview Stats */}
+            <div className="grid grid-cols-3 gap-2 p-3 bg-muted/40 rounded-2xl border border-border/60 text-center">
+              <div>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Field Reps</span>
+                <p className="text-sm font-extrabold text-foreground">{salesTeam.length}</p>
+              </div>
+              <div className="border-x border-border/60">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Total Stops</span>
+                <p className="text-sm font-extrabold text-primary">{totalVisitsGoal}</p>
+              </div>
+              <div>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Completed</span>
+                <p className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">{totalVisitsDone}</p>
+              </div>
+            </div>
+
+            {/* Export Options */}
+            <div className="space-y-3">
+              {/* Option 1: All Reps CSV */}
+              <div className="p-3.5 rounded-2xl border border-border bg-surface hover:border-primary/40 transition-all flex items-center justify-between gap-3 group">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Download size={14} className="text-primary" />
+                    <h4 className="text-xs font-bold text-foreground">All Representatives (CSV)</h4>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Complete manifest covering all {salesTeam.length} representatives and {totalVisitsGoal} route stops today.
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleExportRoutesCSV(false)}
+                  className="shrink-0 text-xs shadow-xs"
+                >
+                  Download CSV
+                </Button>
+              </div>
+
+              {/* Option 2: Active Rep CSV */}
+              {activeRep?.name && (
+                <div className="p-3.5 rounded-2xl border border-border bg-surface hover:border-primary/40 transition-all flex items-center justify-between gap-3 group">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <Download size={14} className="text-blue-500" />
+                      <h4 className="text-xs font-bold text-foreground">
+                        {activeRep.name}'s Route Only (CSV)
+                      </h4>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Targeted manifest for {activeRep.zone} ({activeRep.tasksChecklist?.length || 0} stops).
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleExportRoutesCSV(true)}
+                    className="shrink-0 text-xs"
+                  >
+                    Download Rep
+                  </Button>
+                </div>
+              )}
+
+              {/* Option 3: Printable PDF / Hard Copy Manifest */}
+              <div className="p-3.5 rounded-2xl border border-border bg-surface hover:border-primary/40 transition-all flex items-center justify-between gap-3 group">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Printer size={14} className="text-emerald-500" />
+                    <h4 className="text-xs font-bold text-foreground">Printable Manifest (PDF / Paper)</h4>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Formatted dispatch sheets with checkbox verifications and supervisor signoff blocks.
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handlePrintManifest(false)}
+                  className="shrink-0 text-xs"
+                >
+                  Print / Save PDF
+                </Button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end pt-2 border-t border-border">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsExportRoutesModalOpen(false)}
+                className="rounded-xl text-xs"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       )}

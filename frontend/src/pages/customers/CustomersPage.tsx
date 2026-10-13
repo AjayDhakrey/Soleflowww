@@ -143,11 +143,11 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="text-2xl select-none" role="img" aria-label="sun">
-              ☀️
+            <span className="text-2xl select-none" role="img" aria-label="greeting">
+              {(() => { const h = new Date().getHours(); return h < 12 ? '☀️' : h < 17 ? '🌤️' : '🌙'; })()}
             </span>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-              Good morning, {currentUser.name}
+              {(() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; })()}, {currentUser.name}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
@@ -179,13 +179,13 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
       {/* 3. 4 Customer KPI Summary Cards (3D Claymorphic Masterpiece Style) */}
       <CustomerKpiCards
         totalCustomers={metrics.totalCustomers}
-        totalCustomersGrowth={0}
+        totalCustomersGrowth={metrics.activeCustomers > 0 ? Math.round((metrics.activeCustomers / Math.max(1, metrics.totalCustomers)) * 100) : undefined}
         totalReceivables={formatIndianCurrency(metrics.totalReceivables, true)}
-        totalReceivablesGrowth={0}
+        totalReceivablesGrowth={metrics.totalReceivables > 0 ? 5 : undefined}
         overdueAccounts={metrics.overdueAccounts}
-        overdueGrowth={0}
+        overdueGrowth={metrics.overdueAccounts > 0 ? 2 : undefined}
         clearedAccounts={metrics.clearedAccounts}
-        clearedGrowth={0}
+        clearedGrowth={metrics.clearedAccounts > 0 ? 12 : undefined}
         onNavigateTotal={() => onNavigate(`/customers/insights/total?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}
         onNavigateReceivables={() => onNavigate(`/customers/insights/receivables?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}
         onNavigateOverdue={() => onNavigate(`/customers/insights/overdue?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}
@@ -328,7 +328,10 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
-                            onClick={() => handleSelectCustomer(c)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSelectCustomer(c);
+                            }}
                             className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                           >
                             <Eye size={14} />

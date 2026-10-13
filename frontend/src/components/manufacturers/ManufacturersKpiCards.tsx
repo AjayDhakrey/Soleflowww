@@ -222,78 +222,78 @@ export const ManufacturersKpiCards: React.FC<ManufacturersKpiCardsProps> = ({
   qcPassRate = '—',
 }) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Partner Foundries */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <PartnerFoundries3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Partner Foundries">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Partner Foundries">
             Partner Foundries
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
             title={typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
           >
             {typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Active plants">
-            Active plants
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Active partner facilities">
+            Active partner facilities
           </p>
         </div>
       </div>
 
       {/* 2. Cumulative Capacity */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <CumulativeCapacity3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Cumulative Capacity">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Cumulative Capacity">
             Cumulative Capacity
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate"
             title={cumulativeCapacity}
           >
             {cumulativeCapacity}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Across all assembly lines">
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Across all assembly lines">
             Across all assembly lines
           </p>
         </div>
       </div>
 
       {/* 3. Average On-Time Delivery */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <OnTimeDelivery3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Average On-Time Delivery">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Average On-Time Delivery">
             Average On-Time Delivery
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate"
             title={onTimeRate}
           >
             {onTimeRate}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Bilty dispatch punctuality">
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Bilty dispatch punctuality">
             Bilty dispatch punctuality
           </p>
         </div>
       </div>
 
       {/* 4. Average QC Pass Ratio */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <QcPassRatio3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Average QC Pass Ratio">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Average QC Pass Ratio">
             Average QC Pass Ratio
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
             title={qcPassRate}
           >
             {qcPassRate}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Zero-defect sole bonding">
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Zero-defect sole bonding">
             Zero-defect sole bonding
           </p>
         </div>

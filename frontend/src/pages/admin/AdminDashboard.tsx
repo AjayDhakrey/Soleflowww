@@ -193,33 +193,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           noPadding
         >
           {/* Segmented Funnel Stepper */}
-          <div className="p-4 border-b border-border bg-muted/15">
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,6rem),1fr))] gap-2">
+          <div className="p-3 sm:p-4 border-b border-border bg-muted/15">
+            <div className="flex items-stretch gap-1.5 sm:gap-2 overflow-x-auto pb-1 hide-scrollbar scroll-smooth">
               {ordersPipeline.stages.map((st) => {
                 const isActive = st.count > 0;
                 return (
                   <div
                     key={st.name}
                     onClick={() => onNavigate(`/admin/orders?status=${encodeURIComponent(st.name)}`)}
-                    className={`relative p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group min-w-0 overflow-hidden ${
+                    className={`relative p-2 sm:p-2.5 rounded-xl border transition-all duration-200 cursor-pointer flex flex-col justify-between text-left group min-w-[95px] sm:min-w-[105px] flex-1 shrink-0 overflow-hidden ${
                       isActive
-                        ? 'bg-surface border-primary/40 shadow-xs ring-1 ring-primary/20 hover:border-primary'
+                        ? 'bg-surface border-primary/50 shadow-xs ring-1 ring-primary/20 hover:border-primary hover:shadow-sm'
                         : 'bg-surface/80 border-border/80 hover:border-border hover:bg-muted/40'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-1.5 min-w-0">
-                      <span title={st.name} className={`text-[11px] font-bold uppercase tracking-wider truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    <div className="flex items-start justify-between gap-1 min-h-[28px] min-w-0">
+                      <span
+                        title={st.name}
+                        className={`text-[10px] font-bold uppercase tracking-wide leading-tight line-clamp-2 break-words ${
+                          isActive ? 'text-foreground' : 'text-muted-foreground'
+                        }`}
+                      >
                         {st.name}
                       </span>
                       {isActive && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0 mt-0.5" />
                       )}
                     </div>
-                    <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-1.5 gap-y-0.5">
-                      <span className={`text-lg font-bold font-display tracking-tight tabular-nums whitespace-nowrap ${isActive ? 'text-foreground' : 'text-muted-foreground/80'}`}>
+                    <div className="mt-2 pt-1 border-t border-border/40 flex items-baseline justify-between gap-1 min-w-0">
+                      <span
+                        className={`text-base sm:text-lg font-bold font-display tracking-tight tabular-nums shrink-0 ${
+                          isActive ? 'text-foreground' : 'text-muted-foreground/80'
+                        }`}
+                      >
                         {st.count}
                       </span>
-                      <span className="text-[11px] font-medium text-muted-foreground tabular-nums whitespace-nowrap" title={`₹${st.value.toLocaleString('en-IN')}`}>
+                      <span
+                        className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground tabular-nums truncate text-right"
+                        title={`₹${st.value.toLocaleString('en-IN')}`}
+                      >
                         {formatLakh(st.value)}
                       </span>
                     </div>
@@ -237,14 +249,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               description="Wholesale bookings will appear here."
             />
           ) : (
-            <Table>
+            <Table className="min-w-[480px]">
               <TableHeader>
-                <TableRow>
-                  <TableHead>Order #</TableHead>
-                  <TableHead>Retail Store</TableHead>
-                  <TableHead>Pairs</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Net Payable</TableHead>
+                <TableRow className="border-b border-border bg-muted/20">
+                  <TableHead className="py-2.5 px-3 text-xs font-semibold">Order #</TableHead>
+                  <TableHead className="py-2.5 px-3 text-xs font-semibold">Retail Store</TableHead>
+                  <TableHead className="py-2.5 px-3 text-xs font-semibold">Pairs</TableHead>
+                  <TableHead className="py-2.5 px-3 text-xs font-semibold">Status</TableHead>
+                  <TableHead className="py-2.5 px-3 pr-4 text-xs font-semibold text-right whitespace-nowrap">Net Payable</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -254,29 +266,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     onClick={() => onNavigate(`/admin/orders?inspect=${ord.id}`)}
                     className="cursor-pointer hover:bg-muted/40 transition-colors"
                   >
-                    <TableCell className="font-mono font-bold text-xs text-primary">
+                    <TableCell className="py-2.5 px-3 font-mono font-bold text-xs text-primary whitespace-nowrap">
                       {ord.id}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                    <TableCell className="py-2.5 px-3">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
                           <Icons.Store size={14} />
                         </div>
-                        <div>
-                          <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-foreground text-xs block truncate max-w-[120px] sm:max-w-[140px]" title={ord.customerName}>
                             {ord.customerName}
                           </span>
-                          <span className="text-[11px] text-muted-foreground">{ord.customerCity || 'Agra'}</span>
+                          <span className="text-[11px] text-muted-foreground block truncate">{ord.customerCity || 'Agra'}</span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">
+                    <TableCell className="py-2.5 px-3 font-mono text-xs whitespace-nowrap">
                       <span className="inline-flex items-center gap-1 font-semibold text-foreground">
                         <Icons.Designs size={12} className="text-muted-foreground" />
                         {ord.pairsCount || 0} Pairs
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2.5 px-3 whitespace-nowrap">
                       <StatusBadge
                         variant={
                           ord.status === 'Delivered'
@@ -293,8 +305,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                         {ord.status}
                       </StatusBadge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <TableMoneyCell amount={ord.netPayable || ord.subtotal || 0} isBold />
+                    <TableCell className="py-2.5 px-3 pr-4 text-right whitespace-nowrap">
+                      <TableMoneyCell amount={ord.netPayable || ord.subtotal || 0} className="text-right text-xs" isBold />
                     </TableCell>
                   </TableRow>
                 ))}

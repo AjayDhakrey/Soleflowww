@@ -9,6 +9,7 @@ import { adminRouter } from './routes/admin.js';
 import { platformRouter } from './routes/platform.js';
 import { reportsRouter } from './routes/reports.js';
 import { documentsRouter } from './routes/documents.js';
+import { salesRouter } from './routes/sales.js';
 import { aiRouter } from './routes/ai.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { supabaseAdmin } from './lib/supabaseAdmin.js';
@@ -78,6 +79,8 @@ app.use('/api/platform', platformRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api', documentsRouter); // Allows both /api/documents/orders/:id/pdf and /api/orders/:id/pdf
+app.use('/api/sales-team', salesRouter);
+app.use('/api/sales', salesRouter);
 app.use('/api/ai', aiRouter);
 
 // 404 handler for API routes

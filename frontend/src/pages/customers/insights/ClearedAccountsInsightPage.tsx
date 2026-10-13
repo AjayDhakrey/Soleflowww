@@ -35,6 +35,7 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
     setSelectedCustomer,
     setIsShareModalOpen,
     setIsCreateOrderModalOpen,
+    addFollowUp,
     showToast,
   } = useApp();
   const metrics = useCustomerMetrics();
@@ -92,7 +93,8 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
 
   const handleOpenClient = (cust: Customer) => {
     setSelectedCustomer(cust);
-    onNavigate(currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers');
+    const base = currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers';
+    onNavigate(`${base}/${cust.id}?from=${base}`);
   };
 
   const handleShareLookbook = (cust: Customer) => {
@@ -105,7 +107,19 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
     setIsCreateOrderModalOpen(true);
   };
 
-  const handleCreateFollowUp = (cust: Customer) => {
+  const handleCreateFollowUp = async (cust: Customer) => {
+    await addFollowUp({
+      customerId: cust.id,
+      customerName: cust.businessName,
+      customerCity: cust.city,
+      phone: cust.phone,
+      reason: 'Seasonal Re-order Pitch',
+      time: '11:00 AM',
+      status: 'today',
+      date: new Date().toISOString().split('T')[0],
+      amountDue: cust.amountDue || 0,
+      notes: 'Cleared account follow-up for new seasonal booking',
+    });
     showToast(`Re-order sales follow-up scheduled for ${cust.businessName}`);
   };
 
@@ -191,7 +205,7 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
           </button>
           <button
             type="button"
-            onClick={() => setIsShareModalOpen(true)}
+            onClick={() => showToast('Select a client row below to share the lookbook with them.')}
             className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Share2 size={16} />
@@ -562,6 +576,16 @@ export const ClearedAccountsInsightPage: React.FC<ClearedAccountsInsightPageProp
                           >
                             <Plus size={14} strokeWidth={2.5} />
                             <span>Order</span>
+                          </button>
+
+                          {/* Schedule Follow-up */}
+                          <button
+                            type="button"
+                            onClick={() => handleCreateFollowUp(cust)}
+                            className="p-1.5 rounded-lg border border-border hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-600 dark:text-amber-400 transition-colors cursor-pointer"
+                            title="Schedule Re-order Follow-up"
+                          >
+                            <Calendar size={15} />
                           </button>
 
                           {/* Open Client */}

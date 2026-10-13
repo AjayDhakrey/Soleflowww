@@ -131,7 +131,19 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
   const handleScheduleFollowUp = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
-    await addFollowUp({ customerId: customer.id, customerName: customer.businessName, customerCity: customer.city, phone: customer.phone, reason: 'call', status: 'today', date: new Date().toISOString(), notes: 'Follow-up scheduled from customer menu' });
+    await addFollowUp({
+      customerId: customer.id,
+      customerName: customer.businessName,
+      customerCity: customer.city,
+      phone: customer.phone,
+      reason: 'Sales Follow-up & Review',
+      time: '11:00 AM',
+      status: 'today',
+      date: new Date().toISOString().split('T')[0],
+      amountDue: customer.amountDue || 0,
+      notes: 'Follow-up scheduled from customer menu',
+    });
+    showToast(`Follow-up scheduled for ${customer.businessName}`);
   };
 
   const handleCopyId = (e: React.MouseEvent) => {

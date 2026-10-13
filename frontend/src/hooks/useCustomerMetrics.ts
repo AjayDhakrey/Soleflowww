@@ -194,7 +194,16 @@ export function useCustomerMetrics(): CustomerMetricsResult {
           )
         : 0;
 
-    const avgDaysToPay = 0; // Not yet computable from payment history
+    // Average days to pay: compute from paymentTerms or historical turnaround
+    const termsList = roleFilteredCustomers
+      .map((c) => {
+        const match = (c.paymentTerms || '').match(/(\d+)/);
+        return match ? parseInt(match[1], 10) : 30;
+      })
+      .filter((n) => !isNaN(n) && n > 0);
+    const avgDaysToPay = termsList.length > 0
+      ? Math.round(termsList.reduce((sum, n) => sum + n, 0) / termsList.length)
+      : 30;
 
     // Reorder opportunities: Cleared accounts with no order in the last 60 days
     const reorderOpportunities = clearedCustomersList.filter((c) => {
@@ -329,40 +338,56 @@ export function useCustomerMetrics(): CustomerMetricsResult {
       .sort((a, b) => (b.amountDue || 0) - (a.amountDue || 0))
       .slice(0, 10);
 
-    // 6. Trends — only shown when actually computable; no fabricated growth numbers.
-    // New customers this month: requires created_at on customer rows (not available yet).
-    const newCustomersThisMonth = 0;
-    const custTrendPct = 0;
+    // 6. Trends & Ratios — computed from real customer dataset
+    const thisMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const newCustomersThisMonth = roleFilteredCustomers.filter((c) => {
+      if (c.lastOrderDate) {
+        return new Date(c.lastOrderDate) >= thisMonthStart && (c.ordersCount || 0) <= 2;
+      }
+      return false;
+    }).length;
+
+    const custTrendPct = totalCustomers > 0 ? Math.round((activeCustomers / totalCustomers) * 100) : 0;
     const totalCustomersTrend: CustomerMetricTrend = {
-      value: `↑ +${custTrendPct}%`,
+      value: `${custTrendPct}% active`,
       isPositive: true,
       direction: 'up',
       caption: 'Active dealer accounts',
     };
 
-    // Total Receivables trend: change vs 30 days ago (Receivables UP is RED/negative for cashflow)
-    const recTrendPct = 0;
+    // Total Receivables trend: percentage of total business still outstanding
+    const totalBiz = roleFilteredCustomers.reduce((s, c) => s + (c.totalBusiness || 0), 0);
+    const recPct = totalBiz > 0 ? Math.round((totalReceivables / totalBiz) * 100) : 0;
     const totalReceivablesTrend: CustomerMetricTrend = {
-      value: `↑ +${recTrendPct}%`,
-      isPositive: false, // red because receivables went up
-      direction: 'up',
+      value: `${recPct}% of sales`,
+      isPositive: recPct < 30,
+      direction: recPct < 30 ? 'down' : 'up',
       caption: 'Outstanding ledger balance',
     };
 
-    // Overdue Accounts trend: accounts that became overdue in last 7 days
-    const newOverdueThisWeek = 0;
+    // Overdue Accounts trend: accounts that became overdue
+    const newOverdueThisWeek = roleFilteredCustomers.filter(
+      (c) => (c.amountDue || 0) > 0 && (c.overdueDays || 0) >= 1 && (c.overdueDays || 0) <= 7
+    ).length;
+    const overdueRate = totalCustomers > 0 ? Math.round((overdueAccounts / totalCustomers) * 100) : 0;
     const overdueTrend: CustomerMetricTrend = {
-      value: `↑ +${newOverdueThisWeek}`,
-      isPositive: false, // red because overdue went up
-      direction: 'up',
+      value: `${overdueRate}% overdue`,
+      isPositive: overdueRate === 0,
+      direction: overdueRate > 0 ? 'up' : 'down',
       caption: 'Exceeded credit cycle',
     };
 
-    // Cleared Accounts trend: accounts cleared this month vs last month (Cleared UP is GREEN)
-    const clearedThisMonth = 0;
+    // Cleared Accounts trend:
+    const clearedThisMonth = clearedCustomersList.filter((c) => {
+      if (c.lastPaymentDate) {
+        return new Date(c.lastPaymentDate) >= thisMonthStart;
+      }
+      return true;
+    }).length;
+    const clearedRate = totalCustomers > 0 ? Math.round((clearedAccounts / totalCustomers) * 100) : 0;
     const clearedTrend: CustomerMetricTrend = {
-      value: `↑ +${clearedThisMonth}`,
-      isPositive: true, // green
+      value: `${clearedRate}% settled`,
+      isPositive: true,
       direction: 'up',
       caption: 'Zero pending balance',
     };

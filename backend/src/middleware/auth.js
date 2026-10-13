@@ -35,20 +35,37 @@ export async function verifyAuthToken(req, res, next) {
       return res.status(401).json({ error: 'Invalid or expired session token' });
     }
 
-    // Query profiles table for role and org membership
+    // Query profiles table for role and org membership using valid columns
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('role, name, phone, zone, org_id')
+      .select('role, full_name, phone, org_id, sales_team_id')
       .eq('id', user.id)
       .maybeSingle();
 
+    let userZone = user.user_metadata?.zone || null;
+    let userCluster = user.user_metadata?.cluster || null;
+
+    if (!userZone && supabaseAdmin) {
+      const { data: salesRep } = await supabaseAdmin
+        .from('sales_team')
+        .select('zone, cluster')
+        .eq('id', profile?.sales_team_id || user.id)
+        .maybeSingle();
+      if (salesRep) {
+        userZone = salesRep.zone;
+        userCluster = salesRep.cluster;
+      }
+    }
+
     req.user = {
       id: user.id,
+      salesTeamId: profile?.sales_team_id || user.id,
       email: user.email,
       role: profile?.role || user.app_metadata?.role || user.user_metadata?.role || 'salesperson',
-      name: profile?.name || user.email?.split('@')[0],
-      phone: profile?.phone,
-      zone: profile?.zone,
+      name: profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0],
+      phone: profile?.phone || user.user_metadata?.phone,
+      zone: userZone,
+      cluster: userCluster,
       orgId: profile?.org_id || null,
     };
 
