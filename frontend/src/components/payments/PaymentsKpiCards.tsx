@@ -422,78 +422,78 @@ export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
   collectedCaption = 'MTD bank verified realizations',
 }) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
       {/* 1. Total Receivables */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-emerald-100/90 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <TotalReceivablesWallet3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Receivables">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Total Receivables">
             Total Receivables
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
             title={totalReceivables}
           >
             {totalReceivables}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={receivablesCaption}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={receivablesCaption}>
             {receivablesCaption}
           </p>
         </div>
       </div>
 
       {/* 2. Due This Week */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-amber-100/90 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <DueThisWeekCalendar3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Due This Week">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Due This Week">
             Due This Week
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
             title={dueThisWeek}
           >
             {dueThisWeek}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={dueThisWeekCaption}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={dueThisWeekCaption}>
             {dueThisWeekCaption}
           </p>
         </div>
       </div>
 
-      {/* 3. Critical (<= 30 Days / > 30 Days) */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-pink-100/90 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      {/* 3. Critical (> 30 Days) */}
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <CriticalOverdueAlert3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Critical (≤ 30 Days)">
-            Critical (≤ 30 Days)
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Critical (> 30 Days)">
+            Critical (&gt; 30 Days)
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-400 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate"
             title={criticalAmount}
           >
             {criticalAmount}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={criticalCaption}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={criticalCaption}>
             {criticalCaption}
           </p>
         </div>
       </div>
 
       {/* 4. Collected This Month */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-teal-100/90 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <CollectedBank3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Collected (This Month)">
+          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Collected (This Month)">
             Collected (This Month)
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 mt-0.5 font-display wrap-anywhere"
+            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
             title={collectedThisMonth}
           >
             {collectedThisMonth}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={collectedCaption}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={collectedCaption}>
             {collectedCaption}
           </p>
         </div>

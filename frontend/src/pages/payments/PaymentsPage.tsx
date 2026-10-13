@@ -66,10 +66,14 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
   }, [overdueCustomers]);
 
   const dueThisWeekAmount = useMemo(() => {
-    return overdueCustomers
-      .filter((c) => (c.overdueDays || 0) <= 7)
+    return customers
+      .filter(
+        (c) =>
+          Number(c.amountDue || 0) > 0 &&
+          (c.status === 'due_soon' || ((c.overdueDays || 0) >= 1 && (c.overdueDays || 0) <= 7))
+      )
       .reduce((sum, c) => sum + Number(c.amountDue || 0), 0);
-  }, [overdueCustomers]);
+  }, [customers]);
 
   const now = new Date();
   const collectedThisMonth = useMemo(() => {
@@ -86,9 +90,11 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
     return overdueCustomers.filter((c) => {
       const q = search.toLowerCase();
       const matchesSearch =
-        c.businessName.toLowerCase().includes(q) ||
-        c.city.toLowerCase().includes(q) ||
-        c.propName.toLowerCase().includes(q);
+        (c.businessName || '').toLowerCase().includes(q) ||
+        (c.city || '').toLowerCase().includes(q) ||
+        (c.propName || '').toLowerCase().includes(q) ||
+        (c.phone || '').includes(q) ||
+        (c.whatsapp || '').includes(q);
 
       const matchesAging =
         agingFilter === 'all'
@@ -96,7 +102,9 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
           : agingFilter === 'critical'
           ? (c.overdueDays || 0) > 30
           : agingFilter === 'overdue'
-          ? (c.overdueDays || 0) > 15
+          ? (c.overdueDays || 0) > 15 && (c.overdueDays || 0) <= 30
+          : agingFilter === 'current'
+          ? (c.overdueDays || 0) <= 15
           : true;
 
       return matchesSearch && matchesAging;
@@ -107,10 +115,13 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
     return payments.filter((p) => {
       const q = search.toLowerCase();
       const matchesSearch =
-        p.customerName.toLowerCase().includes(q) ||
+        (p.customerName || '').toLowerCase().includes(q) ||
         (p.receiptNumber && p.receiptNumber.toLowerCase().includes(q)) ||
         (p.utrRef && p.utrRef.toLowerCase().includes(q)) ||
-        (p.customerCity && p.customerCity.toLowerCase().includes(q));
+        (p.chequeNo && p.chequeNo.toLowerCase().includes(q)) ||
+        (p.collectedBy && p.collectedBy.toLowerCase().includes(q)) ||
+        (p.customerCity && p.customerCity.toLowerCase().includes(q)) ||
+        p.id.toLowerCase().includes(q);
 
       const matchesMethod =
         paymentMethodFilter === 'all' || p.paymentMethod === paymentMethodFilter;
@@ -122,14 +133,14 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
   const handleExportCSV = () => {
     const headers = ['Customer ID', 'Store Name', 'Proprietor', 'City', 'Phone', 'Credit Limit', 'Overdue Days', 'Outstanding Due (INR)'];
     const rows = filteredOverdue.map((c) => [
-      c.id,
-      `"${c.businessName}"`,
-      `"${c.propName}"`,
-      c.city,
-      c.phone,
-      c.creditLimit,
+      `"${c.id}"`,
+      `"${(c.businessName || '').replace(/"/g, '""')}"`,
+      `"${(c.propName || '').replace(/"/g, '""')}"`,
+      `"${(c.city || '').replace(/"/g, '""')}"`,
+      `"${(c.phone || '').replace(/"/g, '""')}"`,
+      c.creditLimit || 0,
       c.overdueDays || 0,
-      c.amountDue,
+      c.amountDue || 0,
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -201,11 +212,11 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
       />
 
       {/* Tab Switcher */}
-      <div className="flex items-center gap-3 border-b border-border/80 pb-1">
+      <div className="flex items-center gap-2 sm:gap-3 border-b border-border/80 pb-1 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab('receivables')}
-          className={`relative px-4 py-2.5 text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+          className={`relative px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === 'receivables'
               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 shadow-2xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
@@ -220,7 +231,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
         <button
           type="button"
           onClick={() => setActiveTab('payments')}
-          className={`relative px-4 py-2.5 text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+          className={`relative px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === 'payments'
               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 shadow-2xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
@@ -267,8 +278,9 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ onNavigate }) => {
                 onChange={(e) => setAgingFilter(e.target.value)}
                 options={[
                   { label: 'All Aging Buckets', value: 'all' },
-                  { label: 'Overdue > 15 Days', value: 'overdue' },
-                  { label: 'Critical > 30 Days', value: 'critical' },
+                  { label: 'Due Soon / Current (≤ 15 Days)', value: 'current' },
+                  { label: 'Moderate Overdue (16–30 Days)', value: 'overdue' },
+                  { label: 'Critical Overdue (> 30 Days)', value: 'critical' },
                 ]}
               />
             </FilterBar>
