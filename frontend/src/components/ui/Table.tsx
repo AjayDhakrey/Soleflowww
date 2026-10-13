@@ -108,10 +108,10 @@ export const TableAvatarCell: React.FC<TableAvatarCellProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex items-center gap-3.5 py-1 ${className}`}>
+    <div className={`flex items-center gap-3.5 py-1 min-w-0 ${className}`}>
       <Avatar name={name} src={avatarSrc} size="lg" />
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
           <p className="font-semibold text-foreground text-sm leading-tight truncate">
             {name}
           </p>

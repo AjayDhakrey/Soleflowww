@@ -751,23 +751,79 @@
 
 
 /* ==========================================================================
-   Zoom-proof layout foundations (see TEXT_OVERFLOW_ZOOM_FIX_PROMPT.md)
-   Keeps content inside its box at any browser zoom (50%-200%) or window
-   width: flex/grid children may shrink below their content size, text
-   truncates or wraps instead of overlapping sibling cards, and cards can
-   adapt to their own width via container queries.
+   Zoom-proof layout & box-containment system (50%–200% browser zoom)
+   Prevents text from spilling outside badges, pills, buttons, or cards, and
+   prevents sibling elements from overlapping at any zoom level or viewport.
    ========================================================================== */
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
-/* Flex/grid children may shrink below their content size so inner text
-   truncates/wraps instead of overlapping neighbouring cards. */
-*,
-*::before,
-*::after {
+/* Structural block/flex/grid containers may shrink below their intrinsic
+   content size so inner text wraps or truncates instead of pushing out of
+   parent cards. Inline pills/badges/buttons are intentionally excluded so
+   flexbox never crushes a pill box narrower than its text label. */
+div,
+section,
+article,
+main,
+aside,
+header,
+footer,
+nav,
+form,
+fieldset,
+figure,
+figcaption,
+dl,
+dd,
+dt,
+li,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   min-width: 0;
+}
+
+/* Ensure headings, paragraphs, and list items break long words/tokens
+   cleanly rather than overflowing their enclosing card border on zoom-in. */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+dd,
+dt,
+blockquote {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Universal Badge, Pill, Chip & Button Box-Containment:
+   Any padded rounded inline element (badge/pill/tag/button) must keep its
+   text strictly inside its border box and never get crushed narrower than
+   its label inside un-wrapped flex rows. */
+span[class*="rounded-"][class*="px-"],
+a[class*="rounded-"][class*="px-"],
+button[class*="rounded-"][class*="px-"] {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+span[class*="rounded-full"][class*="px-"],
+span[class*="rounded-lg"][class*="px-"],
+span[class*="rounded-md"][class*="px-"] {
+  flex-shrink: 0;
 }
 
 /* Exception: direct children of scrollable strips keep their natural width

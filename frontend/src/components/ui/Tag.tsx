@@ -20,9 +20,9 @@ export const Tag: React.FC<TagProps> = ({
 }) => {
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 max-w-full overflow-hidden text-ellipsis ${variantStyles[variant]} ${className}`}
     >
-      {children}
+      <span className="truncate">{children}</span>
     </span>
   );
 };

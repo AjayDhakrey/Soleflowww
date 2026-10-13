@@ -79,25 +79,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     <div className="p-4 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 max-w-[1720px] w-full mx-auto pb-20 md:pb-10 bg-background text-foreground animate-in fade-in duration-200">
       {/* 1. Header with Greeting, Period Filter, and Action Buttons */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/80 pb-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl select-none">{greeting.icon}</span>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-2xl select-none shrink-0">{greeting.icon}</span>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground break-words">
               {greeting.text}, {currentUser.name}
             </h1>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
-              Live Operations
+            <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse shrink-0" />
+              <span>Live Operations</span>
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
             {todayDateFormatted} • Consolidated commercial overview across orders, collections, production, and accounts.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Period Selector Tabs */}
-          <div className="flex items-center bg-muted/70 p-1 rounded-xl border border-border">
+          <div className="flex items-center flex-wrap bg-muted/70 p-1 rounded-xl border border-border max-w-full">
             {(
               [
                 { label: 'Today', value: 'today' },
@@ -110,7 +110,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 key={tab.value}
                 type="button"
                 onClick={() => setPeriod(tab.value)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   period === tab.value
                     ? 'bg-surface text-foreground shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -553,16 +553,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               <div
                 key={m.id}
                 onClick={() => onNavigate('/admin/manufacturers')}
-                className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors cursor-pointer"
+                className="p-4 flex flex-wrap items-center justify-between gap-2 hover:bg-muted/30 transition-colors cursor-pointer"
               >
-                <div>
-                  <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
-                    <Icons.Manufacturers size={15} className="text-blue-600" />
-                    <span>{m.name}</span>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-2 min-w-0">
+                    <Icons.Manufacturers size={15} className="text-blue-600 shrink-0" />
+                    <span className="truncate">{m.name}</span>
                   </h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{m.plant}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{m.plant}</p>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <span className="font-mono font-bold text-xs text-foreground block">
                     {m.activeOrdersCount} Active Batches • {m.onTimeRate}% On-Time
                   </span>
@@ -576,15 +576,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
           {/* Delayed Production Alert Banner */}
           {productionSummary.delayedOrders.length > 0 && (
-            <div className="p-3.5 bg-rose-50/80 dark:bg-rose-950/40 border-t border-rose-200 dark:border-rose-900/60 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-semibold">
-                <Icons.Overdue size={15} />
+            <div className="p-3.5 bg-rose-50/80 dark:bg-rose-950/40 border-t border-rose-200 dark:border-rose-900/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-semibold min-w-0">
+                <Icons.Overdue size={15} className="shrink-0" />
                 <span>{productionSummary.delayedOrders.length} Order(s) past promised delivery date</span>
               </div>
               <button
                 type="button"
                 onClick={() => onNavigate('/admin/orders?filter=delayed')}
-                className="text-rose-700 dark:text-rose-300 underline font-bold cursor-pointer"
+                className="text-rose-700 dark:text-rose-300 underline font-bold cursor-pointer shrink-0"
               >
                 Inspect Delayed
               </button>
@@ -614,9 +614,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               <div
                 key={d.id}
                 onClick={() => onNavigate('/admin/designs')}
-                className="p-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors cursor-pointer"
+                className="p-3.5 flex flex-wrap items-center justify-between gap-2 hover:bg-muted/30 transition-colors cursor-pointer"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-muted overflow-hidden shrink-0 border border-border flex items-center justify-center">
                     {d.image ? (
                       <img
@@ -628,17 +628,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       <Icons.Designs size={18} className="text-muted-foreground opacity-50" />
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h5 className="font-bold text-xs text-foreground truncate max-w-[160px] sm:max-w-xs">
                       {d.name}
                     </h5>
-                    <span className="text-[11px] font-mono text-muted-foreground">
+                    <span className="text-[11px] font-mono text-muted-foreground block truncate">
                       {d.articleCode} • {d.category}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <span className="font-bold font-mono text-xs text-foreground block">
                     {d.orderedPairs || 0} Pairs
                   </span>
@@ -675,11 +675,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 onClick={() => onNavigate('/admin/sales-team')}
                 className="p-4 space-y-2 hover:bg-muted/30 transition-colors cursor-pointer"
               >
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
                     <TableAvatarCell name={rep.name} subtext={rep.cluster || rep.zone} />
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <span className="font-mono font-bold text-foreground">
                       {formatLakh(rep.bookedThisMonth)}
                     </span>
@@ -733,10 +733,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               {approvalsSummary.pendingDiscounts.map((d) => (
                 <div key={d.id} className="p-3.5 space-y-2 hover:bg-muted/30 transition-colors">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-xs text-foreground">{d.clientName}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-300">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold whitespace-nowrap shrink-0 bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-300">
                           {d.requestedPercent}% Discount Requested
                         </span>
                       </div>
@@ -746,7 +746,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center justify-end gap-2 flex-wrap">
                     <Button
                       variant="secondary"
                       size="sm"
@@ -769,16 +769,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
               {/* 2. Orders Awaiting Approval */}
               {approvalsSummary.ordersAwaitingReview.map((ord) => (
-                <div key={ord.id} className="p-3.5 flex items-center justify-between gap-2 hover:bg-muted/30 transition-colors">
-                  <div>
-                    <span className="font-bold text-xs text-foreground block">
+                <div key={ord.id} className="p-3.5 flex flex-wrap items-center justify-between gap-2 hover:bg-muted/30 transition-colors">
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-foreground block truncate">
                       Order #{ord.id} — {ord.customerName}
                     </span>
                     <span className="text-[11px] text-muted-foreground font-mono">
                       {ord.pairsCount} Pairs • Value: ₹{(ord.netPayable || ord.subtotal || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap shrink-0">
                     <Button
                       variant="secondary"
                       size="sm"

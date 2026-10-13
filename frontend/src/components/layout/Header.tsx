@@ -141,9 +141,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
       {/* Super Admin Read-Only View Mode Sticky Amber Banner */}
       <ViewModeBanner onExitNavigate={() => onNavigate('/platform/accounts')} />
 
-      <header className="h-[72px] bg-surface border-b border-border px-4 md:px-8 flex items-center justify-between gap-4">
+      <header className="min-h-[72px] py-2 bg-surface border-b border-border px-4 md:px-8 flex items-center justify-between gap-4">
         {/* Left: Mobile Drawer Trigger + Search Bar in one line */}
-        <div className="flex items-center gap-3 flex-1 max-w-[640px]">
+        <div className="flex items-center gap-3 flex-1 min-w-0 max-w-[640px]">
           <button
             type="button"
             onClick={toggleMobileSidebar}
@@ -155,7 +155,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         </button>
 
         {/* Global Search */}
-        <div className="flex-1 relative" ref={searchRef}>
+        <div className="flex-1 min-w-0 relative" ref={searchRef}>
           <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-subtle-foreground">
             <Icons.Search size={18} strokeWidth={1.75} />
           </div>

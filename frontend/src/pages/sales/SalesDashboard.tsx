@@ -94,21 +94,21 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
       {/* 1. Header with Greeting, Period Selector, and Quick Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl select-none">{greeting.icon}</span>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-2xl select-none shrink-0">{greeting.icon}</span>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight break-words">
               {greeting.text}, {currentUser.name}
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
             {todayDateFormatted} • Field Sales & Store Route Portal (Territory Performance)
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Period Selector */}
-          <div className="flex items-center bg-muted p-1 rounded-xl border border-border">
+          <div className="flex items-center flex-wrap bg-muted p-1 rounded-xl border border-border max-w-full">
             {(
               [
                 { label: 'Today', value: 'today' },
@@ -121,7 +121,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 key={tab.value}
                 type="button"
                 onClick={() => setPeriod(tab.value)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   period === tab.value
                     ? 'bg-surface text-foreground shadow-2xs font-bold'
                     : 'text-muted-foreground hover:text-foreground'

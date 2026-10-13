@@ -125,12 +125,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold select-none whitespace-nowrap border ${styles.bg} ${styles.text} ${styles.border} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold select-none whitespace-nowrap shrink-0 max-w-full overflow-hidden border ${styles.bg} ${styles.text} ${styles.border} ${className}`}
     >
       {shouldRenderDot && (
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${styles.dot}`} />
       )}
-      {label}
+      <span className="truncate">{label}</span>
     </span>
   );
 };

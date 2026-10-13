@@ -45,7 +45,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       disabled={disabled || isLoading}
-      className={`inline-flex items-center justify-center transition-colors duration-150 select-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      className={`inline-flex items-center justify-center whitespace-nowrap shrink-0 max-w-full overflow-hidden transition-colors duration-150 select-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {isLoading ? (
@@ -54,7 +54,7 @@ export const Button: React.FC<ButtonProps> = ({
         <Icon size={size === 'sm' ? 16 : 18} strokeWidth={1.75} className="shrink-0" />
       ) : null}
 
-      {children}
+      <span className="truncate">{children}</span>
 
       {!isLoading && Icon && iconPosition === 'right' ? (
         <Icon size={size === 'sm' ? 16 : 18} strokeWidth={1.75} className="shrink-0" />

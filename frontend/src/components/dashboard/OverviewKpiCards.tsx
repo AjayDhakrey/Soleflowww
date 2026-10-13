@@ -304,7 +304,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
   // negative deltas render a rose down-arrow chip.
   const renderGrowthChip = (growth: number, caption: string) => (
     <span
-      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border shadow-2xs flex-wrap min-w-0 max-w-full ${
+      className={`inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs max-w-full overflow-hidden ${
         growth > 0
           ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300'
           : growth < 0
@@ -312,15 +312,15 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
           : 'bg-muted border-border text-muted-foreground'
       }`}
     >
-      <span className="font-bold whitespace-nowrap">
+      <span className="font-bold whitespace-nowrap shrink-0">
         {growth > 0 ? `↑ ${growth}%` : growth < 0 ? `↓ ${Math.abs(growth)}%` : '—'}
       </span>
-      <span className="text-[11px] opacity-80 whitespace-nowrap">{caption}</span>
+      <span className="text-[11px] opacity-80 truncate">{caption}</span>
     </span>
   );
 
   return (
-    <div className="rounded-2xl border border-border/80 bg-border/60 dark:bg-border/40 overflow-hidden shadow-2xs grid grid-cols-[repeat(auto-fit,minmax(min(100%,9.5rem),1fr))] gap-px">
+    <div className="rounded-2xl border border-border/80 bg-border/60 dark:bg-border/40 overflow-hidden shadow-2xs grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-px">
       {/* 1. SALES BOOKED */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
@@ -395,9 +395,9 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 shadow-2xs flex-wrap min-w-0 max-w-full">
+          <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 shadow-2xs max-w-full overflow-hidden">
             <Icons.FileText size={11} className="shrink-0 opacity-75" />
-            <span className="whitespace-nowrap">Across {receivablesAccountsCount} accounts</span>
+            <span className="truncate">Across {receivablesAccountsCount} accounts</span>
           </span>
         </div>
       </div>
@@ -424,9 +424,9 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 shadow-2xs flex-wrap min-w-0 max-w-full">
+          <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 shadow-2xs max-w-full overflow-hidden">
             <Icons.TrendingUp size={11} className="shrink-0 opacity-75" />
-            <span className="whitespace-nowrap">{openOrdersValue} pipeline</span>
+            <span className="truncate">{openOrdersValue} pipeline</span>
           </span>
         </div>
       </div>
@@ -453,9 +453,9 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         </div>
 
         <div className="mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 shadow-2xs flex-wrap min-w-0 max-w-full">
+          <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 shadow-2xs max-w-full overflow-hidden">
             <Icons.Clients size={11} className="shrink-0 opacity-75" />
-            <span className="whitespace-nowrap">{totalRegisteredBuyers} buyers</span>
+            <span className="truncate">{totalRegisteredBuyers} buyers</span>
           </span>
         </div>
       </div>
