@@ -712,7 +712,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           body: JSON.stringify({
             ...data,
             email: cleanEmail,
-            orgId: orgId || DEFAULT_ORG_ID,
+            orgId: orgId || '00000000-0000-0000-0000-000000000001',
           }),
         });
       } catch (backendErr) {
@@ -723,7 +723,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const newRep: Salesperson = {
         id: repId,
         name: data.name.trim(),
-        roleTitle: targetRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
+        roleTitle: targetRole === 'admin' ? 'Territory Lead' : 'Field Rep',
         photo:
           targetRole === 'admin'
             ? MOCK_USERS.admin.avatar
@@ -808,7 +808,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       addAuditEvent({
         action: `Created ${targetRole === 'admin' ? 'Administrator' : 'Sales Representative'} Account`,
-        recordType: 'System Update',
+        recordType: 'Salesperson',
         recordId: repId,
         recordTitle: `${data.name} (${cleanEmail})`,
         newValue: `Login credentials generated for ${cleanEmail} with role: ${targetRole}`,

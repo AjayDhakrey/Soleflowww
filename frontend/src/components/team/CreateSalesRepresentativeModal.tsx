@@ -428,7 +428,7 @@ Welcome to the SoleFlow Sales Force team! Here are your credentials to log in to
                 variant="primary"
                 size="sm"
                 icon={UserPlus}
-                loading={isSubmitting}
+                isLoading={isSubmitting}
               >
                 Create & Generate Credentials
               </Button>
