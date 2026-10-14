@@ -39,6 +39,7 @@ import { AddCustomerModal } from './components/customers/AddCustomerModal';
 import { EditCustomerModal } from './components/customers/EditCustomerModal';
 import { ShareLookbookModal } from './components/designs/ShareLookbookModal';
 import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
+import { AddManufacturerModal } from './components/manufacturers/AddManufacturerModal';
 import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
 import { AccountsPage } from './pages/platform/AccountsPage';
 import { ViewModeProvider } from './context/ViewModeContext';
@@ -523,7 +524,7 @@ const AppContent: React.FC = () => {
       const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
       return <CustomersPage onNavigate={handleNavigate} customerId={customerId} fromPath="/sales/customers" />;
     }
-    if (basePath === '/sales/designs') {
+    if (basePath === '/sales/designs' || basePath === '/sales/catalogue') {
       return <DesignsPage onNavigate={handleNavigate} />;
     }
     if (basePath === '/sales/orders') {
@@ -627,6 +628,7 @@ const AppContent: React.FC = () => {
       <CreateOrderWizardModal />
       <AddCustomerModal />
       <EditCustomerModal />
+      <AddManufacturerModal />
       <ShareLookbookModal />
       <DemoWalkthroughModal onNavigate={handleNavigate} />
 

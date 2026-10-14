@@ -5,7 +5,7 @@ import { manufacturersService } from '../../services/manufacturers';
 import { ordersService } from '../../services/orders';
 import ManufacturersKpiCards from '../../components/manufacturers/ManufacturersKpiCards';
 import { OrderInspectDrawer } from '../../components/orders/OrderInspectDrawer';
-import { EmptyState } from '../../components/ui';
+import { EmptyState, Button } from '../../components/ui';
 import { Icons } from '../../lib/icons';
 import {
   ChevronRight,
@@ -439,7 +439,13 @@ const OrderActionMenu: React.FC<OrderActionMenuProps> = ({ order, onInspect, onV
    Main ManufacturersPage Component
    ========================================================================= */
 export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate }) => {
-  const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
+  const {
+    manufacturers: contextManufacturers,
+    setManufacturers: setContextManufacturers,
+    setIsAddManufacturerModalOpen,
+  } = useApp();
+
+  const [manufacturers, setManufacturers] = useState<Manufacturer[]>(contextManufacturers || []);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
@@ -455,14 +461,24 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
   const [inspectOrder, setInspectOrder] = useState<Order | null>(null);
 
   useEffect(() => {
+    if (contextManufacturers && contextManufacturers.length > 0) {
+      setManufacturers(contextManufacturers);
+      setSelectedPlantId((prev) => prev || contextManufacturers[0].id);
+    }
+  }, [contextManufacturers]);
+
+  useEffect(() => {
     let cancelled = false;
 
     Promise.all([manufacturersService.fetchManufacturers(), ordersService.fetchOrders()])
       .then(([mfgs, ords]) => {
         if (cancelled) return;
-        setManufacturers(mfgs);
+        if (mfgs && mfgs.length > 0) {
+          setManufacturers(mfgs);
+          setContextManufacturers(mfgs);
+          setSelectedPlantId((prev) => prev || mfgs[0]?.id || null);
+        }
         setOrders(ords);
-        setSelectedPlantId(mfgs[0]?.id ?? null);
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -594,29 +610,41 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
           </p>
         </div>
 
-        {/* Global Plant Search Bar with Stitch Scan Tag Icon */}
-        <div className="relative w-full sm:w-72 shrink-0">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search plant, hub, or GM..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-9 py-2 rounded-xl text-xs sm:text-sm bg-surface border border-border focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground/70"
-          />
-          {searchQuery ? (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
-            >
-              <X size={14} />
-            </button>
-          ) : (
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none p-1 rounded-md bg-muted/40">
-              <Sparkles size={13} className="text-blue-500" />
-            </div>
-          )}
+        {/* Global Plant Search Bar & Add Manufacturer Action */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-72 shrink-0">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search plant, hub, or GM..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-9 py-2 rounded-xl text-xs sm:text-sm bg-surface border border-border focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground/70"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            ) : (
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none p-1 rounded-md bg-muted/40">
+                <Sparkles size={13} className="text-blue-500" />
+              </div>
+            )}
+          </div>
+
+          <Button
+            variant="primary"
+            icon={Icons.Add}
+            onClick={() => setIsAddManufacturerModalOpen(true)}
+            className="shrink-0 h-[38px] px-3.5 sm:px-4 text-xs sm:text-sm font-semibold shadow-xs"
+          >
+            <span className="hidden sm:inline">Add Manufacturer</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
         </div>
       </div>
 
@@ -712,7 +740,15 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
               >
                 Reset Filters
               </button>
-            ) : undefined
+            ) : (
+              <Button
+                variant="primary"
+                icon={Icons.Add}
+                onClick={() => setIsAddManufacturerModalOpen(true)}
+              >
+                Add Manufacturer
+              </Button>
+            )
           }
         />
       ) : (

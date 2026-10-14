@@ -57,6 +57,7 @@ import {
   Clock,
   ReceiptText,
   Send,
+  Target,
 } from 'lucide-react';
 
 export const Icons = {
@@ -140,6 +141,7 @@ export const Icons = {
   Success: CheckCircle2,
   Receipt: ReceiptText,
   Send: Send,
+  Target: Target,
 } as const;
 
 export type IconName = keyof typeof Icons;

@@ -38,6 +38,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffectiveOrgId, useReadOnly } from './ViewModeContext';
 import { clientsService, mapClientRowToCustomer } from '../services/clients';
 import { ordersService } from '../services/orders';
+import { manufacturersService } from '../services/manufacturers';
 import { salesmenService } from '../services/salesmen';
 import { mapFollowUpRow } from '../services/followUps';
 import { mapFieldVisitRow } from '../services/visits';
@@ -78,6 +79,8 @@ interface AppContextType {
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<boolean>;
   manufacturers: Manufacturer[];
   setManufacturers: React.Dispatch<React.SetStateAction<Manufacturer[]>>;
+  addManufacturer: (mfg: Partial<Manufacturer>) => Promise<boolean>;
+  updateManufacturer: (mfgId: string, changes: Partial<Manufacturer>) => Promise<boolean>;
   salesTeam: Salesperson[];
   setSalesTeam: React.Dispatch<React.SetStateAction<Salesperson[]>>;
   toggleSalesTask: (salespersonId: string, taskId: string) => void;
@@ -127,6 +130,8 @@ interface AppContextType {
   setIsCreateOrderModalOpen: (open: boolean) => void;
   isAddCustomerModalOpen: boolean;
   setIsAddCustomerModalOpen: (open: boolean) => void;
+  isAddManufacturerModalOpen: boolean;
+  setIsAddManufacturerModalOpen: (open: boolean) => void;
   isEditCustomerModalOpen: boolean;
   setIsEditCustomerModalOpen: (open: boolean) => void;
   customerToEdit: Customer | null;
@@ -373,6 +378,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false);
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [isAddManufacturerModalOpen, setIsAddManufacturerModalOpen] = useState(false);
   const [isEditCustomerModalOpen, setIsEditCustomerModalOpen] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -667,6 +673,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
+  const addManufacturer = async (input: Partial<Manufacturer>) => {
+    try {
+      const result = await manufacturersService.createManufacturer(input);
+      if (!result.success || !result.data) {
+        showToast(result.error || 'Manufacturer could not be saved.');
+        return false;
+      }
+      const saved = result.data;
+      setManufacturers((prev) => [saved, ...prev]);
+      showToast(`Plant "${saved.companyName}" registered successfully.`);
+      return true;
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to add manufacturer.');
+      return false;
+    }
+  };
+
+  const updateManufacturer = async (mfgId: string, input: Partial<Manufacturer>) => {
+    try {
+      await manufacturersService.updateManufacturer(mfgId, input as any);
+      setManufacturers((prev) => prev.map((m) => (m.id === mfgId ? { ...m, ...input } : m)));
+      showToast('Plant details updated.');
+      return true;
+    } catch (err: any) {
+      showToast('Failed to update plant details.');
+      return false;
+    }
+  };
+
   const createTeamMemberAccount = async (data: {
     name: string;
     email: string;
@@ -935,6 +970,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateOrderStatus,
         manufacturers,
         setManufacturers,
+        addManufacturer,
+        updateManufacturer,
         salesTeam,
         setSalesTeam,
         toggleSalesTask,
@@ -970,6 +1007,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsCreateOrderModalOpen,
         isAddCustomerModalOpen,
         setIsAddCustomerModalOpen,
+        isAddManufacturerModalOpen,
+        setIsAddManufacturerModalOpen,
         isEditCustomerModalOpen,
         setIsEditCustomerModalOpen,
         customerToEdit,

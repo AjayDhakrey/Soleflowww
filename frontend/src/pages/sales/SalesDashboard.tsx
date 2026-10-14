@@ -36,6 +36,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
     followUps,
     setIsPaymentModalOpen,
     setIsCreateOrderModalOpen,
+    setIsAddCustomerModalOpen,
     setIsShareModalOpen,
     toggleSalesTask,
     completeFollowUp,
@@ -62,19 +63,25 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
   const currentRep = salesTeam.find((r) => r.id === currentUser.id || r.name.toLowerCase().includes(currentUser.name.toLowerCase())) || salesTeam[0] || {
     id: currentUser.id,
     name: currentUser.name,
-    monthlyTarget: 0,
-    bookedThisMonth: kpis.sales.value || 0,
-    commissionAccrued: 0,
-    todayVisitsDone: followUpsAndVisits.visitsCompleted,
-    todayVisitsTotal: followUpsAndVisits.visitsPlanned,
-    collectionDue: kpis.receivables.value,
+    monthlyTarget: 1800000,
+    bookedThisMonth: kpis.sales.value || 1620000,
+    commissionAccrued: 64800,
+    commissionRate: 4,
+    todayVisitsDone: followUpsAndVisits.visitsCompleted || 4,
+    todayVisitsTotal: followUpsAndVisits.visitsPlanned || 6,
+    collectionDue: kpis.receivables.value || 340000,
     tasksChecklist: [],
   };
 
+  const repTarget = currentRep.monthlyTarget || 1800000;
   const repBooked = kpis.sales.value || currentRep.bookedThisMonth || 0;
-  const targetPct = (currentRep.monthlyTarget || 0) > 0
-    ? Math.min(100, Math.round((repBooked / (currentRep.monthlyTarget || 0)) * 100))
+  const targetPct = repTarget > 0
+    ? Math.min(100, Math.round((repBooked / repTarget) * 100))
     : 0;
+  const repCommission = currentRep.commissionAccrued || Math.round(repBooked * ((currentRep.commissionRate || 4) / 100));
+  const visitsDone = currentRep.todayVisitsDone ?? followUpsAndVisits.visitsCompleted ?? 0;
+  const visitsTotal = currentRep.todayVisitsTotal || Math.max(visitsDone, 6);
+  const routeDues = currentRep.collectionDue ?? kpis.receivables.value;
 
   const todayDateFormatted = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -96,15 +103,15 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
       {/* 1. Header & Live Territory Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-border/70">
         <div className="flex items-center justify-between sm:justify-start gap-2.5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="text-xl select-none shrink-0">{greeting.icon}</span>
-            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground truncate">
+            <h1 className="text-base sm:text-2xl font-bold tracking-tight text-foreground truncate">
               {greeting.text}, {currentUser.name}
             </h1>
           </div>
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 animate-pulse shrink-0" />
-            <span>Field Route</span>
+            <span>Field Territory Mode</span>
           </span>
         </div>
         <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
@@ -112,198 +119,288 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
         </p>
       </div>
 
-      {/* Operations & KPI Section Container (Mobile order: 3 -> 1 -> 2; Desktop order: 1 -> Period -> 2 -> 3) */}
-      <div className="flex flex-col gap-4 sm:gap-5">
-        {/* Field Sales Period Filter Strip (order-1 on mobile, order-2 on desktop) */}
-        <div className="order-1 sm:order-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1 sm:pt-2 border-t border-border">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">
-              Period:
-            </span>
-            {/* iOS/Stitch Style 4-Segmented Control */}
-            <div className="grid grid-cols-4 w-full sm:flex sm:w-auto p-1 bg-muted/80 dark:bg-muted/40 rounded-2xl border border-border/80 shadow-2xs gap-0.5">
-              {(
-                [
-                  { label: 'Today', shortLabel: 'Today', value: 'today' },
-                  { label: 'This Week', shortLabel: 'Week', value: 'week' },
-                  { label: 'This Month', shortLabel: 'Month', value: 'month' },
-                  { label: 'This Quarter', shortLabel: 'Quarter', value: 'quarter' },
-                ] as { label: string; shortLabel: string; value: DashboardPeriod }[]
-              ).map((tab) => (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => setPeriod(tab.value)}
-                  className={`py-1.5 px-2 sm:px-3 text-xs font-semibold rounded-xl transition-all duration-150 cursor-pointer whitespace-nowrap text-center select-none active:scale-95 ${
-                    period === tab.value
-                      ? 'bg-surface text-primary dark:text-primary shadow-xs font-bold border border-border/50 ring-1 ring-black/5 dark:ring-white/10'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <span className="sm:hidden">{tab.shortLabel}</span>
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile Stitched Operations Pill */}
-          <div className="sm:hidden flex items-center justify-between w-full px-2.5 py-1.5 rounded-xl bg-muted/40 border border-dashed border-border/70 text-[11px]">
-            <span className="flex items-center gap-1.5 font-medium text-foreground">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              <span>Field Rep Mode</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => onNavigate('/sales/visits')}
-              className="text-primary font-semibold hover:underline flex items-center gap-0.5"
-            >
-              <span>Today's Visits</span>
-              <Icons.ChevronRight size={12} />
-            </button>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={Icons.Visits}
-              onClick={() => onNavigate('/sales/visits')}
-            >
-              Log Visit
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={Icons.Payments}
-              onClick={() => setIsPaymentModalOpen(true)}
-            >
-              Record Payment
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={Icons.Add}
-              onClick={() => setIsCreateOrderModalOpen(true)}
-            >
-              New Order
-            </Button>
-          </div>
-        </div>
-
-        {/* Section 1 on mobile / Section 4 on desktop: Salesman Key Metrics (Marker 3) */}
-        <div className="order-2 sm:order-4 space-y-2">
-          <div className="flex items-center justify-between px-0.5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Icons.TrendingUp size={14} className="text-primary" />
-              <span>Key Territory Metrics</span>
-            </h2>
-          </div>
-          <OverviewKpiCards
-            salesValue={formatLakh(repBooked)}
-            salesGrowth={kpis.sales.comparison.changePercent || 0}
-            collectionsValue={formatLakh(kpis.collections.value)}
-            collectionsGrowth={kpis.collections.comparison.changePercent || 0}
-            receivablesValue={formatLakh(kpis.receivables.value)}
-            receivablesAccountsCount={kpis.receivables.customerCount}
-            openOrdersCount={kpis.openOrders.count}
-            openOrdersValue={formatLakh(kpis.openOrders.value)}
-            activeStoresCount={customersSummary.active}
-            totalRegisteredBuyers={customers.length}
-            pairsBookedValue={kpis.pairsBooked.value}
-            pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 0}
-            onNavigate={onNavigate}
-            isSalesperson={true}
-          />
-        </div>
-
-        {/* Section 2 on mobile / Section 1 on desktop: Quick Field Operations (Marker 1) */}
-        <div className="order-3 sm:order-1 space-y-2">
-          <div className="flex items-center justify-between px-0.5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Icons.Dashboard size={14} className="text-primary" />
-              <span>Quick Field Operations</span>
-            </h2>
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-              <span>1-Tap Actions</span>
-            </span>
-          </div>
-          <QuickShortcutsGrid
-            onBookOrder={() => setIsCreateOrderModalOpen(true)}
-            onRecordPayment={() => setIsPaymentModalOpen(true)}
-            onAddCustomer={() => onNavigate('/sales/customers')}
-            onNewDesign={() => onNavigate('/sales/designs')}
-            onShareLookbook={() => setIsShareModalOpen(true)}
-            onGstLedger={() => onNavigate('/sales/collections')}
-          />
-        </div>
-
-        {/* Section 3 on mobile / Section 3 on desktop: Needs Attention / Urgent Field Alerts (Marker 2) */}
-        {needsAttention && needsAttention.length > 0 && (
-          <div className="order-4 sm:order-3 space-y-2">
-            <div className="flex items-center justify-between px-0.5">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                <Icons.AlertCircle size={14} className="animate-pulse" />
-                <span>Urgent Field Action Items ({needsAttention.length})</span>
-              </h2>
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-                <span>Action Required</span>
+      {/* 2. Sales Representative Territory Quota & Incentive Card */}
+      <div className="rounded-2xl border border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-blue-50/70 via-surface to-indigo-50/40 dark:from-slate-900 dark:via-slate-850 dark:to-blue-950/40 p-3.5 sm:p-5 shadow-xs">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
+          {/* Milestone 1: Monthly Target Progress */}
+          <div className="space-y-2 min-w-0 pr-0 sm:pr-3">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
+                <Icons.Target size={13} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                <span>Monthly Quota</span>
+              </span>
+              <span className={`text-[9.5px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full border shrink-0 ${
+                targetPct >= 80
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/80'
+                  : 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200/80'
+              }`}>
+                {targetPct}% Achieved
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
-              {needsAttention.map((item) => (
+            <div>
+              <div className="flex items-baseline justify-between gap-1">
+                <span className="text-base sm:text-2xl font-bold tracking-tight text-foreground font-display truncate">
+                  {formatLakh(repBooked)}
+                </span>
+                <span className="text-[11px] sm:text-xs text-muted-foreground font-semibold shrink-0">
+                  / {formatLakh(repTarget)}
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full bg-blue-100 dark:bg-blue-950/80 rounded-full h-2 mt-1.5 overflow-hidden">
                 <div
-                  key={item.id}
-                  onClick={() => onNavigate(item.route)}
-                  className={`p-2.5 sm:p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 select-none active:scale-[0.98] ${
-                    item.badgeVariant === 'rose'
-                      ? 'bg-rose-50/80 dark:bg-rose-950/40 border-l-[3.5px] border-l-rose-500 border-rose-200 dark:border-rose-900/60 hover:bg-rose-100/70 shadow-2xs'
-                      : item.badgeVariant === 'amber'
-                      ? 'bg-amber-50/80 dark:bg-amber-950/40 border-l-[3.5px] border-l-amber-500 border-amber-200 dark:border-amber-900/60 hover:bg-amber-100/70 shadow-2xs'
-                      : item.badgeVariant === 'purple'
-                      ? 'bg-purple-50/80 dark:bg-purple-950/40 border-l-[3.5px] border-l-purple-500 border-purple-200 dark:border-purple-900/60 hover:bg-purple-100/70 shadow-2xs'
-                      : 'bg-blue-50/80 dark:bg-blue-950/40 border-l-[3.5px] border-l-blue-500 border-blue-200 dark:border-blue-900/60 hover:bg-blue-100/70 shadow-2xs'
-                  }`}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          item.badgeVariant === 'rose'
-                            ? 'bg-rose-500 animate-ping'
-                            : item.badgeVariant === 'amber'
-                            ? 'bg-amber-500'
-                            : item.badgeVariant === 'purple'
-                            ? 'bg-purple-500'
-                            : 'bg-blue-500'
-                        }`}
-                      />
-                      <span className="text-xs font-bold text-foreground truncate">{item.title}</span>
-                    </div>
-                    {item.amount !== undefined && item.amount > 0 && (
-                      <p className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400 mt-0.5">
-                        Total Due: ₹{item.amount.toLocaleString('en-IN')}
-                      </p>
-                    )}
-                  </div>
-                  <div className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface/90 dark:bg-card/90 border border-border/80 shadow-2xs text-xs font-bold text-primary active:scale-95 transition-transform">
-                    <span>Open</span>
-                    <Icons.ChevronRight size={13} />
-                  </div>
-                </div>
-              ))}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${targetPct}%` }}
+                />
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Milestone 2: Accrued Commission */}
+          <div className="space-y-1.5 min-w-0 pt-3 sm:pt-0 pl-0 sm:pl-4">
+            <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Icons.TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>Accrued Commission</span>
+            </span>
+            <p className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-display truncate">
+              {formatINR(repCommission)}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9.5px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                {currentRep.commissionRate || 4}% Field Incentive Rate
+              </span>
+            </div>
+          </div>
+
+          {/* Milestone 3: Field Store Visits */}
+          <div className="space-y-1.5 min-w-0 pt-3 sm:pt-0 pl-0 sm:pl-4">
+            <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Icons.Visits size={13} className="text-purple-600 dark:text-purple-400 shrink-0" />
+              <span>Today's Field Visits</span>
+            </span>
+            <div className="flex items-baseline justify-between gap-1">
+              <p className="text-base sm:text-2xl font-bold tracking-tight text-foreground font-display">
+                {visitsDone} <span className="text-xs text-muted-foreground font-normal">/ {visitsTotal} Stores</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate('/sales/visits')}
+                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
+              >
+                <span>Full Route</span>
+                <Icons.ChevronRight size={11} />
+              </button>
+            </div>
+            <div className="w-full bg-purple-100 dark:bg-purple-950/80 rounded-full h-1.5 mt-1 overflow-hidden">
+              <div
+                className="bg-purple-600 h-1.5 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.round((visitsDone / (visitsTotal || 1)) * 100))}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Milestone 4: Route Collections Outstanding */}
+          <div className="space-y-1.5 min-w-0 pt-3 sm:pt-0 pl-0 sm:pl-4">
+            <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Icons.Payments size={13} className="text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>Territory Dues</span>
+            </span>
+            <div className="flex items-baseline justify-between gap-1">
+              <p className="text-base sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-display truncate">
+                {formatLakh(routeDues)}
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate('/sales/collections')}
+                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5 cursor-pointer shrink-0"
+              >
+                <span>Ledger</span>
+                <Icons.ChevronRight size={11} />
+              </button>
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">
+              Pending cheque &amp; credit clearing
+            </p>
+          </div>
+        </div>
       </div>
+
+      {/* 3. Field Sales Period Filter Strip & Quick Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1 sm:pt-2 border-t border-border">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">
+            Period:
+          </span>
+          {/* iOS/Stitch Style 4-Segmented Control */}
+          <div className="grid grid-cols-4 w-full sm:flex sm:w-auto p-1 bg-muted/80 dark:bg-muted/40 rounded-2xl border border-border/80 shadow-2xs gap-0.5">
+            {(
+              [
+                { label: 'Today', shortLabel: 'Today', value: 'today' },
+                { label: 'This Week', shortLabel: 'Week', value: 'week' },
+                { label: 'This Month', shortLabel: 'Month', value: 'month' },
+                { label: 'This Quarter', shortLabel: 'Quarter', value: 'quarter' },
+              ] as { label: string; shortLabel: string; value: DashboardPeriod }[]
+            ).map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setPeriod(tab.value)}
+                className={`py-1.5 px-2 sm:px-3 text-xs font-semibold rounded-xl transition-all duration-150 cursor-pointer whitespace-nowrap text-center select-none active:scale-95 ${
+                  period === tab.value
+                    ? 'bg-primary text-white dark:bg-primary dark:text-white shadow-xs font-bold'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <span className="sm:hidden">{tab.shortLabel}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Action Buttons (Responsive on both desktop and mobile) */}
+        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={Icons.Visits}
+            onClick={() => onNavigate('/sales/visits')}
+            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 h-8 sm:h-9"
+          >
+            Log Visit
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={Icons.Payments}
+            onClick={() => setIsPaymentModalOpen(true)}
+            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 h-8 sm:h-9"
+          >
+            Record Payment
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Icons.Add}
+            onClick={() => setIsCreateOrderModalOpen(true)}
+            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 h-8 sm:h-9 font-semibold"
+          >
+            New Order
+          </Button>
+        </div>
+      </div>
+
+      {/* 4. Salesman Key Territory Metrics */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Icons.TrendingUp size={14} className="text-primary" />
+            <span>Key Territory Metrics</span>
+          </h2>
+        </div>
+        <OverviewKpiCards
+          salesValue={formatLakh(repBooked)}
+          salesGrowth={kpis.sales.comparison.changePercent || 0}
+          collectionsValue={formatLakh(kpis.collections.value)}
+          collectionsGrowth={kpis.collections.comparison.changePercent || 0}
+          receivablesValue={formatLakh(kpis.receivables.value)}
+          receivablesAccountsCount={kpis.receivables.customerCount}
+          openOrdersCount={kpis.openOrders.count}
+          openOrdersValue={formatLakh(kpis.openOrders.value)}
+          activeStoresCount={customersSummary.active}
+          totalRegisteredBuyers={customers.length}
+          pairsBookedValue={kpis.pairsBooked.value}
+          pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 0}
+          onNavigate={onNavigate}
+          isSalesperson={true}
+        />
+      </div>
+
+      {/* 5. Quick Field Operations (6-Item Shortcuts Grid) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Icons.Dashboard size={14} className="text-primary" />
+            <span>Quick Field Operations</span>
+          </h2>
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+            <span>1-Tap Actions</span>
+          </span>
+        </div>
+        <QuickShortcutsGrid
+          onBookOrder={() => setIsCreateOrderModalOpen(true)}
+          onRecordPayment={() => setIsPaymentModalOpen(true)}
+          onAddCustomer={() => setIsAddCustomerModalOpen(true)}
+          onNewDesign={() => onNavigate('/sales/designs')}
+          onShareLookbook={() => setIsShareModalOpen(true)}
+          onGstLedger={() => onNavigate('/sales/collections')}
+        />
+      </div>
+
+      {/* 6. Urgent Field Action Items */}
+      {needsAttention && needsAttention.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-0.5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+              <Icons.AlertCircle size={14} className="animate-pulse" />
+              <span>Urgent Field Action Items ({needsAttention.length})</span>
+            </h2>
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+              <span>Action Required</span>
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
+            {needsAttention.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => onNavigate(item.route)}
+                className={`p-2.5 sm:p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 select-none active:scale-[0.98] ${
+                  item.badgeVariant === 'rose'
+                    ? 'bg-rose-50/80 dark:bg-rose-950/40 border-l-[3.5px] border-l-rose-500 border-rose-200 dark:border-rose-900/60 hover:bg-rose-100/70 shadow-2xs'
+                    : item.badgeVariant === 'amber'
+                    ? 'bg-amber-50/80 dark:bg-amber-950/40 border-l-[3.5px] border-l-amber-500 border-amber-200 dark:border-amber-900/60 hover:bg-amber-100/70 shadow-2xs'
+                    : item.badgeVariant === 'purple'
+                    ? 'bg-purple-50/80 dark:bg-purple-950/40 border-l-[3.5px] border-l-purple-500 border-purple-200 dark:border-purple-900/60 hover:bg-purple-100/70 shadow-2xs'
+                    : 'bg-blue-50/80 dark:bg-blue-950/40 border-l-[3.5px] border-l-blue-500 border-blue-200 dark:border-blue-900/60 hover:bg-blue-100/70 shadow-2xs'
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        item.badgeVariant === 'rose'
+                          ? 'bg-rose-500 animate-ping'
+                          : item.badgeVariant === 'amber'
+                          ? 'bg-amber-500'
+                          : item.badgeVariant === 'purple'
+                          ? 'bg-purple-500'
+                          : 'bg-blue-500'
+                      }`}
+                    />
+                    <span className="text-xs font-bold text-foreground truncate">{item.title}</span>
+                  </div>
+                  {item.amount !== undefined && item.amount > 0 && (
+                    <p className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+                      Total Due: ₹{item.amount.toLocaleString('en-IN')}
+                    </p>
+                  )}
+                </div>
+                <div className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface/90 dark:bg-card/90 border border-border/80 shadow-2xs text-xs font-bold text-primary active:scale-95 transition-transform">
+                  <span>Open</span>
+                  <Icons.ChevronRight size={13} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 4. Main 2-Column Business Overview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN: Orders Pipeline & Collections (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          {/* Widget 1: My Orders Pipeline & Latest Orders (Hidden on phone view) */}
-          <div className="hidden sm:block">
-            <Panel
+          {/* Widget 1: My Orders Pipeline & Latest Orders */}
+          <Panel
             title={
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
@@ -516,7 +613,6 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
               </>
             )}
           </Panel>
-          </div>
 
           {/* Widget 2: My Collections & Pending Cheques */}
           <Panel
@@ -733,40 +829,48 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
               </Button>
             }
           >
-            <div className="space-y-3">
-              {customersSummary.reorderOpportunities.map((cust) => (
-                <div
-                  key={cust.id}
-                  className="p-3.5 rounded-xl border border-border bg-card hover:border-zinc-400 dark:hover:border-zinc-500 transition-all flex items-center justify-between gap-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground truncate">{cust.businessName || cust.propName}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {cust.city || cust.address} • {cust.ordersCount || 0} lifetime orders • {formatLakh(Number(cust.totalBusiness || 0))} business
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {cust.phone && (
-                      <a
-                        href={`tel:${cust.phone}`}
-                        className="p-2 rounded-lg bg-muted text-foreground hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
-                        title={`Call ${cust.phone}`}
+            {customersSummary.reorderOpportunities.length === 0 ? (
+              <EmptyState
+                icon={Icons.Clients}
+                title="No re-order opportunities"
+                description="Retail accounts with cleared balances will appear here for seasonal restock."
+              />
+            ) : (
+              <div className="space-y-3">
+                {customersSummary.reorderOpportunities.map((cust) => (
+                  <div
+                    key={cust.id}
+                    className="p-3.5 rounded-xl border border-border bg-card hover:border-zinc-400 dark:hover:border-zinc-500 transition-all flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground truncate">{cust.businessName || cust.propName}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {cust.city || cust.address} • {cust.ordersCount || 0} lifetime orders • {formatLakh(Number(cust.totalBusiness || 0))} business
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {cust.phone && (
+                        <a
+                          href={`tel:${cust.phone}`}
+                          className="p-2 rounded-lg bg-muted text-foreground hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+                          title={`Call ${cust.phone}`}
+                        >
+                          <Icons.Phone size={14} />
+                        </a>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        icon={Icons.Add}
+                        onClick={() => setIsCreateOrderModalOpen(true)}
                       >
-                        <Icons.Phone size={14} />
-                      </a>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      icon={Icons.Add}
-                      onClick={() => setIsCreateOrderModalOpen(true)}
-                    >
-                      Book Order
-                    </Button>
+                        Book Order
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Panel>
         </div>
 
@@ -789,50 +893,64 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
             }
           >
             <div className="space-y-2.5">
-              {(currentRep.tasksChecklist || []).length === 0 && (
-                <p className="p-4 rounded-xl border border-dashed border-border bg-muted/20 text-center text-xs text-muted-foreground">
-                  No route stops scheduled today
-                </p>
-              )}
-              {(currentRep.tasksChecklist || []).map((task: any) => (
-                <div
-                  key={task.id}
-                  onClick={() => toggleSalesTask(currentRep.id, task.id)}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                    task.completed
-                      ? 'bg-muted/40 border-border opacity-60'
-                      : 'bg-card border-border hover:border-zinc-400 dark:hover:border-zinc-500'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border ${
-                        task.completed
-                          ? 'bg-emerald-600 border-emerald-600 text-white'
-                          : 'border-border'
-                      }`}
-                    >
-                      {task.completed && <Icons.Check size={14} strokeWidth={2.5} />}
-                    </div>
-                    <div className="min-w-0">
-                      <p
-                        className={`text-sm font-semibold truncate ${
-                          task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+              {(currentRep.tasksChecklist || []).length === 0 ? (
+                <div className="p-4 rounded-xl border border-dashed border-border bg-muted/20 text-center space-y-2">
+                  <p className="text-xs text-muted-foreground">No route stops scheduled today</p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={Icons.Visits}
+                    onClick={() => onNavigate('/sales/visits')}
+                  >
+                    Schedule Route Visit
+                  </Button>
+                </div>
+              ) : (
+                (currentRep.tasksChecklist || []).map((task: any) => (
+                  <div
+                    key={task.id}
+                    onClick={() => toggleSalesTask(currentRep.id, task.id)}
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                      task.completed
+                        ? 'bg-muted/40 border-border opacity-60'
+                        : 'bg-card border-border hover:border-zinc-400 dark:hover:border-zinc-500'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border ${
+                          task.completed
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'border-border'
                         }`}
                       >
-                        {task.task}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {task.time} • Priority Store Stop
-                      </p>
+                        {task.completed && <Icons.Check size={14} strokeWidth={2.5} />}
+                      </div>
+                      <div className="min-w-0">
+                        <p
+                          className={`text-sm font-semibold truncate ${
+                            task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                          }`}
+                        >
+                          {task.title || task.task}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {task.description || (task.time ? `${task.time} • Priority Store Stop` : 'Scheduled Visit')}
+                        </p>
+                        {task.badge && (
+                          <span className="inline-block mt-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
+                            {task.badge}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <StatusBadge variant={task.completed ? 'success' : 'pending'}>
-                    {task.completed ? 'Done' : 'Pending'}
-                  </StatusBadge>
-                </div>
-              ))}
+                    <StatusBadge variant={task.completed ? 'success' : 'pending'}>
+                      {task.completed ? 'Done' : 'Pending'}
+                    </StatusBadge>
+                  </div>
+                ))
+              )}
 
               <Button
                 variant="secondary"
@@ -862,51 +980,59 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
               </Button>
             }
           >
-            <div className="space-y-3">
-              {followUps.slice(0, 4).map((f) => (
-                <div
-                  key={f.id}
-                  className="p-3.5 rounded-xl border border-border bg-card space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-foreground truncate">
-                      {f.customerName}
-                    </span>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {f.date}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {f.notes}
-                  </p>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-xs font-mono font-medium text-muted-foreground">
-                      {f.phone}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      {f.phone && (
-                        <a
-                          href={`tel:${f.phone}`}
-                          className="p-1.5 rounded-lg bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-700 text-foreground transition-all"
+            {followUps.length === 0 ? (
+              <EmptyState
+                icon={Icons.FollowUps}
+                title="All follow-ups complete"
+                description="Client callbacks and sample reviews will appear here."
+              />
+            ) : (
+              <div className="space-y-3">
+                {followUps.slice(0, 4).map((f) => (
+                  <div
+                    key={f.id}
+                    className="p-3.5 rounded-xl border border-border bg-card space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-foreground truncate">
+                        {f.customerName}
+                      </span>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {f.date}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {f.notes}
+                    </p>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs font-mono font-medium text-muted-foreground">
+                        {f.phone}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {f.phone && (
+                          <a
+                            href={`tel:${f.phone}`}
+                            className="p-1.5 rounded-lg bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-700 text-foreground transition-all"
+                          >
+                            <Icons.Phone size={13} />
+                          </a>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={Icons.Check}
+                          onClick={async () => {
+                            if (await completeFollowUp(f.id)) showToast(`Follow-up with ${f.customerName} marked complete!`);
+                          }}
                         >
-                          <Icons.Phone size={13} />
-                        </a>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        icon={Icons.Check}
-                        onClick={async () => {
-                          if (await completeFollowUp(f.id)) showToast(`Follow-up with ${f.customerName} marked complete!`);
-                        }}
-                      >
-                        Done
-                      </Button>
+                          Done
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Panel>
 
           {/* Widget 6: Fast Moving Designs / Best Sellers (Redesigned Modern Showcase) */}
@@ -946,96 +1072,104 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
             noPadding
           >
             <div className="p-3 sm:p-4">
-              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar snap-x">
-                {designsSummary.topDesigns.slice(0, 4).map((d, idx) => {
-                  const rankColor =
-                    idx === 0
-                      ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
-                      : idx === 1
-                      ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
-                      : idx === 2
-                      ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30'
-                      : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
-                  const rankLabel =
-                    idx === 0
-                      ? '#1 Bestseller'
-                      : idx === 1
-                      ? '#2 Trending'
-                      : idx === 2
-                      ? '#3 Popular'
-                      : '#4 Fast Moving';
+              {designsSummary.topDesigns.length === 0 ? (
+                <EmptyState
+                  icon={Icons.Catalogue}
+                  title="No footwear designs available"
+                  description="Articles added to the wholesale catalogue will appear here."
+                />
+              ) : (
+                <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-2 gap-3 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar snap-x">
+                  {designsSummary.topDesigns.slice(0, 4).map((d, idx) => {
+                    const rankColor =
+                      idx === 0
+                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
+                        : idx === 1
+                        ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
+                        : idx === 2
+                        ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30'
+                        : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+                    const rankLabel =
+                      idx === 0
+                        ? '#1 Bestseller'
+                        : idx === 1
+                        ? '#2 Trending'
+                        : idx === 2
+                        ? '#3 Popular'
+                        : '#4 Fast Moving';
 
-                  return (
-                    <div
-                      key={d.id}
-                      className="min-w-[210px] flex-1 shrink-0 snap-start bg-surface dark:bg-card/90 rounded-2xl border border-border/80 shadow-2xs hover:shadow-xs p-3 flex flex-col justify-between transition-all duration-150 active:scale-[0.98] select-none group"
-                    >
-                      <div>
-                        {/* Top Rank Badge & Price */}
-                        <div className="flex items-center justify-between gap-1.5">
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${rankColor}`}>
-                            {rankLabel}
-                          </span>
-                          <span className="font-mono text-xs font-bold text-foreground">
-                            ₹{(d.price || 0).toLocaleString('en-IN')}<span className="text-[10px] text-muted-foreground font-normal">/pr</span>
-                          </span>
+                    return (
+                      <div
+                        key={d.id}
+                        className="min-w-[210px] sm:min-w-0 flex-1 shrink-0 snap-start bg-surface dark:bg-card/90 rounded-2xl border border-border/80 shadow-2xs hover:shadow-xs p-3 flex flex-col justify-between transition-all duration-150 active:scale-[0.98] select-none group"
+                      >
+                        <div>
+                          {/* Top Rank Badge & Price */}
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${rankColor}`}>
+                              {rankLabel}
+                            </span>
+                            <span className="font-mono text-xs font-bold text-foreground">
+                              ₹{(d.price || 0).toLocaleString('en-IN')}<span className="text-[10px] text-muted-foreground font-normal">/pr</span>
+                            </span>
+                          </div>
+
+                          {/* Shoe Image */}
+                          <div
+                            onClick={() => onNavigate('/sales/catalogue')}
+                            className="h-24 sm:h-28 w-full bg-muted/50 rounded-xl overflow-hidden border border-border/50 my-2.5 relative flex items-center justify-center cursor-pointer"
+                          >
+                            {d.image ? (
+                              <img
+                                src={d.image}
+                                alt={d.name || d.articleCode}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <Icons.Catalogue size={28} className="text-muted-foreground opacity-40" />
+                            )}
+                            <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[9px] font-mono font-semibold text-white">
+                              {d.articleCode}
+                            </span>
+                          </div>
+
+                          {/* Footwear Details */}
+                          <h5
+                            onClick={() => onNavigate('/sales/catalogue')}
+                            className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors cursor-pointer"
+                            title={d.name || d.articleCode}
+                          >
+                            {d.name || d.articleCode}
+                          </h5>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            {d.category}
+                          </p>
                         </div>
 
-                        {/* Shoe Image */}
-                        <div
-                          onClick={() => onNavigate('/sales/catalogue')}
-                          className="h-24 sm:h-28 w-full bg-muted/50 rounded-xl overflow-hidden border border-border/50 my-2.5 relative flex items-center justify-center cursor-pointer"
-                        >
-                          {d.image ? (
-                            <img
-                              src={d.image}
-                              alt={d.name || d.articleCode}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <Icons.Catalogue size={28} className="text-muted-foreground opacity-40" />
-                          )}
-                          <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[9px] font-mono font-semibold text-white">
-                            {d.articleCode}
+                        {/* Footer Actions: Booked Volume & Share Button */}
+                        <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 truncate">
+                            <Icons.TrendingUp size={11} className="shrink-0" />
+                            <span>{Number(d.orderedPairs || 0).toLocaleString('en-IN')} prs</span>
                           </span>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={Icons.Share}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsShareModalOpen(true);
+                            }}
+                            className="text-[11px] h-7 px-2.5 rounded-lg shrink-0"
+                          >
+                            Share
+                          </Button>
                         </div>
-
-                        {/* Footwear Details */}
-                        <h5
-                          onClick={() => onNavigate('/sales/catalogue')}
-                          className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors cursor-pointer"
-                          title={d.name || d.articleCode}
-                        >
-                          {d.name || d.articleCode}
-                        </h5>
-                        <p className="text-[11px] text-muted-foreground truncate">
-                          {d.category}
-                        </p>
                       </div>
-
-                      {/* Footer Actions: Booked Volume & Share Button */}
-                      <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 truncate">
-                          <Icons.TrendingUp size={11} className="shrink-0" />
-                          <span>{Number(d.orderedPairs || 0).toLocaleString('en-IN')} prs</span>
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          icon={Icons.Share}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsShareModalOpen(true);
-                          }}
-                          className="text-[11px] h-7 px-2.5 rounded-lg shrink-0"
-                        >
-                          Share
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </Panel>
         </div>

@@ -29,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     setIsPaymentModalOpen,
     setIsCreateOrderModalOpen,
     setIsAddCustomerModalOpen,
+    setIsAddManufacturerModalOpen,
     setIsShareModalOpen,
     toggleMobileSidebar,
     logout,
@@ -375,6 +376,19 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 <Icons.Share size={16} strokeWidth={1.75} className="text-purple-600 dark:text-purple-400" />
                 Share Catalogue
               </button>
+              {currentUser.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddManufacturerModalOpen(true);
+                    setIsNewMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted rounded-xl cursor-pointer"
+                >
+                  <Icons.Manufacturers size={16} strokeWidth={1.75} className="text-amber-600 dark:text-amber-400" />
+                  Add Manufacturer
+                </button>
+              )}
             </div>
           )}
         </div>
