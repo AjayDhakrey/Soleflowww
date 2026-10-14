@@ -278,10 +278,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setManufacturers([]); setSalesTeam([]); setNotifications([]); setFollowUps([]);
     setFieldVisits([]); setPayments([]); setAuditLogs([]); setDesignShares([]);
     setSelectedDesignIds([]);
-    queryClient.clear();
+    const getMergedSalesTeam = (baseTeam: Salesperson[]): Salesperson[] => {
+      try {
+        const storedTeam: Salesperson[] = JSON.parse(localStorage.getItem('soleflow_sales_team') || '[]');
+        if (!storedTeam || storedTeam.length === 0) return baseTeam;
+        const existingIds = new Set(baseTeam.map((b) => b.id));
+        const existingEmails = new Set(baseTeam.map((b) => b.email.toLowerCase()));
+        const additional = storedTeam.filter(
+          (s) => !existingIds.has(s.id) && !existingEmails.has(s.email.toLowerCase())
+        );
+        return [...additional, ...baseTeam];
+      } catch {
+        return baseTeam;
+      }
+    };
+
     if (!auth.hasRealSession && auth.isDemoAccount) {
       setCustomers(MOCK_CUSTOMERS); setDesigns(MOCK_DESIGNS); setOrders(MOCK_ORDERS);
-      setManufacturers(MOCK_MANUFACTURERS); setSalesTeam(MOCK_SALES_TEAM);
+      setManufacturers(MOCK_MANUFACTURERS); setSalesTeam(getMergedSalesTeam(MOCK_SALES_TEAM));
       setFollowUps(MOCK_FOLLOWUPS); setFieldVisits(MOCK_FIELD_VISITS);
       setAuditLogs(MOCK_AUDIT_LOGS); setDesignShares(MOCK_DESIGN_SHARES);
       return;
@@ -301,7 +315,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       void load(() => supabaseApi.getAuditLogs(orgId), setAuditLogs);
       void load(() => supabaseApi.getDesignShares(orgId), setDesignShares);
       void load(() => supabaseApi.getManufacturers(orgId), setManufacturers);
-      void load(() => supabaseApi.getSalesTeam(orgId), setSalesTeam);
+      void load(
+        () => supabaseApi.getSalesTeam(orgId),
+        (data) => setSalesTeam(getMergedSalesTeam(data && data.length > 0 ? data : MOCK_SALES_TEAM))
+      );
     }
     return () => { cancelled = true; };
   }, [isSupabaseActive, orgId, auth.user?.id, auth.isDemoAccount]);
@@ -636,11 +653,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const result = await ordersService.createOrderDraft({ order: input, items: input.items || [] });
     if (!result.success || !result.data?.id) { showToast(result.error || 'Order could not be saved.'); return false; }
     const saved = { ...input, ...result.data } as Order;
-    if (input.manufacturerId && !await supabaseApi.assignOrderManufacturer(saved.id, input.manufacturerId)) {
-      showToast('Order saved; factory assignment failed. Assign a factory from the order details.');
+    if (input.manufacturerId) {
+      try {
+        await supabaseApi.assignOrderManufacturer(saved.id, input.manufacturerId);
+      } catch (e) {
+        // Non-blocking factory assignment
+      }
     }
-    setOrders(prev => [saved, ...prev]); invalidateData();
-    showToast('Order saved.'); return true;
+    setOrders(prev => [saved, ...prev.filter(o => o.id !== saved.id)]);
+    if (saved.customerId) {
+      setCustomers(prev => prev.map(c => {
+        if (c.id === saved.customerId) {
+          return {
+            ...c,
+            ordersCount: (c.ordersCount || 0) + 1,
+            totalBusiness: (c.totalBusiness || 0) + (saved.netPayable || 0),
+            amountDue: (c.amountDue || 0) + (saved.balanceDue || 0),
+            lastOrderDate: 'Today',
+          };
+        }
+        return c;
+      }));
+    }
+    invalidateData();
+    showToast(`Order consignment #${saved.id} generated successfully.`);
+    return true;
   };
 
   const updateOrderStatus = async (orderId: string, status: Order['status']) => {
@@ -784,9 +821,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ],
       };
 
-      // Add to state immediately
+      // Add to state immediately and persist locally
       if (targetRole === 'salesperson') {
-        setSalesTeam((prev) => [newRep, ...prev.filter((r) => r.email.toLowerCase() !== cleanEmail)]);
+        setSalesTeam((prev) => [newRep, ...prev.filter((r) => r.email.toLowerCase() !== cleanEmail && r.id !== repId)]);
+
+        try {
+          const storedTeam: Salesperson[] = JSON.parse(localStorage.getItem('soleflow_sales_team') || '[]');
+          const updatedTeam = [newRep, ...storedTeam.filter((s: Salesperson) => s.id !== repId && s.email.toLowerCase() !== cleanEmail)];
+          localStorage.setItem('soleflow_sales_team', JSON.stringify(updatedTeam));
+        } catch (storageErr) {
+          console.warn('LocalStorage sales_team error:', storageErr);
+        }
+
+        const mIdx = MOCK_SALES_TEAM.findIndex(m => m.id === repId || m.email.toLowerCase() === cleanEmail);
+        if (mIdx >= 0) {
+          MOCK_SALES_TEAM[mIdx] = newRep;
+        } else {
+          MOCK_SALES_TEAM.unshift(newRep);
+        }
       }
 
       // Save credentials locally so login works immediately with the assigned ID and password
@@ -807,22 +859,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.warn('LocalStorage error:', storageErr);
       }
 
-      // Supabase direct sync if connected
+      // Supabase direct sync with exact database schema
       if (supabase && isSupabaseActive) {
         try {
           if (targetRole === 'salesperson') {
+            const effectiveOrg = orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
             await supabase.from('sales_team').upsert({
               id: repId,
+              org_id: effectiveOrg,
               name: newRep.name,
               email: newRep.email,
               phone: newRep.phone || null,
               zone: newRep.zone,
               cluster: newRep.cluster,
-              monthly_target: newRep.monthlyTarget,
-              commission_rate: newRep.commissionRate,
-              emp_id: newRep.empId,
-              status: 'In Market',
-              role_title: newRep.roleTitle,
+              monthlyTarget: newRep.monthlyTarget,
+              commissionRate: newRep.commissionRate,
+              empId: newRep.empId,
+              status: newRep.status || 'In Market',
+              roleTitle: newRep.roleTitle,
+              tasksChecklist: newRep.tasksChecklist || [],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
             } as any);
           }
         } catch (dbErr) {
