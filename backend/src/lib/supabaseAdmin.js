@@ -10,7 +10,10 @@ const supabaseUrl =
   process.env.VITE_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl) {
   console.error(
@@ -20,7 +23,11 @@ if (!supabaseUrl) {
 
 if (!serviceRoleKey) {
   console.error(
-    '[soleflow] FATAL: SUPABASE_SERVICE_ROLE_KEY is not set. Authenticated API routes will respond 503 until it is provided.'
+    '[soleflow] FATAL: Neither SUPABASE_SERVICE_ROLE_KEY nor SUPABASE_ANON_KEY is set. Authenticated API routes will respond 503 until it is provided.'
+  );
+} else if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.log(
+    '[soleflow] INFO: SUPABASE_SERVICE_ROLE_KEY not set; using Supabase anon key for database queries.'
   );
 }
 

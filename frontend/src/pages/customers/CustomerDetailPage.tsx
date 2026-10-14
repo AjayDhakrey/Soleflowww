@@ -391,20 +391,20 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
         <span className="text-foreground font-semibold">{customer.businessName}</span>
       </div>
 
-      {/* 2. Top Profile Header (Sticky & Comprehensive) */}
-      <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4">
+      {/* 2. Top Profile Header (Mobile-Optimized & Comprehensive) */}
+      <div className="bg-surface border border-border rounded-2xl p-4 sm:p-6 shadow-2xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Client Identity & Title */}
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold text-lg flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-900/50 shadow-2xs">
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold text-base sm:text-lg flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-900/50 shadow-2xs">
               {initials}
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight truncate">
                   {customer.businessName}
                 </h1>
-                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-muted text-muted-foreground border border-border">
+                <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-lg bg-muted text-muted-foreground border border-border">
                   {customer.id}
                 </span>
                 {isOverdue ? (
@@ -420,27 +420,57 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                     Active
                   </span>
                 )}
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-                  {customer.tier || '—'}
-                </span>
+                {customer.tier && (
+                  <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                    {customer.tier}
+                  </span>
+                )}
               </div>
 
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span>Proprietor: <strong className="text-foreground">{customer.propName || '—'}</strong></span>
-                <span>•</span>
-                <span>GSTIN: <strong className="font-mono text-foreground">{customer.gstin || '—'}</strong></span>
+                {customer.gstin && (
+                  <>
+                    <span>•</span>
+                    <span>GST: <strong className="font-mono text-foreground">{customer.gstin}</strong></span>
+                  </>
+                )}
               </p>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Action Buttons: 2x2 grid on phone, flex on desktop */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 shrink-0 w-full lg:w-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCustomer(customer);
+                setIsCreateOrderModalOpen(true);
+              }}
+              className="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer active:scale-95"
+            >
+              <Plus size={15} strokeWidth={2.5} />
+              <span>Book Order</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCustomer(customer);
+                setIsPaymentModalOpen(true);
+              }}
+              className="w-full sm:w-auto justify-center px-3.5 py-2.5 sm:py-2 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+            >
+              <span>₹</span>
+              <span>Record Payment</span>
+            </button>
+
             <button
               type="button"
               onClick={() => openEditCustomerModal(customer)}
-              className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              className="w-full sm:w-auto justify-center px-3 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs active:scale-95"
             >
-              <Pencil size={15} className="text-amber-500" />
+              <Pencil size={14} className="text-amber-500" />
               <span>Edit Details</span>
             </button>
 
@@ -450,67 +480,47 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
                 setSelectedCustomer(customer);
                 setIsShareModalOpen(true);
               }}
-              className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              className="w-full sm:w-auto justify-center px-3 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs active:scale-95"
             >
-              <Share2 size={15} />
-              <span>Share Catalogue</span>
+              <Share2 size={14} />
+              <span>Share Catalog</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCustomer(customer);
-                setIsPaymentModalOpen(true);
-              }}
-              className="px-3.5 py-2 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <span>₹</span>
-              <span>Record Payment</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCustomer(customer);
-                setIsCreateOrderModalOpen(true);
-              }}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-              <span>New Order</span>
-            </button>
-
-            <CustomerRowActionMenu customer={customer} onNavigate={onNavigate} fromPath={fromPath} />
+            <div className="hidden sm:block">
+              <CustomerRowActionMenu customer={customer} onNavigate={onNavigate} fromPath={fromPath} />
+            </div>
           </div>
         </div>
 
-        {/* Contact & Territory Meta Line */}
-        <div className="pt-3 border-t border-border flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 text-foreground">
-            <MapPin size={14} className="text-muted-foreground" />
-            <span>{customer.city}{customer.state ? `, ${customer.state}` : ''} ({customer.cluster || '—'})</span>
+        {/* Contact & Territory Meta Line (Mobile Action Quick-Bar) */}
+        <div className="pt-3 border-t border-border flex flex-wrap items-center justify-between sm:justify-start gap-x-4 gap-y-2 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 text-foreground truncate max-w-[200px] sm:max-w-none">
+            <MapPin size={13} className="text-muted-foreground shrink-0" />
+            <span className="truncate">{customer.city}{customer.state ? `, ${customer.state}` : ''}</span>
           </span>
 
-          <a
-            href={`tel:${customer.phone}`}
-            className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            <Phone size={14} />
-            <span>{customer.phone}</span>
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href={`tel:${customer.phone}`}
+              className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium hover:underline bg-blue-50/60 dark:bg-blue-950/40 px-2 py-1 rounded-lg"
+            >
+              <Phone size={12} />
+              <span>Call</span>
+            </a>
 
-          <a
-            href={`https://wa.me/${(customer.whatsapp || customer.phone).replace(/[^0-9]/g, '')}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 hover:underline"
-          >
-            <MessageSquare size={14} />
-            <span>WhatsApp Connect</span>
-          </a>
+            <a
+              href={`https://wa.me/${(customer.whatsapp || customer.phone).replace(/[^0-9]/g, '')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium hover:underline bg-emerald-50/60 dark:bg-emerald-950/40 px-2 py-1 rounded-lg"
+            >
+              <MessageSquare size={12} />
+              <span>WhatsApp</span>
+            </a>
+          </div>
 
-          <span className="inline-flex items-center gap-1.5">
-            <Building2 size={14} />
+          <span className="hidden sm:inline-flex items-center gap-1.5 ml-auto">
+            <Building2 size={13} />
             <span>Sales Rep: <strong className="text-foreground">{customer.salespersonName || 'Unassigned'}</strong></span>
           </span>
         </div>
@@ -747,7 +757,84 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Ledger Cards (md:hidden) */}
+          <div className="md:hidden divide-y divide-border">
+            {filteredLedger.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <FileText size={32} className="mx-auto mb-2 text-muted-foreground/40" />
+                <p className="font-bold text-foreground text-sm">No transactions yet</p>
+                <p className="text-xs mt-1">Billed invoices and realized payments will appear here.</p>
+              </div>
+            ) : (
+              filteredLedger.map((entry) => (
+                <div key={entry.id} className="p-3.5 space-y-2 hover:bg-muted/20">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-bold text-sm text-foreground block">{entry.typeLabel}</span>
+                      <span className="text-[11px] text-muted-foreground font-mono">
+                        {entry.date} • Ref: {entry.refNo}
+                      </span>
+                    </div>
+                    {entry.type === 'payment' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const cleanId = entry.id.replace('pay-', '');
+                          const matched = payments.find((p) => p.id === cleanId || p.receiptNumber === entry.refNo || p.utrRef === entry.refNo) || {
+                            id: cleanId || `pay-${Date.now()}`,
+                            receiptNumber: entry.refNo || `SF-REC-${Date.now().toString().slice(-5)}`,
+                            customerId: customer.id,
+                            customerName: customer.businessName,
+                            customerCity: customer.city,
+                            amountDueBefore: (customer.amountDue || 0) + (entry.credit || 0),
+                            paymentAmount: entry.credit,
+                            amountDueAfter: customer.amountDue || 0,
+                            paymentDate: entry.date,
+                            paymentMethod: 'UPI' as const,
+                            utrRef: entry.refNo,
+                            status: 'verified',
+                          } as PaymentReceipt;
+                          setSelectedReceiptPayment(matched);
+                        }}
+                        className="px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 text-blue-600 dark:text-blue-400 inline-flex items-center gap-1 text-xs font-semibold border border-blue-200 dark:border-blue-900/40 cursor-pointer active:scale-95"
+                      >
+                        <FileText size={12} />
+                        <span>Slip</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {entry.particulars && (
+                    <p className="text-xs text-muted-foreground">{entry.particulars}</p>
+                  )}
+
+                  <div className="grid grid-cols-3 gap-2 bg-muted/40 dark:bg-muted/20 p-2.5 rounded-xl border border-border/50 text-xs">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Billed</span>
+                      <span className="font-mono font-medium text-foreground">
+                        {entry.debit > 0 ? formatIndianCurrency(entry.debit) : '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Paid</span>
+                      <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                        {entry.credit > 0 ? formatIndianCurrency(entry.credit) : '—'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Balance</span>
+                      <span className="font-mono font-bold text-foreground">
+                        {formatIndianCurrency(entry.runningBalance)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider">
                 <tr>
@@ -846,7 +933,62 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             </button>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Orders Cards (md:hidden) */}
+          <div className="md:hidden divide-y divide-border">
+            {customerOrders.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <ShoppingBag size={32} className="mx-auto mb-2 text-muted-foreground/40" />
+                <p className="font-bold text-foreground text-sm">No orders on file yet</p>
+                <p className="text-xs mt-1">Create the first wholesale consignment order for this client.</p>
+              </div>
+            ) : (
+              customerOrders.map((ord) => (
+                <div
+                  key={ord.id}
+                  onClick={() => onNavigate(`${currentUser.role === 'admin' ? '/admin' : '/sales'}/orders?order=${ord.id}`)}
+                  className="p-3.5 space-y-2 hover:bg-muted/20 active:bg-muted/40 cursor-pointer"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-bold text-sm text-blue-600 dark:text-blue-400 font-mono block">
+                        {ord.id}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {ord.orderDate || 'Recent'} • {ord.pairsCount} Pairs ({ord.items?.length || 1} Articles)
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-900/50">
+                      {ord.status}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 bg-muted/40 dark:bg-muted/20 p-2.5 rounded-xl border border-border/50 text-xs">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total</span>
+                      <span className="font-bold text-foreground">
+                        {formatIndianCurrency(ord.netPayable || ord.subtotal || 0)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Advance</span>
+                      <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                        {formatIndianCurrency(ord.advanceDeposited || 0)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Due</span>
+                      <span className="font-bold text-rose-600 dark:text-rose-400">
+                        {formatIndianCurrency(ord.balanceDue || 0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Orders Table (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider">
                 <tr>
@@ -934,7 +1076,66 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
             </button>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Payments Cards (md:hidden) */}
+          <div className="md:hidden divide-y divide-border">
+            {customerPayments.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <DollarSign size={32} className="mx-auto mb-2 text-muted-foreground/40" />
+                <p className="font-bold text-foreground text-sm">No payment records logged</p>
+                <p className="text-xs mt-1">Record a cheque or UPI collection to clear balance.</p>
+              </div>
+            ) : (
+              customerPayments.map((pay) => (
+                <div key={pay.id} className="p-3.5 space-y-2 hover:bg-muted/20">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-mono font-bold text-sm text-foreground block">
+                        {pay.receiptNumber || `SF-REC-${pay.id.slice(-5)}`}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {pay.paymentDate || 'Recent'} • {pay.paymentMethod || 'UPI'}
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50">
+                      {pay.status === 'pending_clearance' ? 'Pending' : 'Realized'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-muted/40 dark:bg-muted/20 p-2.5 rounded-xl border border-border/50 text-xs">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Amount Realized</span>
+                      <span className="font-bold font-mono text-base text-emerald-600 dark:text-emerald-400">
+                        {formatIndianCurrency(pay.paymentAmount || 0)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Invoice Ref</span>
+                      <span className="font-mono text-xs text-foreground">
+                        {pay.orderNumber || pay.orderId || 'General'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[200px]">
+                      UTR: {pay.utrRef || '—'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedReceiptPayment(pay)}
+                      className="px-2.5 py-1 rounded-lg border border-border hover:bg-muted text-blue-600 dark:text-blue-400 font-semibold text-xs inline-flex items-center gap-1 transition-colors cursor-pointer active:scale-95"
+                    >
+                      <FileText size={12} />
+                      <span>View Receipt</span>
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Payments Table (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider">
                 <tr>

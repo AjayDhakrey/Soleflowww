@@ -34,7 +34,9 @@ import {
   Download,
   Printer,
   FileSpreadsheet,
+  ChevronLeft,
 } from 'lucide-react';
+import { Icons } from '../../lib/icons';
 import {
   PageHeader,
   KpiCard,
@@ -58,6 +60,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'In Market' | 'Office/HQ'>('All');
   const [taskFilter, setTaskFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [mobileTab, setMobileTab] = useState<'directory' | 'inspector'>('directory');
   
   // Quick Add Stop Modal State
   const [isAddStopOpen, setIsAddStopOpen] = useState(false);
@@ -348,36 +351,40 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12 animate-in fade-in duration-150">
+    <div className="p-3.5 sm:p-6 md:p-8 space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-28 sm:pb-32 md:pb-12 animate-in fade-in duration-150">
       {/* 1. Page Header */}
       <PageHeader
         breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Sales Team & Field Force' }]}
         title="Sales Force & Field Dispatch"
         subtitle="Track field sales reps, target quotas, live market routes, and daily store visits."
         actions={
-          <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-semibold shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {activeInMarketCount} Reps Active In Market
-            </span>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={FileText}
-              onClick={() => setIsExportRoutesModalOpen(true)}
-              className="hidden sm:inline-flex"
-            >
-              Export Routes
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={UserPlus}
-              onClick={() => setIsCreateRepModalOpen(true)}
-              className="shadow-xs font-semibold"
-            >
-              + Add Representative
-            </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-semibold shadow-xs whitespace-nowrap shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                {activeInMarketCount} Reps Active In Market
+              </span>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={FileText}
+                onClick={() => setIsExportRoutesModalOpen(true)}
+                className="flex-1 sm:flex-none justify-center shadow-2xs font-semibold"
+              >
+                Export Routes
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={UserPlus}
+                onClick={() => setIsCreateRepModalOpen(true)}
+                className="flex-1 sm:flex-none justify-center shadow-xs font-semibold"
+              >
+                + Add Representative
+              </Button>
+            </div>
           </div>
         }
       />
@@ -394,10 +401,38 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
         visitsCompletionPct={visitsCompletionPct}
       />
 
-      {/* 3. Main Split Section */}
+      {/* 3. Mobile View Segmented Switcher (Stitch Pattern) */}
+      <div className="lg:hidden flex p-1 bg-muted/80 dark:bg-muted/40 rounded-2xl border border-border/80 shadow-2xs gap-1">
+        <button
+          type="button"
+          onClick={() => setMobileTab('directory')}
+          className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none ${
+            mobileTab === 'directory'
+              ? 'bg-surface text-foreground shadow-xs border border-border/50'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Users className="w-3.5 h-3.5 text-blue-500" />
+          <span>Team Directory ({filteredReps.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('inspector')}
+          className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none ${
+            mobileTab === 'inspector'
+              ? 'bg-surface text-foreground shadow-xs border border-border/50'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Navigation className="w-3.5 h-3.5 text-emerald-500" />
+          <span className="truncate">Route &amp; Stops ({activeRep.name ? activeRep.name.split(' ')[0] : 'Rep'})</span>
+        </button>
+      </div>
+
+      {/* 4. Main Split Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Representatives Directory (5 Cols) */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className={`${mobileTab === 'inspector' ? 'hidden lg:block' : 'block'} lg:col-span-5 space-y-4`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20 shrink-0">
@@ -416,8 +451,8 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
           </div>
 
           {/* Search & Filter Bar */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1 min-w-0">
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted-foreground" />
               <input
                 type="text"
@@ -436,7 +471,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
               )}
             </div>
 
-            <div className="flex bg-muted/60 p-1 rounded-xl border border-border text-xs shrink-0 gap-0.5">
+            <div className="flex bg-muted/60 p-1 rounded-xl border border-border text-xs shrink-0 gap-0.5 justify-center sm:justify-start">
               {(
                 [
                   { label: 'All', value: 'All' },
@@ -448,7 +483,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                   key={tab.value}
                   type="button"
                   onClick={() => setStatusFilter(tab.value)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-none px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                     statusFilter === tab.value
                       ? 'bg-surface text-foreground shadow-2xs font-bold'
                       : 'text-muted-foreground hover:text-foreground'
@@ -477,7 +512,10 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 return (
                   <div
                     key={rep.id}
-                    onClick={() => setSelectedRepId(rep.id)}
+                    onClick={() => {
+                      setSelectedRepId(rep.id);
+                      setMobileTab('inspector');
+                    }}
                     className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer relative overflow-hidden group text-left ${
                       isSelected
                         ? 'bg-surface border-primary/50 shadow-sm ring-1 ring-primary/25'
@@ -592,7 +630,17 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Right Column: Active Rep Inspector & Live Route Dispatch (7 Cols) */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className={`${mobileTab === 'directory' ? 'hidden lg:block' : 'block'} lg:col-span-7 space-y-4 sm:space-y-6`}>
+          {/* Mobile Back Button */}
+          <button
+            type="button"
+            onClick={() => setMobileTab('directory')}
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer w-fit transition-colors mb-1"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>← Back to Directory ({filteredReps.length})</span>
+          </button>
+
           <Panel
             title={
               <div className="flex items-center gap-3">
@@ -606,7 +654,7 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg text-foreground tracking-tight">
+                    <span className="font-bold text-base sm:text-lg text-foreground tracking-tight">
                       {activeRep.name}
                     </span>
                     <span className="font-mono text-[11px] font-bold text-muted-foreground bg-muted/80 px-2 py-0.5 rounded border border-border">
@@ -637,22 +685,36 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
               </div>
             }
             headerAction={
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
                 <Button
                   variant="secondary"
                   size="sm"
                   icon={Phone}
-                  onClick={() => showToast(`Dialing ${activeRep.name} (${activeRep.phone})...`)}
-                  className="text-xs rounded-xl"
+                  onClick={() => {
+                    window.location.href = `tel:${activeRep.phone}`;
+                  }}
+                  className="text-xs rounded-xl h-8 px-2.5"
                 >
-                  Call Rep
+                  Call
                 </Button>
+                {activeRep.phone && (
+                  <a
+                    href={`https://wa.me/${(activeRep.phone || '').replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-8 px-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                    title="Message Rep on WhatsApp"
+                  >
+                    <Icons.WhatsApp className="w-3.5 h-3.5" />
+                    <span className="hidden xs:inline">WhatsApp</span>
+                  </a>
+                )}
                 <Button
                   variant="primary"
                   size="sm"
                   icon={Plus}
                   onClick={() => setIsAddStopOpen(true)}
-                  className="text-xs rounded-xl shadow-xs"
+                  className="text-xs rounded-xl shadow-xs h-8 px-2.5"
                 >
                   Add Stop
                 </Button>
@@ -917,11 +979,16 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Quick Add Stop Modal */}
+      {/* Quick Add Stop Modal (Bottom-sheet on mobile) */}
       {isAddStopOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-surface rounded-2xl shadow-xl border border-border overflow-hidden">
-            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 dark:bg-black/80 backdrop-blur-xs select-none animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-surface rounded-t-3xl sm:rounded-2xl shadow-2xl border-t sm:border border-border overflow-hidden max-h-[92vh] flex flex-col animate-in slide-in-from-bottom duration-200">
+            {/* Mobile Sheet Grab Handle */}
+            <div className="pt-2.5 pb-0.5 sm:hidden flex justify-center bg-muted/30 shrink-0">
+              <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+            </div>
+
+            <div className="px-5 sm:px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
                   <Navigation className="w-4 h-4" />
@@ -932,14 +999,15 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsAddStopOpen(false)}
-                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateStop} className="p-6 space-y-4">
+            <form onSubmit={handleCreateStop} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 overscroll-contain">
               <div>
                 <label className="text-xs font-semibold text-foreground block mb-1">
                   Store / Account Name &amp; Purpose *
@@ -1019,10 +1087,15 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* Export Daily Route Manifest Modal */}
+      {/* Export Daily Route Manifest Modal (Bottom-sheet on mobile) */}
       {isExportRoutesModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-lg bg-surface border border-border rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-lg bg-surface border-t sm:border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-150">
+            {/* Mobile Sheet Grab Handle */}
+            <div className="pb-1 sm:hidden flex justify-center">
+              <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+            </div>
+
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
@@ -1041,9 +1114,9 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => setIsExportRoutesModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-bold p-1 cursor-pointer transition-colors"
+                className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground text-sm font-bold cursor-pointer transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 

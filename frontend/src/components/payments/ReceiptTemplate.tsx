@@ -664,15 +664,15 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
       role="dialog"
       aria-modal="true"
       aria-label={`Receipt ${props.receipt.receiptNumber}`}
-      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(15,23,42,.65)', backdropFilter: 'blur(4px)', overflowY: 'auto', padding: '24px 12px' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(15,23,42,.65)', backdropFilter: 'blur(4px)', overflowY: 'auto', padding: '16px 8px' }}
       onClick={onClose}
     >
-      <div style={{ maxWidth: 820, margin: '0 auto' }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ maxWidth: 820, margin: '0 auto', width: '100%' }} onClick={(e) => e.stopPropagation()}>
         <div className="rcpt-noprint" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
           {/* Pregenerated File Name Chip */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'rgba(255,255,255,0.95)', borderRadius: 10, border: '1px solid rgba(226,232,240,0.8)', fontSize: 12, color: '#334155' }}>
-            <span style={{ fontWeight: 600, color: '#0B2A5B' }}>📄 Preset:</span>
-            <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#1D5FD1' }}>{fullFileName}</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'rgba(255,255,255,0.95)', borderRadius: 10, border: '1px solid rgba(226,232,240,0.8)', fontSize: 11, color: '#334155', maxWidth: '100%', overflow: 'hidden' }}>
+            <span style={{ fontWeight: 600, color: '#0B2A5B', flexShrink: 0 }}>📄 Preset:</span>
+            <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#1D5FD1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fullFileName}</span>
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
@@ -748,7 +748,7 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({ open, 
             </button>
           </div>
         </div>
-        <div id="rcpt-print-root">
+        <div id="rcpt-print-root" style={{ width: '100%', overflowX: 'auto' }}>
           <ReceiptTemplate {...props} />
         </div>
       </div>

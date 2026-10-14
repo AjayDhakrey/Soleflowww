@@ -18,7 +18,7 @@ interface PaymentsKpiCardsProps {
 
 // 1. Total Receivables (3D Green Wallet + Green Paper Bills + Gold Rupee Coin)
 export const TotalReceivablesWallet3D = () => (
-  <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 120 120" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Ambient Glow */}
@@ -141,7 +141,7 @@ export const TotalReceivablesWallet3D = () => (
 
 // 2. Due This Week (3D Desk Calendar + 3D Royal Blue Clock)
 export const DueThisWeekCalendar3D = () => (
-  <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 120 120" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Ambient Glow */}
@@ -237,7 +237,7 @@ export const DueThisWeekCalendar3D = () => (
 
 // 3. Critical Overdue (3D Hot Magenta/Pink Warning Triangle with Exclamation)
 export const CriticalOverdueAlert3D = () => (
-  <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 120 120" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Ambient Glow */}
@@ -315,7 +315,7 @@ export const CriticalOverdueAlert3D = () => (
 
 // 4. Collected This Month (3D Blue Classical Bank Building + Green Checkmark Badge)
 export const CollectedBank3D = () => (
-  <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 120 120" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Ambient Glow */}
@@ -422,78 +422,78 @@ export const PaymentsKpiCards: React.FC<PaymentsKpiCardsProps> = ({
   collectedCaption = 'MTD bank verified realizations',
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
       {/* 1. Total Receivables */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <TotalReceivablesWallet3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Total Receivables">
+          <span className="text-[11px] sm:text-[13px] font-medium text-muted-foreground block truncate" title="Total Receivables">
             Total Receivables
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
+            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
             title={totalReceivables}
           >
             {totalReceivables}
           </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={receivablesCaption}>
+          <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate hidden xs:block sm:block" title={receivablesCaption}>
             {receivablesCaption}
           </p>
         </div>
       </div>
 
       {/* 2. Due This Week */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <DueThisWeekCalendar3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Due This Week">
+          <span className="text-[11px] sm:text-[13px] font-medium text-muted-foreground block truncate" title="Due This Week">
             Due This Week
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
+            className="text-base sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
             title={dueThisWeek}
           >
             {dueThisWeek}
           </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={dueThisWeekCaption}>
+          <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate hidden xs:block sm:block" title={dueThisWeekCaption}>
             {dueThisWeekCaption}
           </p>
         </div>
       </div>
 
       {/* 3. Critical (> 30 Days) */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <CriticalOverdueAlert3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Critical (> 30 Days)">
-            Critical (&gt; 30 Days)
+          <span className="text-[11px] sm:text-[13px] font-medium text-muted-foreground block truncate" title="Critical (> 30 Days)">
+            Critical (&gt; 30d)
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate"
+            className="text-base sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate"
             title={criticalAmount}
           >
             {criticalAmount}
           </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={criticalCaption}>
+          <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate hidden xs:block sm:block" title={criticalCaption}>
             {criticalCaption}
           </p>
         </div>
       </div>
 
       {/* 4. Collected This Month */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
         <CollectedBank3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Collected (This Month)">
-            Collected (This Month)
+          <span className="text-[11px] sm:text-[13px] font-medium text-muted-foreground block truncate" title="Collected (This Month)">
+            Collected (MTD)
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
+            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
             title={collectedThisMonth}
           >
             {collectedThisMonth}
           </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title={collectedCaption}>
+          <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate hidden xs:block sm:block" title={collectedCaption}>
             {collectedCaption}
           </p>
         </div>

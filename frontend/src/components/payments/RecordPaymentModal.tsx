@@ -4,6 +4,7 @@ import { Icons } from '../../lib/icons';
 import { Button } from '../ui/Button';
 import { PaymentReceipt } from '../../types';
 import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from './ReceiptTemplate';
+import { safeRandomUUID } from '../../lib/uuid';
 
 export const RecordPaymentModal: React.FC = () => {
   const {
@@ -29,7 +30,7 @@ export const RecordPaymentModal: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [sendSms, setSendSms] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentAttemptId, setPaymentAttemptId] = useState(() => crypto.randomUUID());
+  const [paymentAttemptId, setPaymentAttemptId] = useState(() => safeRandomUUID());
 
   // Success Receipt State
   const [createdPayment, setCreatedPayment] = useState<PaymentReceipt | null>(null);
@@ -38,7 +39,7 @@ export const RecordPaymentModal: React.FC = () => {
   // Sync selected customer & reset fields on modal open
   useEffect(() => {
     if (isPaymentModalOpen) {
-      setPaymentAttemptId(crypto.randomUUID());
+      setPaymentAttemptId(safeRandomUUID());
       setCreatedPayment(null);
       setIsPreviewModalOpen(false);
       const initialCust = selectedCustomer || customers.find((c) => c.amountDue > 0) || customers[0];
@@ -175,19 +176,19 @@ export const RecordPaymentModal: React.FC = () => {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
-        <div className="relative w-full max-w-lg bg-surface rounded-2xl shadow-xl border border-border overflow-hidden">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
+        <div className="relative w-full max-w-lg bg-surface rounded-2xl shadow-xl border border-border overflow-hidden max-h-[92vh] flex flex-col">
           {/* Modal Header */}
-          <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <Icons.Payments size={20} strokeWidth={1.75} />
               </div>
-              <div>
-                <h3 className="font-bold text-lg text-foreground tracking-tight">
+              <div className="min-w-0">
+                <h3 className="font-bold text-base sm:text-lg text-foreground tracking-tight truncate">
                   {createdPayment ? 'Payment Realization Receipt' : 'Record Customer Payment'}
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
                   {createdPayment ? 'Transaction completed and ledger balance adjusted' : 'Cheque, UPI, or NEFT bank realization entry'}
                 </p>
               </div>
@@ -195,7 +196,7 @@ export const RecordPaymentModal: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsPaymentModalOpen(false)}
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer shrink-0 ml-2"
             >
               <Icons.Close size={18} strokeWidth={1.75} />
             </button>
@@ -203,7 +204,7 @@ export const RecordPaymentModal: React.FC = () => {
 
           {/* If Receipt Mode */}
           {createdPayment ? (
-            <div className="p-6 space-y-5 animate-in fade-in duration-150">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 animate-in fade-in duration-150">
               <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/60 dark:bg-emerald-950/30 text-center space-y-2">
                 <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <Icons.Check size={24} strokeWidth={2.5} />
@@ -281,7 +282,7 @@ export const RecordPaymentModal: React.FC = () => {
             </div>
           ) : (
             /* Payment Form */
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
               {/* Step 1: Select Retailer */}
               <div>
                 <label className="text-sm font-medium text-foreground block mb-1.5">
@@ -495,12 +496,13 @@ export const RecordPaymentModal: React.FC = () => {
               </div>
 
               {/* Footer Actions */}
-              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-border flex items-center justify-end gap-2.5 sm:gap-3">
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => setIsPaymentModalOpen(false)}
                   disabled={isSubmitting}
+                  className="flex-1 sm:flex-initial"
                 >
                   Cancel
                 </Button>
@@ -509,6 +511,7 @@ export const RecordPaymentModal: React.FC = () => {
                   variant="primary"
                   icon={Icons.Check}
                   disabled={isSubmitting}
+                  className="flex-1 sm:flex-initial shadow-xs"
                 >
                   {isSubmitting ? 'Recording...' : 'Save Payment Entry'}
                 </Button>

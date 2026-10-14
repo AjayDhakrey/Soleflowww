@@ -1,4 +1,5 @@
 import { supabase, isDemoModeActive, toValidOrgId } from '../lib/supabase';
+import { safeRandomUUID } from '../lib/uuid';
 import { PaymentReceipt } from '../types';
 import { Database } from '../types/database.types';
 import { parseSupabaseError } from './apiError';
@@ -167,7 +168,7 @@ export const paymentsService = {
         cheque_no: params.chequeNo || null,
         cheque_bank: params.chequeBank || null,
         cheque_date: params.chequeDate || null,
-        idempotency_key: params.idempotencyKey || crypto.randomUUID(),
+        idempotency_key: params.idempotencyKey || safeRandomUUID(),
         payment_date_at: paymentDateIso,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

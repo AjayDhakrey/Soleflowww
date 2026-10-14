@@ -244,7 +244,7 @@ export const ReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
+    <div className="p-3.5 sm:p-6 md:p-8 space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-28 sm:pb-32 md:pb-12 bg-background text-foreground animate-in fade-in duration-150 overflow-x-hidden">
       {/* 1. Page Header */}
       <PageHeader
         breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Reports & Analytics' }]}
@@ -253,8 +253,10 @@ export const ReportsPage: React.FC = () => {
         actions={
           <Button
             variant="secondary"
+            size="sm"
             icon={Icons.Export}
             onClick={handleExportLedger}
+            className="w-full sm:w-auto font-semibold shadow-2xs justify-center"
           >
             Export Ledger CSV
           </Button>
@@ -280,15 +282,16 @@ export const ReportsPage: React.FC = () => {
           title="Pending Volume Margin Authorizations"
           subtitle="Special wholesale pricing override requests submitted by field representatives"
           headerAction={
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
               <Tag variant={pendingCount > 0 ? 'purple' : 'slate'}>
-                {pendingCount} Pending Authorization{pendingCount === 1 ? '' : 's'}
+                {pendingCount} Pending<span className="hidden xs:inline"> Authorization{pendingCount === 1 ? '' : 's'}</span>
               </Tag>
               <Button
                 variant="secondary"
                 size="sm"
                 icon={Plus}
                 onClick={() => setIsNewRequestModalOpen(true)}
+                className="font-medium"
               >
                 New Request
               </Button>
@@ -297,10 +300,10 @@ export const ReportsPage: React.FC = () => {
         >
           <div className="space-y-4">
             {/* Tabs for Pending / Approved / Rejected */}
-            <div className="flex items-center gap-2 border-b border-border pb-3 text-xs font-semibold">
+            <div className="flex items-center gap-1.5 sm:gap-2 border-b border-border pb-3 text-xs font-semibold">
               <button
                 onClick={() => setSelectedTab('pending')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`flex-1 sm:flex-none justify-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTab === 'pending'
                     ? 'bg-primary text-white shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -314,7 +317,7 @@ export const ReportsPage: React.FC = () => {
 
               <button
                 onClick={() => setSelectedTab('approved')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`flex-1 sm:flex-none justify-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTab === 'approved'
                     ? 'bg-primary text-white shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -328,7 +331,7 @@ export const ReportsPage: React.FC = () => {
 
               <button
                 onClick={() => setSelectedTab('rejected')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`flex-1 sm:flex-none justify-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTab === 'rejected'
                     ? 'bg-primary text-white shadow-xs font-bold'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -372,10 +375,10 @@ export const ReportsPage: React.FC = () => {
                         setActiveRequest(req);
                         setIsDrawerOpen(true);
                       }}
-                      className="p-4 bg-muted/30 hover:bg-muted/60 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-150 cursor-pointer group shadow-2xs"
+                      className="p-3.5 sm:p-4 bg-muted/30 hover:bg-muted/60 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all duration-150 cursor-pointer group shadow-2xs"
                     >
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                           <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                             {req.clientName} ({req.orderId})
                           </span>
@@ -387,11 +390,11 @@ export const ReportsPage: React.FC = () => {
                           )}
                         </div>
 
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground break-words">
                           {req.productSummary} • Requested {req.requestedPercent}% bulk discount instead of default {req.defaultPercent}%.
                         </p>
 
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground break-words">
                           Impact: ₹{Number(req.marginConcession || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} margin concession
                           {req.projectedMarginPercent ? (
                             <>
@@ -418,11 +421,12 @@ export const ReportsPage: React.FC = () => {
                       </div>
 
                       {req.status === 'pending' && isAdmin && (
-                        <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0">
+                        <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 w-full sm:w-auto border-t sm:border-t-0 border-border/50">
                           <Button
                             variant="secondary"
                             size="sm"
                             onClick={(e) => handleQuickReject(req, e)}
+                            className="flex-1 sm:flex-none justify-center"
                           >
                             Reject
                           </Button>
@@ -431,6 +435,7 @@ export const ReportsPage: React.FC = () => {
                             size="sm"
                             icon={Icons.Approved}
                             onClick={(e) => handleQuickApprove(req, e)}
+                            className="flex-1 sm:flex-none justify-center"
                           >
                             Approve {req.requestedPercent}%
                           </Button>
@@ -493,16 +498,16 @@ export const ReportsPage: React.FC = () => {
           ) : (
             <div className="space-y-3 pt-1 text-xs">
               {manufacturerStats.map((m) => (
-                <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-                  <div>
-                    <span className="font-bold text-foreground block">{m.name || '—'}</span>
-                    <span className="text-muted-foreground text-[11px]">
+                <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border gap-2.5">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-foreground block truncate">{m.name || '—'}</span>
+                    <span className="text-muted-foreground text-[11px] block truncate">
                       {m.hub || '—'} • {m.orderCount} Order{m.orderCount === 1 ? '' : 's'} • {formatLakh(m.orderValue)}
                     </span>
                   </div>
                   {m.onTimeRate > 0 ? (
                     <span
-                      className={`font-mono font-bold px-2 py-0.5 rounded border ${
+                      className={`shrink-0 whitespace-nowrap text-[11px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded border ${
                         m.onTimeRate >= 90
                           ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800'
                           : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800'
@@ -511,7 +516,7 @@ export const ReportsPage: React.FC = () => {
                       {m.onTimeRate}% On-Time
                     </span>
                   ) : (
-                    <span className="font-mono text-muted-foreground">—</span>
+                    <span className="shrink-0 font-mono text-muted-foreground">—</span>
                   )}
                 </div>
               ))}

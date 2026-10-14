@@ -186,19 +186,25 @@ async function runLiveDatabaseValidation() {
     .insert([
       {
         id: testOrderId,
-        client_id: testCustId,
+        customerId: testCustId,
+        customerName: testCustName,
+        customerCity: 'Agra',
+        customerState: 'Uttar Pradesh',
         status: 'In Production',
+        pairsCount: 200,
+        cartonsCount: 16,
         subtotal: 150000,
-        trade_discount_percent: 5,
-        trade_discount_amount: 7500,
-        taxable_subtotal: 142500,
-        gst_percent: 12,
-        gst_amount: 17100,
-        net_payable: 159600,
-        advance_deposited: 50000,
-        balance_due: 109600,
-        payment_status: 'Advance Deposited',
-        expected_delivery: new Date(Date.now() + 86400000 * 14).toISOString().split('T')[0],
+        tradeDiscountPercent: 5,
+        tradeDiscountAmount: 7500,
+        taxableSubtotal: 142500,
+        gstPercent: 12,
+        gstAmount: 17100,
+        netPayable: 159600,
+        advanceDeposited: 50000,
+        balanceDue: 109600,
+        paymentStatus: 'Advance Deposited',
+        orderDate: new Date().toISOString().split('T')[0],
+        expectedDelivery: new Date(Date.now() + 86400000 * 14).toISOString().split('T')[0],
       },
     ])
     .select()
@@ -207,7 +213,7 @@ async function runLiveDatabaseValidation() {
   if (orderErr) {
     report('Order Insertion', false, orderErr.message);
   } else {
-    report('Order Insertion', true, `Order ${orderInsert.id}, Net Payable: ₹${orderInsert.net_payable}`);
+    report('Order Insertion', true, `Order ${orderInsert.id}, Net Payable: ₹${orderInsert.netPayable}`);
   }
 
   // 6. Test Payments Table
@@ -218,12 +224,17 @@ async function runLiveDatabaseValidation() {
     .insert([
       {
         id: testPaymentId,
-        client_id: testCustId,
-        amount: 50000,
-        payment_method: 'UPI',
-        reference_no: `UPI-REF-${timestamp}`,
+        customerId: testCustId,
+        customerName: testCustName,
+        customerCity: 'Agra',
+        orderId: testOrderId,
+        receiptNumber: `REC-${timestamp.toString().slice(-6)}`,
+        paymentAmount: 50000,
+        paymentMethod: 'UPI',
+        utrRef: `UPI-REF-${timestamp}`,
         notes: 'Advance deposit for bulk production booking',
         status: 'recorded',
+        paymentDate: new Date().toISOString().split('T')[0],
       },
     ])
     .select()
@@ -232,7 +243,7 @@ async function runLiveDatabaseValidation() {
   if (payErr) {
     report('Payment Insertion', false, payErr.message);
   } else {
-    report('Payment Insertion', true, `Payment ID: ${payInsert.id}, Amount: ₹${payInsert.amount}`);
+    report('Payment Insertion', true, `Payment ID: ${payInsert.id}, Amount: ₹${payInsert.paymentAmount}`);
   }
 
   // 7. Cleanup test data

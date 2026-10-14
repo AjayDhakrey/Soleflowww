@@ -150,6 +150,23 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     (d) => !d.isArchived && (d.marginBadge?.includes('High') || d.marginBadge?.includes('40%'))
   ).length;
 
+  // Direct WhatsApp quote sharing for mobile wholesale field agents
+  const handleDirectShareShoe = (shoe: ShoeDesign) => {
+    const ctn = shoe.pairsPerCarton || 12;
+    const ctnTotal = shoe.price * ctn;
+    const sizes = shoe.sizes?.length ? shoe.sizes.join(', ') : '6, 7, 8, 9, 10';
+    const msg = `*Footwear Wholesale Quote - ${shoe.name}*\n` +
+      `• Article Code: *${shoe.articleCode}*\n` +
+      `• Category: ${shoe.category}\n` +
+      `• Upper / Sole: ${shoe.upperMaterial} / ${shoe.soleType}\n` +
+      `• Wholesale Rate: *₹${shoe.price.toLocaleString('en-IN')}/pair*\n` +
+      `• Carton Packaging: ${ctn} Pairs/Ctn (₹${ctnTotal.toLocaleString('en-IN')}/ctn)\n` +
+      `• Available Sizes: ${sizes}\n\n` +
+      `_Inquire or Book Order via ShoeFlow B2B Wholesale Portal._`;
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
   // Open Delete Check Modal
   const handleInitiateDelete = async (shoe: ShoeDesign) => {
     setDeletingDesign(shoe);
@@ -238,19 +255,19 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto pb-24 md:pb-12 font-sans">
+    <div className="p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-[1600px] mx-auto pb-24 md:pb-12 font-sans">
       {/* 1. Page Header */}
       <PageHeader
         breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Catalogue' }]}
         title="Footwear Catalogue & Lookbook"
         subtitle="Curated B2B wholesale designs, material specs, and WhatsApp shareable lookbooks."
         actions={
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
               variant="secondary"
               icon={Icons.Clock}
               onClick={() => setIsShareHistoryOpen(true)}
-              className="rounded-xl"
+              className="rounded-xl text-xs sm:text-sm py-2 px-3 hidden sm:inline-flex"
             >
               Sharing History
             </Button>
@@ -258,7 +275,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
               variant="secondary"
               icon={Icons.WhatsApp}
               onClick={() => setIsShareModalOpen(true)}
-              className="text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 hover:bg-emerald-100/70 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-800 rounded-xl"
+              className="flex-1 sm:flex-initial text-xs sm:text-sm py-2 px-3 text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 hover:bg-emerald-100/70 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-800 rounded-xl"
             >
               Share Lookbook ({selectedDesignIds.length})
             </Button>
@@ -270,7 +287,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                   setEditingDesign(null);
                   setIsAddModalOpen(true);
                 }}
-                className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/25 rounded-xl font-bold"
+                className="flex-1 sm:flex-initial text-xs sm:text-sm py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/25 rounded-xl font-bold"
               >
                 Add Design
               </Button>
@@ -290,16 +307,16 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
       {/* 3. Sleek Redesigned Catalogue Container */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/90 rounded-2xl sm:rounded-3xl shadow-xs overflow-hidden transition-all">
         {/* Search & Sort Top Toolbar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 space-y-3.5 bg-slate-50/50 dark:bg-slate-900/40">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="p-3 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-slate-50/50 dark:bg-slate-900/40">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-3">
             {/* Search Input */}
-            <div className="relative flex-1 max-w-xl">
+            <div className="relative w-full md:max-w-xl">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by article code (e.g. SF-ART-104), model name, material..."
+                placeholder="Search article code, model name, material..."
                 className="w-full h-10 pl-10 pr-9 text-xs sm:text-sm rounded-xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all shadow-xs"
               />
               {searchQuery && (
@@ -314,7 +331,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Sort & Quick Filters */}
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center justify-between md:justify-end gap-2 shrink-0 w-full md:w-auto">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-xs">
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
                 <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sort:</span>
@@ -334,17 +351,17 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={clearSelectedDesigns}
-                  className="px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 border border-rose-200/80 dark:border-rose-900 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 border border-rose-200/80 dark:border-rose-900 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
                 >
                   <Icons.Close size={13} />
-                  <span>Clear Selection ({selectedDesignIds.length})</span>
+                  <span>Clear ({selectedDesignIds.length})</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
+          {/* Category Filter Pills (Scrollable on Mobile) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-0.5">
             {categories.map((cat) => {
               const isSelected = activeCategory === cat.value;
               const count = counts[cat.value] ?? 0;
@@ -354,15 +371,15 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                   key={cat.value}
                   type="button"
                   onClick={() => setActiveCategory(cat.value)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 select-none ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 select-none shrink-0 whitespace-nowrap ${
                     isSelected
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm shadow-slate-900/20 scale-[1.02]'
-                      : 'bg-white dark:bg-slate-850 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300'
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm shadow-slate-900/20'
+                      : 'bg-white dark:bg-slate-850 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   <span>{cat.label}</span>
                   <span
-                    className={`px-1.5 py-0.2 rounded-full text-[11px] font-bold ${
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] sm:text-[11px] font-bold ${
                       isSelected
                         ? 'bg-white/20 dark:bg-slate-900/20 text-white dark:text-slate-900'
                         : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'
@@ -419,7 +436,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
         {/* Footwear Grid */}
         {!isLoading && !isError && (
-          <div className="p-4 sm:p-6">
+          <div className="p-3 sm:p-6">
             {sortedDesigns.length === 0 ? (
               <EmptyState
                 icon={Icons.Designs}
@@ -431,7 +448,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                 }
               />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-6">
                 {sortedDesigns.map((shoe) => {
                   const isSelected = selectedDesignIds.includes(shoe.id);
                   const isNew = isRecentNew(shoe);
@@ -448,7 +465,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                       }`}
                     >
                       {/* Top Image Showcase Area */}
-                      <div className="relative aspect-[4/3] bg-gradient-to-b from-slate-50 via-slate-100/50 to-slate-100/80 dark:from-slate-900/80 dark:via-slate-900/50 dark:to-slate-900 p-4 flex items-center justify-center overflow-hidden">
+                      <div className="relative aspect-[4/3] bg-gradient-to-b from-slate-50 via-slate-100/50 to-slate-100/80 dark:from-slate-900/80 dark:via-slate-900/50 dark:to-slate-900 p-3 sm:p-4 flex items-center justify-center overflow-hidden">
                         <img
                           src={shoe.image}
                           alt={shoe.name}
@@ -464,7 +481,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                           <button
                             type="button"
                             onClick={() => toggleSelectDesign(shoe.id)}
-                            className={`absolute top-3 left-3 w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer backdrop-blur-md shadow-xs ${
+                            className={`absolute top-2.5 sm:top-3 left-2.5 sm:left-3 w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer backdrop-blur-md shadow-xs ${
                               isSelected
                                 ? 'bg-blue-600 border-blue-600 text-white ring-2 ring-blue-500/30'
                                 : 'bg-white/90 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700 text-transparent hover:border-slate-400 hover:text-slate-300'
@@ -476,9 +493,9 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         )}
 
                         {/* Top Right: Status Badges & Quick View Eye */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        <div className="absolute top-2.5 sm:top-3 right-2.5 sm:right-3 flex items-center gap-1.5">
                           {isNew && !shoe.isArchived && (
-                            <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/95 text-white tracking-wider shadow-sm flex items-center gap-1 backdrop-blur-xs">
+                            <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-500/95 text-white tracking-wider shadow-sm flex items-center gap-1 backdrop-blur-xs">
                               <Sparkles className="w-2.5 h-2.5" /> NEW
                             </span>
                           )}
@@ -496,11 +513,11 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                         {/* Bottom Left Badges */}
                         <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5">
                           {shoe.isArchived ? (
-                            <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                            <span className="px-2 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
                               Archived
                             </span>
                           ) : shoe.marginBadge ? (
-                            <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80">
+                            <span className="px-2 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/80">
                               {shoe.marginBadge}
                             </span>
                           ) : null}
@@ -508,8 +525,8 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                       </div>
 
                       {/* Card Body Information */}
-                      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
-                        <div className="space-y-2">
+                      <div className="p-3.5 sm:p-5 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-3.5">
+                        <div className="space-y-1.5 sm:space-y-2">
                           {/* Article Code & Category Tag */}
                           <div className="flex items-center justify-between gap-2">
                             <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
@@ -521,7 +538,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                           </div>
 
                           {/* Shoe Name */}
-                          <h3 className="font-bold text-base text-slate-900 dark:text-white tracking-tight leading-snug line-clamp-1">
+                          <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white tracking-tight leading-snug line-clamp-1">
                             {shoe.name}
                           </h3>
 
@@ -536,12 +553,25 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                               <span className="truncate max-w-[90px]">{shoe.soleType}</span>
                             </span>
                           </div>
+
+                          {/* Size Curve Breakdown */}
+                          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-0.5">Sizes:</span>
+                            {(shoe.sizes?.length ? shoe.sizes : ['6', '7', '8', '9', '10']).map((sz) => (
+                              <span
+                                key={sz}
+                                className="px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono font-bold text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 shrink-0"
+                              >
+                                {sz}
+                              </span>
+                            ))}
+                          </div>
                         </div>
 
                         {/* Pricing & Packaging Bar */}
-                        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                        <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
                           <div>
-                            <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block">
+                            <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-slate-400 block">
                               Wholesale Ex-Factory
                             </span>
                             <div className="flex items-baseline gap-1">
@@ -553,10 +583,10 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                           </div>
 
                           <div className="text-right">
-                            <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 inline-block">
+                            <span className="px-2 py-0.5 rounded-md font-mono text-[10px] sm:text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 inline-block">
                               {cartonUnits} Prs/Ctn
                             </span>
-                            <span className="block text-[11px] font-mono text-slate-400 mt-0.5">
+                            <span className="block text-[10px] sm:text-[11px] font-mono text-slate-400 mt-0.5">
                               ₹{Number(cartonWholesaleTotal || 0).toLocaleString('en-IN')}/ctn
                             </span>
                           </div>
@@ -572,7 +602,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                                   size="sm"
                                   icon={RotateCcw}
                                   onClick={() => handleRestore(shoe)}
-                                  className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 rounded-xl"
+                                  className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 rounded-xl h-9 sm:h-8"
                                 >
                                   Restore
                                 </Button>
@@ -581,7 +611,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                                   size="sm"
                                   icon={Trash2}
                                   onClick={() => handleInitiateDelete(shoe)}
-                                  className="rounded-xl"
+                                  className="rounded-xl h-9 sm:h-8"
                                 >
                                   Delete
                                 </Button>
@@ -594,16 +624,24 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                                     setEditingDesign(shoe);
                                     setIsAddModalOpen(true);
                                   }}
-                                  className="flex-1 h-8 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                  className="flex-1 h-9 sm:h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                                 >
                                   <Edit2 className="w-3.5 h-3.5 text-slate-500" />
-                                  <span>Edit Specs</span>
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDirectShareShoe(shoe)}
+                                  title="Share Quote on WhatsApp"
+                                  className="h-9 sm:h-8 px-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold transition-all flex items-center justify-center cursor-pointer border border-emerald-200/80 dark:border-emerald-800"
+                                >
+                                  <Icons.WhatsApp className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setArchivingDesign(shoe)}
                                   title="Archive Design"
-                                  className="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-slate-600 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-amber-200"
+                                  className="h-9 sm:h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-slate-600 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-amber-200"
                                 >
                                   <Archive className="w-3.5 h-3.5" />
                                 </button>
@@ -611,29 +649,38 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                                   type="button"
                                   onClick={() => handleInitiateDelete(shoe)}
                                   title="Permanently Delete Design"
-                                  className="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-rose-200"
+                                  className="h-9 sm:h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-rose-200"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             )
                           ) : (
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                               <button
                                 type="button"
                                 onClick={() => setQuickViewShoe(shoe)}
-                                className="h-8 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                className="h-9 sm:h-8 px-1.5 sm:px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
                               >
                                 <Eye className="w-3.5 h-3.5" />
                                 <span>Specs</span>
                               </button>
                               <button
                                 type="button"
+                                onClick={() => handleDirectShareShoe(shoe)}
+                                className="h-9 sm:h-8 px-1.5 sm:px-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer border border-emerald-200/80 dark:border-emerald-800"
+                                title="Share Quote on WhatsApp"
+                              >
+                                <Icons.WhatsApp className="w-3.5 h-3.5" />
+                                <span>Quote</span>
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => setIsCreateOrderModalOpen(true)}
-                                className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-blue-600/30"
+                                className="h-9 sm:h-8 px-1.5 sm:px-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-sm shadow-blue-600/30"
                               >
                                 <ShoppingBag className="w-3.5 h-3.5" />
-                                <span>Book Order</span>
+                                <span>Order</span>
                               </button>
                             </div>
                           )}
@@ -648,105 +695,122 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         )}
       </div>
 
-      {/* 4. Quick Specs Modal */}
+      {/* 4. Quick Specs Modal (Bottom-sheet on Mobile) */}
       {quickViewShoe && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs select-none animate-in fade-in duration-150 font-sans">
-          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <div>
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white tracking-tight font-display">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none animate-in fade-in duration-150 font-sans">
+          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border-t sm:border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[90vh] sm:max-h-[92vh] flex flex-col animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+            {/* Mobile Sheet Grab Handle */}
+            <div className="pt-2.5 pb-0 sm:hidden flex justify-center bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+            </div>
+
+            <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+              <div className="min-w-0">
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight font-display truncate">
                   {quickViewShoe.name}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
                   Article Code: {quickViewShoe.articleCode} • {quickViewShoe.category}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setQuickViewShoe(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center cursor-pointer shrink-0 ml-2"
               >
                 <Icons.Close size={16} strokeWidth={2} />
               </button>
             </div>
 
-            <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-              <div className="bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/20 rounded-2xl p-6 flex items-center justify-center border border-slate-100 dark:border-slate-800">
+            <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 overscroll-contain">
+              <div className="bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-center border border-slate-100 dark:border-slate-800">
                 <img
                   src={quickViewShoe.image}
                   alt={quickViewShoe.name}
-                  className="max-h-52 object-contain mix-blend-multiply dark:mix-blend-normal"
+                  className="max-h-44 sm:max-h-52 object-contain mix-blend-multiply dark:mix-blend-normal"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Upper Material</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{quickViewShoe.upperMaterial}</span>
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs sm:text-sm">
+                <div className="p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Upper Material</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">{quickViewShoe.upperMaterial}</span>
                 </div>
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Sole Construction</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{quickViewShoe.soleType}</span>
+                <div className="p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Sole Construction</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">{quickViewShoe.soleType}</span>
                 </div>
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Carton Packing</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
-                    {quickViewShoe.pairsPerCarton ? `${quickViewShoe.pairsPerCarton} Pairs / Carton` : '12 Pairs / Carton'}
+                <div className="p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Carton Packing</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">
+                    {quickViewShoe.pairsPerCarton ? `${quickViewShoe.pairsPerCarton} Prs/Ctn` : '12 Prs/Ctn'}
                   </span>
                 </div>
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Size Breakdown</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                <div className="p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Size Breakdown</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">
                     {quickViewShoe.sizes?.length ? quickViewShoe.sizes.join(', ') : '6, 7, 8, 9, 10'}
                   </span>
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl flex items-center justify-between shadow-lg">
+              <div className="p-3.5 sm:p-4 bg-slate-900 dark:bg-slate-800 text-white rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-lg">
                 <div>
-                  <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Wholesale Ex-Factory Rate</span>
-                  <span className="text-xl font-black tabular-nums">
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Wholesale Ex-Factory Rate</span>
+                  <span className="text-lg sm:text-xl font-black tabular-nums">
                     ₹{Number(quickViewShoe.price || 0).toLocaleString('en-IN')} / Pair
                   </span>
                 </div>
-                {isUserAdmin ? (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingDesign(quickViewShoe);
-                        setIsAddModalOpen(true);
-                        setQuickViewShoe(null);
-                      }}
-                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleInitiateDelete(quickViewShoe);
-                      }}
-                      className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                ) : (
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <button
                     type="button"
-                    onClick={() => {
-                      setQuickViewShoe(null);
-                      setIsCreateOrderModalOpen(true);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-blue-600/40"
+                    onClick={() => handleDirectShareShoe(quickViewShoe)}
+                    className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    title="Send Quote on WhatsApp"
                   >
-                    <ShoppingBag className="w-3.5 h-3.5" />
-                    <span>Create Order</span>
+                    <Icons.WhatsApp className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>WhatsApp</span>
                   </button>
-                )}
+
+                  {isUserAdmin ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingDesign(quickViewShoe);
+                          setIsAddModalOpen(true);
+                          setQuickViewShoe(null);
+                        }}
+                        className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleInitiateDelete(quickViewShoe);
+                        }}
+                        className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickViewShoe(null);
+                        setIsCreateOrderModalOpen(true);
+                      }}
+                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/40"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Book Order</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -936,8 +1000,39 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         onClose={() => setIsShareHistoryOpen(false)}
       />
 
-      {/* 9. Mobile Floating Action Button (Admin only) */}
-      {isUserAdmin && (
+      {/* 9. Mobile Floating Lookbook Selection Bar */}
+      {selectedDesignIds.length > 0 && (
+        <div className="fixed bottom-20 inset-x-3.5 z-40 sm:hidden animate-in slide-in-from-bottom duration-200">
+          <div className="bg-slate-900/95 dark:bg-slate-800/95 text-white backdrop-blur-md rounded-2xl p-2.5 px-3.5 shadow-2xl border border-white/10 flex items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                {selectedDesignIds.length}
+              </span>
+              <span className="text-xs font-medium text-slate-200 truncate">Articles selected</span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={clearSelectedDesigns}
+                className="px-2 py-1 text-xs text-slate-400 hover:text-white font-medium cursor-pointer"
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer transition-transform active:scale-95"
+              >
+                <Icons.WhatsApp className="w-3.5 h-3.5 text-slate-950" />
+                <span>Share Lookbook</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 10. Mobile Floating Action Button (Admin only) */}
+      {isUserAdmin && selectedDesignIds.length === 0 && (
         <button
           type="button"
           onClick={() => {

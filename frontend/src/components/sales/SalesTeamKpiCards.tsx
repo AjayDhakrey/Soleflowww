@@ -291,88 +291,89 @@ export const SalesTeamKpiCards: React.FC<SalesTeamKpiCardsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
-      {/* 1. Total Field Reps */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <FieldForce3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Field Reps">
-            Total Field Reps
-          </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
-          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0" title={`${totalReps} Executives`}>
-            <span className="tabular-nums whitespace-nowrap">{totalReps}</span>
-            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal whitespace-nowrap">Executives</span>
-          </p>
-          <div className="flex items-center gap-2 mt-1 text-xs">
-            {renderGrowth(repsGrowth)}
-            <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={repsCaption}>
-              {repsCaption}
+    <div className="space-y-2.5 sm:space-y-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
+        {/* 1. Total Field Reps */}
+        <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <FieldForce3D />
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Field Reps">
+              Total Field Reps
             </span>
+            <p className="text-base sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0" title={`${totalReps} Executives`}>
+              <span className="tabular-nums whitespace-nowrap">{totalReps}</span>
+              <span className="text-[11px] sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal whitespace-nowrap">Reps</span>
+            </p>
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+              <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={repsCaption}>
+                {repsCaption}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Total Booked (Month) */}
+        <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <BookedRevenue3D />
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Booked (Month)">
+              Total Booked
+            </span>
+            <p className="text-base sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate" title={`₹${(totalBooked / 100000).toFixed(1)}L`}>
+              ₹{(totalBooked / 100000).toFixed(1)}L
+            </p>
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+              <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={`Target: ₹${(targetAmount / 100000).toFixed(1)}L`}>
+                Target: ₹{(targetAmount / 100000).toFixed(1)}L
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Commission Accrued */}
+        <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <CommissionAccrued3D />
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Commission Accrued">
+              Commissions
+            </span>
+            <p className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate" title={`₹${Number(commissionAccrued || 0).toLocaleString('en-IN')}`}>
+              ₹{(commissionAccrued / 1000).toFixed(0)}k
+            </p>
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+              <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={commissionCaption}>
+                {commissionCaption}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Today's Field Visits */}
+        <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <FieldVisits3D />
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Today's Field Visits">
+              Route Visits
+            </span>
+            <p className="text-base sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0" title={`${visitsDone} / ${visitsGoal} Done`}>
+              <span className="tabular-nums whitespace-nowrap">{visitsDone}/{visitsGoal}</span>
+              <span className="text-[11px] sm:text-sm font-semibold text-blue-600/90 dark:text-blue-400/90 tracking-normal whitespace-nowrap">Stops</span>
+            </p>
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+              <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={`${visitsCompletionPct}% route done`}>
+                {visitsCompletionPct}% completed
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Total Booked (Month) */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <BookedRevenue3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Booked (Month)">
-            Total Booked (Month)
-          </span>
-          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display wrap-anywhere" title={`₹${(totalBooked / 100000).toFixed(1)}L`}>
-            ₹{(totalBooked / 100000).toFixed(1)}L
-          </p>
-          <div className="flex items-center gap-2 mt-1 text-xs">
-            {renderGrowth(bookedGrowth)}
-            <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={`Target: ₹${(targetAmount / 100000).toFixed(1)}L (${targetAmount > 0 ? Math.round((totalBooked / targetAmount) * 100) : 0}%)`}>
-              Target: ₹{(targetAmount / 100000).toFixed(1)}L ({targetAmount > 0 ? Math.round((totalBooked / targetAmount) * 100) : 0}%)
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Commission Accrued */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <CommissionAccrued3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Commission Accrued">
-            Commission Accrued
-          </span>
-          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display wrap-anywhere" title={`₹${Number(commissionAccrued || 0).toLocaleString('en-IN')}`}>
-            ₹{Number(commissionAccrued || 0).toLocaleString('en-IN')}
-          </p>
-          <div className="flex items-center gap-2 mt-1 text-xs">
-            {renderGrowth(commissionGrowth)}
-            <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={commissionCaption}>
-              {commissionCaption}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Today's Field Visits */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <FieldVisits3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Today's Field Visits">
-            Today's Field Visits
-          </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
-          <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0" title={`${visitsDone} / ${visitsGoal} Done`}>
-            <span className="tabular-nums whitespace-nowrap">{visitsDone} / {visitsGoal}</span>
-            <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-normal whitespace-nowrap">Done</span>
-          </p>
-          <div className="flex items-center gap-2 mt-1 text-xs">
-            <span className="font-semibold text-slate-600 dark:text-slate-300 shrink-0">
-              {visitsDone} today
-            </span>
-            <span className="w-px h-3 bg-slate-200 dark:bg-slate-700 shrink-0" />
-            <span className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title={`${visitsCompletionPct}% daily route completion`}>
-              {visitsCompletionPct}% daily route
-            </span>
-          </div>
-        </div>
+      {/* Stitch Mobile Insight Banner */}
+      <div className="flex sm:hidden items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/50 dark:border-blue-900/40 text-[11px] text-muted-foreground">
+        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+        <span className="truncate">
+          <strong className="text-foreground font-semibold">Field Force Live:</strong> {totalReps} territory reps • {visitsDone}/{visitsGoal} route stops done today.
+        </span>
       </div>
     </div>
   );

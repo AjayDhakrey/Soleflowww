@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { safeRandomUUID } from '../lib/uuid';
 import {
   User,
   UserRole,
@@ -318,7 +319,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addAuditEvent = async (eventData: Partial<AuditEvent>) => {
     if (!isSupabaseActive || isReadOnly) return;
     const newEvent: AuditEvent = {
-      id: crypto.randomUUID(),
+      id: safeRandomUUID(),
       actor: eventData.actor || currentUser.name,
       actorRole: eventData.actorRole || (currentUser.role === 'admin' ? 'Trader / Admin' : 'Field Sales Rep'),
       action: eventData.action || 'System Update',
@@ -464,20 +465,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const login = (email: string, pass?: string): boolean => {
     let user = MOCK_USERS.admin;
-    const isSuper = email.includes('super');
     if (email === 'sales@soleflow.com' || email.includes('sales')) {
       user = { ...MOCK_USERS.salesperson, isSuperAdmin: false, is_super_admin: false, isDemoAccount: true };
-    } else if (isSuper) {
-      user = {
-        ...MOCK_USERS.admin,
-        id: 'superadmin-demo-uuid',
-        name: 'Platform Super Admin',
-        email: 'superadmin@soleflow.com',
-        roleLabel: 'Platform Owner',
-        isSuperAdmin: true,
-        is_super_admin: true,
-        isDemoAccount: true,
-      };
     } else {
       user = { ...MOCK_USERS.admin, isSuperAdmin: false, is_super_admin: false, isDemoAccount: true };
     }
@@ -488,7 +477,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       localStorage.setItem(
         AUTH_STORAGE_KEY,
-        JSON.stringify({ isLoggedIn: true, role: user.role, email: user.email, isSuperAdmin: user.isSuperAdmin, user })
+        JSON.stringify({ isLoggedIn: true, role: user.role, email: user.email, isSuperAdmin: false, user })
       );
     } catch (e) {
       console.error('Failed to save session:', e);
@@ -497,7 +486,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Synchronize to AuthProvider as well
     try {
       if (auth?.quickDemoLogin) {
-        const demoRole = isSuper ? 'superadmin' : (user.role === 'salesperson' ? 'salesperson' : 'admin');
+        const demoRole = user.role === 'salesperson' ? 'salesperson' : 'admin';
         auth.quickDemoLogin(demoRole);
       }
     } catch (e) {
@@ -877,7 +866,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       chequeBank: input.chequeBank,
       chequeDate: input.chequeDate,
       allocations: input.orderId ? [{ orderId: input.orderId, amount: Number(input.paymentAmount) }] : [],
-      idempotencyKey: input.id || crypto.randomUUID(),
+      idempotencyKey: input.id || safeRandomUUID(),
       orgId: effectiveOrg,
     });
     if (!result.success || !result.data) throw new Error(result.error || 'Payment could not be saved.');

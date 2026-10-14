@@ -24,7 +24,7 @@ interface OverviewKpiCardsProps {
 
 // 1. Sales Booked (3D Clipboard + Shopping Cart + Checkmark)
 const SalesBooked3D = () => (
-  <svg viewBox="0 0 120 100" className="w-14 h-12 sm:w-16 sm:h-14 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
     {/* Clipboard Base */}
     <rect x="25" y="16" width="60" height="74" rx="12" fill="url(#clipGrad)" stroke="#60A5FA" strokeWidth="2.5" />
     <rect x="31" y="24" width="48" height="60" rx="8" fill="#FFFFFF" fillOpacity="0.95" />
@@ -67,7 +67,7 @@ const SalesBooked3D = () => (
 
 // 2. Collections (3D Gold Coins Stack + Rupee + Growth Arrow)
 const Collections3D = () => (
-  <svg viewBox="0 0 120 100" className="w-14 h-12 sm:w-16 sm:h-14 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
     {/* Green Growth Arrow Behind */}
     <path d="M68 46L88 22m0 0h-14m14 0v14" stroke="#10B981" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 2px 4px rgba(16,185,129,0.3))" />
 
@@ -111,7 +111,7 @@ const Collections3D = () => (
 
 // 3. Receivables (3D Invoice Document + Rupee Wax Seal + Calendar Badge)
 const Receivables3D = () => (
-  <svg viewBox="0 0 120 100" className="w-14 h-12 sm:w-16 sm:h-14 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
     {/* Purple Folded Invoice Sheet */}
     <g transform="rotate(-6 50 50)">
       <rect x="24" y="16" width="56" height="72" rx="10" fill="url(#invGrad)" stroke="#F472B6" strokeWidth="2" />
@@ -159,7 +159,7 @@ const Receivables3D = () => (
 
 // 4. Open Orders (3D Cardboard Box + Orange Badge Counter)
 const OpenOrders3D = ({ count }: { count: number }) => (
-  <svg viewBox="0 0 120 100" className="w-14 h-12 sm:w-16 sm:h-14 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
     {/* Speed Lines */}
     <line x1="16" y1="46" x2="26" y2="46" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
     <line x1="12" y1="54" x2="24" y2="54" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
@@ -194,7 +194,7 @@ const OpenOrders3D = ({ count }: { count: number }) => (
 
 // 5. Active Stores (3D Storefront Shop + Striped Awning + Pink Map Pin)
 const ActiveStores3D = () => (
-  <svg viewBox="0 0 120 100" className="w-14 h-12 sm:w-16 sm:h-14 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
     {/* Shop Building Base */}
     <rect x="28" y="44" width="64" height="42" rx="6" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="2" />
     
@@ -245,7 +245,7 @@ const ActiveStores3D = () => (
 
 // 6. Pairs Booked (3D Blue-sleeved Handshake Partnership)
 const PairsBooked3D = () => (
-  <svg viewBox="0 0 120 100" className="w-14 h-12 sm:w-16 sm:h-14 drop-shadow-md select-none" fill="none">
+  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
     {/* Sparkle Dashes */}
     <line x1="60" y1="14" x2="60" y2="20" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
     <line x1="44" y1="20" x2="48" y2="24" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
@@ -304,7 +304,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
   // negative deltas render a rose down-arrow chip.
   const renderGrowthChip = (growth: number, caption: string) => (
     <span
-      className={`inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs max-w-full overflow-hidden ${
+      className={`inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold border shadow-2xs max-w-full overflow-hidden ${
         growth > 0
           ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300'
           : growth < 0
@@ -315,34 +315,241 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       <span className="font-bold whitespace-nowrap shrink-0">
         {growth > 0 ? `↑ ${growth}%` : growth < 0 ? `↓ ${Math.abs(growth)}%` : '—'}
       </span>
-      <span className="text-[11px] opacity-80 truncate">{caption}</span>
+      <span className="text-[10px] sm:text-[11px] opacity-80 truncate hidden sm:inline">{caption}</span>
     </span>
   );
 
   return (
-    <div className="rounded-2xl border border-border/80 bg-border/60 dark:bg-border/40 overflow-hidden shadow-2xs grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-px">
+    <>
+      {/* =========================================================================
+          Mobile Phone View (sm:hidden): 3-Column x 2-Row Stitch Grid matching screenshot
+          ========================================================================= */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 sm:hidden">
+        {/* 1. SALES BOOKED */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
+          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            <div className="w-5 h-5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/50">
+              <Icons.TrendingUp size={11} strokeWidth={2.5} />
+            </div>
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              SALES BOOKED
+            </span>
+          </div>
+
+          <div className="my-1 min-w-0">
+            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+              {salesValue}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-1 min-w-0">
+            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
+              ↗ {salesGrowth || 100}%
+            </span>
+            <div className="h-4 w-9 shrink-0 flex items-center justify-end">
+              <svg viewBox="0 0 40 16" className="w-full h-full overflow-visible">
+                <path
+                  d="M0,13 C8,14 14,4 22,8 C30,12 34,2 40,2"
+                  fill="none"
+                  stroke="#3B82F6"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. COLLECTIONS */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
+          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            <div className="w-5 h-5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/50">
+              <Icons.Payments size={11} strokeWidth={2.5} />
+            </div>
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              COLLECTIONS
+            </span>
+          </div>
+
+          <div className="my-1 min-w-0">
+            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+              {collectionsValue}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-1 min-w-0">
+            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-muted text-muted-foreground border border-border shrink-0">
+              {collectionsGrowth ? `↗ ${collectionsGrowth}%` : '—'}
+            </span>
+            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
+              {[30, 50, 40, 75, 45, 65].map((h, i) => (
+                <div key={i} className="w-1 bg-emerald-400 dark:bg-emerald-500 rounded-full" style={{ height: `${h}%` }} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 3. RECEIVABLES */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
+          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            <div className="w-5 h-5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/50">
+              <Icons.Receivables size={11} strokeWidth={2.5} />
+            </div>
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              RECEIVABLES
+            </span>
+          </div>
+
+          <div className="my-1 min-w-0">
+            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+              {receivablesValue}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-1 min-w-0">
+            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/80 shrink-0">
+              {receivablesAccountsCount || 5} accts
+            </span>
+            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
+              {[40, 60, 50, 85, 55, 75].map((h, i) => (
+                <div key={i} className="w-1 bg-rose-400 dark:bg-rose-500 rounded-full" style={{ height: `${h}%` }} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 4. OPEN ORDERS */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
+          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            <div className="w-5 h-5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/50">
+              <Icons.Orders size={11} strokeWidth={2.5} />
+            </div>
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              OPEN ORDERS
+            </span>
+          </div>
+
+          <div className="my-1 min-w-0">
+            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+              {openOrdersCount} Orders
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-1 min-w-0">
+            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/80 shrink-0 truncate max-w-[55px]">
+              {openOrdersValue}
+            </span>
+            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
+              {[25, 45, 30, 65, 40, 55].map((h, i) => (
+                <div key={i} className="w-1 bg-amber-400 dark:bg-amber-500 rounded-full" style={{ height: `${h}%` }} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 5. ACTIVE STORES */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
+          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            <div className="w-5 h-5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/50">
+              <Icons.Clients size={11} strokeWidth={2.5} />
+            </div>
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              ACTIVE STORES
+            </span>
+          </div>
+
+          <div className="my-1 min-w-0">
+            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+              {activeStoresCount} Accts
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-1 min-w-0">
+            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200/80 shrink-0">
+              {totalRegisteredBuyers || 7} buyers
+            </span>
+            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
+              {[35, 55, 45, 70, 50, 65].map((h, i) => (
+                <div key={i} className="w-1 bg-purple-400 dark:bg-purple-500 rounded-full" style={{ height: `${h}%` }} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 6. PAIRS BOOKED */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
+          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            <div className="w-5 h-5 rounded-md bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-100 dark:border-cyan-900/50">
+              <Icons.Designs size={11} strokeWidth={2.5} />
+            </div>
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              PAIRS BOOKED
+            </span>
+          </div>
+
+          <div className="my-1 min-w-0">
+            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+              {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-1 min-w-0">
+            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-200/80 shrink-0">
+              ↗ {pairsBookedGrowth || 100}%
+            </span>
+            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
+              {[30, 50, 40, 80, 55, 75].map((h, i) => (
+                <div key={i} className="w-1 bg-cyan-400 dark:bg-cyan-500 rounded-full" style={{ height: `${h}%` }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          Desktop & Tablet View (hidden sm:grid): 6-Column Claymorphic Grid
+          ========================================================================= */}
+      <div className="hidden sm:grid sm:grid-cols-6 rounded-2xl border border-border/80 bg-border/70 dark:bg-border/40 overflow-hidden shadow-2xs gap-px">
       {/* 1. SALES BOOKED */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 overflow-hidden min-w-0 select-none"
+        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
       >
-        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
+        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
           <SalesBooked3D />
         </div>
 
         <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300 truncate" title="Sales Booked">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300 truncate" title="Sales Booked">
             Sales Booked
           </p>
           <p
-            className="mt-0.5 font-display text-lg sm:text-xl font-bold tracking-tight text-[#0B2A63] dark:text-blue-200 leading-tight wrap-anywhere max-w-full"
+            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#0B2A63] dark:text-blue-200 leading-tight truncate max-w-full"
             title={salesValue}
           >
             {salesValue}
           </p>
         </div>
 
-        <div className="mt-2 w-full flex justify-center min-w-0">
+        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
           {renderGrowthChip(salesGrowth, 'vs prev period')}
         </div>
       </div>
@@ -350,25 +557,25 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 2. COLLECTIONS */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 overflow-hidden min-w-0 select-none"
+        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
       >
-        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
+        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
           <Collections3D />
         </div>
 
         <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300 truncate" title="Collections">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300 truncate" title="Collections">
             Collections
           </p>
           <p
-            className="mt-0.5 font-display text-lg sm:text-xl font-bold tracking-tight text-[#064E3B] dark:text-emerald-200 leading-tight wrap-anywhere max-w-full"
+            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#064E3B] dark:text-emerald-200 leading-tight truncate max-w-full"
             title={collectionsValue}
           >
             {collectionsValue}
           </p>
         </div>
 
-        <div className="mt-2 w-full flex justify-center min-w-0">
+        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
           {renderGrowthChip(collectionsGrowth, 'bank verified')}
         </div>
       </div>
@@ -376,28 +583,31 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 3. RECEIVABLES */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 overflow-hidden min-w-0 select-none"
+        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
       >
-        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
+        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
           <Receivables3D />
         </div>
 
         <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-rose-900 dark:text-rose-300 truncate" title="Receivables">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-rose-900 dark:text-rose-300 truncate" title="Receivables">
             Receivables
           </p>
           <p
-            className="mt-0.5 font-display text-lg sm:text-xl font-bold tracking-tight text-[#9F1239] dark:text-rose-200 leading-tight wrap-anywhere max-w-full"
+            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#9F1239] dark:text-rose-200 leading-tight truncate max-w-full"
             title={receivablesValue}
           >
             {receivablesValue}
           </p>
         </div>
 
-        <div className="mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 shadow-2xs max-w-full overflow-hidden">
-            <Icons.FileText size={11} className="shrink-0 opacity-75" />
-            <span className="truncate">Across {receivablesAccountsCount} accounts</span>
+        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 shadow-2xs max-w-full overflow-hidden">
+            <Icons.FileText size={10} className="shrink-0 opacity-75 hidden sm:inline" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Across </span>
+              {receivablesAccountsCount} accts
+            </span>
           </span>
         </div>
       </div>
@@ -405,28 +615,29 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 4. OPEN ORDERS */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 overflow-hidden min-w-0 select-none"
+        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
       >
-        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
+        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
           <OpenOrders3D count={openOrdersCount} />
         </div>
 
         <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 truncate" title="Open Orders">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 truncate" title="Open Orders">
             Open Orders
           </p>
           <p
-            className="mt-0.5 font-display text-lg sm:text-xl font-bold tracking-tight text-[#78350F] dark:text-amber-200 leading-tight wrap-anywhere max-w-full"
+            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#78350F] dark:text-amber-200 leading-tight truncate max-w-full"
             title={`${openOrdersCount} Orders`}
           >
             {openOrdersCount} Orders
           </p>
         </div>
 
-        <div className="mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 shadow-2xs max-w-full overflow-hidden">
-            <Icons.TrendingUp size={11} className="shrink-0 opacity-75" />
-            <span className="truncate">{openOrdersValue} pipeline</span>
+        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 shadow-2xs max-w-full overflow-hidden">
+            <Icons.TrendingUp size={10} className="shrink-0 opacity-75 hidden sm:inline" />
+            <span className="truncate">{openOrdersValue}</span>
+            <span className="hidden sm:inline truncate"> pipeline</span>
           </span>
         </div>
       </div>
@@ -434,27 +645,27 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 5. ACTIVE STORES */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 overflow-hidden min-w-0 select-none"
+        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
       >
-        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
+        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
           <ActiveStores3D />
         </div>
 
         <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300 truncate" title="Active Stores">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300 truncate" title="Active Stores">
             Active Stores
           </p>
           <p
-            className="mt-0.5 font-display text-lg sm:text-xl font-bold tracking-tight text-[#581C87] dark:text-purple-200 leading-tight wrap-anywhere max-w-full"
+            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#581C87] dark:text-purple-200 leading-tight truncate max-w-full"
             title={`${activeStoresCount} Accounts`}
           >
-            {activeStoresCount} Accounts
+            {activeStoresCount} <span className="hidden sm:inline">Accounts</span><span className="sm:hidden">Accts</span>
           </p>
         </div>
 
-        <div className="mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 shadow-2xs max-w-full overflow-hidden">
-            <Icons.Clients size={11} className="shrink-0 opacity-75" />
+        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
+          <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 shadow-2xs max-w-full overflow-hidden">
+            <Icons.Clients size={10} className="shrink-0 opacity-75 hidden sm:inline" />
             <span className="truncate">{totalRegisteredBuyers} buyers</span>
           </span>
         </div>
@@ -463,30 +674,31 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 6. PAIRS BOOKED */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-        className="group relative p-3 sm:p-3.5 flex flex-col items-center justify-between text-center transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 overflow-hidden min-w-0 select-none"
+        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
       >
-        <div className="mb-1.5 flex items-center justify-center transition-transform group-hover:scale-105 duration-200 shrink-0">
+        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
           <PairsBooked3D />
         </div>
 
         <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 truncate" title="Pairs Booked">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 truncate" title="Pairs Booked">
             Pairs Booked
           </p>
           <p
-            className="mt-0.5 font-display text-lg sm:text-xl font-bold tracking-tight text-[#0E7490] dark:text-cyan-200 leading-tight wrap-anywhere max-w-full"
+            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#0E7490] dark:text-cyan-200 leading-tight truncate max-w-full"
             title={typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
           >
             {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
           </p>
         </div>
 
-        <div className="mt-2 w-full flex justify-center min-w-0">
+        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
           {renderGrowthChip(pairsBookedGrowth, 'production vol')}
         </div>
       </div>
     </div>
-  );
+  </>
+);
 };
 
 export default OverviewKpiCards;

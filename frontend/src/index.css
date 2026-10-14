@@ -12,6 +12,8 @@
 
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-foreground: var(--foreground);
@@ -19,6 +21,9 @@
   --color-subtle-foreground: var(--subtle-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+
+  --color-slate-750: #1e293b;
+  --color-slate-850: #0f172a;
 }
 
 :root {
@@ -132,12 +137,29 @@
 }
 
 @layer base {
+  *, ::before, ::after {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    width: 100%;
+    min-height: 100%;
+  }
   body {
     font-family: var(--font-sans);
     color: var(--text-primary);
     background-color: var(--page-bg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  #root {
+    width: 100%;
+    min-height: 100%;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
@@ -155,6 +177,12 @@
 
 .font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Ensure no element accidentally breaks horizontal screen bounds */
+img, svg, video, canvas, audio, iframe, embed, object {
+  display: block;
+  max-width: 100%;
 }
 
 /* Custom subtle scrollbar */

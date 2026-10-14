@@ -9,10 +9,8 @@ interface HeaderProps {
 }
 
 import { useAuth } from '../../auth/AuthProvider';
-import { useViewMode, useReadOnly } from '../../context/ViewModeContext';
-import { usePlatformAccounts } from '../../hooks/usePlatformAccounts';
-import { ViewModeBanner } from '../common/ViewModeBanner';
-import { Shield, Building2, ChevronDown, Check, Lock } from 'lucide-react';
+import { useViewMode } from '../../context/ViewModeContext';
+import { ChevronDown, Lock, Menu } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Organization } from '../../types';
 
@@ -38,13 +36,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     toggleDarkMode,
   } = useApp();
 
-  const { org, isSuperAdmin, isDemoAccount, activeOrgId, setActiveOrgId } = useAuth();
-  const { isReadOnly, viewOrgId, viewOrgName, enterViewMode, exitViewMode } = useViewMode();
-  const { data: platformAccounts = [] } = usePlatformAccounts();
-  const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
-  const orgDropdownRef = useRef<HTMLDivElement>(null);
-
-  const activeDisplayOrgName = viewOrgName || (platformAccounts.find((o) => o.org_id === activeOrgId)?.name) || org?.name || 'My Workspace';
+  const { org, isDemoAccount } = useAuth();
+  const { isReadOnly } = useViewMode();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -71,7 +64,6 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         setIsNewMenuOpen(false);
         setIsNotifDropdownOpen(false);
         setIsProfileMenuOpen(false);
-        setIsOrgDropdownOpen(false);
         searchInputRef.current?.blur();
       }
     };
@@ -94,9 +86,6 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
       }
       if (profileRef.current && !profileRef.current.contains(target)) {
         setIsProfileMenuOpen(false);
-      }
-      if (orgDropdownRef.current && !orgDropdownRef.current.contains(target)) {
-        setIsOrgDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -137,46 +126,43 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
 
   return (
     <div className="sticky top-0 z-20">
-      {isDemoAccount && <div role="status" className="bg-amber-50 text-amber-900 border-b border-amber-200 px-4 py-2 text-sm">Demo workspace — sample data only. Sign in with your own account to save business records.</div>}
-      {/* Super Admin Read-Only View Mode Sticky Amber Banner */}
-      <ViewModeBanner onExitNavigate={() => onNavigate('/platform/accounts')} />
+      {isDemoAccount && <div role="status" className="bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border-b border-amber-200/80 px-3 py-1 text-xs truncate text-center">Demo workspace — sample data only. Sign in with your own account to save business records.</div>}
 
-      <header className="min-h-[72px] py-2 bg-surface border-b border-border px-4 md:px-8 flex items-center justify-between gap-4">
+      <header className="h-14 sm:h-16 md:min-h-[72px] py-1.5 sm:py-2 bg-surface/90 backdrop-blur-xl border-b border-border px-2.5 sm:px-4 md:px-8 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Mobile Drawer Trigger + Search Bar in one line */}
-        <div className="flex items-center gap-3 flex-1 min-w-0 max-w-[640px]">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-[640px]">
           <button
             type="button"
             onClick={toggleMobileSidebar}
-            className="md:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 cursor-pointer"
+            className="md:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center border border-border/70 shrink-0 cursor-pointer active:scale-95 transition-all shadow-2xs"
             aria-label="Toggle navigation menu"
           >
+            <Menu size={18} strokeWidth={2} />
+          </button>
 
-          <Icons.Dashboard size={20} strokeWidth={1.75} />
-        </button>
-
-        {/* Global Search */}
-        <div className="flex-1 min-w-0 relative" ref={searchRef}>
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-subtle-foreground">
-            <Icons.Search size={18} strokeWidth={1.75} />
+          {/* Global Search */}
+          <div className="flex-1 min-w-0 relative" ref={searchRef}>
+            <div className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none text-subtle-foreground">
+              <Icons.Search size={15} strokeWidth={1.75} className="sm:w-4 sm:h-4" />
+            </div>
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsSearchOpen(true);
+              }}
+              onFocus={() => setIsSearchOpen(true)}
+              placeholder="Search anything..."
+              className="w-full h-9 sm:h-10 md:h-12 pl-8 sm:pl-11 pr-2.5 md:pr-20 bg-muted/70 hover:bg-muted/90 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            />
+            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground bg-surface border border-border rounded shadow-2xs">
+                Ctrl K
+              </kbd>
+            </div>
           </div>
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setIsSearchOpen(true);
-            }}
-            onFocus={() => setIsSearchOpen(true)}
-            placeholder="Search customers, orders, designs, invoices..."
-            className="w-full h-11 md:h-12 pl-11 pr-20 bg-muted hover:bg-muted/80 focus:bg-surface border border-border rounded-xl text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          />
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground bg-surface border border-border rounded shadow-2xs">
-              Ctrl K
-            </kbd>
-          </div>
-        </div>
 
         {/* Global Search Results Dropdown */}
         {isSearchOpen && searchQuery && (
@@ -289,31 +275,46 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         )}
       </div>
 
-      {/* Right: + New, Notification Bell (44px round), User Chip */}
-      <div className="flex items-center gap-3 shrink-0">
+      {/* Right: + New, Notification Bell, User Chip */}
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* + New Action Menu */}
-        <div className="relative hidden lg:block" ref={newMenuRef}>
+        <div className="relative" ref={newMenuRef}>
           {isReadOnly ? (
             <div
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-muted text-muted-foreground text-xs font-semibold rounded-xl border border-border cursor-not-allowed opacity-75"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-muted text-muted-foreground text-xs font-semibold rounded-xl border border-border cursor-not-allowed opacity-75"
               title="Actions disabled in Read-Only View Mode"
             >
               <Lock size={14} className="text-amber-500" />
               <span>Read-Only</span>
             </div>
           ) : (
-            <Button
-              variant="primary"
-              size="md"
-              icon={Icons.Add}
-              onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
-            >
-              New
-            </Button>
+            <>
+              {/* Desktop Button */}
+              <div className="hidden sm:block">
+                <Button
+                  variant="primary"
+                  size="md"
+                  icon={Icons.Add}
+                  onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
+                >
+                  New
+                </Button>
+              </div>
+
+              {/* Mobile Compact + Button */}
+              <button
+                type="button"
+                onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
+                className="sm:hidden w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-emerald-500 text-white flex items-center justify-center shadow-xs shadow-primary/25 active:scale-90 transition-transform cursor-pointer"
+                aria-label="Create new record"
+              >
+                <Icons.Add size={18} strokeWidth={2.5} />
+              </button>
+            </>
           )}
 
           {isNewMenuOpen && !isReadOnly && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 top-full mt-2 w-60 max-w-[calc(100vw-24px)] bg-surface border border-border rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
               <button
                 type="button"
                 onClick={() => {
@@ -378,98 +379,24 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           )}
         </div>
 
-        {/* Super Admin Business Switcher */}
-        {isSuperAdmin && (
-          <div className="relative" ref={orgDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
-              className={`h-11 px-3 rounded-full border flex items-center gap-2 transition-colors cursor-pointer text-xs font-semibold ${
-                isReadOnly || activeOrgId
-                  ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200'
-                  : 'border-border bg-surface hover:bg-muted text-foreground'
-              }`}
-              title="Platform Business Switcher"
-            >
-              <Building2 size={15} className={`shrink-0 ${isReadOnly || activeOrgId ? 'text-amber-600 dark:text-amber-400' : 'text-primary'}`} />
-              <span title={activeDisplayOrgName} className="max-w-[130px] truncate">
-                {activeDisplayOrgName}
-              </span>
-              <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
-            </button>
-
-            {isOrgDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-surface border border-border rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-1.5 border-b border-border text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Switch Active Business
-                </div>
-                <div className="max-h-60 overflow-y-auto divide-y divide-border/50 mt-1">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await exitViewMode();
-                      setIsOrgDropdownOpen(false);
-                      onNavigate('/platform/accounts');
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl hover:bg-muted cursor-pointer transition-colors ${
-                      !isReadOnly ? 'bg-primary/10 text-primary font-bold' : 'text-foreground'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Shield size={14} className="text-primary" />
-                      <span>My workspace (Platform)</span>
-                    </div>
-                    {!isReadOnly && <Check size={14} />}
-                  </button>
-
-                  {platformAccounts.map((o) => (
-                    <button
-                      key={o.org_id}
-                      type="button"
-                      onClick={async () => {
-                        await enterViewMode(o.org_id, o.name);
-                        setIsOrgDropdownOpen(false);
-                        onNavigate('/admin/dashboard');
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-xl hover:bg-muted cursor-pointer transition-colors ${
-                        viewOrgId === o.org_id ? 'bg-amber-100/70 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 font-bold' : 'text-foreground'
-                      }`}
-                    >
-                      {/* zoom-proof: truncate is inert on a flex container; the name span keeps truncate */}
-                      <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                        <Building2 size={14} className="text-muted-foreground shrink-0" />
-                        <span title={o.name} className="truncate">{o.name}</span>
-                        {o.is_demo && (
-                          <span className="whitespace-nowrap text-[8px] px-1 py-0.2 bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded font-bold">DEMO</span>
-                        )}
-                      </div>
-                      {viewOrgId === o.org_id && <Check size={14} className="text-amber-800 dark:text-amber-300 shrink-0" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 44px Round Notification Bell */}
+        {/* Notification Bell */}
         <div className="relative" ref={notifRef}>
           <button
             type="button"
             onClick={() => setIsNotifDropdownOpen(!isNotifDropdownOpen)}
-            className="w-11 h-11 rounded-full border border-border bg-surface hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors relative cursor-pointer"
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-full border border-border bg-surface hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all relative cursor-pointer active:scale-95 shadow-2xs"
             aria-label="Notifications"
           >
-            <Icons.Notifications size={20} strokeWidth={1.75} />
+            <Icons.Notifications size={18} className="sm:w-5 sm:h-5" strokeWidth={1.75} />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center border-2 border-surface">
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-surface">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
 
           {isNotifDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-surface border border-border rounded-2xl shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-24px)] sm:w-96 max-w-sm bg-surface border border-border rounded-2xl shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100">
               <div className="px-3 py-2 border-b border-border flex items-center justify-between">
                 <span className="text-sm font-bold text-foreground">
                   Notifications
@@ -517,11 +444,26 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           )}
         </div>
 
+        {/* 1-Click Dark/Light Mode Toggle */}
+        <button
+          type="button"
+          onClick={() => toggleDarkMode()}
+          className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-full border border-border bg-surface hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 shadow-2xs"
+          title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {isDarkMode ? (
+            <Icons.Sun size={18} className="sm:w-5 sm:h-5 text-amber-400 hover:rotate-45 transition-transform" strokeWidth={1.75} />
+          ) : (
+            <Icons.Moon size={18} className="sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300 hover:-rotate-12 transition-transform" strokeWidth={1.75} />
+          )}
+        </button>
+
         {/* User Chip: Avatar + Name + Role */}
         <div className="relative" ref={profileRef}>
           <div
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="rounded-full border border-border px-3 py-1.5 bg-surface hover:bg-muted flex items-center gap-2.5 cursor-pointer transition-colors select-none"
+            className="rounded-full border border-border p-0.5 sm:px-3 sm:py-1.5 bg-surface hover:bg-muted flex items-center gap-2.5 cursor-pointer transition-all select-none active:scale-95 shadow-2xs"
           >
             <Avatar name={currentUser.name} size="sm" />
             <div className="hidden sm:block text-left min-w-0">

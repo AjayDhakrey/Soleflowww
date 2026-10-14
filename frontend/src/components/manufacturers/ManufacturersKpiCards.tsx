@@ -222,81 +222,100 @@ export const ManufacturersKpiCards: React.FC<ManufacturersKpiCardsProps> = ({
   qcPassRate = '—',
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
-      {/* 1. Partner Foundries */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
-        <PartnerFoundries3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Partner Foundries">
-            Partner Foundries
-          </span>
-          <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
-            title={typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
-          >
-            {typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
-          </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Active partner facilities">
-            Active partner facilities
-          </p>
+    <div className="space-y-2">
+      {/* Responsive 2x2 Mobile / 4-Column Desktop Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
+        {/* 1. Partner Foundries */}
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-xs select-none overflow-hidden min-w-0">
+          <div className="scale-75 sm:scale-100 origin-top-left sm:origin-center shrink-0 -mb-2 sm:mb-0">
+            <PartnerFoundries3D />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-semibold text-muted-foreground block truncate" title="Partner Foundries">
+              Partner Foundries
+            </span>
+            <p
+              className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate"
+              title={typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
+            >
+              {typeof totalUnitsCount === 'number' ? `${totalUnitsCount} Units` : totalUnitsCount}
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Active partner facilities">
+              Active facilities
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Cumulative Capacity */}
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-xs select-none overflow-hidden min-w-0">
+          <div className="scale-75 sm:scale-100 origin-top-left sm:origin-center shrink-0 -mb-2 sm:mb-0">
+            <CumulativeCapacity3D />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-semibold text-muted-foreground block truncate" title="Cumulative Capacity">
+              Monthly Capacity
+            </span>
+            <p
+              className="text-base sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate"
+              title={cumulativeCapacity}
+            >
+              {cumulativeCapacity}
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Across all assembly lines">
+              Assembly lines
+            </p>
+          </div>
+        </div>
+
+        {/* 3. Average On-Time Delivery */}
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-xs select-none overflow-hidden min-w-0">
+          <div className="scale-75 sm:scale-100 origin-top-left sm:origin-center shrink-0 -mb-2 sm:mb-0">
+            <OnTimeDelivery3D />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-semibold text-muted-foreground block truncate" title="Average On-Time Delivery">
+              On-Time Dispatch
+            </span>
+            <p
+              className="text-base sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate"
+              title={onTimeRate}
+            >
+              {onTimeRate}
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Bilty dispatch punctuality">
+              Bilty punctuality
+            </p>
+          </div>
+        </div>
+
+        {/* 4. Average QC Pass Ratio */}
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-xs select-none overflow-hidden min-w-0">
+          <div className="scale-75 sm:scale-100 origin-top-left sm:origin-center shrink-0 -mb-2 sm:mb-0">
+            <QcPassRatio3D />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-[11px] sm:text-[13px] font-semibold text-muted-foreground block truncate" title="Average QC Pass Ratio">
+              QC Pass Ratio
+            </span>
+            <p
+              className="text-base sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
+              title={qcPassRate}
+            >
+              {qcPassRate}
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Zero-defect sole bonding">
+              Sole bonding pass
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* 2. Cumulative Capacity */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
-        <CumulativeCapacity3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Cumulative Capacity">
-            Cumulative Capacity
-          </span>
-          <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate"
-            title={cumulativeCapacity}
-          >
-            {cumulativeCapacity}
-          </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Across all assembly lines">
-            Across all assembly lines
-          </p>
-        </div>
-      </div>
-
-      {/* 3. Average On-Time Delivery */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
-        <OnTimeDelivery3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Average On-Time Delivery">
-            Average On-Time Delivery
-          </span>
-          <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate"
-            title={onTimeRate}
-          >
-            {onTimeRate}
-          </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Bilty dispatch punctuality">
-            Bilty dispatch punctuality
-          </p>
-        </div>
-      </div>
-
-      {/* 4. Average QC Pass Ratio */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-surface border border-border shadow-2xs hover:shadow-sm hover:border-border/80 select-none overflow-hidden min-w-0">
-        <QcPassRatio3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-muted-foreground block truncate" title="Average QC Pass Ratio">
-            Average QC Pass Ratio
-          </span>
-          <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate"
-            title={qcPassRate}
-          >
-            {qcPassRate}
-          </p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground/80 font-normal mt-0.5 truncate" title="Zero-defect sole bonding">
-            Zero-defect sole bonding
-          </p>
-        </div>
+      {/* Stitch Capacity Info Banner on Phone View */}
+      <div className="flex sm:hidden items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/50 dark:border-blue-900/40 text-[11px] text-muted-foreground">
+        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+        <span className="truncate">
+          <strong className="text-foreground font-semibold">Capacity Tracking:</strong> Live monthly pairs utilization across partner foundries.
+        </span>
       </div>
     </div>
   );

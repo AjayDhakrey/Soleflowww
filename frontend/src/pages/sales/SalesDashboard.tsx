@@ -8,6 +8,7 @@ import {
   mapPaymentStatusToReceiptStatus,
 } from '../../components/payments/ReceiptTemplate';
 import { OverviewKpiCards } from '../../components/dashboard/OverviewKpiCards';
+import { QuickShortcutsGrid } from '../../components/dashboard/QuickShortcutsGrid';
 import {
   Panel,
   Button,
@@ -91,106 +92,218 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
   const greeting = getGreeting();
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
-      {/* 1. Header with Greeting, Period Selector, and Quick Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-2xl select-none shrink-0">{greeting.icon}</span>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight break-words">
+    <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
+      {/* 1. Header & Live Territory Status */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-border/70">
+        <div className="flex items-center justify-between sm:justify-start gap-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl select-none shrink-0">{greeting.icon}</span>
+            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground truncate">
               {greeting.text}, {currentUser.name}
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
-            {todayDateFormatted} • Field Sales & Store Route Portal (Territory Performance)
-          </p>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 animate-pulse shrink-0" />
+            <span>Field Route</span>
+          </span>
         </div>
-
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Period Selector */}
-          <div className="flex items-center flex-wrap bg-muted p-1 rounded-xl border border-border max-w-full">
-            {(
-              [
-                { label: 'Today', value: 'today' },
-                { label: 'This Week', value: 'week' },
-                { label: 'This Month', value: 'month' },
-                { label: 'This Quarter', value: 'quarter' },
-              ] as { label: string; value: DashboardPeriod }[]
-            ).map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setPeriod(tab.value)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                  period === tab.value
-                    ? 'bg-surface text-foreground shadow-2xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <Button
-            variant="secondary"
-            icon={Icons.Visits}
-            onClick={() => onNavigate('/sales/visits')}
-          >
-            Log Visit
-          </Button>
-
-          <Button
-            variant="secondary"
-            icon={Icons.Share}
-            onClick={() => setIsShareModalOpen(true)}
-          >
-            Share Catalogue
-          </Button>
-
-          <Button
-            variant="secondary"
-            icon={Icons.Payments}
-            onClick={() => setIsPaymentModalOpen(true)}
-          >
-            Record Payment
-          </Button>
-
-          <Button
-            variant="primary"
-            icon={Icons.Add}
-            onClick={() => setIsCreateOrderModalOpen(true)}
-          >
-            New Order
-          </Button>
-        </div>
+        <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
+          {todayDateFormatted} • Territory Performance &amp; Client Visits
+        </p>
       </div>
 
+      {/* Operations & KPI Section Container (Mobile order: 3 -> 1 -> 2; Desktop order: 1 -> Period -> 2 -> 3) */}
+      <div className="flex flex-col gap-4 sm:gap-5">
+        {/* Field Sales Period Filter Strip (order-1 on mobile, order-2 on desktop) */}
+        <div className="order-1 sm:order-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1 sm:pt-2 border-t border-border">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">
+              Period:
+            </span>
+            {/* iOS/Stitch Style 4-Segmented Control */}
+            <div className="grid grid-cols-4 w-full sm:flex sm:w-auto p-1 bg-muted/80 dark:bg-muted/40 rounded-2xl border border-border/80 shadow-2xs gap-0.5">
+              {(
+                [
+                  { label: 'Today', shortLabel: 'Today', value: 'today' },
+                  { label: 'This Week', shortLabel: 'Week', value: 'week' },
+                  { label: 'This Month', shortLabel: 'Month', value: 'month' },
+                  { label: 'This Quarter', shortLabel: 'Quarter', value: 'quarter' },
+                ] as { label: string; shortLabel: string; value: DashboardPeriod }[]
+              ).map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setPeriod(tab.value)}
+                  className={`py-1.5 px-2 sm:px-3 text-xs font-semibold rounded-xl transition-all duration-150 cursor-pointer whitespace-nowrap text-center select-none active:scale-95 ${
+                    period === tab.value
+                      ? 'bg-surface text-primary dark:text-primary shadow-xs font-bold border border-border/50 ring-1 ring-black/5 dark:ring-white/10'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="sm:hidden">{tab.shortLabel}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {/* 3. Salesman Key Metrics (3D Claymorphic Masterpiece Design) */}
-      <OverviewKpiCards
-        salesValue={formatLakh(repBooked)}
-        salesGrowth={kpis.sales.comparison.changePercent || 0}
-        collectionsValue={formatLakh(kpis.collections.value)}
-        collectionsGrowth={kpis.collections.comparison.changePercent || 0}
-        receivablesValue={formatLakh(kpis.receivables.value)}
-        receivablesAccountsCount={kpis.receivables.customerCount}
-        openOrdersCount={kpis.openOrders.count}
-        openOrdersValue={formatLakh(kpis.openOrders.value)}
-        activeStoresCount={customersSummary.active}
-        totalRegisteredBuyers={customers.length}
-        pairsBookedValue={kpis.pairsBooked.value}
-        pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 0}
-        onNavigate={onNavigate}
-        isSalesperson={true}
-      />
+          {/* Mobile Stitched Operations Pill */}
+          <div className="sm:hidden flex items-center justify-between w-full px-2.5 py-1.5 rounded-xl bg-muted/40 border border-dashed border-border/70 text-[11px]">
+            <span className="flex items-center gap-1.5 font-medium text-foreground">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <span>Field Rep Mode</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => onNavigate('/sales/visits')}
+              className="text-primary font-semibold hover:underline flex items-center gap-0.5"
+            >
+              <span>Today's Visits</span>
+              <Icons.ChevronRight size={12} />
+            </button>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={Icons.Visits}
+              onClick={() => onNavigate('/sales/visits')}
+            >
+              Log Visit
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={Icons.Payments}
+              onClick={() => setIsPaymentModalOpen(true)}
+            >
+              Record Payment
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              icon={Icons.Add}
+              onClick={() => setIsCreateOrderModalOpen(true)}
+            >
+              New Order
+            </Button>
+          </div>
+        </div>
+
+        {/* Section 1 on mobile / Section 4 on desktop: Salesman Key Metrics (Marker 3) */}
+        <div className="order-2 sm:order-4 space-y-2">
+          <div className="flex items-center justify-between px-0.5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Icons.TrendingUp size={14} className="text-primary" />
+              <span>Key Territory Metrics</span>
+            </h2>
+          </div>
+          <OverviewKpiCards
+            salesValue={formatLakh(repBooked)}
+            salesGrowth={kpis.sales.comparison.changePercent || 0}
+            collectionsValue={formatLakh(kpis.collections.value)}
+            collectionsGrowth={kpis.collections.comparison.changePercent || 0}
+            receivablesValue={formatLakh(kpis.receivables.value)}
+            receivablesAccountsCount={kpis.receivables.customerCount}
+            openOrdersCount={kpis.openOrders.count}
+            openOrdersValue={formatLakh(kpis.openOrders.value)}
+            activeStoresCount={customersSummary.active}
+            totalRegisteredBuyers={customers.length}
+            pairsBookedValue={kpis.pairsBooked.value}
+            pairsBookedGrowth={kpis.pairsBooked.comparison.changePercent || 0}
+            onNavigate={onNavigate}
+            isSalesperson={true}
+          />
+        </div>
+
+        {/* Section 2 on mobile / Section 1 on desktop: Quick Field Operations (Marker 1) */}
+        <div className="order-3 sm:order-1 space-y-2">
+          <div className="flex items-center justify-between px-0.5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Icons.Dashboard size={14} className="text-primary" />
+              <span>Quick Field Operations</span>
+            </h2>
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+              <span>1-Tap Actions</span>
+            </span>
+          </div>
+          <QuickShortcutsGrid
+            onBookOrder={() => setIsCreateOrderModalOpen(true)}
+            onRecordPayment={() => setIsPaymentModalOpen(true)}
+            onAddCustomer={() => onNavigate('/sales/customers')}
+            onNewDesign={() => onNavigate('/sales/designs')}
+            onShareLookbook={() => setIsShareModalOpen(true)}
+            onGstLedger={() => onNavigate('/sales/collections')}
+          />
+        </div>
+
+        {/* Section 3 on mobile / Section 3 on desktop: Needs Attention / Urgent Field Alerts (Marker 2) */}
+        {needsAttention && needsAttention.length > 0 && (
+          <div className="order-4 sm:order-3 space-y-2">
+            <div className="flex items-center justify-between px-0.5">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                <Icons.AlertCircle size={14} className="animate-pulse" />
+                <span>Urgent Field Action Items ({needsAttention.length})</span>
+              </h2>
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                <span>Action Required</span>
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
+              {needsAttention.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => onNavigate(item.route)}
+                  className={`p-2.5 sm:p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 select-none active:scale-[0.98] ${
+                    item.badgeVariant === 'rose'
+                      ? 'bg-rose-50/80 dark:bg-rose-950/40 border-l-[3.5px] border-l-rose-500 border-rose-200 dark:border-rose-900/60 hover:bg-rose-100/70 shadow-2xs'
+                      : item.badgeVariant === 'amber'
+                      ? 'bg-amber-50/80 dark:bg-amber-950/40 border-l-[3.5px] border-l-amber-500 border-amber-200 dark:border-amber-900/60 hover:bg-amber-100/70 shadow-2xs'
+                      : item.badgeVariant === 'purple'
+                      ? 'bg-purple-50/80 dark:bg-purple-950/40 border-l-[3.5px] border-l-purple-500 border-purple-200 dark:border-purple-900/60 hover:bg-purple-100/70 shadow-2xs'
+                      : 'bg-blue-50/80 dark:bg-blue-950/40 border-l-[3.5px] border-l-blue-500 border-blue-200 dark:border-blue-900/60 hover:bg-blue-100/70 shadow-2xs'
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          item.badgeVariant === 'rose'
+                            ? 'bg-rose-500 animate-ping'
+                            : item.badgeVariant === 'amber'
+                            ? 'bg-amber-500'
+                            : item.badgeVariant === 'purple'
+                            ? 'bg-purple-500'
+                            : 'bg-blue-500'
+                        }`}
+                      />
+                      <span className="text-xs font-bold text-foreground truncate">{item.title}</span>
+                    </div>
+                    {item.amount !== undefined && item.amount > 0 && (
+                      <p className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+                        Total Due: ₹{item.amount.toLocaleString('en-IN')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface/90 dark:bg-card/90 border border-border/80 shadow-2xs text-xs font-bold text-primary active:scale-95 transition-transform">
+                    <span>Open</span>
+                    <Icons.ChevronRight size={13} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* 4. Main 2-Column Business Overview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN: Orders Pipeline & Collections (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          {/* Widget 1: My Orders Pipeline & Latest Orders */}
-          <Panel
+          {/* Widget 1: My Orders Pipeline & Latest Orders (Hidden on phone view) */}
+          <div className="hidden sm:block">
+            <Panel
             title={
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
@@ -282,46 +395,92 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 }
               />
             ) : (
-              <Table className="min-w-[480px]">
-                <TableHeader>
-                  <TableRow className="border-b border-border bg-muted/20">
-                    <TableHead className="py-2.5 px-3 text-xs font-semibold">Order #</TableHead>
-                    <TableHead className="py-2.5 px-3 text-xs font-semibold">Retail Store</TableHead>
-                    <TableHead className="py-2.5 px-3 text-xs font-semibold">Pairs</TableHead>
-                    <TableHead className="py-2.5 px-3 text-xs font-semibold">Status</TableHead>
-                    <TableHead className="py-2.5 px-3 pr-4 text-xs font-semibold text-right whitespace-nowrap">Net Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table className="min-w-[480px]">
+                    <TableHeader>
+                      <TableRow className="border-b border-border bg-muted/20">
+                        <TableHead className="py-2.5 px-3 text-xs font-semibold">Order #</TableHead>
+                        <TableHead className="py-2.5 px-3 text-xs font-semibold">Retail Store</TableHead>
+                        <TableHead className="py-2.5 px-3 text-xs font-semibold">Pairs</TableHead>
+                        <TableHead className="py-2.5 px-3 text-xs font-semibold">Status</TableHead>
+                        <TableHead className="py-2.5 px-3 pr-4 text-xs font-semibold text-right whitespace-nowrap">Net Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {ordersPipeline.latestOrders.map((order: Order) => (
+                        <TableRow
+                          key={order.id}
+                          onClick={() => onNavigate(`/sales/orders?search=${order.id}`)}
+                          className="cursor-pointer hover:bg-muted/40 transition-colors"
+                        >
+                          <TableCell className="py-2.5 px-3 font-mono font-bold text-xs text-primary whitespace-nowrap">
+                            {order.id}
+                          </TableCell>
+                          <TableCell className="py-2.5 px-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
+                                <Icons.Store size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-semibold text-foreground text-xs block truncate max-w-[120px] sm:max-w-[140px]" title={order.customerName}>
+                                  {order.customerName}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground block truncate">{order.customerCity || '—'}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-2.5 px-3 font-mono text-xs whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                              <Icons.Designs size={12} className="text-muted-foreground" />
+                              {order.pairsCount || 0} Pairs
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-2.5 px-3 whitespace-nowrap">
+                            <StatusBadge
+                              variant={
+                                order.status === 'Delivered'
+                                  ? 'success'
+                                  : order.status === 'Dispatched'
+                                  ? 'info'
+                                  : order.status === 'In Production' || order.status === 'Ready QC'
+                                  ? 'active'
+                                  : order.status === 'Approved'
+                                  ? 'purple'
+                                  : 'pending'
+                              }
+                            >
+                              {order.status}
+                            </StatusBadge>
+                          </TableCell>
+                          <TableCell className="py-2.5 px-3 pr-4 text-right whitespace-nowrap">
+                            <TableMoneyCell
+                              amount={Number(order.netPayable || order.subtotal || 0)}
+                              className="text-right font-bold text-xs"
+                              isBold
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card List View */}
+                <div className="md:hidden divide-y divide-border">
                   {ordersPipeline.latestOrders.map((order: Order) => (
-                    <TableRow
+                    <div
                       key={order.id}
                       onClick={() => onNavigate(`/sales/orders?search=${order.id}`)}
-                      className="cursor-pointer hover:bg-muted/40 transition-colors"
+                      className="p-3 hover:bg-muted/30 transition-colors cursor-pointer space-y-2 active:bg-muted/40"
                     >
-                      <TableCell className="py-2.5 px-3 font-mono font-bold text-xs text-primary whitespace-nowrap">
-                        {order.id}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
-                            <Icons.Store size={14} />
-                          </div>
-                          <div className="min-w-0">
-                            <span className="font-semibold text-foreground text-xs block truncate max-w-[120px] sm:max-w-[140px]" title={order.customerName}>
-                              {order.customerName}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground block truncate">{order.customerCity || '—'}</span>
-                          </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="font-mono font-bold text-xs text-primary">{order.id}</span>
+                          <span className="text-muted-foreground">•</span>
+                          <span className="text-xs font-semibold text-foreground truncate">{order.customerName}</span>
                         </div>
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 font-mono text-xs whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 font-semibold text-foreground">
-                          <Icons.Designs size={12} className="text-muted-foreground" />
-                          {order.pairsCount || 0} Pairs
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 whitespace-nowrap">
                         <StatusBadge
                           variant={
                             order.status === 'Delivered'
@@ -337,20 +496,27 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                         >
                           {order.status}
                         </StatusBadge>
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 pr-4 text-right whitespace-nowrap">
-                        <TableMoneyCell
-                          amount={Number(order.netPayable || order.subtotal || 0)}
-                          className="text-right font-bold text-xs"
-                          isBold
-                        />
-                      </TableCell>
-                    </TableRow>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
+                        <span className="inline-flex items-center gap-1">
+                          <Icons.Designs size={12} className="text-muted-foreground" />
+                          <span className="font-medium">{order.pairsCount || 0} Pairs</span>
+                          <span className="text-muted-foreground/70">({order.customerCity || '—'})</span>
+                        </span>
+                        <div className="text-right">
+                          <span className="font-mono font-bold text-foreground text-xs">
+                            ₹{Number(order.netPayable || order.subtotal || 0).toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              </>
             )}
           </Panel>
+          </div>
 
           {/* Widget 2: My Collections & Pending Cheques */}
           <Panel
@@ -436,67 +602,118 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 }
               />
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Receipt #</TableHead>
-                    <TableHead>Retail Store</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-center">Receipt</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Receipt #</TableHead>
+                        <TableHead>Retail Store</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-center">Receipt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {collectionsData.latestPayments.map((pmt: PaymentReceipt) => (
+                        <TableRow key={pmt.id} className="hover:bg-muted/40 transition-colors">
+                          <TableCell className="font-mono font-bold text-xs text-primary">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span>{pmt.receiptNumber || `SF-REC-${pmt.id.slice(-5)}`}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
+                                <Icons.Store size={14} />
+                              </div>
+                              <div>
+                                <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
+                                  {pmt.customerName}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground">{pmt.customerCity || '—'}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-muted/80 text-foreground border border-border">
+                              {pmt.paymentMethod}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <TableMoneyCell
+                              amount={Number(pmt.paymentAmount || 0)}
+                              className="text-right font-bold text-emerald-600 dark:text-emerald-400 text-xs"
+                              isBold
+                            />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedReceiptPayment(pmt);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer inline-flex items-center justify-center"
+                              title="View & Print Official Receipt"
+                            >
+                              <Icons.FileText size={16} />
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card List View */}
+                <div className="md:hidden divide-y divide-border">
                   {collectionsData.latestPayments.map((pmt: PaymentReceipt) => (
-                    <TableRow key={pmt.id} className="hover:bg-muted/40 transition-colors">
-                      <TableCell className="font-mono font-bold text-xs text-primary">
+                    <div
+                      key={pmt.id}
+                      className="p-3 hover:bg-muted/30 transition-colors flex items-center justify-between gap-2.5 active:bg-muted/40"
+                    >
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                          <span>{pmt.receiptNumber || `SF-REC-${pmt.id.slice(-5)}`}</span>
+                          <span className="font-mono font-bold text-xs text-primary truncate">
+                            {pmt.receiptNumber || `SF-REC-${pmt.id.slice(-5)}`}
+                          </span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-muted text-foreground border border-border shrink-0">
+                            {pmt.paymentMethod}
+                          </span>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-muted/60 border border-border flex items-center justify-center text-muted-foreground shrink-0">
-                            <Icons.Store size={14} />
-                          </div>
-                          <div>
-                            <span className="font-semibold text-foreground text-xs block truncate max-w-[150px]">
-                              {pmt.customerName}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground">{pmt.customerCity || '—'}</span>
-                          </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1 truncate">
+                          <span className="font-semibold text-foreground truncate">{pmt.customerName}</span>
+                          <span>•</span>
+                          <span className="text-[11px] font-mono">{pmt.paymentDate}</span>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-muted/80 text-foreground border border-border">
-                          {pmt.paymentMethod}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <TableMoneyCell
-                          amount={Number(pmt.paymentAmount || 0)}
-                          className="text-right font-bold text-emerald-600 dark:text-emerald-400 text-xs"
-                          isBold
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="text-right">
+                          <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400 block">
+                            ₹{Number(pmt.paymentAmount || 0).toLocaleString('en-IN')}
+                          </span>
+                        </div>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedReceiptPayment(pmt);
                           }}
-                          className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer inline-flex items-center justify-center"
-                          title="View & Print Official Receipt"
+                          className="w-8 h-8 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center border border-border cursor-pointer active:scale-95"
+                          title="View Receipt"
                         >
-                          <Icons.FileText size={16} />
+                          <Icons.FileText size={15} />
                         </button>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              </>
             )}
           </Panel>
 
@@ -692,10 +909,28 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
             </div>
           </Panel>
 
-          {/* Widget 6: Fast Moving Designs / Best Sellers */}
+          {/* Widget 6: Fast Moving Designs / Best Sellers (Redesigned Modern Showcase) */}
           <Panel
-            title="Trending & Best Selling Designs"
-            subtitle="Top articles to showcase during store calls"
+            title={
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
+                  <Icons.Catalogue size={20} strokeWidth={2} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 title="Trending & Best Selling Designs" className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate">
+                      Trending & Best Selling Designs
+                    </h3>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                      ★ Hot Sellers
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">
+                    Top articles to showcase and pitch during retailer visits
+                  </p>
+                </div>
+              </div>
+            }
             headerAction={
               <Button
                 variant="ghost"
@@ -703,47 +938,104 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
                 icon={Icons.ChevronRight}
                 iconPosition="right"
                 onClick={() => onNavigate('/sales/catalogue')}
+                className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-2.5 sm:px-3 py-1.5"
               >
                 Catalogue
               </Button>
             }
+            noPadding
           >
-            <div className="space-y-3">
-              {designsSummary.topDesigns.slice(0, 4).map((d) => (
-                <div
-                  key={d.id}
-                  className="p-3 rounded-xl border border-border bg-card hover:border-zinc-400 dark:hover:border-zinc-500 transition-all flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-lg bg-muted overflow-hidden shrink-0 border border-border flex items-center justify-center">
-                      {d.image ? (
-                        <img
-                          src={d.image}
-                          alt={d.name || d.articleCode}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Icons.Catalogue size={20} className="text-muted-foreground opacity-50" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-foreground truncate">{d.name || d.articleCode}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {d.category} • Wholesale ₹{d.price}
-                      </p>
-                    </div>
-                  </div>
+            <div className="p-3 sm:p-4">
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar snap-x">
+                {designsSummary.topDesigns.slice(0, 4).map((d, idx) => {
+                  const rankColor =
+                    idx === 0
+                      ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
+                      : idx === 1
+                      ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
+                      : idx === 2
+                      ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30'
+                      : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+                  const rankLabel =
+                    idx === 0
+                      ? '#1 Bestseller'
+                      : idx === 1
+                      ? '#2 Trending'
+                      : idx === 2
+                      ? '#3 Popular'
+                      : '#4 Fast Moving';
 
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    icon={Icons.Share}
-                    onClick={() => setIsShareModalOpen(true)}
-                  >
-                    Share
-                  </Button>
-                </div>
-              ))}
+                  return (
+                    <div
+                      key={d.id}
+                      className="min-w-[210px] flex-1 shrink-0 snap-start bg-surface dark:bg-card/90 rounded-2xl border border-border/80 shadow-2xs hover:shadow-xs p-3 flex flex-col justify-between transition-all duration-150 active:scale-[0.98] select-none group"
+                    >
+                      <div>
+                        {/* Top Rank Badge & Price */}
+                        <div className="flex items-center justify-between gap-1.5">
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${rankColor}`}>
+                            {rankLabel}
+                          </span>
+                          <span className="font-mono text-xs font-bold text-foreground">
+                            ₹{(d.price || 0).toLocaleString('en-IN')}<span className="text-[10px] text-muted-foreground font-normal">/pr</span>
+                          </span>
+                        </div>
+
+                        {/* Shoe Image */}
+                        <div
+                          onClick={() => onNavigate('/sales/catalogue')}
+                          className="h-24 sm:h-28 w-full bg-muted/50 rounded-xl overflow-hidden border border-border/50 my-2.5 relative flex items-center justify-center cursor-pointer"
+                        >
+                          {d.image ? (
+                            <img
+                              src={d.image}
+                              alt={d.name || d.articleCode}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <Icons.Catalogue size={28} className="text-muted-foreground opacity-40" />
+                          )}
+                          <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[9px] font-mono font-semibold text-white">
+                            {d.articleCode}
+                          </span>
+                        </div>
+
+                        {/* Footwear Details */}
+                        <h5
+                          onClick={() => onNavigate('/sales/catalogue')}
+                          className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors cursor-pointer"
+                          title={d.name || d.articleCode}
+                        >
+                          {d.name || d.articleCode}
+                        </h5>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {d.category}
+                        </p>
+                      </div>
+
+                      {/* Footer Actions: Booked Volume & Share Button */}
+                      <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 truncate">
+                          <Icons.TrendingUp size={11} className="shrink-0" />
+                          <span>{Number(d.orderedPairs || 0).toLocaleString('en-IN')} prs</span>
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          icon={Icons.Share}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsShareModalOpen(true);
+                          }}
+                          className="text-[11px] h-7 px-2.5 rounded-lg shrink-0"
+                        >
+                          Share
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </Panel>
         </div>

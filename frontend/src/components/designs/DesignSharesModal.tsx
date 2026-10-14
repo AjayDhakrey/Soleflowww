@@ -15,24 +15,24 @@ export const DesignSharesModal: React.FC<DesignSharesModalProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-xl border border-border overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/60 dark:bg-black/70 backdrop-blur-xs select-none animate-in fade-in duration-150">
+      <div className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-xl border border-border overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-border flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
               <Icons.Share size={20} strokeWidth={1.75} />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-foreground tracking-tight">
-                  Design Sharing & Lookbook History
+                <h3 className="font-bold text-base sm:text-lg text-foreground tracking-tight truncate">
+                  Lookbook History
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
-                  {designShares.length} Shares
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 shrink-0">
+                  {designShares.length}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 truncate">
                 Measurable tracking of catalogue lookbooks shared with wholesale buyers.
               </p>
             </div>
@@ -40,14 +40,14 @@ export const DesignSharesModal: React.FC<DesignSharesModalProps> = ({ isOpen, on
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer shrink-0 ml-2"
           >
             <Icons.Close size={18} strokeWidth={1.75} />
           </button>
         </div>
 
         {/* List of Shares */}
-        <div className="p-6 overflow-y-auto divide-y divide-border space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto divide-y divide-border space-y-4 flex-1">
           {designShares.map((share) => (
             <div key={share.id} className="pt-4 first:pt-0 space-y-2.5">
               <div className="flex items-start justify-between">
@@ -97,8 +97,8 @@ export const DesignSharesModal: React.FC<DesignSharesModalProps> = ({ isOpen, on
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-border flex justify-end">
-          <Button variant="secondary" onClick={onClose}>
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border flex justify-end shrink-0">
+          <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto">
             Close
           </Button>
         </div>

@@ -19,7 +19,7 @@ interface ReportsKpiCardsProps {
 
 // 1. Total Revenue (3D Mint-Emerald Ascending Growth Graph & Cash Stack)
 export const TotalRevenue3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="revGlowGrn" cx="50%" cy="50%" r="50%">
@@ -77,7 +77,7 @@ export const TotalRevenue3D = () => (
 
 // 2. Wholesale Margin (3D Blue & Cyan Percentage Disc)
 export const WholesaleMargin3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="mrgGlowBlu" cx="50%" cy="50%" r="50%">
@@ -116,7 +116,7 @@ export const WholesaleMargin3D = () => (
 
 // 3. Active Retail Outlets (3D Purple Storefront / Boutique Building)
 export const RetailOutlets3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="outGlowPurp" cx="50%" cy="50%" r="50%">
@@ -172,7 +172,7 @@ export const RetailOutlets3D = () => (
 
 // 4. Special Margin Requests (3D Amber Glowing Clipboard & Stamp)
 export const MarginRequests3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="reqGlowAmb" cx="50%" cy="50%" r="50%">
@@ -236,59 +236,59 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
   onRequestsClick,
 }) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
       {/* 1. Total Revenue */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <TotalRevenue3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Revenue">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Revenue">
             Total Revenue
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-display wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-display truncate"
             title={totalRevenue}
           >
             {totalRevenue}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={revenueCaption}>
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={revenueCaption}>
             {revenueCaption}
           </p>
         </div>
       </div>
 
       {/* 2. Average Wholesale Margin */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <WholesaleMargin3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Average Wholesale Margin">
-            Average Wholesale Margin
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Average Wholesale Margin">
+            Wholesale Margin
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-display wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-display truncate"
             title={avgMargin}
           >
             {avgMargin}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={marginCaption}>
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={marginCaption}>
             {marginCaption}
           </p>
         </div>
       </div>
 
       {/* 3. Active Retail Outlets */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <RetailOutlets3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Active Retail Outlets">
-            Active Retail Outlets
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Active Retail Outlets">
+            Active Outlets
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-display wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-purple-800 dark:text-purple-300 mt-0.5 font-display truncate"
             title={activeOutlets}
           >
             {activeOutlets}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={outletsCaption}>
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={outletsCaption}>
             {outletsCaption}
           </p>
         </div>
@@ -297,20 +297,20 @@ export const ReportsKpiCards: React.FC<ReportsKpiCardsProps> = ({
       {/* 4. Special Margin Requests */}
       <div
         onClick={onRequestsClick}
-        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none cursor-pointer active:scale-[0.99] overflow-hidden min-w-0"
+        className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none cursor-pointer active:scale-[0.99] overflow-hidden min-w-0"
       >
         <MarginRequests3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Special Margin Requests">
-            Special Margin Requests
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Special Margin Requests">
+            Margin Requests
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-800 dark:text-amber-300 mt-0.5 font-display wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-amber-800 dark:text-amber-300 mt-0.5 font-display truncate"
             title={pendingRequests}
           >
             {pendingRequests}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={requestsCaption}>
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={requestsCaption}>
             {requestsCaption}
           </p>
         </div>

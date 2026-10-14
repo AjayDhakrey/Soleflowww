@@ -267,17 +267,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }
   };
 
-  const handleDemoLogin = async (demoRole: 'superadmin' | 'admin' | 'salesperson') => {
+  const handleDemoLogin = async (demoRole: 'admin' | 'salesperson') => {
     setIsDemoLoggingIn(true);
     setAuthError('');
 
     let demoEmail = 'admin@soleflow.com';
     let demoPass = 'admin123';
 
-    if (demoRole === 'superadmin') {
-      demoEmail = (import.meta.env.VITE_DEMO_SUPERADMIN_EMAIL as string) || 'superadmin@soleflow.com';
-      demoPass = (import.meta.env.VITE_DEMO_SUPERADMIN_PASSWORD as string) || 'super123';
-    } else if (demoRole === 'admin') {
+    if (demoRole === 'admin') {
       demoEmail = (import.meta.env.VITE_DEMO_ADMIN_EMAIL as string) || 'admin@soleflow.com';
       demoPass = (import.meta.env.VITE_DEMO_ADMIN_PASSWORD as string) || 'admin123';
     } else {
@@ -475,17 +472,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <span>Instant 1-Click Demo Login:</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin('superadmin')}
-                    disabled={isDemoLoggingIn}
-                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-950/70 hover:bg-purple-900/90 active:scale-95 text-purple-200 border border-purple-500/40 text-xs font-bold transition-all shadow-md backdrop-blur-md cursor-pointer hover:border-purple-400"
-                    title="Platform Owner Console (Multi-Tenant Super Admin)"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-purple-400 group-hover:scale-110 transition-transform" />
-                    <span>Super Admin</span>
-                  </button>
-
                   <button
                     type="button"
                     onClick={() => handleDemoLogin('admin')}
@@ -1484,17 +1470,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </span>
                       <span className="text-[11px] text-slate-400 font-normal">No password required</span>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleDemoLogin('superadmin')}
-                        disabled={isDemoLoggingIn}
-                        className="py-2 px-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 active:scale-95 border border-purple-200 text-purple-700 text-[11px] font-bold transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shadow-xs"
-                        title="Platform Super Admin Console"
-                      >
-                        <ShieldCheck className="w-4 h-4 text-purple-600" />
-                        <span className="truncate">Super Admin</span>
-                      </button>
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('admin')}

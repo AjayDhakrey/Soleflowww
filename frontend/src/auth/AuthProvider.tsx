@@ -55,7 +55,7 @@ interface AuthContextType {
   resetPasswordForEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; message: string }>;
   switchDemoRole: (role: UserRole) => void;
-  quickDemoLogin: (demoRole: 'superadmin' | 'admin' | 'salesperson') => { success: boolean; role?: UserRole };
+  quickDemoLogin: (demoRole: 'admin' | 'salesperson') => { success: boolean; role?: UserRole };
   clearAuthError: () => void;
   refreshProfile: () => Promise<void>;
 }
@@ -126,13 +126,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       role: prof.role || 'salesperson',
       avatar: prof.avatar_url || (prof.role === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar),
       initials,
-      roleLabel: prof.is_super_admin ? 'Platform Owner' : (prof.role_label || (prof.role === 'admin' ? 'Trader Admin' : 'Field Sales Rep')),
+      roleLabel: prof.role_label || (prof.role === 'admin' ? 'Trader Admin' : 'Field Sales Rep'),
       phone: prof.phone || undefined,
       zone: prof.zone || undefined,
       org_id: prof.org_id || undefined,
       orgId: prof.org_id || undefined,
-      isSuperAdmin: prof.is_super_admin,
-      is_super_admin: prof.is_super_admin,
+      isSuperAdmin: false,
+      is_super_admin: false,
       isDemoAccount: prof.is_demo_account,
       is_demo_account: prof.is_demo_account,
     };
@@ -201,7 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: activeUser.name,
                 role: activeRole,
                 org_id: DEFAULT_ORG_ID,
-                is_super_admin: Boolean(activeUser.is_super_admin),
+                is_super_admin: false,
                 is_demo_account: true,
               });
               setOrg({
@@ -383,33 +383,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Quick Instant Demo Login
-  const quickDemoLogin = (demoRole: 'superadmin' | 'admin' | 'salesperson') => {
+  const quickDemoLogin = (demoRole: 'admin' | 'salesperson') => {
     setDemoModeActive(true);
     setAuthError(null);
     setIsLoading(false);
 
-    const isSuper = demoRole === 'superadmin';
     const assignedRole: UserRole = demoRole === 'salesperson' ? 'salesperson' : 'admin';
-    const demoEmail = isSuper
-      ? 'superadmin@soleflow.com'
-      : assignedRole === 'salesperson'
-      ? 'sales@soleflow.com'
-      : 'admin@soleflow.com';
-    const demoName = isSuper
-      ? 'Platform Super Admin'
-      : assignedRole === 'salesperson'
-      ? 'Rahul Sharma'
-      : 'Vikram Malhotra';
+    const demoEmail = assignedRole === 'salesperson' ? 'sales@soleflow.com' : 'admin@soleflow.com';
+    const demoName = assignedRole === 'salesperson' ? 'Rahul Sharma' : 'Vikram Malhotra';
     const baseUser = assignedRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin;
 
     const demoUser: User = {
       ...baseUser,
-      id: isSuper ? 'superadmin-demo-uuid' : baseUser.id,
       name: demoName,
       email: demoEmail,
       role: assignedRole,
-      isSuperAdmin: isSuper,
-      is_super_admin: isSuper,
+      isSuperAdmin: false,
+      is_super_admin: false,
       isDemoAccount: true,
       is_demo_account: true,
       org_id: DEFAULT_ORG_ID,
@@ -423,13 +413,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: demoEmail,
       name: demoName,
       role: assignedRole,
-      is_super_admin: isSuper,
+      is_super_admin: false,
       is_demo_account: true,
       org_id: DEFAULT_ORG_ID,
     });
     setOrg({
       id: DEFAULT_ORG_ID,
-      name: isSuper ? 'Demo Platform View (All Businesses)' : 'Demo Footwear Traders',
+      name: 'Demo Footwear Traders',
       status: 'active',
       is_demo: true,
     });
@@ -438,7 +428,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(
         AUTH_STORAGE_KEY,
-        JSON.stringify({ isLoggedIn: true, role: assignedRole, email: demoEmail, isSuperAdmin: isSuper, user: demoUser })
+        JSON.stringify({ isLoggedIn: true, role: assignedRole, email: demoEmail, isSuperAdmin: false, user: demoUser })
       );
     } catch (e) {
       console.warn('LocalStorage save session warning:', e);
@@ -688,9 +678,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuthError = () => setAuthError(null);
 
-  const isSuperAdmin = Boolean(profile?.is_super_admin || user?.is_super_admin);
+  const isSuperAdmin = false;
   const isDemoAccount = Boolean(profile?.is_demo_account || user?.is_demo_account);
-  const isAdminRole = isSuperAdmin || role === 'admin' || profile?.role === 'admin' || user?.role === 'admin';
+  const isAdminRole = role === 'admin' || profile?.role === 'admin' || user?.role === 'admin';
   const canManageCatalog = isAdminRole;
 
   const value: AuthContextType = {

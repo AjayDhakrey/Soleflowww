@@ -39,10 +39,16 @@ const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      if (!origin) return callback(null, true);
+
+      // Support local machine, 127.0.0.1, and private LAN Wi-Fi IPs (192.168.*, 10.*, 172.16-31.*)
+      const isLocalOrLan =
+        /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/.test(origin);
+
+      if (isLocalOrLan || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
         callback(null, true);
       } else {
-        callback(new Error('Blocked by CORS policy'));
+        callback(null, false);
       }
     },
     credentials: true,

@@ -46,7 +46,7 @@ export const SettingsPage: React.FC = () => {
     setThemePreference,
   } = useApp();
 
-  const { org, orgId, isAdmin, isSuperAdmin, isDemoAccount, refreshProfile } = useAuth();
+  const { org, orgId, isAdmin, isDemoAccount, refreshProfile } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'general' | 'team' | 'theme'>('general');
 
@@ -67,7 +67,7 @@ export const SettingsPage: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const loadTeamData = async () => {
-    if (!isAdmin && !isSuperAdmin) return;
+    if (!isAdmin) return;
     setIsLoadingTeam(true);
 
     if (!supabase || isDemoModeActive) {
@@ -107,7 +107,7 @@ export const SettingsPage: React.FC = () => {
     try {
       // 1. Load active profiles
       let profilesQuery = supabase.from('profiles').select('*');
-      if (orgId && !isSuperAdmin) {
+      if (orgId) {
         profilesQuery = profilesQuery.eq('org_id', orgId);
       }
       const { data: profData } = await profilesQuery;
@@ -143,7 +143,7 @@ export const SettingsPage: React.FC = () => {
 
       // 2. Load pending invites
       let invitesQuery = supabase.from('org_invites').select('*').is('accepted_at', null);
-      if (orgId && !isSuperAdmin) {
+      if (orgId) {
         invitesQuery = invitesQuery.eq('org_id', orgId);
       }
       const { data: invData } = await invitesQuery;

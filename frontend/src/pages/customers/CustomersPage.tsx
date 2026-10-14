@@ -13,6 +13,7 @@ import {
   Store,
   Eye,
   Pencil,
+  Phone,
 } from 'lucide-react';
 
 import { CustomerRowActionMenu } from '../../components/customers/CustomerRowActionMenu';
@@ -123,7 +124,7 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground">
+    <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground">
       {/* 1. Breadcrumbs */}
       <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <button
@@ -139,28 +140,26 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
         </span>
       </div>
 
-      {/* 2. Top Header with Greeting & Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* 2. Top Header with Title & Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl select-none" role="img" aria-label="greeting">
-              {(() => { const h = new Date().getHours(); return h < 12 ? '☀️' : h < 17 ? '🌤️' : '🌙'; })()}
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
+            <span>Clients</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-800/60">
+              {customers.length}
             </span>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-              {(() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; })()}, {currentUser.name}
-            </h1>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Here's what's happening with your shoe wholesale business today.
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Client accounts, credit balances, and payment status.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setIsPaymentModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 hover:bg-blue-100/60 dark:bg-blue-950/30 dark:hover:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full sm:w-auto justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 hover:bg-blue-100/60 dark:bg-blue-950/30 dark:hover:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95"
           >
             <span>₹</span>
             <span>Record Payment</span>
@@ -168,7 +167,7 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
           <button
             type="button"
             onClick={() => setIsAddCustomerModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+            className="w-full sm:w-auto justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer active:scale-95"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>Add Client</span>
@@ -194,30 +193,64 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
 
       {/* 4. Main Panel / Table */}
       <div className="bg-surface border border-border rounded-2xl shadow-2xs overflow-hidden">
-        {/* Filter Bar: Search + Account Dropdown */}
-        <div className="p-4 md:px-6 bg-surface border-b border-border flex flex-col sm:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by store name, proprietor, city, GSTIN, phone..."
-              className="w-full h-10 pl-10 pr-4 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
+        {/* Filter Bar: Search + Filter Chips Carousel */}
+        <div className="p-3 sm:p-4 md:px-6 bg-surface border-b border-border space-y-3">
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3">
+            <div className="relative flex-1 w-full">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search store, proprietor, city, GSTIN, phone..."
+                className="w-full h-10 pl-9 pr-4 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              />
+            </div>
+
+            {/* Desktop Account Selector */}
+            <div className="hidden sm:block w-48 shrink-0">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="w-full h-10 px-3 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+              >
+                <option value="all">All Accounts</option>
+                <option value="active">Active Only</option>
+                <option value="overdue">Overdue Only</option>
+                <option value="hold">Credit Hold</option>
+              </select>
+            </div>
           </div>
 
-          <div className="w-full sm:w-48 shrink-0">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full h-10 px-3 bg-muted/40 hover:bg-muted/70 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-            >
-              <option value="all">All Accounts</option>
-              <option value="active">Active Only</option>
-              <option value="overdue">Overdue Only</option>
-              <option value="hold">Credit Hold</option>
-            </select>
+          {/* Mobile Horizontal Filter Chips Carousel */}
+          <div className="sm:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5 -mx-1 px-1">
+            {[
+              { id: 'all', label: 'All Accounts', count: roleFilteredCustomers.length },
+              { id: 'overdue', label: 'Overdue', count: roleFilteredCustomers.filter(c => c.amountDue > 0 && c.status === 'overdue').length, badgeColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
+              { id: 'active', label: 'Active', count: roleFilteredCustomers.filter(c => c.amountDue === 0 || c.status === 'active').length },
+              { id: 'hold', label: 'Credit Hold', count: roleFilteredCustomers.filter(c => (c.status as string) === 'hold' || (c.status as string) === 'credit_hold' || c.amountDue > c.creditLimit).length, badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+            ].map((f) => {
+              const isSelected = statusFilter === f.id;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setStatusFilter(f.id as any)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground border border-border/60'
+                  }`}
+                >
+                  <span>{f.label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    isSelected ? 'bg-white/25 text-white' : f.badgeColor || 'bg-background text-muted-foreground'
+                  }`}>
+                    {f.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -232,135 +265,257 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
             <button
               type="button"
               onClick={() => setIsAddCustomerModalOpen(true)}
-              className="mt-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="mt-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
             >
               <Plus size={15} />
               <span>Add Client</span>
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead>
-                <tr className="border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider bg-muted/25">
-                  <th className="py-3.5 px-4 md:px-6">Store &amp; Proprietor</th>
-                  <th className="py-3.5 px-4">GSTIN</th>
-                  <th className="py-3.5 px-4">Location Hub</th>
-                  <th className="py-3.5 px-4">Phone / Contact</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Credit Limit</th>
-                  <th className="py-3.5 px-4">Balance Due</th>
-                  <th className="py-3.5 px-4 md:px-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map((c) => {
-                  const initials = getInitials(c.businessName);
+          <>
+            {/* Mobile Card List (md:hidden) */}
+            <div className="md:hidden divide-y divide-border/60 bg-surface">
+              {filtered.map((c) => {
+                const initials = getInitials(c.businessName);
+                const isOverdue = c.status === 'overdue' || c.amountDue > 100000;
+                const cleanPhone = (c.whatsapp || c.phone || '').replace(/[^0-9]/g, '');
 
-                  return (
-                    <tr
-                      key={c.id}
-                      onClick={() => handleSelectCustomer(c)}
-                      className="hover:bg-muted/40 transition-colors cursor-pointer"
-                    >
-                      {/* Store & Proprietor */}
-                      <td className="py-3.5 px-4 md:px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
-                            {initials}
-                          </div>
-                          <div>
-                            <div className="font-bold text-foreground text-xs sm:text-sm leading-tight">
-                              {c.businessName}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground mt-0.5">
-                              {c.propName || c.city}
-                            </div>
-                          </div>
+                return (
+                  <div
+                    key={c.id}
+                    onClick={() => handleSelectCustomer(c)}
+                    className="p-3.5 hover:bg-muted/30 active:bg-muted/40 transition-colors cursor-pointer space-y-3"
+                  >
+                    {/* Header: Avatar, Store Name, City & Status Badge */}
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/60 dark:to-indigo-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/60 flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
+                          {initials}
                         </div>
-                      </td>
-
-                      {/* GSTIN */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {c.gstin || '—'}
-                        </span>
-                      </td>
-
-                      {/* Location Hub */}
-                      <td className="py-3.5 px-4">
-                        <div className="font-medium text-foreground text-xs sm:text-sm leading-tight">
-                          {c.city}
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-bold text-foreground text-sm leading-tight truncate">
+                            {c.businessName}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate flex items-center gap-1">
+                            <span>{c.propName || c.city}</span>
+                            {c.city && c.propName && <span>•</span>}
+                            {c.city && c.propName && <span>{c.city}</span>}
+                          </p>
+                          {c.gstin && (
+                            <p className="text-[10px] font-mono text-muted-foreground/75 truncate mt-0.5">
+                              GST: {c.gstin}
+                            </p>
+                          )}
                         </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[150px]">
-                          {c.address || '—'}
-                        </div>
-                      </td>
-
-                      {/* Phone / Contact */}
-                      <td className="py-3.5 px-4">
-                        <span className="text-xs text-foreground font-medium">
-                          {c.phone}
-                        </span>
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-3.5 px-4">
+                      </div>
+                      <div className="shrink-0 pt-0.5">
                         {getStatusBadge(c)}
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* Credit Limit */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-medium text-muted-foreground text-xs sm:text-sm">
-                          {c.creditLimit > 0 ? `₹${(c.creditLimit / 100000).toFixed(1)}L` : '—'}
+                    {/* Financial Metrics Strip */}
+                    <div className="grid grid-cols-2 gap-2 bg-muted/40 dark:bg-muted/20 p-2.5 rounded-xl border border-border/50">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
+                          Balance Due
                         </span>
-                      </td>
-
-                      {/* Balance Due */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold font-mono text-foreground text-xs sm:text-sm">
+                        <span className={`font-bold font-mono text-sm leading-tight block mt-0.5 ${
+                          c.amountDue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                        }`}>
                           ₹{(c.amountDue || 0).toLocaleString('en-IN')}
                         </span>
-                      </td>
+                        {isOverdue && (
+                          <span className="text-[10px] font-medium text-rose-500 dark:text-rose-400 block mt-0.5">
+                            Overdue payment
+                          </span>
+                        )}
+                      </div>
+                      <div className="border-l border-border/60 pl-2.5">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
+                          Credit Limit
+                        </span>
+                        <span className="font-semibold text-foreground text-xs sm:text-sm leading-tight block mt-0.5">
+                          {c.creditLimit > 0 ? `₹${(c.creditLimit / 100000).toFixed(1)}L` : 'Unlimited'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground truncate block mt-0.5">
+                          {c.paymentTerms || 'Terms: Standard'}
+                        </span>
+                      </div>
+                    </div>
 
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 md:px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSelectCustomer(c);
-                            }}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    {/* Touch Action Bar */}
+                    <div className="flex items-center justify-between gap-1.5 pt-0.5" onClick={(e) => e.stopPropagation()}>
+                      {/* Direct Phone & WhatsApp buttons */}
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={`tel:${c.phone}`}
+                          className="h-8 px-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-semibold inline-flex items-center gap-1 border border-blue-200/60 dark:border-blue-900/40 active:scale-95 transition-all"
+                          title="Call client"
+                        >
+                          <Phone size={12} />
+                          <span>Call</span>
+                        </a>
+
+                        {cleanPhone && (
+                          <a
+                            href={`https://wa.me/${cleanPhone}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="h-8 px-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 text-xs font-semibold inline-flex items-center gap-1 border border-emerald-200/60 dark:border-emerald-900/40 active:scale-95 transition-all"
+                            title="Chat on WhatsApp"
                           >
-                            <Eye size={14} />
-                            <span>Details</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditCustomerModal(c);
-                            }}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
-                          >
-                            <Pencil size={13} />
-                            <span>Edit</span>
-                          </button>
-                          <CustomerRowActionMenu
-                            customer={c}
-                            onNavigate={onNavigate}
-                            fromPath={currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            <span className="text-emerald-500 font-bold">💬</span>
+                            <span>WhatsApp</span>
+                          </a>
+                        )}
+                      </div>
+
+                      {/* View Details & More Actions */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectCustomer(c)}
+                          className="h-8 px-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold inline-flex items-center gap-1 transition-all active:scale-95"
+                        >
+                          <span>Profile</span>
+                          <ChevronRight size={13} className="text-muted-foreground" />
+                        </button>
+                        <CustomerRowActionMenu
+                          customer={c}
+                          onNavigate={onNavigate}
+                          fromPath={currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider bg-muted/25">
+                    <th className="py-3.5 px-4 md:px-6">Store &amp; Proprietor</th>
+                    <th className="py-3.5 px-4">GSTIN</th>
+                    <th className="py-3.5 px-4">Location Hub</th>
+                    <th className="py-3.5 px-4">Phone / Contact</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Credit Limit</th>
+                    <th className="py-3.5 px-4">Balance Due</th>
+                    <th className="py-3.5 px-4 md:px-6 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filtered.map((c) => {
+                    const initials = getInitials(c.businessName);
+
+                    return (
+                      <tr
+                        key={c.id}
+                        onClick={() => handleSelectCustomer(c)}
+                        className="hover:bg-muted/40 transition-colors cursor-pointer"
+                      >
+                        {/* Store & Proprietor */}
+                        <td className="py-3.5 px-4 md:px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
+                              {initials}
+                            </div>
+                            <div>
+                              <div className="font-bold text-foreground text-xs sm:text-sm leading-tight">
+                                {c.businessName}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">
+                                {c.propName || c.city}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* GSTIN */}
+                        <td className="py-3.5 px-4">
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {c.gstin || '—'}
+                          </span>
+                        </td>
+
+                        {/* Location Hub */}
+                        <td className="py-3.5 px-4">
+                          <div className="font-medium text-foreground text-xs sm:text-sm leading-tight">
+                            {c.city}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[150px]">
+                            {c.address || '—'}
+                          </div>
+                        </td>
+
+                        {/* Phone / Contact */}
+                        <td className="py-3.5 px-4">
+                          <span className="text-xs text-foreground font-medium">
+                            {c.phone}
+                          </span>
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3.5 px-4">
+                          {getStatusBadge(c)}
+                        </td>
+
+                        {/* Credit Limit */}
+                        <td className="py-3.5 px-4">
+                          <span className="font-medium text-muted-foreground text-xs sm:text-sm">
+                            {c.creditLimit > 0 ? `₹${(c.creditLimit / 100000).toFixed(1)}L` : '—'}
+                          </span>
+                        </td>
+
+                        {/* Balance Due */}
+                        <td className="py-3.5 px-4">
+                          <span className="font-bold font-mono text-foreground text-xs sm:text-sm">
+                            ₹{(c.amountDue || 0).toLocaleString('en-IN')}
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3.5 px-4 md:px-6 text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectCustomer(c);
+                              }}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                            >
+                              <Eye size={14} />
+                              <span>Details</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditCustomerModal(c);
+                              }}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                            >
+                              <Pencil size={13} />
+                              <span>Edit</span>
+                            </button>
+                            <CustomerRowActionMenu
+                              customer={c}
+                              onNavigate={onNavigate}
+                              fromPath={currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

@@ -18,7 +18,7 @@ interface OrdersKpiCardsProps {
 
 // 1. Total Orders (3D Green Order Clipboard + Cart + Checkmark Badge)
 export const TotalOrders3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="ordGlow" cx="50%" cy="50%" r="50%">
@@ -74,7 +74,7 @@ export const TotalOrders3D = () => (
 
 // 2. In Production (3D Purple Factory Plant & Interlocking Gears)
 export const InProduction3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="prodGlow" cx="50%" cy="50%" r="50%">
@@ -130,7 +130,7 @@ export const InProduction3D = () => (
 
 // 3. Ready to Dispatch (3D Yellow/Orange Delivery Van + Red Location Pin + Speed Lines)
 export const ReadyDispatch3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="dispGlow" cx="50%" cy="50%" r="50%">
@@ -187,7 +187,7 @@ export const ReadyDispatch3D = () => (
 
 // 4. Total Consignment Value (3D Stack of Green Rupee Coins + Upward Arrow)
 export const ConsignmentValue3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="valGlow" cx="50%" cy="50%" r="50%">
@@ -250,30 +250,29 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
   onNavigateValue,
 }) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
       {/* 1. Total Orders */}
       <div
         role="button"
         tabIndex={0}
         onClick={onNavigateAll}
-        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
         <TotalOrders3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Orders">
+          <span className="text-[11px] sm:text-[13px] font-semibold text-slate-700 dark:text-slate-300 block truncate" title="Total Orders">
             Total Orders
           </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
+            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${totalOrdersCount} Batches`}
           >
             <span className="tabular-nums whitespace-nowrap">{totalOrdersCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
+            <span className="text-[11px] sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
               Batches
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="All active consignments">
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block" title="All active consignments">
             All active consignments
           </p>
         </div>
@@ -284,24 +283,23 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateProduction}
-        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
         <InProduction3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="In Production">
+          <span className="text-[11px] sm:text-[13px] font-semibold text-slate-700 dark:text-slate-300 block truncate" title="In Production">
             In Production
           </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
+            className="text-base sm:text-2xl font-bold tracking-tight text-purple-700 dark:text-purple-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${inProductionCount} Batches`}
           >
             <span className="tabular-nums whitespace-nowrap">{inProductionCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
+            <span className="text-[11px] sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
               Batches
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Active on factory lines">
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block" title="Active on factory lines">
             Active on factory lines
           </p>
         </div>
@@ -312,25 +310,24 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateDispatch}
-        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
         <ReadyDispatch3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Ready to Dispatch">
-            Ready to Dispatch
+          <span className="text-[11px] sm:text-[13px] font-semibold text-slate-700 dark:text-slate-300 block truncate" title="Ready to Dispatch">
+            Ready Dispatch
           </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
+            className="text-base sm:text-2xl font-bold tracking-tight text-amber-700 dark:text-amber-300 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
             title={`${readyDispatchCount} Batches`}
           >
             <span className="tabular-nums whitespace-nowrap">{readyDispatchCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
+            <span className="text-[11px] sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
               Batches
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Awaiting transport loading">
-            Awaiting transport loading
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block" title="Awaiting transport loading">
+            Awaiting transport
           </p>
         </div>
       </div>
@@ -340,15 +337,15 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
         role="button"
         tabIndex={0}
         onClick={onNavigateValue}
-        className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0"
+        className="group relative rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
         <ConsignmentValue3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Consignment Value">
-            Total Consignment Value
+          <span className="text-[11px] sm:text-[13px] font-semibold text-slate-700 dark:text-slate-300 block truncate" title="Total Consignment Value">
+            Consignment Value
           </span>
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5 font-display truncate"
             title={typeof totalConsignmentValue === 'number' ? `₹${(totalConsignmentValue / 100000).toFixed(2)}L` : String(totalConsignmentValue)}
           >
             <span className="tabular-nums">
@@ -357,7 +354,7 @@ export const OrdersKpiCards: React.FC<OrdersKpiCardsProps> = ({
                 : totalConsignmentValue}
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Gross wholesale value">
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block" title="Gross wholesale value">
             Gross wholesale value
           </p>
         </div>

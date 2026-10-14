@@ -13,7 +13,7 @@ interface DesignsKpiCardsProps {
 
 // 1. Total Active Articles (3D Stack of Green Specs Documents + Sneaker Silhouette + Badge)
 export const ActiveArticles3D = ({ count = 6 }: { count?: number }) => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="artGlow" cx="50%" cy="50%" r="50%">
@@ -77,7 +77,7 @@ export const ActiveArticles3D = ({ count = 6 }: { count?: number }) => (
 
 // 2. Popular Fast-Movers (3D Blue Running Sneaker + Upward Growth Arrow + Speed Rays)
 export const FastMovers3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="fastGlow" cx="50%" cy="50%" r="50%">
@@ -128,7 +128,7 @@ export const FastMovers3D = () => (
 
 // 3. High Margin Lines (3D Tan Leather Dress Shoes + Gold Rupee Coin)
 export const HighMargin3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="marGlow" cx="50%" cy="50%" r="50%">
@@ -188,7 +188,7 @@ export const HighMargin3D = () => (
 
 // 4. Selected for Sharing (3D Tablet displaying Shoe + Purple Sharing Nodes)
 export const SelectedShare3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="shareGlow" cx="50%" cy="50%" r="50%">
@@ -246,100 +246,106 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
   selectedCount,
 }) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
-      {/* 1. Total Active Articles */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+    <div className="space-y-2.5 sm:space-y-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
+        {/* 1. Total Active Articles */}
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ActiveArticles3D count={totalActiveModels} />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Active Articles">
-            Total Active Articles
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Active Articles">
+            Active Articles
           </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
+            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
             title={`${totalActiveModels} Models`}
           >
             <span className="tabular-nums whitespace-nowrap">{totalActiveModels}</span>
-            <span className="text-xs sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
+            <span className="text-[11px] sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
               Models
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Ready for factory booking">
-            Ready for factory booking
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="Ready for factory booking">
+            Ready for booking
           </p>
         </div>
       </div>
 
       {/* 2. Popular Fast-Movers */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <FastMovers3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Popular Fast-Movers">
-            Popular Fast-Movers
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Popular Fast-Movers">
+            Fast-Movers
           </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
+            className="text-base sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
             title={`${popularStylesCount} Styles`}
           >
             <span className="tabular-nums whitespace-nowrap">{popularStylesCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-blue-600/90 dark:text-blue-400/90 tracking-normal whitespace-nowrap">
+            <span className="text-[11px] sm:text-sm font-semibold text-blue-600/90 dark:text-blue-400/90 tracking-normal whitespace-nowrap">
               Styles
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="High wholesale repeat rates">
-            High wholesale repeat rates
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="High wholesale repeat rates">
+            High repeat rates
           </p>
         </div>
       </div>
 
       {/* 3. High Margin Lines */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <HighMargin3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="High Margin Lines">
-            High Margin Lines
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="High Margin Lines">
+            High Margin
           </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
+            className="text-base sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
             title={`${highMarginCount} SKUs`}
           >
             <span className="tabular-nums whitespace-nowrap">{highMarginCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
+            <span className="text-[11px] sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
               SKUs
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="35%–45% retailer markups">
-            35%–45% retailer markups
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="35%–45% retailer markups">
+            35%–45% markups
           </p>
         </div>
       </div>
 
       {/* 4. Selected for Sharing */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <SelectedShare3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Selected for Sharing">
-            Selected for Sharing
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Selected for Sharing">
+            Selected
           </span>
-          {/* zoom-proof: value row wraps instead of truncating */}
           <p
-            className="text-xl sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0"
+            className="text-base sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
             title={`${selectedCount} Articles`}
           >
             <span className="tabular-nums whitespace-nowrap">{selectedCount}</span>
-            <span className="text-xs sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
-              Articles
+            <span className="text-[11px] sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
+              Items
             </span>
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Included in WhatsApp lookbook">
-            Included in WhatsApp lookbook
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="Included in WhatsApp lookbook">
+            WhatsApp lookbook
           </p>
         </div>
       </div>
     </div>
-  );
+
+    {/* Stitch Catalogue Mobile Insight Banner */}
+    <div className="flex sm:hidden items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/50 dark:border-purple-900/40 text-[11px] text-muted-foreground">
+      <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse shrink-0" />
+      <span className="truncate">
+        <strong className="text-foreground font-semibold">Wholesale Catalogue:</strong> Tap checkmark to select articles for bulk WhatsApp Lookbook.
+      </span>
+    </div>
+  </div>
+);
 };
 
 export default DesignsKpiCards;

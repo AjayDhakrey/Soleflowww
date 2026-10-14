@@ -155,17 +155,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   };
 
-  const handleDemoLogin = async (demoRole: 'superadmin' | 'admin' | 'salesperson') => {
+  const handleDemoLogin = async (demoRole: 'admin' | 'salesperson') => {
     setError('');
     setIsLoading(true);
 
     let demoEmail = 'admin@soleflow.com';
     let demoPass = 'admin123';
 
-    if (demoRole === 'superadmin') {
-      demoEmail = (import.meta.env.VITE_DEMO_SUPERADMIN_EMAIL as string) || 'superadmin@soleflow.com';
-      demoPass = (import.meta.env.VITE_DEMO_SUPERADMIN_PASSWORD as string) || 'super123';
-    } else if (demoRole === 'admin') {
+    if (demoRole === 'admin') {
       demoEmail = (import.meta.env.VITE_DEMO_ADMIN_EMAIL as string) || 'admin@soleflow.com';
       demoPass = (import.meta.env.VITE_DEMO_ADMIN_PASSWORD as string) || 'admin123';
     } else {
@@ -199,7 +196,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
       {/* 2. Floating Centered Card */}
       <div className="relative z-20 w-full max-w-[340px] sm:max-w-[370px] mx-auto my-auto flex items-center justify-center">
-        <div className="w-full bg-white/95 backdrop-blur-md rounded-[20px] sm:rounded-[24px] shadow-[0_15px_40px_rgba(15,23,42,0.10)] border border-white/90 px-4 sm:px-5 py-3 sm:py-3.5 transition-all">
+        <div className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[20px] sm:rounded-[24px] shadow-[0_15px_40px_rgba(15,23,42,0.10)] border border-white/90 dark:border-slate-800 px-4 sm:px-5 py-3 sm:py-3.5 transition-all">
           
           {/* Circular Orbit Logo Emblem */}
           <div className="flex flex-col items-center justify-center mb-1.5">
@@ -212,14 +209,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           {/* Mode Tabs: Log in | Create account */}
           {!needsVerification && (
-            <div className="flex items-center justify-center p-0.5 bg-slate-100 rounded-lg mb-2">
+            <div className="flex items-center justify-center p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg mb-2">
               <button
                 type="button"
                 onClick={() => { setMode('login'); setError(''); }}
-                className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
                   mode === 'login'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 Log in
@@ -227,10 +224,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <button
                 type="button"
                 onClick={() => { setMode('signup'); setError(''); }}
-                className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
                   mode === 'signup'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {inviteToken ? 'Join Team' : 'Create account'}
@@ -290,7 +287,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email Address"
                   autoComplete="email"
-                  className="w-full pl-8 pr-2.5 py-1.5 sm:py-2 text-xs font-medium rounded-lg text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal"
+                  className="w-full pl-8 pr-2.5 py-1.5 sm:py-2 text-xs font-medium rounded-lg text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 focus:border-[#1E6FF6] focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal"
                 />
               </div>
 
@@ -304,12 +301,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   autoComplete="current-password"
-                  className="w-full pl-8 pr-8 py-1.5 sm:py-2 text-xs font-medium rounded-lg text-slate-800 bg-white border border-slate-200/90 focus:border-[#1E6FF6] focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 placeholder:font-normal"
+                  className="w-full pl-8 pr-8 py-1.5 sm:py-2 text-xs font-medium rounded-lg text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 focus:border-[#1E6FF6] focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 transition-colors cursor-pointer"
+                  className="absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 transition-colors cursor-pointer"
                   title={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
@@ -327,9 +324,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-3 h-3 rounded text-[#1E6FF6] border-slate-300 focus:ring-[#1E6FF6] accent-[#1E6FF6] cursor-pointer"
+                    className="w-3 h-3 rounded text-[#1E6FF6] border-slate-300 dark:border-slate-600 focus:ring-[#1E6FF6] accent-[#1E6FF6] cursor-pointer"
                   />
-                  <span className="text-[11px] font-medium text-slate-700">
+                  <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300">
                     Remember me
                   </span>
                 </label>
@@ -338,7 +335,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <button
                     type="button"
                     onClick={onForgotPassword}
-                    className="text-[11px] font-medium text-[#1E6FF6] hover:text-blue-700 hover:underline cursor-pointer select-none transition-colors"
+                    className="text-[11px] font-medium text-[#1E6FF6] hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline cursor-pointer select-none transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -533,31 +530,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           {!needsVerification && (
             <div className="mt-2 pt-1.5 flex flex-col items-center">
               <div className="w-full flex items-center gap-1.5 mb-1">
-                <div className="flex-1 h-px bg-slate-100" />
-                <span className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">Quick Demo Login</span>
-                <div className="flex-1 h-px bg-slate-100" />
+                <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
+                <span className="text-[9px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">Quick Demo Login</span>
+                <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
               </div>
               
               <div className="flex items-center gap-1.5 w-full justify-center">
-                {/* Super Admin */}
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin('superadmin')}
-                  className="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-700 transition-all cursor-pointer border border-amber-200/60 shadow-2xs active:scale-[0.97]"
-                  title="Demo Platform Owner"
-                >
-                  <Shield size={11} className="text-amber-600 mb-0.5" />
-                  <span className="text-[9px] font-bold">Platform</span>
-                </button>
-
                 {/* Trader Admin */}
                 <button
                   type="button"
                   onClick={() => handleDemoLogin('admin')}
-                  className="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-md bg-[#EEF4FF] hover:bg-blue-100/90 text-[#1E5AE6] transition-all cursor-pointer border border-blue-100/60 shadow-2xs active:scale-[0.97]"
+                  className="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-md bg-[#EEF4FF] dark:bg-blue-950/60 hover:bg-blue-100/90 dark:hover:bg-blue-900/60 text-[#1E5AE6] dark:text-blue-300 transition-all cursor-pointer border border-blue-100/60 dark:border-blue-800/60 shadow-2xs active:scale-[0.97]"
                   title="Demo Business Admin"
                 >
-                  <Building2 size={11} className="text-[#1E5AE6] mb-0.5" />
+                  <Building2 size={11} className="text-[#1E5AE6] dark:text-blue-300 mb-0.5" />
                   <span className="text-[9px] font-bold">Admin</span>
                 </button>
 
@@ -565,10 +551,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <button
                   type="button"
                   onClick={() => handleDemoLogin('salesperson')}
-                  className="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-md bg-[#EAFBF3] hover:bg-emerald-100/90 text-[#059669] transition-all cursor-pointer border border-emerald-100/60 shadow-2xs active:scale-[0.97]"
+                  className="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-md bg-[#EAFBF3] dark:bg-emerald-950/60 hover:bg-emerald-100/90 dark:hover:bg-emerald-900/60 text-[#059669] dark:text-emerald-300 transition-all cursor-pointer border border-emerald-100/60 dark:border-emerald-800/60 shadow-2xs active:scale-[0.97]"
                   title="Demo Sales Rep"
                 >
-                  <Users size={11} className="text-[#059669] mb-0.5" />
+                  <Users size={11} className="text-[#059669] dark:text-emerald-300 mb-0.5" />
                   <span className="text-[9px] font-bold">Sales Rep</span>
                 </button>
               </div>

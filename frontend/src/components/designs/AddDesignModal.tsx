@@ -308,19 +308,19 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-3xl my-8 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-3xl my-auto overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold shrink-0">
               <Icons.Designs className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                 {isEditing ? `Edit Design (${designToEdit?.articleCode})` : 'Add New Footwear Design'}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
                 {isEditing
                   ? 'Update specifications and pricing in the master catalog'
                   : 'Only administrators can add new models to the wholesale catalog'}
@@ -329,14 +329,14 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1">
           {errorMessage && (
             <div className="flex items-center gap-3 p-3.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-xl text-rose-700 dark:text-rose-400 text-sm">
               <AlertCircle className="w-5 h-5 shrink-0" />
@@ -799,12 +799,13 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         </form>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
           <Button
             type="button"
             variant="secondary"
             onClick={onClose}
             disabled={isSaving}
+            className="flex-1 sm:flex-initial"
           >
             Cancel
           </Button>
@@ -815,9 +816,9 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
             onClick={handleSubmit}
             disabled={isSaving || isUploading}
             icon={isSaving ? Loader2 : Check}
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
+            className="flex-1 sm:flex-initial bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
           >
-            {isSaving ? 'Saving to Catalog...' : isEditing ? 'Update Design' : 'Publish Design'}
+            {isSaving ? 'Saving...' : isEditing ? 'Update Design' : 'Publish Design'}
           </Button>
         </div>
       </div>

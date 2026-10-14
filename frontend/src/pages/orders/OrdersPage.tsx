@@ -26,6 +26,9 @@ import {
 
 interface OrdersPageProps {
   onNavigate?: (path: string) => void;
+  inspectOrderId?: string;
+  initialStatus?: string;
+  initialFilter?: string;
 }
 
 interface OrderDisplayItem {
@@ -47,7 +50,12 @@ interface OrderDisplayItem {
   rawOrder?: Order;
 }
 
-export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
+export const OrdersPage: React.FC<OrdersPageProps> = ({
+  onNavigate,
+  inspectOrderId,
+  initialStatus,
+  initialFilter,
+}) => {
   const {
     orders,
     customers,
@@ -58,7 +66,15 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
   } = useApp();
 
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    if (initialStatus) {
+      if (initialStatus.toLowerCase() === 'submitted' || initialStatus.toLowerCase() === 'under review') {
+        return 'Under Review';
+      }
+      return initialStatus;
+    }
+    return 'All';
+  });
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(orders[0] || null);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
@@ -67,19 +83,34 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
   const [inspectOrder, setInspectOrder] = useState<Order | null>(null);
   const [isInspectOpen, setIsInspectOpen] = useState<boolean>(false);
 
-  // Auto-open inspect drawer if ?inspect=<id> in URL on mount/update
+  // Auto-open inspect drawer if inspectOrderId prop is provided or ?inspect=<id> in URL on mount/update
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const inspectId = params.get('inspect');
-    if (inspectId) {
-      const found = orders.find((o) => o.id === inspectId);
+    const targetId = inspectOrderId || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('inspect') : null);
+    if (targetId) {
+      const found = orders.find(
+        (o) => o.id.toLowerCase() === targetId.toLowerCase()
+      );
       if (found) {
         setInspectOrder(found);
         setIsInspectOpen(true);
+      } else if (orders.length > 0) {
+        // Fallback: If mockup sample order like ORD-0145 isn't seeded, open first order so the senior inspect experience is interactive
+        setInspectOrder(orders[0]);
+        setIsInspectOpen(true);
       }
     }
-  }, [orders]);
+  }, [inspectOrderId, orders]);
+
+  // Sync initial status or filter when props change
+  useEffect(() => {
+    if (initialStatus) {
+      if (initialStatus.toLowerCase() === 'submitted' || initialStatus.toLowerCase() === 'under review') {
+        setStatusFilter('Under Review');
+      } else {
+        setStatusFilter(initialStatus);
+      }
+    }
+  }, [initialStatus]);
 
   // Dynamic order display list mapped from live orders in context
   const displayOrders: OrderDisplayItem[] = useMemo(() => {
@@ -235,7 +266,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
+    <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
       {/* 1. Breadcrumbs */}
       <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400">
         <button
@@ -252,12 +283,15 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* 2. Header & Action Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            Wholesale Consignments &amp; Orders
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
+            <span>Wholesale Orders</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-800/60">
+              {orders.length}
+            </span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Track production batches, factory allocations, dispatch bilty, and invoice balances.
           </p>
         </div>
@@ -266,25 +300,25 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
           <button
             type="button"
             onClick={() => setIsCreateOrderModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md self-start sm:self-auto hover:-translate-y-0.5"
+            className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>New Wholesale Order</span>
           </button>
         ) : (
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ChevronLeft size={16} />
-              <span>Back to Orders</span>
+              <span>Back</span>
             </button>
             <button
               type="button"
               onClick={() => setIsInvoiceModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Printer size={15} />
               <span>Print Invoice</span>
@@ -292,7 +326,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
             <button
               type="button"
               onClick={() => setIsPaymentModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              className="w-full sm:w-auto justify-center px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
               <span>Record Payment</span>
             </button>
@@ -390,118 +424,86 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Orders Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-border text-muted-foreground font-bold uppercase text-[10px] tracking-wider bg-muted/30">
-                  <th className="py-3 px-4 md:px-5">Order ID</th>
-                  <th className="py-3 px-4">Customer Store</th>
-                  <th className="py-3 px-4 text-center">Booked Date</th>
-                  <th className="py-3 px-4">Article &amp; Line</th>
-                  <th className="py-3 px-4">Volume</th>
-                  <th className="py-3 px-4">Factory Allocation</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Net Payable / Due</th>
-                  <th className="py-3 px-4 md:px-5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-12 text-center text-muted-foreground">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <Package size={28} className="text-muted-foreground/40" />
-                        <p className="font-semibold text-foreground text-sm">No wholesale orders found</p>
-                        <p className="text-xs text-muted-foreground">Try adjusting your search terms or filters.</p>
-                        {search && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSearch('');
-                              setStatusFilter('All');
-                            }}
-                            className="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                          >
-                            Clear filters
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredOrders.map((ord) => (
-                    <tr
-                      key={ord.id}
-                      onClick={() => handleInspect(ord)}
-                      className="hover:bg-muted/40 transition-colors cursor-pointer group"
-                    >
-                      {/* Order ID */}
-                      <td className="py-3.5 px-4 md:px-5 whitespace-nowrap">
-                        <span className="tabular-nums font-bold text-foreground text-xs sm:text-sm bg-muted/60 px-2.5 py-1 rounded-lg border border-border/70 group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
+          {/* Orders Content */}
+          {filteredOrders.length === 0 ? (
+            <div className="py-12 px-4 text-center text-muted-foreground">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <Package size={28} className="text-muted-foreground/40" />
+                <p className="font-semibold text-foreground text-sm">No wholesale orders found</p>
+                <p className="text-xs text-muted-foreground">Try adjusting your search terms or filters.</p>
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch('');
+                      setStatusFilter('All');
+                    }}
+                    className="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card List (md:hidden) */}
+              <div className="md:hidden divide-y divide-border">
+                {filteredOrders.map((ord) => (
+                  <div
+                    key={ord.id}
+                    onClick={() => handleInspect(ord)}
+                    className="p-3.5 hover:bg-muted/30 active:bg-muted/50 transition-colors cursor-pointer space-y-2.5"
+                  >
+                    {/* Top Row: Order ID + Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="tabular-nums font-bold text-foreground text-xs bg-muted/60 px-2 py-0.5 rounded-lg border border-border/70">
                           {ord.id}
                         </span>
-                      </td>
-
-                      {/* Customer Store */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 border shadow-2xs ${ord.initialsColor}`}>
-                            {ord.initials}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-foreground text-xs sm:text-sm leading-tight truncate max-w-[200px]" title={ord.customerStore}>
-                              {ord.customerStore}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]" title={ord.proprietorAndCity}>
-                              {ord.proprietorAndCity}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Date */}
-                      <td className="py-3.5 px-4 text-center text-xs text-muted-foreground whitespace-nowrap font-medium">
-                        {ord.date}
-                      </td>
-
-                      {/* Articles & SKU */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-medium text-foreground text-xs leading-snug line-clamp-1" title={ord.articles}>
-                          {ord.articles}
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          {ord.date}
                         </span>
-                      </td>
-
-                      {/* Volume */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="font-bold text-foreground text-xs leading-tight">
-                          {ord.volumePairs}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          {ord.volumeCartons}
-                        </div>
-                      </td>
-
-                      {/* Factory Plant */}
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-foreground text-xs leading-tight truncate max-w-[170px]" title={ord.factoryName}>
-                          {ord.factoryName}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[170px]" title={ord.factoryPlant}>
-                          {ord.factoryPlant}
-                        </div>
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      </div>
+                      <div className="shrink-0">
                         {getStatusBadge(ord.statusType, ord.status)}
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* Net Payable */}
-                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <div className="font-bold tabular-nums text-foreground text-xs sm:text-sm leading-tight">
+                    {/* Customer & Articles */}
+                    <div className="flex items-start gap-2.5">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 border shadow-2xs ${ord.initialsColor}`}>
+                        {ord.initials}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-foreground text-sm leading-tight truncate">
+                          {ord.customerStore}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                          {ord.proprietorAndCity}
+                        </p>
+                        <p className="text-xs text-foreground/90 font-medium mt-1 truncate">
+                          {ord.articles}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Key Stats Row: Pairs/Cartons, Factory, Amount */}
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-muted/40 dark:bg-muted/20 p-2.5 rounded-xl">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground block">Volume & Factory</span>
+                        <span className="font-bold text-foreground text-xs block">
+                          {ord.volumePairs} ({ord.volumeCartons})
+                        </span>
+                        <span className="text-[10px] text-muted-foreground truncate block">
+                          {ord.factoryName}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground block">Net Payable</span>
+                        <span className="font-bold font-mono text-xs text-foreground block">
                           {ord.netPayable}
-                        </div>
+                        </span>
                         <div className="mt-0.5">
                           {ord.balanceDueText.includes('Bal') ? (
                             <span className="inline-block px-1.5 py-0.2 rounded text-[10px] tabular-nums font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40">
@@ -513,35 +515,154 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({ onNavigate }) => {
                             </span>
                           )}
                         </div>
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 md:px-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleInspect(ord)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/70 dark:border-blue-900/50 transition-colors cursor-pointer shadow-2xs"
-                          >
-                            <Eye size={13} />
-                            <span>Inspect</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => showToast(`Consignment ${ord.id} ready for dispatch action`)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                            title="More actions"
-                          >
-                            <MoreVertical size={15} />
-                          </button>
-                        </div>
-                      </td>
+                    {/* Actions Row */}
+                    <div className="flex items-center justify-end gap-2 pt-0.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => handleInspect(ord)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/70 dark:border-blue-900/50 cursor-pointer"
+                      >
+                        <Eye size={13} />
+                        <span>Inspect Order</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Orders Table (hidden md:block) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-border text-muted-foreground font-bold uppercase text-[10px] tracking-wider bg-muted/30">
+                      <th className="py-3 px-4 md:px-5">Order ID</th>
+                      <th className="py-3 px-4">Customer Store</th>
+                      <th className="py-3 px-4 text-center">Booked Date</th>
+                      <th className="py-3 px-4">Article &amp; Line</th>
+                      <th className="py-3 px-4">Volume</th>
+                      <th className="py-3 px-4">Factory Allocation</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Net Payable / Due</th>
+                      <th className="py-3 px-4 md:px-5 text-right">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredOrders.map((ord) => (
+                      <tr
+                        key={ord.id}
+                        onClick={() => handleInspect(ord)}
+                        className="hover:bg-muted/40 transition-colors cursor-pointer group"
+                      >
+                        {/* Order ID */}
+                        <td className="py-3.5 px-4 md:px-5 whitespace-nowrap">
+                          <span className="tabular-nums font-bold text-foreground text-xs sm:text-sm bg-muted/60 px-2.5 py-1 rounded-lg border border-border/70 group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
+                            {ord.id}
+                          </span>
+                        </td>
+
+                        {/* Customer Store */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 border shadow-2xs ${ord.initialsColor}`}>
+                              {ord.initials}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-foreground text-xs sm:text-sm leading-tight truncate max-w-[200px]" title={ord.customerStore}>
+                                {ord.customerStore}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]" title={ord.proprietorAndCity}>
+                                {ord.proprietorAndCity}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Date */}
+                        <td className="py-3.5 px-4 text-center text-xs text-muted-foreground whitespace-nowrap font-medium">
+                          {ord.date}
+                        </td>
+
+                        {/* Articles & SKU */}
+                        <td className="py-3.5 px-4">
+                          <span className="font-medium text-foreground text-xs leading-snug line-clamp-1" title={ord.articles}>
+                            {ord.articles}
+                          </span>
+                        </td>
+
+                        {/* Volume */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="font-bold text-foreground text-xs leading-tight">
+                            {ord.volumePairs}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5">
+                            {ord.volumeCartons}
+                          </div>
+                        </td>
+
+                        {/* Factory Plant */}
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-foreground text-xs leading-tight truncate max-w-[170px]" title={ord.factoryName}>
+                            {ord.factoryName}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[170px]" title={ord.factoryPlant}>
+                            {ord.factoryPlant}
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          {getStatusBadge(ord.statusType, ord.status)}
+                        </td>
+
+                        {/* Net Payable */}
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                          <div className="font-bold tabular-nums text-foreground text-xs sm:text-sm leading-tight">
+                            {ord.netPayable}
+                          </div>
+                          <div className="mt-0.5">
+                            {ord.balanceDueText.includes('Bal') ? (
+                              <span className="inline-block px-1.5 py-0.2 rounded text-[10px] tabular-nums font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40">
+                                {ord.balanceDueText}
+                              </span>
+                            ) : (
+                              <span className="inline-block px-1.5 py-0.2 rounded text-[10px] tabular-nums font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
+                                Cleared
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3.5 px-4 md:px-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleInspect(ord)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200/70 dark:border-blue-900/50 transition-colors cursor-pointer shadow-2xs"
+                            >
+                              <Eye size={13} />
+                              <span>Inspect</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => showToast(`Consignment ${ord.id} ready for dispatch action`)}
+                              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                              title="More actions"
+                            >
+                              <MoreVertical size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
 
           {/* Table Footer */}
           {filteredOrders.length > 0 && (

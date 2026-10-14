@@ -22,7 +22,7 @@ interface CustomerKpiCardsProps {
 
 // 1. Total Customers (3D Violet/Purple Multi-Avatar Figurines + Rays)
 const TotalCustomers3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Ambient Soft Glow Background */}
@@ -108,7 +108,7 @@ const TotalCustomers3D = () => (
 
 // 2. Total Receivables (3D Coral-Pink Wallet with Popping Gold Rupee Coin)
 const TotalReceivables3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Glow */}
@@ -182,7 +182,7 @@ const TotalReceivables3D = () => (
 
 // 3. Overdue Accounts (3D Yellow/Golden Warning Triangle with Exclamation & Rays)
 const OverdueAccounts3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Glow */}
@@ -248,7 +248,7 @@ const OverdueAccounts3D = () => (
 
 // 4. Cleared Accounts (3D Emerald Green Circular Seal / Checkmark Button)
 const ClearedAccounts3D = () => (
-  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         {/* Glow */}
@@ -330,7 +330,7 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
   onNavigateCleared,
 }) => {
   return (
-    <div className="rounded-2xl sm:rounded-3xl border border-border/80 bg-border/60 dark:bg-border/40 overflow-hidden shadow-xs grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-px">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
       {/* 1. Total Customers */}
       <div
         role="button"
@@ -339,37 +339,36 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onNavigateTotal();
+            onNavigateTotal?.();
           }
         }}
-        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
+        className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <TotalCustomers3D />
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Total Customers">
+        <TotalCustomers3D />
+        <div className="flex-1 min-w-0">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Customers">
             Total Customers
           </span>
-        </div>
-
-        <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
             title={typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : String(totalCustomers)}
           >
-            {typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : totalCustomers}
+            <span className="tabular-nums whitespace-nowrap">{typeof totalCustomers === 'number' ? totalCustomers.toLocaleString('en-IN') : totalCustomers}</span>
+            <span className="text-[11px] sm:text-sm font-semibold text-purple-500/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
+              Clients
+            </span>
           </p>
-        </div>
-
-        {totalCustomersGrowth !== 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
-              ↑ {totalCustomersGrowth}%
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title="Active retail accounts">
+              Active accounts
             </span>
-            <span className="text-[11px] text-muted-foreground truncate">
-              vs prev period
-            </span>
+            {totalCustomersGrowth !== undefined && totalCustomersGrowth > 0 && (
+              <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60 shrink-0">
+                ↑ {totalCustomersGrowth}%
+              </span>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* 2. Total Receivables */}
@@ -380,37 +379,33 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onNavigateReceivables();
+            onNavigateReceivables?.();
           }
         }}
-        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
+        className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <TotalReceivables3D />
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Total Receivables">
+        <TotalReceivables3D />
+        <div className="flex-1 min-w-0">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Receivables">
             Total Receivables
           </span>
-        </div>
-
-        <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 mt-0.5 font-display truncate"
             title={totalReceivables}
           >
             {totalReceivables}
           </p>
-        </div>
-
-        {totalReceivablesGrowth !== 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
-              ↑ {totalReceivablesGrowth}%
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title="Outstanding balance across stores">
+              Ledger outstanding
             </span>
-            <span className="text-[11px] text-muted-foreground truncate">
-              vs prev period
-            </span>
+            {totalReceivablesGrowth !== undefined && totalReceivablesGrowth > 0 && (
+              <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/60 shrink-0">
+                {totalReceivablesGrowth}%
+              </span>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* 3. Overdue Accounts */}
@@ -421,37 +416,36 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onNavigateOverdue();
+            onNavigateOverdue?.();
           }
         }}
-        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
+        className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <OverdueAccounts3D />
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Overdue Accounts">
+        <OverdueAccounts3D />
+        <div className="flex-1 min-w-0">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Overdue Accounts">
             Overdue Accounts
           </span>
-        </div>
-
-        <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
             title={typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : String(overdueAccounts)}
           >
-            {typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : overdueAccounts}
+            <span className="tabular-nums whitespace-nowrap">{typeof overdueAccounts === 'number' ? overdueAccounts.toLocaleString('en-IN') : overdueAccounts}</span>
+            <span className="text-[11px] sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
+              Stores
+            </span>
           </p>
-        </div>
-
-        {overdueGrowth !== 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 text-rose-600 dark:text-rose-400 shrink-0">
-              ↑ {overdueGrowth}%
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title="Exceeded terms">
+              Exceeded terms
             </span>
-            <span className="text-[11px] text-muted-foreground truncate">
-              vs prev period
-            </span>
+            {overdueGrowth !== undefined && overdueGrowth > 0 && (
+              <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60 shrink-0">
+                Action needed
+              </span>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* 4. Cleared Accounts */}
@@ -462,37 +456,36 @@ export const CustomerKpiCards: React.FC<CustomerKpiCardsProps> = ({
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onNavigateCleared();
+            onNavigateCleared?.();
           }
         }}
-        className="group relative p-4 sm:p-5 flex flex-col justify-between transition-colors duration-150 cursor-pointer bg-surface hover:bg-muted/40 dark:hover:bg-muted/20 select-none overflow-hidden min-w-0"
+        className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] select-none overflow-hidden min-w-0"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <ClearedAccounts3D />
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-snug truncate" title="Cleared Accounts">
+        <ClearedAccounts3D />
+        <div className="flex-1 min-w-0">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Cleared Accounts">
             Cleared Accounts
           </span>
-        </div>
-
-        <div className="my-2.5 sm:my-3">
           <p
-            className="mt-0.5 font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
             title={typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : String(clearedAccounts)}
           >
-            {typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : clearedAccounts}
+            <span className="tabular-nums whitespace-nowrap">{typeof clearedAccounts === 'number' ? clearedAccounts.toLocaleString('en-IN') : clearedAccounts}</span>
+            <span className="text-[11px] sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
+              Settled
+            </span>
           </p>
-        </div>
-
-        {clearedGrowth !== 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 shrink-0">
-              ↑ {clearedGrowth}%
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate" title="Zero balance">
+              Zero balance
             </span>
-            <span className="text-[11px] text-muted-foreground truncate">
-              vs prev period
-            </span>
+            {clearedGrowth !== undefined && clearedGrowth > 0 && (
+              <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60 shrink-0">
+                ↑ {clearedGrowth}%
+              </span>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

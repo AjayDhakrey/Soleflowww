@@ -103,13 +103,15 @@ const PlantAnalyticsModal: React.FC<PlantAnalyticsModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="plant-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-surface border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+        className="bg-surface border border-border rounded-t-3xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 duration-200"
       >
+        {/* Mobile Pull Handle */}
+        <div className="sm:hidden w-12 h-1.5 rounded-full bg-muted-foreground/30 mx-auto mt-2.5 mb-0.5" />
         {/* Modal Header */}
         <div className="p-4 sm:p-6 border-b border-border flex items-start justify-between gap-3 bg-muted/20">
           <div className="flex items-start sm:items-center gap-3.5 min-w-0">
@@ -571,33 +573,38 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
           Dashboard
         </button>
         <ChevronRight size={13} className="text-muted-foreground/60" />
-        <span className="text-blue-600 dark:text-blue-400 font-semibold">
-          Manufacturers &amp; Supply Chain
+        <span className="text-blue-600 dark:text-blue-400 font-semibold truncate">
+          Foundries &amp; Plants
         </span>
       </nav>
 
       {/* 2. Header & Action Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            Manufacturing Plants &amp; Foundries
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-3xl font-bold text-foreground tracking-tight">
+              Manufacturing Plants &amp; Foundries
+            </h1>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              SUPPLY CHAIN
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             OEM partner plants &amp; foundries, assembly line capacity utilization, and QC ratings.
           </p>
         </div>
 
-        {/* Global Plant Search Bar */}
-        <div className="relative w-full md:w-72 shrink-0">
+        {/* Global Plant Search Bar with Stitch Scan Tag Icon */}
+        <div className="relative w-full sm:w-72 shrink-0">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search plant, hub, or GM..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 rounded-xl text-xs sm:text-sm bg-surface border border-border focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground/70"
+            className="w-full pl-9 pr-9 py-2 rounded-xl text-xs sm:text-sm bg-surface border border-border focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground/70"
           />
-          {searchQuery && (
+          {searchQuery ? (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
@@ -605,6 +612,10 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
             >
               <X size={14} />
             </button>
+          ) : (
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none p-1 rounded-md bg-muted/40">
+              <Sparkles size={13} className="text-blue-500" />
+            </div>
           )}
         </div>
       </div>
@@ -717,7 +728,7 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                 className={`bg-surface border rounded-2xl p-4 sm:p-5 md:p-6 shadow-2xs transition-all duration-150 cursor-pointer flex flex-col justify-between ${
                   isSelected
                     ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/10 dark:bg-blue-950/10'
-                    : 'border-border hover:border-border/80 hover:shadow-sm'
+                    : 'border-border hover:border-border/80 hover:shadow-xs'
                 }`}
               >
                 <div>
@@ -748,7 +759,7 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                           </span>
                           {isSelected && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-xs">
-                              Selected
+                              Active Focus
                             </span>
                           )}
                         </div>
@@ -809,15 +820,15 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                     )}
                   </div>
 
-                  {/* Assembly Line Utilization */}
-                  <div className="mt-3.5">
-                    <div className="flex items-center justify-between text-xs mb-1.5">
+                  {/* Assembly Line Utilization Progress Bar */}
+                  <div className="mt-3.5 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground font-medium">Assembly Line Utilization</span>
                       <span className="font-bold text-foreground font-mono">
                         {`${loadPct}% (${(plant.monthlyCapacityPairs || 0).toLocaleString('en-IN')} prs/mo)`}
                       </span>
                     </div>
-                    <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                    <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden p-0.5">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${
                           loadPct >= 85 ? 'bg-amber-500' : 'bg-emerald-500'
@@ -832,11 +843,11 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                 <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 pt-4 text-center">
                   {/* On-Time */}
                   <div
-                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2 sm:gap-2.5 min-w-0"
+                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-1.5 sm:gap-2.5 min-w-0"
                     title={`On-Time Delivery Rate: ${plant.onTimeDeliveryRate || 0}%`}
                   >
                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                      <Clock size={14} />
+                      <Clock size={13} />
                     </div>
                     <div className="text-left min-w-0 flex-1">
                       <span className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground block leading-tight truncate">
@@ -850,11 +861,11 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
 
                   {/* QC Pass */}
                   <div
-                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2 sm:gap-2.5 min-w-0"
+                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-1.5 sm:gap-2.5 min-w-0"
                     title={`QC Pass Ratio: ${plant.qcPassRatio || 0}%`}
                   >
                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-                      <ShieldCheck size={14} />
+                      <ShieldCheck size={13} />
                     </div>
                     <div className="text-left min-w-0 flex-1">
                       <span className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground block leading-tight truncate">
@@ -868,11 +879,11 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
 
                   {/* Active Molds */}
                   <div
-                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-2 sm:gap-2.5 min-w-0"
+                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-1.5 sm:gap-2.5 min-w-0"
                     title={`Active Molds: ${plant.moldsActiveCount ?? 0}`}
                   >
                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
-                      <Building2 size={14} />
+                      <Building2 size={13} />
                     </div>
                     <div className="text-left min-w-0 flex-1">
                       <span className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground block leading-tight truncate">
@@ -883,6 +894,61 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Stitch-style Quick Touch Actions */}
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-3 border-t border-border/50 mt-3.5">
+                  {/* Call Plant Lead */}
+                  <a
+                    href={plant.phone ? `tel:${plant.phone}` : undefined}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`h-8 sm:h-9 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+                      plant.phone
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-2xs cursor-pointer'
+                        : 'bg-muted text-muted-foreground pointer-events-none opacity-50'
+                    }`}
+                    title={plant.phone ? `Call ${plant.generalManager || 'Plant'}: ${plant.phone}` : 'No phone listed'}
+                  >
+                    <Phone size={13} />
+                    <span>Call</span>
+                  </a>
+
+                  {/* WhatsApp Message */}
+                  <a
+                    href={
+                      plant.phone
+                        ? `https://wa.me/${plant.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                            `Hello ${plant.generalManager || 'Operations Team'}, regarding batch orders at ${plant.companyName}:`
+                          )}`
+                        : undefined
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className={`h-8 sm:h-9 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 border ${
+                      plant.phone
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 cursor-pointer'
+                        : 'bg-muted text-muted-foreground border-border pointer-events-none opacity-50'
+                    }`}
+                    title="Message on WhatsApp"
+                  >
+                    <Icons.WhatsApp size={13} />
+                    <span>WhatsApp</span>
+                  </a>
+
+                  {/* Operations Analytics */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAnalyticsPlant(plant);
+                    }}
+                    className="h-8 sm:h-9 px-2 rounded-xl text-xs font-semibold bg-surface hover:bg-muted text-foreground border border-border flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    title="View Plant Analytics & Operations"
+                  >
+                    <BarChart2 size={13} className="text-blue-600 dark:text-blue-400" />
+                    <span>Analytics</span>
+                  </button>
                 </div>
               </div>
             );
@@ -954,8 +1020,110 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
           </div>
         </div>
 
-        {/* Responsive Table Wrapper */}
-        <div className="overflow-x-auto scrollbar-thin">
+        {/* Mobile Batch Cards View (Dedicated Phone View) */}
+        <div className="md:hidden divide-y divide-border">
+          {filteredPlantOrders.length === 0 ? (
+            <div className="p-4">
+              <EmptyState
+                icon={Icons.Orders}
+                title={batchSearchQuery || batchStatusFilter !== 'all' ? 'No matching batches' : 'No orders allocated to this plant yet'}
+                description={
+                  batchSearchQuery || batchStatusFilter !== 'all'
+                    ? 'Try resetting the batch search or status filter.'
+                    : 'Orders assigned to this facility will appear here.'
+                }
+                action={
+                  batchSearchQuery || batchStatusFilter !== 'all' ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBatchSearchQuery('');
+                        setBatchStatusFilter('all');
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer"
+                    >
+                      Reset Filter
+                    </button>
+                  ) : undefined
+                }
+              />
+            </div>
+          ) : (
+            filteredPlantOrders.map((order) => {
+              const firstItem = order.items?.[0];
+              const articleName = firstItem?.designName || firstItem?.articleCode || 'Footwear Batch';
+              const pairs = Number(order.pairsCount || 0);
+              const cartons = Number(order.cartonsCount || 0);
+
+              return (
+                <div
+                  key={order.id}
+                  onClick={() => setInspectOrder(order)}
+                  className="p-3.5 hover:bg-muted/30 transition-colors cursor-pointer space-y-2.5 active:bg-muted/50"
+                >
+                  {/* Top Bar: Order ID, Date, Status */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50">
+                        {order.id}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground truncate">
+                        • {order.orderDate || '—'}
+                      </span>
+                    </div>
+                    {getStatusBadge(getStatusType(order.status), order.status)}
+                  </div>
+
+                  {/* Customer & Article Info */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-sm text-foreground truncate">
+                        {order.customerName || '—'}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate flex items-center gap-1">
+                        <MapPin size={11} className="text-muted-foreground/70 shrink-0" />
+                        <span>{order.customerCity || '—'}</span>
+                        <span className="text-muted-foreground/40">•</span>
+                        <span className="font-medium text-foreground">{articleName}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] text-muted-foreground block uppercase font-semibold">Net Value</span>
+                      <span className="font-mono font-bold text-sm text-foreground block">
+                        ₹{Number(order.netPayable || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Batch Volume & Inspect CTA */}
+                  <div className="flex items-center justify-between text-xs pt-1.5 border-t border-border/40">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-medium">
+                      <Layers size={13} className="text-blue-500" />
+                      <span>{pairs.toLocaleString('en-IN')} Pairs</span>
+                      {cartons > 0 && <span className="text-muted-foreground/70">({cartons} ctns)</span>}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInspectOrder(order);
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer"
+                    >
+                      <Eye size={13} />
+                      <span>Inspect Batch</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Data Table (Hidden on Phone View) */}
+        <div className="hidden md:block overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs sm:text-sm min-w-[680px]">
             <thead>
               <tr className="border-b border-border text-muted-foreground font-semibold uppercase text-[11px] tracking-wider bg-muted/25">

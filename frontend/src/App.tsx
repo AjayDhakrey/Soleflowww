@@ -389,8 +389,13 @@ const AppContent: React.FC = () => {
 
   // 3. Authenticated Page Content based on currentPath
   const renderPage = () => {
+    // Separate base pathname and query parameters (e.g. /admin/orders?inspect=ORD-0145)
+    const [rawBase, queryString] = currentPath.split('?');
+    const basePath = rawBase.split('#')[0];
+    const searchParams = new URLSearchParams(queryString || (typeof window !== 'undefined' ? window.location.search : ''));
+
     // Public Landing Page view for authenticated user
-    if (currentPath === '/landing') {
+    if (basePath === '/landing') {
       return (
         <LandingPage
           isAlreadyLoggedIn={true}
@@ -414,39 +419,35 @@ const AppContent: React.FC = () => {
     };
 
     // Customer Insight Detail Pages (Accessible to both Admin & Sales with role-based filtering)
-    if (currentPath.includes('/customers/insights/total')) {
+    if (basePath.includes('/customers/insights/total')) {
       return <TotalCustomersInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
     }
-    if (currentPath.includes('/customers/insights/receivables')) {
+    if (basePath.includes('/customers/insights/receivables')) {
       return <TotalReceivablesInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
     }
-    if (currentPath.includes('/customers/insights/overdue')) {
+    if (basePath.includes('/customers/insights/overdue')) {
       return <OverdueAccountsInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
     }
-    if (currentPath.includes('/customers/insights/cleared')) {
+    if (basePath.includes('/customers/insights/cleared')) {
       return <ClearedAccountsInsightPage onNavigate={handleNavigate} fromPath={getFromPath(currentPath)} />;
     }
 
-    // Platform Accounts route (Super Admin All Accounts Overview)
-    if (currentPath === '/platform/accounts' || currentPath === '/admin/accounts') {
+    // Platform routes redirect to Admin Dashboard
+    if (
+      basePath === '/platform/accounts' ||
+      basePath === '/admin/accounts' ||
+      basePath === '/platform' ||
+      basePath === '/admin/platform'
+    ) {
       return (
         <RequireRole role="admin" onReturnHome={() => setCurrentPath('/admin/dashboard')}>
-          <AccountsPage onNavigate={handleNavigate} />
-        </RequireRole>
-      );
-    }
-
-    // Platform Admin route (Super Admin Console)
-    if (currentPath === '/platform' || currentPath === '/admin/platform') {
-      return (
-        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/admin/dashboard')}>
-          <PlatformAdminPage />
+          <AdminDashboard onNavigate={handleNavigate} />
         </RequireRole>
       );
     }
 
     // Admin routes guarded by RequireRole
-    if (currentPath === '/admin/dashboard') {
+    if (basePath === '/admin/dashboard') {
       return (
         <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
           <AdminDashboard onNavigate={handleNavigate} />
@@ -454,84 +455,104 @@ const AppContent: React.FC = () => {
       );
     }
 
-    if (currentPath === '/admin/customers' || currentPath.startsWith('/admin/customers/')) {
-      const match = currentPath.match(/\/admin\/customers\/([^?#/]+)/);
+    if (basePath === '/admin/customers' || basePath.startsWith('/admin/customers/')) {
+      const match = basePath.match(/\/admin\/customers\/([^?#/]+)/);
       const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
       return <CustomersPage onNavigate={handleNavigate} customerId={customerId} fromPath="/admin/customers" />;
     }
-    if (currentPath === '/admin/designs') {
+    if (basePath === '/admin/designs') {
       return <DesignsPage onNavigate={handleNavigate} />;
     }
-    if (currentPath === '/admin/orders' || currentPath.startsWith('/admin/orders/')) {
-      return <OrdersPage onNavigate={handleNavigate} />;
+    if (basePath === '/admin/orders' || basePath.startsWith('/admin/orders/')) {
+      return (
+        <OrdersPage
+          onNavigate={handleNavigate}
+          inspectOrderId={searchParams.get('inspect') || searchParams.get('orderId') || undefined}
+          initialStatus={searchParams.get('status') || undefined}
+          initialFilter={searchParams.get('filter') || undefined}
+        />
+      );
     }
-    if (currentPath === '/admin/sales-team') {
+    if (basePath === '/admin/sales-team') {
       return (
         <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
           <SalesTeamPage onNavigate={handleNavigate} />
         </RequireRole>
       );
     }
-    if (currentPath === '/admin/manufacturers') {
+    if (basePath === '/admin/manufacturers') {
       return (
         <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
           <ManufacturersPage onNavigate={handleNavigate} />
         </RequireRole>
       );
     }
-    if (currentPath === '/admin/payments') {
-      return <PaymentsPage onNavigate={handleNavigate} />;
+    if (basePath === '/admin/payments') {
+      return (
+        <PaymentsPage
+          onNavigate={handleNavigate}
+          initialAging={searchParams.get('aging') || undefined}
+          initialTab={(searchParams.get('tab') as 'receivables' | 'payments') || undefined}
+        />
+      );
     }
-    if (currentPath === '/admin/reports') {
+    if (basePath === '/admin/reports') {
       return (
         <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
           <ReportsPage />
         </RequireRole>
       );
     }
-    if (currentPath === '/admin/settings') {
+    if (basePath === '/admin/settings') {
       return (
         <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
           <SettingsPage />
         </RequireRole>
       );
     }
-    if (currentPath === '/admin/notifications') {
+    if (basePath === '/admin/notifications') {
       return <NotificationsPage />;
     }
 
     // Sales routes
-    if (currentPath === '/sales/dashboard') {
+    if (basePath === '/sales/dashboard') {
       return <SalesDashboard onNavigate={handleNavigate} />;
     }
-    if (currentPath === '/sales/customers' || currentPath.startsWith('/sales/customers/')) {
-      const match = currentPath.match(/\/sales\/customers\/([^?#/]+)/);
+    if (basePath === '/sales/customers' || basePath.startsWith('/sales/customers/')) {
+      const match = basePath.match(/\/sales\/customers\/([^?#/]+)/);
       const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
       return <CustomersPage onNavigate={handleNavigate} customerId={customerId} fromPath="/sales/customers" />;
     }
-    if (currentPath === '/sales/designs') {
+    if (basePath === '/sales/designs') {
       return <DesignsPage onNavigate={handleNavigate} />;
     }
-    if (currentPath === '/sales/orders') {
-      return <OrdersPage onNavigate={handleNavigate} />;
+    if (basePath === '/sales/orders') {
+      return (
+        <OrdersPage
+          onNavigate={handleNavigate}
+          inspectOrderId={searchParams.get('inspect') || searchParams.get('orderId') || undefined}
+          initialStatus={searchParams.get('status') || undefined}
+          initialFilter={searchParams.get('filter') || undefined}
+        />
+      );
     }
-    if (currentPath === '/sales/collections') {
+    if (basePath === '/sales/collections') {
       return <CollectionsPage />;
     }
-    if (currentPath === '/sales/follow-ups') {
+    if (basePath === '/sales/follow-ups') {
       return <FollowUpsPage />;
     }
-    if (currentPath === '/sales/visits') {
+    if (basePath === '/sales/visits') {
       return <VisitsPage />;
     }
-    if (currentPath === '/sales/notifications') {
+    if (basePath === '/sales/notifications') {
       return <NotificationsPage />;
     }
-    if (currentPath === '/sales/activity') {
+    if (basePath === '/sales/activity') {
       return <SalesTeamPage onNavigate={handleNavigate} />;
     }
-    if (currentPath.startsWith('/receipts/')) {
-      const match = currentPath.match(/\/receipts\/([^?#/]+)/);
+    if (basePath.startsWith('/receipts/')) {
+      const match = basePath.match(/\/receipts\/([^?#/]+)/);
       const paymentId = match ? match[1] : undefined;
       return (
         <ReceiptPage
@@ -541,24 +562,37 @@ const AppContent: React.FC = () => {
       );
     }
 
-    if (currentPath === '/sales/profile') {
+    if (basePath === '/sales/profile') {
       return <SettingsPage />;
     }
 
     // Top-level aliases for direct navigation (e.g. /designs, /orders, /customers, /payments)
-    if (currentPath === '/designs') {
+    if (basePath === '/designs') {
       return <DesignsPage onNavigate={handleNavigate} />;
     }
-    if (currentPath === '/customers' || currentPath.startsWith('/customers/')) {
-      const match = currentPath.match(/\/customers\/([^?#/]+)/);
+    if (basePath === '/customers' || basePath.startsWith('/customers/')) {
+      const match = basePath.match(/\/customers\/([^?#/]+)/);
       const customerId = match && match[1] !== 'insights' ? match[1] : undefined;
       return <CustomersPage onNavigate={handleNavigate} customerId={customerId} fromPath={currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'} />;
     }
-    if (currentPath === '/orders' || currentPath.startsWith('/orders/')) {
-      return <OrdersPage onNavigate={handleNavigate} />;
+    if (basePath === '/orders' || basePath.startsWith('/orders/')) {
+      return (
+        <OrdersPage
+          onNavigate={handleNavigate}
+          inspectOrderId={searchParams.get('inspect') || searchParams.get('orderId') || undefined}
+          initialStatus={searchParams.get('status') || undefined}
+          initialFilter={searchParams.get('filter') || undefined}
+        />
+      );
     }
-    if (currentPath === '/payments') {
-      return <PaymentsPage onNavigate={handleNavigate} />;
+    if (basePath === '/payments') {
+      return (
+        <PaymentsPage
+          onNavigate={handleNavigate}
+          initialAging={searchParams.get('aging') || undefined}
+          initialTab={(searchParams.get('tab') as 'receivables' | 'payments') || undefined}
+        />
+      );
     }
 
     // Fallback
@@ -570,17 +604,17 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="app-shell flex h-screen bg-background text-foreground overflow-hidden font-sans">
+    <div className="app-shell flex h-screen h-[100dvh] bg-background text-foreground overflow-hidden font-sans">
       {/* 1. Left Persistent Sidebar */}
       <Sidebar currentPath={currentPath} onNavigate={handleNavigate} />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-background">
         {/* Top Header */}
         <Header onNavigate={handleNavigate} />
 
-        {/* Dynamic Page Body with smooth scroll */}
-        <main className="flex-1 overflow-y-auto pb-24 md:pb-0 bg-background">
+        {/* Dynamic Page Body with smooth scroll and bottom padding for fixed mobile nav */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-0 bg-background">
           {renderPage()}
         </main>
       </div>

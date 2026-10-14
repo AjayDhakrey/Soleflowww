@@ -265,7 +265,7 @@ export const ReceiptPage: React.FC<ReceiptPageProps> = ({ paymentId: propPayment
       </div>
 
       {/* Printable Receipt Container */}
-      <div id="rcpt-print-root" className="max-w-[794px] mx-auto shadow-xl rounded-2xl overflow-hidden">
+      <div id="rcpt-print-root" className="max-w-[794px] mx-auto shadow-xl rounded-2xl overflow-x-auto">
         <ReceiptTemplate
           receipt={receipt}
           company={company}

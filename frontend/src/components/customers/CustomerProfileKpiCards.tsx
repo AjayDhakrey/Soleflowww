@@ -21,7 +21,7 @@ interface CustomerProfileKpiCardsProps {
 
 // 1. Lifetime Business (3D Blue Diamond Vault & Briefcase)
 export const ProfileLifetime3D = () => (
-  <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="prfLifeGlow" cx="50%" cy="50%" r="50%">
@@ -63,7 +63,7 @@ export const ProfileLifetime3D = () => (
 
 // 2. Total Realized (3D Emerald Realized Stack & Checkmark)
 export const ProfilePaid3D = () => (
-  <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="prfPaidGlow" cx="50%" cy="50%" r="50%">
@@ -104,7 +104,7 @@ export const ProfilePaid3D = () => (
 
 // 3. Outstanding Due (3D Rose-Red Debt Ledger / Exclamation)
 export const ProfileDue3D = () => (
-  <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="prfDueGlow" cx="50%" cy="50%" r="50%">
@@ -145,7 +145,7 @@ export const ProfileDue3D = () => (
 
 // 4. Credit Limit Usage (3D Purple Gauge / Meter)
 export const ProfileCredit3D = () => (
-  <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shrink-0">
+  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
       <defs>
         <radialGradient id="prfCrdGlow" cx="50%" cy="50%" r="50%">
@@ -216,79 +216,79 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
   paymentTerms = 'Not set',
 }) => {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4 md:gap-5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
       {/* 1. Lifetime Business */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfileLifetime3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Lifetime Business">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Lifetime Business">
             Lifetime Business
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 mt-0.5 font-sans wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-blue-700 dark:text-blue-300 mt-0.5 font-display truncate"
             title={lifetimeBusiness}
           >
             {lifetimeBusiness}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={lifetimeCaption}>
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={lifetimeCaption}>
             {lifetimeCaption}
           </p>
         </div>
       </div>
 
       {/* 2. Total Realized */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfilePaid3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Total Realized">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Realized">
             Total Realized
           </span>
           <p
-            className="text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight text-emerald-800 dark:text-emerald-300 mt-0.5 font-sans wrap-anywhere"
+            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display truncate"
             title={totalPaid}
           >
             {totalPaid}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={paidCaption}>
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={paidCaption}>
             {paidCaption}
           </p>
         </div>
       </div>
 
       {/* 3. Outstanding Due */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfileDue3D />
         <div className="flex-1 min-w-0">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Outstanding Balance">
-            Outstanding Balance
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Outstanding Balance">
+            Outstanding Due
           </span>
           <p
-            className={`text-xl sm:text-2xl 2xl:text-3xl font-extrabold tracking-tight mt-0.5 font-sans wrap-anywhere ${
+            className={`text-base sm:text-2xl font-bold tracking-tight mt-0.5 font-display truncate ${
               isOverdue
-                ? 'text-rose-800 dark:text-rose-300'
+                ? 'text-rose-600 dark:text-rose-400'
                 : isCleared
-                ? 'text-emerald-800 dark:text-emerald-300'
-                : 'text-slate-800 dark:text-slate-100'
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-slate-900 dark:text-white'
             }`}
             title={outstandingDue}
           >
             {outstandingDue}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={dueCaption}>
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={dueCaption}>
             {dueCaption}
           </p>
         </div>
       </div>
 
       {/* 4. Credit Limit Usage */}
-      <div className="group relative rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
         <ProfileCredit3D />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs sm:text-[13px] font-semibold text-slate-600 dark:text-slate-300 block truncate" title="Credit Limit Usage">
-              Credit Limit Usage
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Credit Limit Usage">
+              Credit Usage
             </span>
-            <span className={`text-xs font-bold font-mono px-1.5 py-0.5 rounded-md shrink-0 ${
+            <span className={`text-[10px] sm:text-xs font-bold font-mono px-1.5 py-0.2 rounded-md shrink-0 ${
               limitUsage > 100
                 ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
                 : limitUsage >= 80
@@ -298,7 +298,7 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
               {limitUsage}%
             </span>
           </div>
-          <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden my-2">
+          <div className="w-full h-1.5 sm:h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden my-1 sm:my-1.5">
             <div
               style={{ width: `${Math.min(limitUsage, 100)}%` }}
               className={`h-full rounded-full transition-all duration-500 ${
@@ -306,8 +306,8 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
               }`}
             />
           </div>
-          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate" title={`Limit: ${creditLimit} • ${paymentTerms}`}>
-            Limit: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{creditLimit}</strong> • {paymentTerms}
+          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal truncate" title={`Limit: ${creditLimit} • ${paymentTerms}`}>
+            Limit: <strong className="text-slate-700 dark:text-slate-300 font-semibold">{creditLimit}</strong>
           </p>
         </div>
       </div>
