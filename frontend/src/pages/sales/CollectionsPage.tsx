@@ -28,8 +28,12 @@ import {
   mapPaymentStatusToReceiptStatus,
 } from '../../components/payments/ReceiptTemplate';
 
-export const CollectionsPage: React.FC = () => {
-  const { customers, payments, setIsPaymentModalOpen, setSelectedCustomer, currentUser, showToast } = useApp();
+interface CollectionsPageProps {
+  onNavigate?: (path: string) => void;
+}
+
+export const CollectionsPage: React.FC<CollectionsPageProps> = ({ onNavigate }) => {
+  const { customers, payments, setPayments, setIsPaymentModalOpen, setSelectedCustomer, currentUser, salesTeam, showToast } = useApp();
   const { data: serverCollections } = useSalesmanCollections();
   const clearChequeMutation = useClearCheque();
   const bounceChequeMutation = useBounceCheque();
@@ -40,15 +44,26 @@ export const CollectionsPage: React.FC = () => {
 
   const isAdmin = currentUser.role === 'admin';
 
-  // Assigned customers
+  // Find matching salesperson entry in salesTeam
+  const matchingRep = useMemo(() => {
+    return salesTeam.find(
+      (s) =>
+        s.id === currentUser.id ||
+        (currentUser.email && s.email.toLowerCase() === currentUser.email.toLowerCase())
+    );
+  }, [salesTeam, currentUser]);
+
+  // Robust assigned customer matching
   const assignedCusts = useMemo(() => {
     if (isAdmin) return customers;
     return customers.filter(
       (c) =>
         c.salespersonId === currentUser.id ||
-        (c.salespersonName && c.salespersonName.toLowerCase().includes(currentUser.name.toLowerCase()))
+        (matchingRep && c.salespersonId === matchingRep.id) ||
+        (c.salespersonName && c.salespersonName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
+        (matchingRep && c.salespersonName && c.salespersonName.toLowerCase().includes(matchingRep.name.toLowerCase()))
     );
-  }, [customers, currentUser, isAdmin]);
+  }, [customers, currentUser, isAdmin, matchingRep]);
 
   const overdueOnly = useMemo(() => assignedCusts.filter((c) => (c.amountDue || 0) > 0), [assignedCusts]);
   const totalAssignedDue = useMemo(() => overdueOnly.reduce((acc, c) => acc + Number(c.amountDue || 0), 0), [overdueOnly]);
@@ -63,9 +78,10 @@ export const CollectionsPage: React.FC = () => {
     return payments.filter(
       (p) =>
         p.collectedBy?.toLowerCase().includes(currentUser.name.toLowerCase()) ||
+        (matchingRep && p.collectedBy?.toLowerCase().includes(matchingRep.name.toLowerCase())) ||
         assignedCusts.some((c) => c.id === p.customerId)
     );
-  }, [payments, currentUser, assignedCusts, isAdmin]);
+  }, [payments, currentUser, matchingRep, assignedCusts, isAdmin]);
 
   const collectedThisMonth = useMemo(() => {
     return relevantPayments
@@ -97,6 +113,9 @@ export const CollectionsPage: React.FC = () => {
   const handleClearCheque = async (paymentId: string) => {
     try {
       await clearChequeMutation.mutateAsync(paymentId);
+      setPayments((prev) =>
+        prev.map((p) => (p.id === paymentId ? { ...p, status: 'verified' } : p))
+      );
       showToast('Cheque payment cleared and ledger balance credited!');
     } catch (err: any) {
       showToast(err?.message || 'Failed to clear cheque');
@@ -108,15 +127,39 @@ export const CollectionsPage: React.FC = () => {
     if (reason === null) return;
     try {
       await bounceChequeMutation.mutateAsync({ paymentId, reason });
+      setPayments((prev) =>
+        prev.map((p) =>
+          p.id === paymentId ? { ...p, status: 'bounced', notes: `${p.notes || ''} [Bounced: ${reason}]` } : p
+        )
+      );
       showToast('Cheque marked as bounced. Alert dispatched.');
     } catch (err: any) {
       showToast(err?.message || 'Failed to bounce cheque');
     }
   };
 
+  const handleSendReminderWhatsApp = (cust: typeof customers[0]) => {
+    const phone = (cust.whatsapp || cust.phone || '').replace(/[^0-9]/g, '');
+    if (!phone) {
+      showToast('No phone number on file for this store.');
+      return;
+    }
+    const cleanPhone = phone.length === 10 ? `91${phone}` : phone;
+    const dueStr = Number(cust.amountDue || 0).toLocaleString('en-IN');
+    const overdueDays = cust.overdueDays || 0;
+    const msg = `*Payment Reminder — SoleFlow Footwear Wholesale*\n\n` +
+      `Dear ${cust.propName || cust.businessName},\n` +
+      `Greetings! A friendly reminder regarding your outstanding wholesale balance of *₹${dueStr}*` +
+      (overdueDays > 0 ? ` (Overdue: ${overdueDays} days)` : '') + `.\n\n` +
+      `Kindly settle the pending ledger balance or share the UTR / Cheque slip once dispatched.\n\n` +
+      `Thank you,\n${currentUser.name || 'Sales Representative'}\nSoleFlow Footwear`;
+
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
   const handleShareWhatsApp = (p: typeof payments[0]) => {
     const cust = customers.find((c) => c.id === p.customerId);
-    const phone = (cust?.phone || '').replace(/[^0-9]/g, '');
+    const phone = (cust?.whatsapp || cust?.phone || '').replace(/[^0-9]/g, '');
     if (!phone) {
       showToast('No phone number on file for this store.');
       return;
@@ -262,7 +305,11 @@ export const CollectionsPage: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map((cust) => (
-                  <TableRow key={cust.id}>
+                  <TableRow
+                    key={cust.id}
+                    className="hover:bg-muted/40 transition-colors cursor-pointer group"
+                    onClick={() => onNavigate?.(`/sales/customers/${cust.id}`)}
+                  >
                     <TableCell>
                       <TableAvatarCell
                         name={cust.businessName}
@@ -296,8 +343,8 @@ export const CollectionsPage: React.FC = () => {
                         className="text-rose-600 dark:text-rose-400"
                       />
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1.5">
                         <Button
                           variant="primary"
                           size="sm"
@@ -309,6 +356,14 @@ export const CollectionsPage: React.FC = () => {
                         >
                           Collect
                         </Button>
+                        <button
+                          type="button"
+                          onClick={() => handleSendReminderWhatsApp(cust)}
+                          className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-xl transition-colors cursor-pointer"
+                          title="Send WhatsApp Payment Reminder"
+                        >
+                          <Icons.WhatsApp size={15} />
+                        </button>
                         <a
                           href={`tel:${cust.phone}`}
                           className="p-2 bg-muted hover:bg-muted/80 text-foreground rounded-xl inline-flex items-center transition-colors"

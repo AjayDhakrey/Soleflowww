@@ -537,8 +537,8 @@ const AppContent: React.FC = () => {
         />
       );
     }
-    if (basePath === '/sales/collections') {
-      return <CollectionsPage />;
+    if (basePath === '/sales/collections' || basePath === '/sales/payments' || basePath === '/collections') {
+      return <CollectionsPage onNavigate={handleNavigate} />;
     }
     if (basePath === '/sales/follow-ups') {
       return <FollowUpsPage />;
@@ -563,7 +563,7 @@ const AppContent: React.FC = () => {
       );
     }
 
-    if (basePath === '/sales/profile') {
+    if (basePath === '/sales/profile' || basePath === '/sales/settings') {
       return <SettingsPage />;
     }
 
@@ -587,6 +587,9 @@ const AppContent: React.FC = () => {
       );
     }
     if (basePath === '/payments') {
+      if (currentUser.role === 'salesperson') {
+        return <CollectionsPage onNavigate={handleNavigate} />;
+      }
       return (
         <PaymentsPage
           onNavigate={handleNavigate}

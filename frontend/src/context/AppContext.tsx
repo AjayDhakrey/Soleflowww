@@ -990,6 +990,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return c;
     }));
 
+    // Update target order balance if specified
+    if (input.orderId && input.orderId !== 'auto_fifo' && input.orderId !== 'general_on_account') {
+      setOrders(prev => prev.map(o => {
+        if (o.id === input.orderId) {
+          const newBalance = Math.max(0, (o.balanceDue || 0) - Number(input.paymentAmount));
+          return {
+            ...o,
+            balanceDue: newBalance,
+          };
+        }
+        return o;
+      }));
+    }
+
     const liveCustomers = await supabaseApi.getCustomers(effectiveOrg);
     if (liveCustomers && liveCustomers.length > 0) setCustomers(liveCustomers);
     invalidateData();

@@ -65,7 +65,22 @@ export const RecordPaymentModal: React.FC = () => {
 
   if (!isPaymentModalOpen) return null;
 
-  const currentCust = customers.find((c) => c.id === selectedCustId) || customers[0];
+  const sortedCustomers = useMemo(() => {
+    if (currentUser.role === 'admin') return customers;
+    return [...customers].sort((a, b) => {
+      const aMine =
+        a.salespersonId === currentUser.id ||
+        (a.salespersonName && a.salespersonName.toLowerCase().includes(currentUser.name.toLowerCase()));
+      const bMine =
+        b.salespersonId === currentUser.id ||
+        (b.salespersonName && b.salespersonName.toLowerCase().includes(currentUser.name.toLowerCase()));
+      if (aMine && !bMine) return -1;
+      if (!aMine && bMine) return 1;
+      return 0;
+    });
+  }, [customers, currentUser]);
+
+  const currentCust = customers.find((c) => c.id === selectedCustId) || sortedCustomers[0] || customers[0];
   const beforeDue = currentCust ? Number(currentCust.amountDue || 0) : 0;
   const payAmt = Number(paymentAmount) || 0;
   const afterDue = Math.max(0, beforeDue - payAmt);
@@ -299,11 +314,17 @@ export const RecordPaymentModal: React.FC = () => {
                   }}
                   className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
                 >
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.businessName} • {c.city} (Due: ₹{Number(c.amountDue || 0).toLocaleString('en-IN')})
-                    </option>
-                  ))}
+                  {sortedCustomers.map((c) => {
+                    const isAssigned =
+                      c.salespersonId === currentUser.id ||
+                      (c.salespersonName && c.salespersonName.toLowerCase().includes(currentUser.name.toLowerCase()));
+                    return (
+                      <option key={c.id} value={c.id}>
+                        {isAssigned && currentUser.role === 'salesperson' ? '★ ' : ''}
+                        {c.businessName} • {c.city} (Due: ₹{Number(c.amountDue || 0).toLocaleString('en-IN')})
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 

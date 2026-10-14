@@ -13,8 +13,6 @@ import {
   Calendar,
   UserCheck,
   Archive,
-  Copy,
-  Check,
 } from 'lucide-react';
 
 interface CustomerRowActionMenuProps {
@@ -45,7 +43,6 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
   } = useApp();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [assignedRep, setAssignedRep] = useState(customer.salespersonId || '');
   const [isAssigning, setIsAssigning] = useState(false);
@@ -115,7 +112,6 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
     setIsOpen(false);
     const rawPhone = (customer.whatsapp || customer.phone || '').replace(/[^0-9]/g, '');
     const phone = rawPhone.startsWith('91') ? rawPhone : `91${rawPhone}`;
-    const amountStr = (customer.amountDue || 0).toLocaleString('en-IN');
     const message = encodeURIComponent(
       `Hello ${customer.propName || customer.businessName}, greetings from SoleFlow! We are pleased to share our latest seasonal footwear catalog with you.`
     );
@@ -144,17 +140,6 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
       notes: 'Follow-up scheduled from customer menu',
     });
     showToast(`Follow-up scheduled for ${customer.businessName}`);
-  };
-
-  const handleCopyId = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(customer.id);
-    setCopied(true);
-    showToast(`Copied Client ID: ${customer.id}`);
-    setTimeout(() => {
-      setCopied(false);
-      setIsOpen(false);
-    }, 800);
   };
 
   const handleAssignSalesman = (e: React.MouseEvent) => {
@@ -229,10 +214,10 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
           <button
             type="button"
             onClick={handleEditCustomer}
-            className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 hover:bg-muted/70 transition-colors font-medium cursor-pointer text-blue-600 dark:text-blue-400"
+            className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 hover:bg-muted/70 transition-colors font-medium cursor-pointer"
             role="menuitem"
           >
-            <Pencil size={14} />
+            <Pencil size={14} className="text-blue-600 dark:text-blue-400" />
             <span>Edit Customer Details</span>
           </button>
 
@@ -265,7 +250,7 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
             className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 hover:bg-muted/70 transition-colors font-medium cursor-pointer"
             role="menuitem"
           >
-            <Share2 size={14} className="text-blue-600 dark:text-blue-400" />
+            <Share2 size={14} className="text-indigo-600 dark:text-indigo-400" />
             <span>Share Catalogue</span>
           </button>
 
@@ -278,7 +263,7 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
             className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 hover:bg-muted/70 transition-colors font-medium cursor-pointer"
             role="menuitem"
           >
-            <Phone size={14} className="text-blue-500" />
+            <Phone size={14} className="text-sky-500" />
             <span>Call Proprietor</span>
           </button>
 
@@ -302,17 +287,6 @@ export const CustomerRowActionMenu: React.FC<CustomerRowActionMenuProps> = ({
           >
             <Calendar size={14} className="text-amber-500" />
             <span>Schedule Follow-up</span>
-          </button>
-
-          {/* Copy ID */}
-          <button
-            type="button"
-            onClick={handleCopyId}
-            className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 hover:bg-muted/70 transition-colors font-medium cursor-pointer"
-            role="menuitem"
-          >
-            {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-muted-foreground" />}
-            <span>Copy Client ID ({customer.id})</span>
           </button>
 
           {/* Admin only actions */}

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useReceivables } from '../../hooks/usePayments';
+import { useReceivables, useClearCheque, useBounceCheque } from '../../hooks/usePayments';
 import { Icons } from '../../lib/icons';
 import { PaymentReceipt } from '../../types';
 import {
@@ -42,14 +42,21 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
   const {
     customers,
     payments,
+    setPayments,
     setIsPaymentModalOpen,
     setSelectedCustomer,
+    salesTeam,
+    currentUser,
     showToast,
   } = useApp();
 
   const { data: receivablesList } = useReceivables();
+  const clearChequeMutation = useClearCheque();
+  const bounceChequeMutation = useBounceCheque();
+
   const [activeTab, setActiveTab] = useState<'receivables' | 'payments'>(initialTab || 'receivables');
   const [search, setSearch] = useState('');
+  const [salespersonFilter, setSalespersonFilter] = useState<string>('all');
   const [agingFilter, setAgingFilter] = useState<string>(() => {
     if (initialAging) {
       if (initialAging === '0-30') return '0-30';
@@ -161,9 +168,60 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
       const matchesMethod =
         paymentMethodFilter === 'all' || p.paymentMethod === paymentMethodFilter;
 
-      return matchesSearch && matchesMethod;
+      const matchesSalesperson =
+        salespersonFilter === 'all' ||
+        (p.collectedBy && p.collectedBy.toLowerCase().includes(salespersonFilter.toLowerCase()));
+
+      return matchesSearch && matchesMethod && matchesSalesperson;
     });
-  }, [payments, search, paymentMethodFilter]);
+  }, [payments, search, paymentMethodFilter, salespersonFilter]);
+
+  const handleClearCheque = async (paymentId: string) => {
+    try {
+      await clearChequeMutation.mutateAsync(paymentId);
+      setPayments((prev) =>
+        prev.map((p) => (p.id === paymentId ? { ...p, status: 'verified' } : p))
+      );
+      showToast('Cheque payment cleared and ledger balance credited!');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to clear cheque');
+    }
+  };
+
+  const handleBounceCheque = async (paymentId: string) => {
+    const reason = window.prompt('Reason for cheque dishonour:', 'Insufficient funds');
+    if (reason === null) return;
+    try {
+      await bounceChequeMutation.mutateAsync({ paymentId, reason });
+      setPayments((prev) =>
+        prev.map((p) =>
+          p.id === paymentId ? { ...p, status: 'bounced', notes: `${p.notes || ''} [Bounced: ${reason}]` } : p
+        )
+      );
+      showToast('Cheque marked as bounced. Alert dispatched.');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to bounce cheque');
+    }
+  };
+
+  const handleSendReminderWhatsApp = (cust: typeof customers[0]) => {
+    const phone = (cust.whatsapp || cust.phone || '').replace(/[^0-9]/g, '');
+    if (!phone) {
+      showToast('No phone number on file for this retailer.');
+      return;
+    }
+    const cleanPhone = phone.length === 10 ? `91${phone}` : phone;
+    const dueStr = Number(cust.amountDue || 0).toLocaleString('en-IN');
+    const overdueDays = cust.overdueDays || 0;
+    const msg = `*Payment Reminder — SoleFlow Footwear Wholesale*\n\n` +
+      `Dear ${cust.propName || cust.businessName},\n` +
+      `Greetings from SoleFlow. A friendly reminder regarding your outstanding commercial balance of *₹${dueStr}*` +
+      (overdueDays > 0 ? ` (Overdue: ${overdueDays} days)` : '') + `.\n\n` +
+      `Kindly settle the pending ledger balance or share the UTR / Cheque confirmation once transferred.\n\n` +
+      `Thank you,\nAccounts Desk\nSoleFlow Wholesale ERP`;
+
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
 
   const handleExportCSV = () => {
     const headers = ['Customer ID', 'Store Name', 'Proprietor', 'City', 'Phone', 'Credit Limit', 'Overdue Days', 'Outstanding Due (INR)'];
@@ -408,9 +466,9 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
                           {cust.whatsapp && (
                             <button
                               type="button"
-                              onClick={() => window.open(`https://wa.me/${cust.whatsapp?.replace(/[^0-9]/g, '')}`, '_blank')}
-                              className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors"
-                              title="Chat on WhatsApp"
+                              onClick={() => handleSendReminderWhatsApp(cust)}
+                              className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                              title="Send WhatsApp Payment Reminder"
                             >
                               <Icons.WhatsApp size={16} />
                             </button>
@@ -499,10 +557,10 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open(`https://wa.me/${cust.whatsapp?.replace(/[^0-9]/g, '')}`, '_blank');
+                                    handleSendReminderWhatsApp(cust);
                                   }}
-                                  className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors"
-                                  title="Chat on WhatsApp"
+                                  className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                                  title="Send WhatsApp Payment Reminder"
                                 >
                                   <Icons.WhatsApp size={15} />
                                 </button>
@@ -617,6 +675,14 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
                   { label: 'Cash Handover', value: 'Cash' },
                 ]}
               />
+              <Select
+                value={salespersonFilter}
+                onChange={(e) => setSalespersonFilter(e.target.value)}
+                options={[
+                  { label: 'All Collectors & Reps', value: 'all' },
+                  ...salesTeam.map((s) => ({ label: `By: ${s.name}`, value: s.name })),
+                ]}
+              />
             </FilterBar>
           </div>
 
@@ -696,7 +762,28 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
                       </div>
 
                       {/* Row 3: Action Buttons */}
-                      <div className="flex items-center justify-end gap-2 pt-0.5">
+                      <div className="flex items-center justify-end gap-1.5 pt-0.5 flex-wrap">
+                        {p.status === 'pending_clearance' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleClearCheque(p.id)}
+                              className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-2xs transition-colors inline-flex items-center gap-1"
+                              title="Clear cheque into ledger"
+                            >
+                              <Icons.Check size={13} />
+                              <span>Clear</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleBounceCheque(p.id)}
+                              className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 rounded-lg text-xs font-semibold cursor-pointer border border-rose-200 dark:border-rose-900/40 transition-colors"
+                              title="Mark cheque as bounced"
+                            >
+                              Bounce
+                            </button>
+                          </>
+                        )}
                         <Button
                           variant="secondary"
                           size="sm"
@@ -793,6 +880,27 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
                           </TableCell>
                           <TableCell className="text-right pr-6 py-4">
                             <div className="flex items-center justify-end gap-1.5">
+                              {p.status === 'pending_clearance' && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleClearCheque(p.id)}
+                                    className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-2xs transition-colors inline-flex items-center gap-1"
+                                    title="Clear cheque into ledger balance"
+                                  >
+                                    <Icons.Check size={12} />
+                                    <span>Clear</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleBounceCheque(p.id)}
+                                    className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 rounded-lg text-xs font-semibold cursor-pointer transition-colors border border-rose-200 dark:border-rose-900/40"
+                                    title="Mark cheque as bounced"
+                                  >
+                                    Bounce
+                                  </button>
+                                </>
+                              )}
                               <Button
                                 variant="primary"
                                 size="sm"
