@@ -362,6 +362,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: error.message };
       }
 
+      // In Supabase, if a user with this email already exists and is confirmed,
+      // identities array is returned empty to avoid enumeration, and no email is sent.
+      const isExistingUser = Boolean(
+        data.user &&
+          ((Array.isArray(data.user.identities) && data.user.identities.length === 0) ||
+            Boolean(data.user.confirmed_at))
+      );
+
+      if (isExistingUser) {
+        setIsLoading(false);
+        return {
+          success: false,
+          error: 'This email is already registered. Please go to the Log in tab to sign in with your password.',
+        };
+      }
+
       const needsEmailVerification = !data.session && Boolean(data.user && !data.user.confirmed_at);
 
       if (data.user && data.session) {
