@@ -72,34 +72,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
   return (
     <div className="p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6 max-w-[1440px] w-full mx-auto pb-28 md:pb-12 bg-background text-foreground overflow-x-hidden animate-in fade-in duration-200">
-      {/* 1. Top Header & Welcome Banner (Matching Reference Mobile Design) */}
-      <div className="space-y-3.5">
-        {/* Mobile Greeting & Notification Bar (Visible on phone) */}
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Hi {currentUser.name.split(' ')[0]}!
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              {greeting.text}
-            </p>
-          </div>
+      {/* 1. Top Header (Royal Blue Curved Header matching reference image 1) */}
+      <div className="-mx-3 sm:-mx-5 lg:-mx-6 -mt-3 sm:-mt-5 lg:-mt-6 mb-4 sm:mb-6">
+        {/* Royal Blue Curved Banner for Mobile */}
+        <div className="bg-blue-600 sm:bg-transparent text-white sm:text-foreground pt-3 sm:pt-0 px-4 sm:px-0 pb-7 sm:pb-0 rounded-b-[32px] sm:rounded-none shadow-sm sm:shadow-none space-y-3">
+          {/* Top Navbar Row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="sm:hidden w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4 text-white">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="15" y2="12" />
+                  <line x1="3" y1="18" x2="18" y2="18" />
+                </svg>
+              </span>
+              <div>
+                <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight text-white sm:text-slate-900 dark:text-white leading-tight">
+                  Dashboard
+                </h1>
+                <p className="text-[10px] sm:text-xs text-blue-100 sm:text-slate-500 font-medium">
+                  Last Update {todayDateFormatted}
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
-              <Icons.Calendar size={12} className="text-blue-600" />
-              <span>{todayDateFormatted}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => onNavigate('/admin/reports')}
-              className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
-              title="Notifications & Alerts"
-            >
-              <Icons.Notifications size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onNavigate('/admin/reports')}
+                className="w-8 h-8 rounded-full bg-white/15 sm:bg-white sm:dark:bg-slate-800 border sm:border-slate-200/80 flex items-center justify-center text-white sm:text-slate-700 sm:dark:text-slate-300 shadow-2xs hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
+                title="Trade Alerts"
+              >
+                <Icons.Notifications size={16} />
+              </button>
+              <div className="w-8 h-8 rounded-full bg-amber-300 text-slate-900 font-black text-xs flex items-center justify-center ring-2 ring-white/40 shadow-xs">
+                {currentUser.name.charAt(0).toUpperCase()}
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
         {/* Clean Welcome Card (Matching Reference Card with curved border and blue accent) */}
         <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs">
@@ -122,7 +134,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             </div>
           </div>
         </div>
-      </div>
 
       {/* 2. Commercial Period Selector & Quick Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1">
