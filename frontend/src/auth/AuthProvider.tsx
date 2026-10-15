@@ -410,7 +410,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       if (!isSupabaseConfigured() || !supabase) {
-        if (cleanToken.length === 6) {
+        if (cleanToken.length >= 6) {
           setIsLoading(false);
           return { success: true, role: 'admin' };
         }
