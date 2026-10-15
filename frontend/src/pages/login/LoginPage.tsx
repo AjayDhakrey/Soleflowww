@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, User, Users, Shield, Building2, Phone, MapPin, FileText, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, User, Users, Shield, Building2, Phone, MapPin, FileText, CheckCircle2, KeyRound, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 
 import loginBackground from '../../assets/images/login/background_image.png';
@@ -18,7 +18,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onForgotPassword,
   onBackToLanding,
 }) => {
-  const { signIn, signUp, quickDemoLogin } = useAuth();
+  const { signIn, signUp, verifySignupOtp, resendSignupOtp, quickDemoLogin } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('admin@soleflow.com');
@@ -36,6 +36,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [needsVerification, setNeedsVerification] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -146,12 +151,124 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       if (res.needsEmailVerification) {
         setVerificationEmail(email);
         setNeedsVerification(true);
+        setOtpDigits(['', '', '', '', '', '']);
+        setOtpError('');
+        setResendStatus('');
+        setTimeout(() => {
+          otpInputRefs.current[0]?.focus();
+        }, 100);
       } else {
         onSuccess('admin');
       }
     } catch (err: any) {
       setIsLoading(false);
       setError(err?.message || 'Failed to create account.');
+    }
+  };
+
+  // Resend OTP countdown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleOtpChange = (index: number, val: string) => {
+    const clean = val.replace(/\D/g, '');
+    if (!clean) {
+      const next = [...otpDigits];
+      next[index] = '';
+      setOtpDigits(next);
+      return;
+    }
+
+    if (clean.length > 1) {
+      const chars = clean.slice(0, 6).split('');
+      const next = [...otpDigits];
+      chars.forEach((c, i) => {
+        if (index + i < 6) next[index + i] = c;
+      });
+      setOtpDigits(next);
+      const nextFocus = Math.min(5, index + chars.length);
+      otpInputRefs.current[nextFocus]?.focus();
+      return;
+    }
+
+    const next = [...otpDigits];
+    next[index] = clean;
+    setOtpDigits(next);
+    setOtpError('');
+
+    if (index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const chars = pasted.split('');
+    const next = ['', '', '', '', '', ''];
+    chars.forEach((c, i) => {
+      if (i < 6) next[i] = c;
+    });
+    setOtpDigits(next);
+    setOtpError('');
+    const targetFocus = Math.min(5, chars.length);
+    otpInputRefs.current[targetFocus]?.focus();
+  };
+
+  const handleVerifyOtpSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const token = otpDigits.join('').trim();
+    if (token.length !== 6) {
+      setOtpError('Please enter the complete 6-digit OTP code.');
+      return;
+    }
+
+    setOtpError('');
+    setIsVerifyingOtp(true);
+
+    try {
+      const res = await verifySignupOtp(verificationEmail, token);
+      setIsVerifyingOtp(false);
+
+      if (!res.success) {
+        setOtpError(res.error || 'Invalid or expired OTP code. Please try again.');
+        return;
+      }
+
+      onSuccess(res.role === 'salesperson' ? 'salesperson' : 'admin');
+    } catch (err: any) {
+      setIsVerifyingOtp(false);
+      setOtpError(err?.message || 'Verification failed. Please try again.');
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    setOtpError('');
+    setResendStatus('');
+
+    try {
+      const res = await resendSignupOtp(verificationEmail);
+      if (res.success) {
+        setResendStatus('A new 6-digit OTP code has been sent to your inbox.');
+        setResendCooldown(30);
+      } else {
+        setOtpError(res.error || 'Failed to resend verification code.');
+      }
+    } catch (err: any) {
+      setOtpError(err?.message || 'Failed to resend verification code.');
     }
   };
 
@@ -243,33 +360,107 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </div>
           )}
 
-          {/* Email Verification State */}
+          {/* Email Verification State (6-Digit OTP) */}
           {needsVerification ? (
-            <div className="text-center py-2.5 space-y-2">
-              <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-1">
-                <Mail className="w-4 h-4" />
+            <div className="py-2 space-y-3">
+              <div className="text-center space-y-1.5">
+                <div className="w-10 h-10 bg-blue-50 text-[#1E6FF6] border border-blue-100 rounded-full flex items-center justify-center mx-auto shadow-xs">
+                  <KeyRound className="w-5 h-5 text-[#1E6FF6]" />
+                </div>
+                <h3 className="font-display font-bold text-sm sm:text-base text-slate-900">
+                  Verify your account
+                </h3>
+                <p className="text-[11px] text-slate-600 leading-relaxed px-1">
+                  We sent a 6-digit verification code from <strong className="text-slate-900 font-semibold">ShoeFlow</strong> to{' '}
+                  <span className="font-semibold text-slate-800 break-all">{verificationEmail}</span>. Enter it below to activate your account.
+                </p>
               </div>
-              <h3 className="font-display font-bold text-xs sm:text-sm text-slate-900">Check your inbox</h3>
-              <p className="text-[11px] text-slate-600">
-                We sent a verification link to <strong className="text-slate-800">{verificationEmail}</strong>. Please confirm your email to activate your account.
-              </p>
-              {resendStatus && (
-                <div className="text-emerald-600 text-[11px] font-medium">{resendStatus}</div>
+
+              {/* OTP Error Banner */}
+              {otpError && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-600 text-[11px] px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in duration-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                  <span className="font-medium">{otpError}</span>
+                </div>
               )}
-              <div className="pt-1.5 flex flex-col gap-1">
+
+              {/* Resend Status Banner */}
+              {resendStatus && (
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 animate-in fade-in duration-200">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="font-medium">{resendStatus}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleVerifyOtpSubmit} className="space-y-3">
+                {/* 6-Digit Code Inputs */}
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                  {otpDigits.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => {
+                        otpInputRefs.current[idx] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      onPaste={handleOtpPaste}
+                      disabled={isVerifyingOtp}
+                      className="w-9 h-11 sm:w-10 sm:h-12 text-center text-base sm:text-lg font-bold font-mono text-slate-900 bg-white border border-slate-300 rounded-lg focus:border-[#1E6FF6] focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all disabled:opacity-50 disabled:bg-slate-50"
+                      autoFocus={idx === 0}
+                    />
+                  ))}
+                </div>
+
+                {/* Submit Button */}
                 <button
-                  type="button"
-                  onClick={() => setResendStatus('Verification link re-sent!')}
-                  className="w-full py-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                  type="submit"
+                  disabled={isVerifyingOtp || otpDigits.join('').trim().length !== 6}
+                  className="w-full py-2 px-3 bg-linear-to-r from-[#1E6FF6] to-[#2B7FFF] hover:from-[#1557c0] hover:to-[#1e6ff6] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Resend verification email
+                  {isVerifyingOtp ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Verifying code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Verify & Continue</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
                 </button>
+              </form>
+
+              {/* Resend & Back Controls */}
+              <div className="pt-1 flex flex-col items-center gap-2">
+                <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                  <span>Didn't receive the OTP?</span>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendCooldown > 0}
+                    className="font-semibold text-[#1E6FF6] hover:underline cursor-pointer disabled:text-slate-400 disabled:no-underline disabled:cursor-not-allowed"
+                  >
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
+                  </button>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => { setNeedsVerification(false); setMode('login'); }}
-                  className="text-[11px] text-[#1E6FF6] hover:underline font-medium pt-0.5"
+                  onClick={() => {
+                    setNeedsVerification(false);
+                    setMode('login');
+                    setOtpError('');
+                    setResendStatus('');
+                  }}
+                  className="text-[11px] text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
                 >
-                  Back to Log in
+                  ← Back to Log in
                 </button>
               </div>
             </div>
