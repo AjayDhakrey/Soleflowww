@@ -247,43 +247,45 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="p-3.5 sm:p-6 md:p-8 space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-28 sm:pb-32 md:pb-12 bg-background text-foreground animate-in fade-in duration-150 overflow-x-hidden">
       {/* 1. Standardized Header with Breadcrumbs & Action Buttons */}
-      <div className="space-y-3">
+      <div className="space-y-2.5 sm:space-y-3">
         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
           <Home className="w-3.5 h-3.5 text-blue-600" />
           <span>Dashboard</span>
           <span>/</span>
-          <span className="text-slate-800 font-semibold">Reports & Analytics</span>
+          <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">Reports & Analytics</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-                Reports, Margins & Trade Alerts
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">
+                Reports & Trade Alerts
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100">
+              <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-900 shrink-0">
                 {orders.length} Orders
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Executive analytics, wholesale turnover breakdowns, margin overrides, and factory punctuality.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">
+              Turnover breakdowns, margin authorization queue, and manufacturer punctuality.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto items-center">
             <button
+              type="button"
               onClick={() => setIsNewRequestModalOpen(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-xs transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs transition-colors cursor-pointer active:scale-95"
             >
-              <Plus className="w-4 h-4 text-slate-500" />
-              New Request
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400" />
+              <span>New Request</span>
             </button>
             <button
+              type="button"
               onClick={handleExportLedger}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-xs transition-colors cursor-pointer active:scale-95 shadow-blue-600/30"
             >
-              <FileSpreadsheet className="w-4 h-4" />
-              Export Ledger CSV
+              <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Export CSV</span>
             </button>
           </div>
         </div>

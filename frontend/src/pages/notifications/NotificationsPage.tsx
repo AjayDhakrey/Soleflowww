@@ -41,9 +41,9 @@ export const NotificationsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-5xl mx-auto pb-24 md:pb-12">
+    <div className="p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-5xl mx-auto pb-24 md:pb-12 font-sans overflow-x-hidden">
       {/* 1. Standardized Header with Breadcrumbs & Action Buttons */}
-      <div className="space-y-3">
+      <div className="space-y-2.5 sm:space-y-3">
         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
           <Link
             to="/sales/dashboard"
@@ -53,39 +53,40 @@ export const NotificationsPage: React.FC = () => {
             <span>Dashboard</span>
           </Link>
           <span>/</span>
-          <span className="text-slate-800 font-semibold">Notifications</span>
+          <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">Notifications</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">
                 Notifications & Trade Alerts
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100">
+              <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-900 shrink-0">
                 {unreadCount} Unread
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Real-time notifications for factory dispatch delays, overdue receivables, and payment receipts.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">
+              Real-time factory dispatch delays, overdue accounts, and payment receipts.
             </p>
           </div>
 
           {unreadCount > 0 && (
-            <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="flex items-center gap-2 shrink-0">
               <button
+                type="button"
                 onClick={() => markAllNotificationsAsRead()}
-                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-xs transition-colors cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs transition-colors cursor-pointer active:scale-95"
               >
-                <CheckCheck className="w-4 h-4 text-emerald-600" />
-                Mark All as Read
+                <CheckCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Mark All as Read</span>
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* 2. KPI Summary Row (3D Claymorphic Redesign) */}
+      {/* 2. KPI Summary Row (Compact claymorphic cards) */}
       <NotificationKpiCards
         totalCount={notifications.length}
         unreadCount={unreadCount}
@@ -133,58 +134,63 @@ export const NotificationsPage: React.FC = () => {
                 <div
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}
-                  className={`p-5 flex items-start gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors ${
-                    !n.read ? 'bg-zinc-100/60 dark:bg-zinc-800/40' : ''
+                  className={`p-3.5 sm:p-5 flex items-start gap-3 sm:gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors active:bg-slate-100/70 dark:active:bg-slate-800/90 ${
+                    !n.read ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
                   }`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                       isPaymentNotification
-                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
                         : isDesignNotification
-                        ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600'
+                        ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400'
                         : n.category === 'alert'
-                        ? 'bg-red-50 dark:bg-red-950/50 text-red-600'
+                        ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
                         : n.category === 'factory'
-                        ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600'
-                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
+                        ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     {isPaymentNotification ? (
-                      <Icons.Payments size={20} strokeWidth={1.75} />
+                      <Icons.Payments size={18} strokeWidth={1.8} />
                     ) : isDesignNotification ? (
-                      <Icons.Designs size={20} strokeWidth={1.75} />
+                      <Icons.Designs size={18} strokeWidth={1.8} />
                     ) : n.category === 'alert' ? (
-                      <Icons.Overdue size={20} strokeWidth={1.75} />
+                      <Icons.Overdue size={18} strokeWidth={1.8} />
                     ) : n.category === 'factory' ? (
-                      <Icons.Manufacturers size={20} strokeWidth={1.75} />
+                      <Icons.Manufacturers size={18} strokeWidth={1.8} />
                     ) : (
-                      <Icons.Orders size={20} strokeWidth={1.75} />
+                      <Icons.Orders size={18} strokeWidth={1.8} />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                        {n.title}
-                      </h4>
-                      <span className="text-xs font-mono text-slate-400 shrink-0">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {!n.read && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 shrink-0" />
+                        )}
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                          {n.title}
+                        </h4>
+                      </div>
+                      <span className="text-[10px] sm:text-xs font-mono text-slate-400 shrink-0">
                         {n.time}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 mt-0.5 sm:mt-1 leading-relaxed">
                       {n.desc}
                     </p>
                     {isPaymentNotification && (
-                      <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-semibold">
-                        <Icons.FileText size={13} />
-                        <span>Click to view official receipt</span>
+                      <div className="mt-1.5 sm:mt-2 flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 font-semibold">
+                        <Icons.FileText size={12} />
+                        <span>View official receipt</span>
                       </div>
                     )}
                     {isDesignNotification && (
-                      <div className="mt-2 flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
-                        <Icons.Designs size={13} />
-                        <span>Available in wholesale catalog</span>
+                      <div className="mt-1.5 sm:mt-2 flex items-center gap-1 text-[11px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                        <Icons.Designs size={12} />
+                        <span>Wholesale catalog</span>
                       </div>
                     )}
                   </div>
