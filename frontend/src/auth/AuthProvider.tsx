@@ -51,6 +51,8 @@ interface AuthContextType {
   canManageCatalog: boolean;
   signIn: (email: string, pass: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   signUp: (params: SignUpParams) => Promise<{ success: boolean; needsEmailVerification?: boolean; error?: string }>;
+  verifySignupOtp: (email: string, token: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
+  resendSignupOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   resetPasswordForEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; message: string }>;
@@ -360,6 +362,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: error.message };
       }
 
+      // In Supabase, if a user with this email already exists and is confirmed,
+      // identities array is returned empty to avoid enumeration, and no email is sent.
+      const isExistingUser = Boolean(
+        data.user &&
+          ((Array.isArray(data.user.identities) && data.user.identities.length === 0) ||
+            Boolean(data.user.confirmed_at))
+      );
+
+      if (isExistingUser) {
+        setIsLoading(false);
+        return {
+          success: false,
+          error: 'This email is already registered. Please go to the Log in tab to sign in with your password.',
+        };
+      }
+
       const needsEmailVerification = !data.session && Boolean(data.user && !data.user.confirmed_at);
 
       if (data.user && data.session) {
@@ -379,6 +397,100 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthError(msg);
       setIsLoading(false);
       return { success: false, error: msg };
+    }
+  };
+
+  // Verify Signup OTP
+  const verifySignupOtp = async (email: string, token: string): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
+    setIsLoading(true);
+    setAuthError(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanToken = token.trim();
+
+    try {
+      if (!isSupabaseConfigured() || !supabase) {
+        if (cleanToken.length >= 6) {
+          setIsLoading(false);
+          return { success: true, role: 'admin' };
+        }
+        setIsLoading(false);
+        return { success: false, error: 'Invalid verification code.' };
+      }
+
+      // 1. Primary: Verify Signup OTP via Supabase Auth
+      let { data, error } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: 'signup',
+      });
+
+      // 2. Fallback: try 'email' type if 'signup' type fails
+      if (error) {
+        const retry = await supabase.auth.verifyOtp({
+          email: cleanEmail,
+          token: cleanToken,
+          type: 'email',
+        });
+        if (!retry.error && retry.data) {
+          data = retry.data;
+          error = null;
+        }
+      }
+
+      if (error) {
+        const msg = error.message || 'Invalid or expired verification code.';
+        setAuthError(msg);
+        setIsLoading(false);
+        return { success: false, error: msg };
+      }
+
+      if (data?.user) {
+        const { profile: prof, organization: userOrg } = await fetchUserProfile(data.user.id, cleanEmail);
+        setProfile(prof);
+        setOrg(userOrg);
+        setRole(prof.role);
+        const mappedUser = mapProfileToUser(prof);
+        setUser(mappedUser);
+        setHasRealSession(Boolean(data.session));
+
+        localStorage.setItem(
+          AUTH_STORAGE_KEY,
+          JSON.stringify({ isLoggedIn: true, role: prof.role, email: cleanEmail, user: mappedUser })
+        );
+
+        setIsLoading(false);
+        return { success: true, role: prof.role };
+      }
+
+      setIsLoading(false);
+      return { success: true, role: 'admin' };
+    } catch (err: any) {
+      console.error('verifySignupOtp error:', err);
+      const msg = err?.message || 'Verification failed. Please check the code and try again.';
+      setAuthError(msg);
+      setIsLoading(false);
+      return { success: false, error: msg };
+    }
+  };
+
+  // Resend Signup OTP
+  const resendSignupOtp = async (email: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.trim().toLowerCase();
+    try {
+      if (!isSupabaseConfigured() || !supabase) {
+        return { success: true };
+      }
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: cleanEmail,
+      });
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to resend verification code.' };
     }
   };
 
@@ -704,6 +816,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isDemoMode,
     signIn,
     signUp,
+    verifySignupOtp,
+    resendSignupOtp,
     signOut,
     resetPasswordForEmail,
     updatePassword,

@@ -131,12 +131,12 @@ export const SettingsPage: React.FC = () => {
 
   const [repName, setRepName] = useState(currentUser.name || 'Sales Representative');
   const [repPhone, setRepPhone] = useState(currentUser.phone || matchingRep?.phone || '+91 98231 04412');
-  const [repZone, setRepZone] = useState(currentUser.zone || (matchingRep as any)?.territory || matchingRep?.zone || 'Hing Ki Mandi & Sadar Bazar');
+  const [repZone, setRepZone] = useState(currentUser.zone || (matchingRep as any)?.territory || (matchingRep as any)?.zone || 'Hing Ki Mandi & Sadar Bazar');
 
   useEffect(() => {
     setRepName(currentUser.name || 'Sales Representative');
     setRepPhone(currentUser.phone || matchingRep?.phone || '+91 98231 04412');
-    setRepZone(currentUser.zone || (matchingRep as any)?.territory || matchingRep?.zone || 'Hing Ki Mandi & Sadar Bazar');
+    setRepZone(currentUser.zone || (matchingRep as any)?.territory || (matchingRep as any)?.zone || 'Hing Ki Mandi & Sadar Bazar');
   }, [currentUser, matchingRep]);
 
   // Password Update State
@@ -449,13 +449,13 @@ export const SettingsPage: React.FC = () => {
       if (supabase && !isDemoModeActive) {
         await (supabase as any)
           .from('profiles')
-          .update({ name: repName, phone: repPhone, zone: repZone })
+          .update({ name: repName, phone: repPhone, zone: repZone } as any)
           .eq('id', currentUser.id);
 
         if (currentUser.email) {
           await (supabase as any)
             .from('sales_team')
-            .update({ name: repName, phone: repPhone, territory: repZone })
+            .update({ name: repName, phone: repPhone, territory: repZone } as any)
             .eq('email', currentUser.email);
         }
       }
@@ -550,7 +550,7 @@ export const SettingsPage: React.FC = () => {
   const repStats = useMemo(() => {
     const assignedCustomers = customers.filter(
       (c) =>
-        (matchingRep && (c.salespersonId === matchingRep.id || c.salespersonName === matchingRep.name || (c as any).salesperson === matchingRep.name)) ||
+        (matchingRep && (c.salespersonId === matchingRep.id || (c as any).salesperson === matchingRep.name || c.salespersonName === matchingRep.name)) ||
         c.salespersonId === currentUser.id
     ).length;
 
