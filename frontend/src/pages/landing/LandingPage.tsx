@@ -63,9 +63,9 @@ import footwearShowcaseBanner from '../../assets/images/footwear_showcase_banner
 import projectLogo from '../../assets/images/project_logo.png';
 
 // =========================================================================
-// MEMOIZED HARDWARE-ACCELERATED BACKGROUND VIDEO PLAYER
+// EMBEDDED HERO CINEMATIC VIDEO PLAYER (IN HERO SECTION)
 // =========================================================================
-const BackgroundVideoPlayer = React.memo(() => {
+export const HeroCinematicVideoPlayer: React.FC<{ onOpenModal?: () => void }> = ({ onOpenModal }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -73,14 +73,11 @@ const BackgroundVideoPlayer = React.memo(() => {
     if (!video) return;
 
     const tryPlay = () => {
-      video.play().catch(() => {
-        // Fallback silently handled by poster
-      });
+      video.play().catch(() => {});
     };
 
     tryPlay();
 
-    // Pause video when user leaves tab to save GPU/CPU; resume immediately when active
     const handleVisibilityChange = () => {
       if (document.hidden) {
         video.pause();
@@ -96,45 +93,67 @@ const BackgroundVideoPlayer = React.memo(() => {
   }, []);
 
   return (
-    <div className="fixed inset-0 -z-20 h-screen w-screen overflow-hidden pointer-events-none transform-gpu contain-strict">
+    <div className="relative w-full aspect-[16/10] sm:aspect-[16/10] lg:aspect-[4/3] rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-2xl bg-slate-900 group">
       {/* Fallback Poster */}
       <div
-        className="absolute inset-0 -z-30 bg-cover bg-[50%_35%] sm:bg-[50%_38%] md:bg-[50%_40%] lg:bg-[50%_36%] bg-no-repeat transition-opacity duration-700"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
         style={{ backgroundImage: `url(${heroVideoPosterImg})` }}
         aria-hidden="true"
       />
 
-      {/* Hardware-Accelerated Video Element */}
+      {/* Video element embedded in hero showcase */}
       <video
         ref={videoRef}
-        className="w-full h-full object-cover object-[50%_35%] sm:object-[50%_38%] md:object-[50%_40%] lg:object-[50%_36%] will-change-transform transform-gpu"
+        className="w-full h-full object-cover object-center will-change-transform"
         autoPlay
         muted
         loop
         playsInline
         controls={false}
         disablePictureInPicture
-        preload="none"
+        preload="auto"
         poster={heroVideoPosterImg}
-        aria-hidden="true"
-        tabIndex={-1}
       >
         <source media="(min-width: 768px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
         <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
       </video>
 
-      {/* Pure High-Contrast Gradient Overlay without destructive full-screen filters */}
-      <div
-        className="absolute inset-0 -z-10 pointer-events-none transform-gpu"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 32%, rgba(15, 23, 42, 0.40) 0%, rgba(15, 23, 42, 0.65) 85%, rgba(2, 6, 23, 0.85) 100%)',
-        }}
-        aria-hidden="true"
-      />
+      {/* Subtle bottom glass overlay with live tag and demo action */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20 pointer-events-none" />
+
+      {/* Top Floating Badge */}
+      <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-900/80 backdrop-blur-md text-white border border-white/20 shadow-md">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Live B2B Platform</span>
+        </span>
+      </div>
+
+      {/* Bottom Floating Stats Strip */}
+      <div className="absolute bottom-3.5 inset-x-3.5 p-3 rounded-2xl bg-slate-950/75 backdrop-blur-md border border-white/10 flex items-center justify-between gap-3 text-white">
+        <div className="min-w-0">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block truncate">
+            Footwear Wholesale Suite
+          </span>
+          <span className="text-xs sm:text-sm font-bold text-white truncate block">
+            Catalogs • Invoicing • Factory Dispatch
+          </span>
+        </div>
+
+        {onOpenModal && (
+          <button
+            type="button"
+            onClick={onOpenModal}
+            className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer"
+          >
+            <Play className="w-3 h-3 fill-current" />
+            <span className="hidden xs:inline">Full Demo</span>
+          </button>
+        )}
+      </div>
     </div>
   );
-});
-BackgroundVideoPlayer.displayName = 'BackgroundVideoPlayer';
+};
 
 interface LandingPageProps {
   onLoginSuccess: (role: 'admin' | 'salesperson') => void;
@@ -359,9 +378,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   ];
 
   return (
-    <div className="landing-video-page relative isolate min-h-screen overflow-x-clip text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
-      {/* Isolated Memoized Background Video */}
-      <BackgroundVideoPlayer />
+    <div className="landing-page relative isolate min-h-screen overflow-x-clip text-slate-900 font-sans selection:bg-blue-600 selection:text-white bg-slate-50">
+      {/* Crisp subtle background grid and ambient lighting */}
+      <div className="fixed inset-0 -z-10 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(219,234,254,0.7),rgba(255,255,255,0))]" />
 
       <div className="relative z-0">
         {/* ========================================================================= */}
@@ -379,6 +398,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             {/* Nav Links */}
             <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
+              <a href="#hero-video" className="hover:text-blue-600 transition-colors">Platform Demo</a>
               <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
               <a href="#product-view" className="hover:text-blue-600 transition-colors">Product View</a>
               <a href="#calculator" className="hover:text-blue-600 transition-colors">Pricing &amp; Calculator</a>
@@ -417,31 +437,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* HERO SECTION — TWO COLUMN HERO WITH RIGHT STATS PANEL                     */}
+        {/* HERO SECTION — TWO COLUMN HERO WITH EMBEDDED CINEMATIC VIDEO PLAYER       */}
         {/* ========================================================================= */}
-        <section id="hero" className="pt-8 sm:pt-16 pb-12 sm:pb-20 px-3.5 sm:px-6 relative">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left Hero Column (7 cols) */}
-            <div className="lg:col-span-7 space-y-6 text-left">
+        <section id="hero" className="pt-8 sm:pt-14 pb-12 sm:pb-20 px-3.5 sm:px-6 relative">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            {/* Left Hero Column (6 cols) */}
+            <div className="lg:col-span-6 space-y-5 sm:space-y-6 text-left">
+              {/* Product Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-bold shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <span>India's #1 Footwear Wholesale Operating System</span>
+              </div>
+
               {/* Hero Headline */}
-              <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-[54px] font-black text-white tracking-tight leading-[1.12]">
+              <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-[50px] font-black text-slate-900 tracking-tight leading-[1.12]">
                 Manage Your Entire <br />
-                Footwear <span className="text-blue-400">Business</span> <br />
-                From <span className="text-blue-400">One Place</span>
+                Footwear <span className="text-blue-600">Business</span> <br />
+                From <span className="text-blue-600">One Place</span>
               </h1>
 
               {/* Hero Description */}
-              <p className="text-xs sm:text-sm lg:text-base text-slate-200 max-w-xl leading-relaxed">
-                SoleFlow helps footwear wholesalers, distributors, manufacturers and sales teams manage products, stock,
-                wholesale orders, customers, factory production and payments — without complicated spreadsheets.
+              <p className="text-xs sm:text-sm lg:text-base text-slate-600 max-w-xl leading-relaxed">
+                SoleFlow helps footwear wholesalers, distributors, manufacturers, and sales teams manage products, stock,
+                wholesale orders, customers, factory production, and collections — without spreadsheet chaos.
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 {isAlreadyLoggedIn ? (
                   <button
                     onClick={onReturnToDashboard}
-                    className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
+                    className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/25 flex items-center gap-2 cursor-pointer"
                   >
                     <span>Go to Dashboard</span>
                     <ArrowRight className="w-4 h-4" />
@@ -449,7 +475,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 ) : (
                   <button
                     onClick={() => openAuth('signup')}
-                    className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
+                    className="h-11 sm:h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/25 flex items-center gap-2 cursor-pointer"
                   >
                     <span>Get started free</span>
                     <ArrowRight className="w-4 h-4" />
@@ -458,17 +484,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 <button
                   onClick={() => setIsVideoModalOpen(true)}
-                  className="h-11 sm:h-12 px-6 rounded-full bg-slate-900/60 hover:bg-slate-900/80 backdrop-blur-md border border-white/20 text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                  className="h-11 sm:h-12 px-6 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-98"
                 >
-                  <Play className="w-3.5 h-3.5 fill-current text-blue-400" />
-                  <span>Watch demo</span>
+                  <Play className="w-3.5 h-3.5 fill-current text-blue-600" />
+                  <span>Watch Walkthrough</span>
                 </button>
               </div>
 
               {/* Instant 1-Click Demo Login Bar */}
-              <div className="pt-2 sm:pt-4 space-y-2">
-                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 tracking-wide uppercase">
-                  <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+              <div className="pt-2 sm:pt-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 tracking-wide uppercase">
+                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" />
                   <span>Instant 1-Click Demo Login:</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -476,10 +502,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     type="button"
                     onClick={() => handleDemoLogin('admin')}
                     disabled={isDemoLoggingIn}
-                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-950/70 hover:bg-blue-900/90 active:scale-95 text-blue-200 border border-blue-500/40 text-xs font-bold transition-all shadow-md backdrop-blur-md cursor-pointer hover:border-blue-400"
+                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100/80 active:scale-95 text-blue-700 border border-blue-200/80 text-xs font-bold transition-all shadow-xs cursor-pointer"
                     title="Footwear Wholesaler Admin / Owner"
                   >
-                    <Building className="w-3.5 h-3.5 text-blue-400 group-hover:scale-110 transition-transform" />
+                    <Building className="w-3.5 h-3.5 text-blue-600 group-hover:scale-110 transition-transform" />
                     <span>Admin / Owner</span>
                   </button>
 
@@ -487,57 +513,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     type="button"
                     onClick={() => handleDemoLogin('salesperson')}
                     disabled={isDemoLoggingIn}
-                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-950/70 hover:bg-emerald-900/90 active:scale-95 text-emerald-200 border border-emerald-500/40 text-xs font-bold transition-all shadow-md backdrop-blur-md cursor-pointer hover:border-emerald-400"
+                    className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 active:scale-95 text-emerald-700 border border-emerald-200/80 text-xs font-bold transition-all shadow-xs cursor-pointer"
                     title="Field Sales Representative"
                   >
-                    <Users className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <Users className="w-3.5 h-3.5 text-emerald-600 group-hover:scale-110 transition-transform" />
                     <span>Salesman</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Right Hero Stats Card (5 cols) */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="w-full max-w-sm min-w-0 overflow-hidden rounded-3xl bg-slate-900/50 backdrop-blur-md border border-white/15 p-5 sm:p-6 space-y-4 shadow-2xl text-left">
-                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
-                    <Building className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-base sm:text-lg font-black text-white">350+</div>
-                    <div className="text-xs text-slate-300">Businesses trust us</div>
-                  </div>
-                </div>
+            {/* Right Hero Column: Video Showcase & Key Metrics (6 cols) */}
+            <div id="hero-video" className="lg:col-span-6 space-y-4">
+              {/* Embedded Cinematic Video Showcase */}
+              <HeroCinematicVideoPlayer onOpenModal={() => setIsVideoModalOpen(true)} />
 
-                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 shrink-0">
-                    <Package className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-base sm:text-lg font-black text-white">1M+</div>
-                    <div className="text-xs text-slate-300">Pairs managed</div>
-                  </div>
+              {/* Compact Metrics Row Under Video */}
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs text-center">
+                  <span className="text-base sm:text-lg font-black text-slate-900 block font-display">350+</span>
+                  <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 block truncate">Wholesale Hubs</span>
                 </div>
-
-                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-base sm:text-lg font-black text-white">5,000+</div>
-                    <div className="text-xs text-slate-300">Active Dealers</div>
-                  </div>
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs text-center">
+                  <span className="text-base sm:text-lg font-black text-blue-600 block font-display">1M+</span>
+                  <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 block truncate">Pairs Managed</span>
                 </div>
-
-                <div className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/5 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400 shrink-0">
-                    <BarChart3 className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-base sm:text-lg font-black text-white">99%</div>
-                    <div className="text-xs text-slate-300">Order accuracy</div>
-                  </div>
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs text-center">
+                  <span className="text-base sm:text-lg font-black text-emerald-600 block font-display">99.4%</span>
+                  <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 block truncate">Order Accuracy</span>
                 </div>
               </div>
             </div>
