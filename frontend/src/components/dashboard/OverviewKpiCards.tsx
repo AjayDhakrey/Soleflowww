@@ -320,300 +320,152 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
   );
 
   return (
-    <>
-      {/* =========================================================================
-          Mobile Phone View (sm:hidden): 3-Column x 2-Row Grid matching design
-          ========================================================================= */}
-      <div className="grid grid-cols-3 gap-2 sm:hidden">
-        {/* 1. SALES BOOKED */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-          className="bg-white dark:bg-card border border-blue-100/80 dark:border-blue-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
-        >
-          <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100/80">
-            <Icons.Orders size={14} strokeWidth={2.2} />
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5 lg:gap-4">
+      {/* 1. SALES BOOKED */}
+      <div
+        onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
+        className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+      >
+        <div>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/90 dark:border-blue-900/50 mb-2 sm:mb-3 group-hover:scale-105 transition-transform">
+            <Icons.Orders size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
           </div>
-          <div className="my-1.5 min-w-0">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block truncate">
-              SALES BOOKED
-            </span>
-            <span className="text-sm font-black tracking-tight text-blue-950 dark:text-white truncate block">
-              {salesValue}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80">
-              ↑ {salesGrowth || 100}%
-            </span>
-          </div>
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">
+            SALES BOOKED
+          </p>
+          <p className="mt-0.5 sm:mt-1 font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight text-blue-950 dark:text-white truncate">
+            {salesValue}
+          </p>
         </div>
-
-        {/* 2. COLLECTIONS */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-          className="bg-white dark:bg-card border border-emerald-100/80 dark:border-emerald-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
-        >
-          <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/80">
-            <Icons.Payments size={14} strokeWidth={2.2} />
-          </div>
-          <div className="my-1.5 min-w-0">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block truncate">
-              COLLECTIONS
-            </span>
-            <span className="text-sm font-black tracking-tight text-emerald-950 dark:text-white truncate block">
-              {collectionsValue}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80">
-              ↑ {collectionsGrowth || 100}%
-            </span>
-          </div>
-        </div>
-
-        {/* 3. RECEIVABLES */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-          className="bg-white dark:bg-card border border-rose-100/80 dark:border-rose-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
-        >
-          <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100/80">
-            <Icons.Receivables size={14} strokeWidth={2.2} />
-          </div>
-          <div className="my-1.5 min-w-0">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 block truncate">
-              RECEIVABLES
-            </span>
-            <span className="text-sm font-black tracking-tight text-rose-950 dark:text-white truncate block">
-              {receivablesValue}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-rose-50 text-rose-600 border border-rose-200/80 truncate">
-              Across {receivablesAccountsCount || 0}
-            </span>
-          </div>
-        </div>
-
-        {/* 4. OPEN ORDERS */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-          className="bg-white dark:bg-card border border-amber-100/80 dark:border-amber-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
-        >
-          <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100/80">
-            <Icons.Dashboard size={14} strokeWidth={2.2} />
-          </div>
-          <div className="my-1.5 min-w-0">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block truncate">
-              OPEN ORDERS
-            </span>
-            <span className="text-sm font-black tracking-tight text-amber-950 dark:text-white truncate block">
-              {openOrdersCount} orders
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80 truncate">
-              {openOrdersValue}
-            </span>
-          </div>
-        </div>
-
-        {/* 5. ACTIVE STORES */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-          className="bg-white dark:bg-card border border-purple-100/80 dark:border-purple-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
-        >
-          <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100/80">
-            <Icons.Store size={14} strokeWidth={2.2} />
-          </div>
-          <div className="my-1.5 min-w-0">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 block truncate">
-              ACTIVE STORES
-            </span>
-            <span className="text-sm font-black tracking-tight text-purple-950 dark:text-white truncate block">
-              {activeStoresCount} Accounts
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80 truncate">
-              {totalRegisteredBuyers || 10} buyers
-            </span>
-          </div>
-        </div>
-
-        {/* 6. PAIRS BOOKED */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-          className="bg-white dark:bg-card border border-teal-100/80 dark:border-teal-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
-        >
-          <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-100/80">
-            <Icons.Designs size={14} strokeWidth={2.2} />
-          </div>
-          <div className="my-1.5 min-w-0">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 block truncate">
-              PAIRS BOOKED
-            </span>
-            <span className="text-sm font-black tracking-tight text-teal-950 dark:text-white truncate block">
-              {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-teal-50 text-teal-700 border border-teal-200/80 truncate">
-              ↑ {pairsBookedGrowth || 100}%
-            </span>
-          </div>
+        <div className="mt-2 sm:mt-3 pt-1">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300">
+            <span className="font-bold">↑ {salesGrowth || 100}%</span>
+            <span className="text-[9px] sm:text-[10px] opacity-80 hidden xs:inline sm:inline">vs prev</span>
+          </span>
         </div>
       </div>
 
-      {/* =========================================================================
-          Desktop & Tablet View (hidden sm:grid): 6 Separate Cards Matching Photo
-          ========================================================================= */}
-      <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
-        {/* 1. SALES BOOKED */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
-        >
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/90 dark:border-blue-900/50 mb-3 group-hover:scale-105 transition-transform">
-              <Icons.Orders size={20} strokeWidth={2.2} />
-            </div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">
-              SALES BOOKED
-            </p>
-            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-blue-950 dark:text-white truncate">
-              {salesValue}
-            </p>
+      {/* 2. COLLECTIONS */}
+      <div
+        onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
+        className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+      >
+        <div>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 mb-2 sm:mb-3 group-hover:scale-105 transition-transform">
+            <Icons.Payments size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
           </div>
-          <div className="mt-3 pt-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300">
-              <span className="font-bold">↑ {salesGrowth || 100}%</span>
-              <span className="text-[10px] opacity-80">vs prev period</span>
-            </span>
-          </div>
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 truncate">
+            COLLECTIONS
+          </p>
+          <p className="mt-0.5 sm:mt-1 font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight text-emerald-950 dark:text-white truncate">
+            {collectionsValue}
+          </p>
         </div>
-
-        {/* 2. COLLECTIONS */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
-        >
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 mb-3 group-hover:scale-105 transition-transform">
-              <Icons.Payments size={20} strokeWidth={2.2} />
-            </div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 truncate">
-              COLLECTIONS
-            </p>
-            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-emerald-950 dark:text-white truncate">
-              {collectionsValue}
-            </p>
-          </div>
-          <div className="mt-3 pt-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300">
-              <span className="font-bold">↑ {collectionsGrowth || 100}%</span>
-              <span className="text-[10px] opacity-80">bank verified</span>
-            </span>
-          </div>
-        </div>
-
-        {/* 3. RECEIVABLES */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
-        >
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100/90 dark:border-rose-900/50 mb-3 group-hover:scale-105 transition-transform">
-              <Icons.Receivables size={20} strokeWidth={2.2} />
-            </div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 truncate">
-              RECEIVABLES
-            </p>
-            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-rose-950 dark:text-white truncate">
-              {receivablesValue}
-            </p>
-          </div>
-          <div className="mt-3 pt-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-700 dark:text-rose-300">
-              <Icons.FileText size={11} className="shrink-0 opacity-75" />
-              <span>Across {receivablesAccountsCount || 0} accts</span>
-            </span>
-          </div>
-        </div>
-
-        {/* 4. OPEN ORDERS */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
-        >
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/90 dark:border-amber-900/50 mb-3 group-hover:scale-105 transition-transform">
-              <Icons.Dashboard size={20} strokeWidth={2.2} />
-            </div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 truncate">
-              OPEN ORDERS
-            </p>
-            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-amber-950 dark:text-white truncate">
-              {openOrdersCount} orders
-            </p>
-          </div>
-          <div className="mt-3 pt-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 truncate max-w-full">
-              <Icons.TrendingUp size={11} className="shrink-0 opacity-75" />
-              <span className="truncate">{openOrdersValue} pipeline</span>
-            </span>
-          </div>
-        </div>
-
-        {/* 5. ACTIVE STORES */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
-        >
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100/90 dark:border-purple-900/50 mb-3 group-hover:scale-105 transition-transform">
-              <Icons.Store size={20} strokeWidth={2.2} />
-            </div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 truncate">
-              ACTIVE STORES
-            </p>
-            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-purple-950 dark:text-white truncate">
-              {activeStoresCount} Accounts
-            </p>
-          </div>
-          <div className="mt-3 pt-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300">
-              <Icons.Clients size={11} className="shrink-0 opacity-75" />
-              <span>{totalRegisteredBuyers || 10} buyers</span>
-            </span>
-          </div>
-        </div>
-
-        {/* 6. PAIRS BOOKED */}
-        <div
-          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
-        >
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-100/90 dark:border-teal-900/50 mb-3 group-hover:scale-105 transition-transform">
-              <Icons.Designs size={20} strokeWidth={2.2} />
-            </div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 truncate">
-              PAIRS BOOKED
-            </p>
-            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-teal-950 dark:text-white truncate">
-              {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
-            </p>
-          </div>
-          <div className="mt-3 pt-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/60 text-teal-700 dark:text-teal-300">
-              <span className="font-bold">↑ {pairsBookedGrowth || 100}%</span>
-              <span className="text-[10px] opacity-80">production vol</span>
-            </span>
-          </div>
+        <div className="mt-2 sm:mt-3 pt-1">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300">
+            <span className="font-bold">↑ {collectionsGrowth || 100}%</span>
+            <span className="text-[9px] sm:text-[10px] opacity-80 hidden xs:inline sm:inline">verified</span>
+          </span>
         </div>
       </div>
-  </>
-);
+
+      {/* 3. RECEIVABLES */}
+      <div
+        onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
+        className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+      >
+        <div>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100/90 dark:border-rose-900/50 mb-2 sm:mb-3 group-hover:scale-105 transition-transform">
+            <Icons.Receivables size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+          </div>
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 truncate">
+            RECEIVABLES
+          </p>
+          <p className="mt-0.5 sm:mt-1 font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight text-rose-950 dark:text-white truncate">
+            {receivablesValue}
+          </p>
+        </div>
+        <div className="mt-2 sm:mt-3 pt-1">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-700 dark:text-rose-300 truncate max-w-full">
+            <Icons.FileText size={10} className="shrink-0 opacity-75 sm:w-3 sm:h-3" />
+            <span className="truncate">Across {receivablesAccountsCount || 0}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* 4. OPEN ORDERS */}
+      <div
+        onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
+        className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+      >
+        <div>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/90 dark:border-amber-900/50 mb-2 sm:mb-3 group-hover:scale-105 transition-transform">
+            <Icons.Dashboard size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+          </div>
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 truncate">
+            OPEN ORDERS
+          </p>
+          <p className="mt-0.5 sm:mt-1 font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight text-amber-950 dark:text-white truncate">
+            {openOrdersCount} orders
+          </p>
+        </div>
+        <div className="mt-2 sm:mt-3 pt-1">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 truncate max-w-full">
+            <Icons.TrendingUp size={10} className="shrink-0 opacity-75 sm:w-3 sm:h-3" />
+            <span className="truncate">{openOrdersValue}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* 5. ACTIVE STORES */}
+      <div
+        onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
+        className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+      >
+        <div>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100/90 dark:border-purple-900/50 mb-2 sm:mb-3 group-hover:scale-105 transition-transform">
+            <Icons.Store size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+          </div>
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 truncate">
+            ACTIVE STORES
+          </p>
+          <p className="mt-0.5 sm:mt-1 font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight text-purple-950 dark:text-white truncate">
+            {activeStoresCount} Accounts
+          </p>
+        </div>
+        <div className="mt-2 sm:mt-3 pt-1">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 truncate max-w-full">
+            <Icons.Clients size={10} className="shrink-0 opacity-75 sm:w-3 sm:h-3" />
+            <span className="truncate">{totalRegisteredBuyers || 10} buyers</span>
+          </span>
+        </div>
+      </div>
+
+      {/* 6. PAIRS BOOKED */}
+      <div
+        onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
+        className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+      >
+        <div>
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-100/90 dark:border-teal-900/50 mb-2 sm:mb-3 group-hover:scale-105 transition-transform">
+            <Icons.Designs size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+          </div>
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 truncate">
+            PAIRS BOOKED
+          </p>
+          <p className="mt-0.5 sm:mt-1 font-display text-base sm:text-xl lg:text-2xl font-black tracking-tight text-teal-950 dark:text-white truncate">
+            {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
+          </p>
+        </div>
+        <div className="mt-2 sm:mt-3 pt-1">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-semibold bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/60 text-teal-700 dark:text-teal-300">
+            <span className="font-bold">↑ {pairsBookedGrowth || 100}%</span>
+            <span className="text-[9px] sm:text-[10px] opacity-80 hidden xs:inline sm:inline">vol</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default OverviewKpiCards;

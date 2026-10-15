@@ -92,10 +92,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             </div>
 
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 truncate">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 flex-wrap">
                   <span>{greeting.text},</span>
-                  <span className="font-extrabold">{currentUser.name}</span>
+                  <span className="font-extrabold text-blue-600 dark:text-blue-400">{currentUser.name}</span>
                   <span className="inline-block text-base">👋</span>
                 </h1>
               </div>
@@ -114,14 +114,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           </div>
 
           {/* Right: +100% Sales badge and 3D Blue Sneaker Image */}
-          <div className="relative shrink-0 flex items-center gap-2.5 sm:gap-3.5">
+          <div className="relative shrink-0 flex items-center gap-2 sm:gap-3.5">
             <div className="hidden sm:flex flex-col items-end">
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-300/80 dark:border-emerald-800">
                 <span>↗ +100% Sales</span>
               </span>
               <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">vs last month</span>
             </div>
-            <div className="w-16 sm:w-24 md:w-28 h-12 sm:h-16 flex items-center justify-center">
+            <div className="w-14 sm:w-20 md:w-28 h-10 sm:h-14 md:h-16 flex items-center justify-center shrink-0">
               <img
                 src={heroShoeImg}
                 alt="Premium Footwear"
@@ -132,13 +132,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         </div>
       </div>
 
-      {/* 2. Commercial Period Selector & Quick Actions (Exact match to photo) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider shrink-0">
+      {/* 2. Commercial Period Selector & Quick Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 hidden sm:inline">
             PERIOD:
           </span>
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full sm:w-auto">
             {(
               [
                 { label: 'Today', value: 'today' },
@@ -153,7 +153,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   key={tab.value}
                   type="button"
                   onClick={() => setPeriod(tab.value)}
-                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none active:scale-95 ${
+                  className={`px-2 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none text-center active:scale-95 truncate ${
                     isSelected
                       ? 'bg-blue-600 text-white shadow-xs font-bold'
                       : 'bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
@@ -167,11 +167,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto justify-end">
           <button
             type="button"
             onClick={() => setIsPaymentModalOpen(true)}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-card border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-card border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
           >
             <span className="font-bold text-sm">₹</span>
             <span>Record Payment</span>
@@ -179,7 +179,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           <button
             type="button"
             onClick={() => setIsCreateOrderModalOpen(true)}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
           >
             <span className="font-bold text-base leading-none">+</span>
             <span>New Order</span>

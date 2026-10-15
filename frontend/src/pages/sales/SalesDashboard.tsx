@@ -121,10 +121,10 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
             </div>
 
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 truncate">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 flex-wrap">
                   <span>{greeting.text},</span>
-                  <span className="font-extrabold">{currentUser.name}</span>
+                  <span className="font-extrabold text-blue-600 dark:text-blue-400">{currentUser.name}</span>
                   <span className="inline-block text-base">👋</span>
                 </h1>
               </div>
@@ -143,14 +143,14 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
           </div>
 
           {/* Right: Target progress badge and 3D Blue Sneaker Image */}
-          <div className="relative shrink-0 flex items-center gap-2.5 sm:gap-3.5">
+          <div className="relative shrink-0 flex items-center gap-2 sm:gap-3.5">
             <div className="hidden sm:flex flex-col items-end">
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-300/80 dark:border-emerald-800">
                 <span>↗ {targetPct}% Monthly Quota</span>
               </span>
               <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{formatLakh(repBooked)} booked</span>
             </div>
-            <div className="w-16 sm:w-24 md:w-28 h-12 sm:h-16 flex items-center justify-center">
+            <div className="w-14 sm:w-20 md:w-28 h-10 sm:h-14 md:h-16 flex items-center justify-center shrink-0">
               <img
                 src={heroShoeImg}
                 alt="Premium Footwear"

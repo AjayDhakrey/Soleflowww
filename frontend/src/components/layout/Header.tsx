@@ -155,7 +155,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 setIsSearchOpen(true);
               }}
               onFocus={() => setIsSearchOpen(true)}
-              placeholder="Search anything..."
+              placeholder="Search..."
               className="w-full h-9 sm:h-10 md:h-12 pl-8 sm:pl-11 pr-2.5 md:pr-20 bg-muted/70 hover:bg-muted/90 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
             <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1">
@@ -462,7 +462,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         <button
           type="button"
           onClick={() => toggleDarkMode()}
-          className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-full border border-border bg-surface hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 shadow-2xs"
+          className="hidden sm:flex w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-full border border-border bg-surface hover:bg-muted items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 shadow-2xs"
           title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
