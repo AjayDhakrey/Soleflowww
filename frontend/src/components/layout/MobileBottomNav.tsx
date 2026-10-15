@@ -11,7 +11,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   currentPath,
   onNavigate,
 }) => {
-  const { currentUser, isMobileSidebarOpen, orders } = useApp();
+  const { currentUser, isMobileSidebarOpen, orders, setIsCreateOrderModalOpen } = useApp();
   const isAdmin = currentUser.role === 'admin';
 
   if (isMobileSidebarOpen) {
@@ -89,67 +89,105 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     onNavigate(path);
   };
 
+  // Direct 4-tab + 1 center FAB matching reference image
+  // Home | Orders/Tasks | (+) NEW ACTION | Payments | Clients/Profile
   return (
     <div
-      className="md:hidden fixed bottom-2.5 sm:bottom-3 inset-x-2 sm:inset-x-4 max-w-md mx-auto z-40 pointer-events-none"
-      style={{ paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom))' }}
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 pointer-events-none"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <nav
-        className="pointer-events-auto bg-white/92 dark:bg-slate-900/92 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 rounded-[26px] p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.10),0_2px_8px_rgba(15,23,42,0.05)] ring-1 ring-slate-900/[0.03] dark:ring-white/[0.06] flex items-center justify-between select-none transition-all duration-200"
-        aria-label="Mobile Bottom Navigation"
-      >
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = isItemActive(item.path);
+      <div className="relative max-w-lg mx-auto px-4 pb-2">
+        {/* Raised Circular Center Action Button (+) */}
+        <div className="absolute left-1/2 -top-5 -translate-x-1/2 z-50 pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => {
+              if (isAdmin) {
+                setIsCreateOrderModalOpen(true);
+              } else {
+                setIsCreateOrderModalOpen(true);
+              }
+            }}
+            className="w-13 h-13 rounded-full bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center shadow-[0_8px_20px_rgba(15,23,42,0.35)] dark:shadow-[0_8px_20px_rgba(37,99,235,0.4)] border-4 border-slate-50 dark:border-slate-950 active:scale-90 transition-transform cursor-pointer"
+            aria-label="Create new order"
+            title="Create New Order"
+          >
+            <Icons.Add size={24} strokeWidth={2.75} />
+          </button>
+        </div>
 
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleTabClick(item.path)}
-              className={`flex-1 relative flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 select-none cursor-pointer group active:scale-95 ${
-                isActive
-                  ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800/40 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100/50'
-              }`}
-            >
-              {/* Icon Container with micro-bounce on active */}
-              <div
-                className={`relative p-1 rounded-xl transition-all duration-200 ${
-                  isActive
-                    ? 'scale-110 -translate-y-0.5 text-blue-600 dark:text-blue-400'
-                    : 'group-hover:scale-105 text-slate-500 dark:text-slate-400'
-                }`}
-              >
-                <Icon size={20} strokeWidth={isActive ? 2.25 : 1.75} />
+        {/* Floating Nav Bar Container */}
+        <nav
+          className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/90 dark:border-slate-800 rounded-3xl h-16 px-3 shadow-[0_12px_32px_rgba(15,23,42,0.08),0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between select-none"
+          aria-label="Mobile Bottom Navigation"
+        >
+          {/* 1. Home */}
+          <button
+            type="button"
+            onClick={() => handleTabClick(isAdmin ? '/admin/dashboard' : '/sales/dashboard')}
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+              isItemActive(isAdmin ? '/admin/dashboard' : '/sales/dashboard')
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
+            }`}
+          >
+            <Icons.Dashboard size={20} strokeWidth={isItemActive(isAdmin ? '/admin/dashboard' : '/sales/dashboard') ? 2.4 : 1.8} />
+            <span className="text-[10px] mt-1 tracking-tight">Home</span>
+          </button>
 
-                {/* Micro-badge for active orders counter */}
-                {item.badge !== null && (
-                  <span className="absolute -top-1 -right-2.5 min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-slate-900 shadow-xs animate-in zoom-in-75 duration-150">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-
-              {/* Responsive Micro-label */}
-              <span
-                className={`text-[10px] mt-0.5 tracking-tight transition-all duration-200 ${
-                  isActive
-                    ? 'font-bold text-blue-600 dark:text-blue-400 scale-105'
-                    : 'font-medium text-slate-500 dark:text-slate-400'
-                }`}
-              >
-                {item.label}
-              </span>
-
-              {/* Glowing Active Micro-Dot */}
-              {isActive && (
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.7)] mt-0.5 animate-in zoom-in duration-200" />
+          {/* 2. Tasks / Orders */}
+          <button
+            type="button"
+            onClick={() => handleTabClick(isAdmin ? '/admin/orders' : '/sales/orders')}
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer relative ${
+              isItemActive(isAdmin ? '/admin/orders' : '/sales/orders')
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
+            }`}
+          >
+            <div className="relative">
+              <Icons.Orders size={20} strokeWidth={isItemActive(isAdmin ? '/admin/orders' : '/sales/orders') ? 2.4 : 1.8} />
+              {pendingOrdersCount > 0 && (
+                <span className="absolute -top-1 -right-2.5 min-w-3.5 h-3.5 px-0.5 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+                  {pendingOrdersCount > 9 ? '9+' : pendingOrdersCount}
+                </span>
               )}
-            </button>
-          );
-        })}
-      </nav>
+            </div>
+            <span className="text-[10px] mt-1 tracking-tight">Orders</span>
+          </button>
+
+          {/* Spacer for center (+) button */}
+          <div className="w-14 shrink-0" aria-hidden="true" />
+
+          {/* 3. Payments */}
+          <button
+            type="button"
+            onClick={() => handleTabClick(isAdmin ? '/admin/payments' : '/sales/collections')}
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+              isItemActive(isAdmin ? '/admin/payments' : '/sales/collections')
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
+            }`}
+          >
+            <Icons.Payments size={20} strokeWidth={isItemActive(isAdmin ? '/admin/payments' : '/sales/collections') ? 2.4 : 1.8} />
+            <span className="text-[10px] mt-1 tracking-tight">Payments</span>
+          </button>
+
+          {/* 4. Profile / Clients */}
+          <button
+            type="button"
+            onClick={() => handleTabClick(isAdmin ? '/admin/customers' : '/sales/customers')}
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+              isItemActive(isAdmin ? '/admin/customers' : '/sales/customers')
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
+            }`}
+          >
+            <Icons.Clients size={20} strokeWidth={isItemActive(isAdmin ? '/admin/customers' : '/sales/customers') ? 2.4 : 1.8} />
+            <span className="text-[10px] mt-1 tracking-tight">Clients</span>
+          </button>
+        </nav>
+      </div>
     </div>
   );
 };

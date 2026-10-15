@@ -72,60 +72,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
   return (
     <div className="p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6 max-w-[1440px] w-full mx-auto pb-28 md:pb-12 bg-background text-foreground overflow-x-hidden animate-in fade-in duration-200">
-      {/* 1. Welcome Banner (Compact Minimalist SaaS Style) */}
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-blue-50/80 dark:from-card dark:via-blue-950/20 dark:to-card border border-blue-100/90 dark:border-blue-900/50 px-3.5 py-2.5 sm:px-4 sm:py-3 shadow-xs">
-        <div className="flex items-center justify-between gap-3 relative z-10">
-          {/* Left: Greeting Icon Box & Compact Title */}
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-slate-700 shadow-2xs">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-                <path d="M8 14h.01" />
-                <path d="M12 14h.01" />
-                <path d="M16 14h.01" />
-                <path d="M8 18h.01" />
-                <path d="M12 18h.01" />
-              </svg>
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <h1 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1 leading-tight">
-                  <span>{greeting.text},</span>
-                  <span className="font-extrabold text-blue-600 dark:text-blue-400">{currentUser.name}</span>
-                  <span className="inline-block text-xs sm:text-sm">👋</span>
-                </h1>
-              </div>
-              <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 shrink-0 font-semibold">
-                  <Icons.Calendar size={11} className="shrink-0 sm:w-3 sm:h-3" />
-                  <span>{todayDateFormatted}</span>
-                </span>
-                <span className="text-slate-300 dark:text-slate-600 hidden xs:inline">•</span>
-                <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium shrink-0">
-                  <Icons.Building size={11} className="shrink-0 text-blue-600 dark:text-blue-400 sm:w-3 sm:h-3" />
-                  <span>Wholesale Operations</span>
-                </span>
-              </div>
-            </div>
+      {/* 1. Top Header & Welcome Banner (Matching Reference Mobile Design) */}
+      <div className="space-y-3.5">
+        {/* Mobile Greeting & Notification Bar (Visible on phone) */}
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+              Hi {currentUser.name.split(' ')[0]}!
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {greeting.text}
+            </p>
           </div>
 
-          {/* Right: Compact 3D Blue Sneaker Image */}
-          <div className="relative shrink-0 flex items-center gap-2 sm:gap-3">
-            <div className="hidden sm:flex flex-col items-end">
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300/80 dark:border-emerald-800">
-                <span>↗ +100% Sales</span>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
+              <Icons.Calendar size={12} className="text-blue-600" />
+              <span>{todayDateFormatted}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => onNavigate('/admin/reports')}
+              className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+              title="Notifications & Alerts"
+            >
+              <Icons.Notifications size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Clean Welcome Card (Matching Reference Card with curved border and blue accent) */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs">
+          <div className="flex items-center justify-between gap-3 relative z-10">
+            <div className="min-w-0 flex-1 space-y-1">
+              <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white block tracking-tight">
+                Welcome back!
               </span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">vs last month</span>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-snug">
+                Track active wholesale orders, verify payments &amp; review production.
+              </p>
             </div>
-            <div className="w-10 sm:w-14 md:w-16 h-7 sm:h-10 md:h-11 flex items-center justify-center shrink-0">
+
+            <div className="w-16 sm:w-20 md:w-24 h-12 sm:h-14 flex items-center justify-center shrink-0">
               <img
                 src={heroShoeImg}
-                alt="Premium Footwear"
-                className="w-full h-auto max-h-full object-contain drop-shadow-[0_4px_10px_rgba(37,99,235,0.20)] -rotate-6 transform hover:scale-105 transition-transform"
+                alt="SoleFlow Footwear"
+                className="w-full h-auto max-h-full object-contain drop-shadow-[0_4px_12px_rgba(37,99,235,0.25)] -rotate-6 transform hover:scale-105 transition-transform"
               />
             </div>
           </div>
@@ -187,13 +179,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         </div>
       </div>
 
-      {/* 3. Key Business Performance */}
-      <div className="space-y-2">
+      {/* 3. Key Business Performance (Ongoing Projects style section with View all) */}
+      <div className="space-y-2.5">
         <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Icons.TrendingUp size={14} className="text-primary" />
-            <span>Key Business Performance</span>
+          <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Ongoing Operations
           </h2>
+          <button
+            type="button"
+            onClick={() => onNavigate('/admin/orders')}
+            className="text-xs font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 cursor-pointer"
+          >
+            View all
+          </button>
         </div>
         <OverviewKpiCards
           salesValue={formatLakh(kpis.sales.value)}
@@ -614,33 +612,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           </Table>
         </div>
 
-        {/* Mobile Customer Cards List matching mockup */}
-        <div className="md:hidden divide-y divide-border">
-          {customersSummary.topCustomers.slice(0, 3).map((cust) => (
+        {/* Mobile Customer Cards List matching reference My Team list layout */}
+        <div className="md:hidden divide-y divide-border/60">
+          {customersSummary.topCustomers.slice(0, 4).map((cust) => (
             <div
               key={cust.id}
               onClick={() => onNavigate(`/admin/customers/${cust.id}`)}
-              className="p-3.5 hover:bg-muted/30 transition-colors cursor-pointer space-y-2 select-none active:bg-muted/40"
+              className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer flex items-center justify-between gap-3 select-none active:bg-slate-100/60"
             >
-              <div className="flex items-start justify-between gap-2">
-                <TableAvatarCell
-                  name={cust.businessName}
-                  subtext={`${cust.city}, ${cust.state}`}
-                />
-                <div className="text-right shrink-0">
-                  <span className="text-[10px] text-muted-foreground block uppercase font-bold">Balance Due</span>
-                  <TableMoneyCell
-                    amount={cust.amountDue}
-                    className={cust.amountDue > 0 ? 'text-rose-600 dark:text-rose-400 font-bold text-xs' : 'text-emerald-600 dark:text-emerald-400 font-bold text-xs'}
-                  />
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm shrink-0 border border-blue-100/80 dark:border-blue-900/40">
+                  {cust.businessName.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white block truncate">
+                    {cust.businessName}
+                  </span>
+                  <span className="text-[11px] text-slate-400 block truncate">
+                    {cust.city} • Total ₹{Number(cust.totalBusiness || 0).toLocaleString('en-IN')}
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-border/40">
-                <span className="truncate max-w-[160px] font-medium">{cust.paymentTerms || '30% Adv + 70% Bilty'}</span>
-                <div className="text-right">
-                  <span>Total Vol: </span>
-                  <span className="text-foreground font-bold">₹{cust.totalBusiness.toLocaleString('en-IN')}</span>
-                </div>
+
+              <div className="text-right shrink-0">
+                <span className={`text-xs font-bold font-mono block ${
+                  cust.amountDue > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                }`}>
+                  {cust.amountDue > 0 ? `₹${cust.amountDue.toLocaleString('en-IN')}` : 'Cleared'}
+                </span>
+                <span className="text-[9px] uppercase font-semibold text-slate-400">
+                  {cust.amountDue > 0 ? 'Due' : 'Balance'}
+                </span>
               </div>
             </div>
           ))}
