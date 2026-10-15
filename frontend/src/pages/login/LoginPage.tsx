@@ -37,7 +37,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '', '', '']);
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [otpError, setOtpError] = useState('');
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -151,7 +151,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       if (res.needsEmailVerification) {
         setVerificationEmail(email);
         setNeedsVerification(true);
-        setOtpDigits(['', '', '', '', '', '', '', '']);
+        setOtpDigits(['', '', '', '', '', '']);
         setOtpError('');
         setResendStatus('');
         setTimeout(() => {
@@ -185,13 +185,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
 
     if (clean.length > 1) {
-      const chars = clean.slice(0, 8).split('');
+      const chars = clean.slice(0, 6).split('');
       const next = [...otpDigits];
       chars.forEach((c, i) => {
-        if (index + i < 8) next[index + i] = c;
+        if (index + i < 6) next[index + i] = c;
       });
       setOtpDigits(next);
-      const nextFocus = Math.min(7, index + chars.length);
+      const nextFocus = Math.min(5, index + chars.length);
       otpInputRefs.current[nextFocus]?.focus();
       return;
     }
@@ -201,7 +201,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setOtpDigits(next);
     setOtpError('');
 
-    if (index < 7) {
+    if (index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
@@ -214,24 +214,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
     if (!pasted) return;
     const chars = pasted.split('');
-    const next = ['', '', '', '', '', '', '', ''];
+    const next = ['', '', '', '', '', ''];
     chars.forEach((c, i) => {
-      if (i < 8) next[i] = c;
+      if (i < 6) next[i] = c;
     });
     setOtpDigits(next);
     setOtpError('');
-    const targetFocus = Math.min(7, chars.length);
+    const targetFocus = Math.min(5, chars.length);
     otpInputRefs.current[targetFocus]?.focus();
   };
 
   const handleVerifyOtpSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const token = otpDigits.join('').trim();
-    if (token.length < 6) {
-      setOtpError('Please enter your complete verification code.');
+    if (token.length !== 6) {
+      setOtpError('Please enter all 6 digits of the OTP code.');
       return;
     }
 
@@ -243,7 +243,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       setIsVerifyingOtp(false);
 
       if (!res.success) {
-        setOtpError(res.error || 'Invalid or expired verification code. Please try again.');
+        setOtpError(res.error || 'Invalid or expired OTP code. Please try again.');
         return;
       }
 
@@ -371,7 +371,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   Verify your account
                 </h3>
                 <p className="text-[11px] text-slate-600 leading-relaxed px-1">
-                  We sent a verification code from <strong className="text-slate-900 font-semibold">ShoeFlow</strong> to{' '}
+                  We sent a 6-digit verification code from <strong className="text-slate-900 font-semibold">ShoeFlow</strong> to{' '}
                   <span className="font-semibold text-slate-800 break-all">{verificationEmail}</span>. Enter it below to activate your account.
                 </p>
               </div>
@@ -393,8 +393,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               )}
 
               <form onSubmit={handleVerifyOtpSubmit} className="space-y-3">
-                {/* 8-Digit Code Inputs */}
-                <div className="flex items-center justify-center gap-1 sm:gap-1.5 w-full">
+                {/* 6-Digit Code Inputs */}
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                   {otpDigits.map((digit, idx) => (
                     <input
                       key={idx}
@@ -410,7 +410,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                       onPaste={handleOtpPaste}
                       disabled={isVerifyingOtp}
-                      className="w-7 h-9 sm:w-8.5 sm:h-11 text-center text-sm sm:text-base font-bold font-mono text-slate-900 bg-white border border-slate-300 rounded-md sm:rounded-lg focus:border-[#1E6FF6] focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all disabled:opacity-50 disabled:bg-slate-50 shrink-0"
+                      className="w-9 h-11 sm:w-10 sm:h-12 text-center text-base sm:text-lg font-bold font-mono text-slate-900 bg-white border border-slate-300 rounded-lg focus:border-[#1E6FF6] focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all disabled:opacity-50 disabled:bg-slate-50"
                       autoFocus={idx === 0}
                     />
                   ))}
@@ -419,7 +419,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isVerifyingOtp || otpDigits.join('').trim().length < 6}
+                  disabled={isVerifyingOtp || otpDigits.join('').trim().length !== 6}
                   className="w-full py-2 px-3 bg-linear-to-r from-[#1E6FF6] to-[#2B7FFF] hover:from-[#1557c0] hover:to-[#1e6ff6] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isVerifyingOtp ? (
