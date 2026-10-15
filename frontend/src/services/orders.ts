@@ -205,7 +205,8 @@ export const ordersService = {
       });
 
       if (!error && data) {
-        return { success: true, data: { ...fallbackOrder, ...data } };
+        const orderData = typeof data === 'object' && data !== null ? (data as Record<string, any>) : {};
+        return { success: true, data: { ...fallbackOrder, ...orderData } };
       }
       if (error) {
         console.warn('create_order_draft RPC error, falling back to direct table insert:', error);

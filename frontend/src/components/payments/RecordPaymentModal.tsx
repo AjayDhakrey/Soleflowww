@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Icons } from '../../lib/icons';
 import { Button } from '../ui/Button';
@@ -314,7 +314,7 @@ export const RecordPaymentModal: React.FC = () => {
                   }}
                   className="w-full h-12 px-4 text-sm bg-surface border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
                 >
-                  {sortedCustomers.map((c) => {
+                  {sortedCustomers.map((c: any) => {
                     const isAssigned =
                       c.salespersonId === currentUser.id ||
                       (c.salespersonName && c.salespersonName.toLowerCase().includes(currentUser.name.toLowerCase()));
