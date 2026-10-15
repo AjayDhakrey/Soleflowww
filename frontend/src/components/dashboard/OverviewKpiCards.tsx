@@ -322,381 +322,296 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
   return (
     <>
       {/* =========================================================================
-          Mobile Phone View (sm:hidden): 3-Column x 2-Row Stitch Grid matching screenshot
+          Mobile Phone View (sm:hidden): 3-Column x 2-Row Grid matching design
           ========================================================================= */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 sm:hidden">
+      <div className="grid grid-cols-3 gap-2 sm:hidden">
         {/* 1. SALES BOOKED */}
         <div
           onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+          className="bg-white dark:bg-card border border-blue-100/80 dark:border-blue-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
         >
-          <div className="flex items-center gap-1 min-w-0">
-            <div className="w-5 h-5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/50">
-              <Icons.TrendingUp size={11} strokeWidth={2.5} />
-            </div>
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+          <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100/80">
+            <Icons.Orders size={14} strokeWidth={2.2} />
+          </div>
+          <div className="my-1.5 min-w-0">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block truncate">
               SALES BOOKED
             </span>
-          </div>
-
-          <div className="my-1 min-w-0">
-            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+            <span className="text-sm font-black tracking-tight text-blue-950 dark:text-white truncate block">
               {salesValue}
             </span>
           </div>
-
-          <div className="flex items-center justify-between gap-1 min-w-0">
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
-              ↗ {salesGrowth || 100}%
+          <div className="flex items-center">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80">
+              ↑ {salesGrowth || 100}%
             </span>
-            <div className="h-4 w-9 shrink-0 flex items-center justify-end">
-              <svg viewBox="0 0 40 16" className="w-full h-full overflow-visible">
-                <path
-                  d="M0,13 C8,14 14,4 22,8 C30,12 34,2 40,2"
-                  fill="none"
-                  stroke="#3B82F6"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
           </div>
         </div>
 
         {/* 2. COLLECTIONS */}
         <div
           onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+          className="bg-white dark:bg-card border border-emerald-100/80 dark:border-emerald-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
         >
-          <div className="flex items-center gap-1 min-w-0">
-            <div className="w-5 h-5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/50">
-              <Icons.Payments size={11} strokeWidth={2.5} />
-            </div>
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+          <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/80">
+            <Icons.Payments size={14} strokeWidth={2.2} />
+          </div>
+          <div className="my-1.5 min-w-0">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block truncate">
               COLLECTIONS
             </span>
-          </div>
-
-          <div className="my-1 min-w-0">
-            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+            <span className="text-sm font-black tracking-tight text-emerald-950 dark:text-white truncate block">
               {collectionsValue}
             </span>
           </div>
-
-          <div className="flex items-center justify-between gap-1 min-w-0">
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-muted text-muted-foreground border border-border shrink-0">
-              {collectionsGrowth ? `↗ ${collectionsGrowth}%` : '—'}
+          <div className="flex items-center">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80">
+              ↑ {collectionsGrowth || 100}%
             </span>
-            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
-              {[30, 50, 40, 75, 45, 65].map((h, i) => (
-                <div key={i} className="w-1 bg-emerald-400 dark:bg-emerald-500 rounded-full" style={{ height: `${h}%` }} />
-              ))}
-            </div>
           </div>
         </div>
 
         {/* 3. RECEIVABLES */}
         <div
           onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+          className="bg-white dark:bg-card border border-rose-100/80 dark:border-rose-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
         >
-          <div className="flex items-center gap-1 min-w-0">
-            <div className="w-5 h-5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/50">
-              <Icons.Receivables size={11} strokeWidth={2.5} />
-            </div>
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+          <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100/80">
+            <Icons.Receivables size={14} strokeWidth={2.2} />
+          </div>
+          <div className="my-1.5 min-w-0">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 block truncate">
               RECEIVABLES
             </span>
-          </div>
-
-          <div className="my-1 min-w-0">
-            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+            <span className="text-sm font-black tracking-tight text-rose-950 dark:text-white truncate block">
               {receivablesValue}
             </span>
           </div>
-
-          <div className="flex items-center justify-between gap-1 min-w-0">
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200/80 shrink-0">
-              {receivablesAccountsCount || 5} accts
+          <div className="flex items-center">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-rose-50 text-rose-600 border border-rose-200/80 truncate">
+              Across {receivablesAccountsCount || 0}
             </span>
-            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
-              {[40, 60, 50, 85, 55, 75].map((h, i) => (
-                <div key={i} className="w-1 bg-rose-400 dark:bg-rose-500 rounded-full" style={{ height: `${h}%` }} />
-              ))}
-            </div>
           </div>
         </div>
 
         {/* 4. OPEN ORDERS */}
         <div
           onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+          className="bg-white dark:bg-card border border-amber-100/80 dark:border-amber-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
         >
-          <div className="flex items-center gap-1 min-w-0">
-            <div className="w-5 h-5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/50">
-              <Icons.Orders size={11} strokeWidth={2.5} />
-            </div>
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+          <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100/80">
+            <Icons.Dashboard size={14} strokeWidth={2.2} />
+          </div>
+          <div className="my-1.5 min-w-0">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block truncate">
               OPEN ORDERS
             </span>
-          </div>
-
-          <div className="my-1 min-w-0">
-            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
-              {openOrdersCount} Orders
+            <span className="text-sm font-black tracking-tight text-amber-950 dark:text-white truncate block">
+              {openOrdersCount} orders
             </span>
           </div>
-
-          <div className="flex items-center justify-between gap-1 min-w-0">
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/80 shrink-0 truncate max-w-[55px]">
+          <div className="flex items-center">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80 truncate">
               {openOrdersValue}
             </span>
-            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
-              {[25, 45, 30, 65, 40, 55].map((h, i) => (
-                <div key={i} className="w-1 bg-amber-400 dark:bg-amber-500 rounded-full" style={{ height: `${h}%` }} />
-              ))}
-            </div>
           </div>
         </div>
 
         {/* 5. ACTIVE STORES */}
         <div
           onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+          className="bg-white dark:bg-card border border-purple-100/80 dark:border-purple-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
         >
-          <div className="flex items-center gap-1 min-w-0">
-            <div className="w-5 h-5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/50">
-              <Icons.Clients size={11} strokeWidth={2.5} />
-            </div>
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+          <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100/80">
+            <Icons.Store size={14} strokeWidth={2.2} />
+          </div>
+          <div className="my-1.5 min-w-0">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 block truncate">
               ACTIVE STORES
             </span>
-          </div>
-
-          <div className="my-1 min-w-0">
-            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
-              {activeStoresCount} Accts
+            <span className="text-sm font-black tracking-tight text-purple-950 dark:text-white truncate block">
+              {activeStoresCount} Accounts
             </span>
           </div>
-
-          <div className="flex items-center justify-between gap-1 min-w-0">
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200/80 shrink-0">
-              {totalRegisteredBuyers || 7} buyers
+          <div className="flex items-center">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80 truncate">
+              {totalRegisteredBuyers || 10} buyers
             </span>
-            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
-              {[35, 55, 45, 70, 50, 65].map((h, i) => (
-                <div key={i} className="w-1 bg-purple-400 dark:bg-purple-500 rounded-full" style={{ height: `${h}%` }} />
-              ))}
-            </div>
           </div>
         </div>
 
         {/* 6. PAIRS BOOKED */}
         <div
           onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-          className="bg-card dark:bg-card/90 border border-border/80 rounded-2xl p-2 shadow-2xs flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all select-none min-w-0"
+          className="bg-white dark:bg-card border border-teal-100/80 dark:border-teal-900/40 rounded-2xl p-2.5 shadow-xs flex flex-col justify-between cursor-pointer active:scale-95 transition-all select-none min-w-0"
         >
-          <div className="flex items-center gap-1 min-w-0">
-            <div className="w-5 h-5 rounded-md bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-100 dark:border-cyan-900/50">
-              <Icons.Designs size={11} strokeWidth={2.5} />
-            </div>
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+          <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-100/80">
+            <Icons.Designs size={14} strokeWidth={2.2} />
+          </div>
+          <div className="my-1.5 min-w-0">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 block truncate">
               PAIRS BOOKED
             </span>
-          </div>
-
-          <div className="my-1 min-w-0">
-            <span className="text-sm font-extrabold tracking-tight text-foreground truncate block">
+            <span className="text-sm font-black tracking-tight text-teal-950 dark:text-white truncate block">
               {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
             </span>
           </div>
-
-          <div className="flex items-center justify-between gap-1 min-w-0">
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-200/80 shrink-0">
-              ↗ {pairsBookedGrowth || 100}%
+          <div className="flex items-center">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold bg-teal-50 text-teal-700 border border-teal-200/80 truncate">
+              ↑ {pairsBookedGrowth || 100}%
             </span>
-            <div className="h-4 w-9 shrink-0 flex items-end justify-between gap-0.5">
-              {[30, 50, 40, 80, 55, 75].map((h, i) => (
-                <div key={i} className="w-1 bg-cyan-400 dark:bg-cyan-500 rounded-full" style={{ height: `${h}%` }} />
-              ))}
-            </div>
           </div>
         </div>
       </div>
 
       {/* =========================================================================
-          Desktop & Tablet View (hidden sm:grid): 6-Column Claymorphic Grid
+          Desktop & Tablet View (hidden sm:grid): 6 Separate Cards Matching Photo
           ========================================================================= */}
-      <div className="hidden sm:grid sm:grid-cols-6 rounded-2xl border border-border/80 bg-border/70 dark:bg-border/40 overflow-hidden shadow-2xs gap-px">
-      {/* 1. SALES BOOKED */}
-      <div
-        onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
-      >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
-          <SalesBooked3D />
-        </div>
-
-        <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300 truncate" title="Sales Booked">
-            Sales Booked
-          </p>
-          <p
-            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#0B2A63] dark:text-blue-200 leading-tight truncate max-w-full"
-            title={salesValue}
-          >
-            {salesValue}
-          </p>
-        </div>
-
-        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
-          {renderGrowthChip(salesGrowth, 'vs prev period')}
-        </div>
-      </div>
-
-      {/* 2. COLLECTIONS */}
-      <div
-        onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
-      >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
-          <Collections3D />
-        </div>
-
-        <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300 truncate" title="Collections">
-            Collections
-          </p>
-          <p
-            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#064E3B] dark:text-emerald-200 leading-tight truncate max-w-full"
-            title={collectionsValue}
-          >
-            {collectionsValue}
-          </p>
-        </div>
-
-        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
-          {renderGrowthChip(collectionsGrowth, 'bank verified')}
-        </div>
-      </div>
-
-      {/* 3. RECEIVABLES */}
-      <div
-        onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
-      >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
-          <Receivables3D />
-        </div>
-
-        <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-rose-900 dark:text-rose-300 truncate" title="Receivables">
-            Receivables
-          </p>
-          <p
-            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#9F1239] dark:text-rose-200 leading-tight truncate max-w-full"
-            title={receivablesValue}
-          >
-            {receivablesValue}
-          </p>
-        </div>
-
-        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 shadow-2xs max-w-full overflow-hidden">
-            <Icons.FileText size={10} className="shrink-0 opacity-75 hidden sm:inline" />
-            <span className="truncate">
-              <span className="hidden sm:inline">Across </span>
-              {receivablesAccountsCount} accts
+      <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+        {/* 1. SALES BOOKED */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
+          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        >
+          <div>
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/90 dark:border-blue-900/50 mb-3 group-hover:scale-105 transition-transform">
+              <Icons.Orders size={20} strokeWidth={2.2} />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">
+              SALES BOOKED
+            </p>
+            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-blue-950 dark:text-white truncate">
+              {salesValue}
+            </p>
+          </div>
+          <div className="mt-3 pt-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300">
+              <span className="font-bold">↑ {salesGrowth || 100}%</span>
+              <span className="text-[10px] opacity-80">vs prev period</span>
             </span>
-          </span>
+          </div>
+        </div>
+
+        {/* 2. COLLECTIONS */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
+          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        >
+          <div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 mb-3 group-hover:scale-105 transition-transform">
+              <Icons.Payments size={20} strokeWidth={2.2} />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 truncate">
+              COLLECTIONS
+            </p>
+            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-emerald-950 dark:text-white truncate">
+              {collectionsValue}
+            </p>
+          </div>
+          <div className="mt-3 pt-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300">
+              <span className="font-bold">↑ {collectionsGrowth || 100}%</span>
+              <span className="text-[10px] opacity-80">bank verified</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 3. RECEIVABLES */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
+          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        >
+          <div>
+            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100/90 dark:border-rose-900/50 mb-3 group-hover:scale-105 transition-transform">
+              <Icons.Receivables size={20} strokeWidth={2.2} />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 truncate">
+              RECEIVABLES
+            </p>
+            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-rose-950 dark:text-white truncate">
+              {receivablesValue}
+            </p>
+          </div>
+          <div className="mt-3 pt-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50/90 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 text-rose-700 dark:text-rose-300">
+              <Icons.FileText size={11} className="shrink-0 opacity-75" />
+              <span>Across {receivablesAccountsCount || 0} accts</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 4. OPEN ORDERS */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
+          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        >
+          <div>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/90 dark:border-amber-900/50 mb-3 group-hover:scale-105 transition-transform">
+              <Icons.Dashboard size={20} strokeWidth={2.2} />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 truncate">
+              OPEN ORDERS
+            </p>
+            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-amber-950 dark:text-white truncate">
+              {openOrdersCount} orders
+            </p>
+          </div>
+          <div className="mt-3 pt-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 truncate max-w-full">
+              <Icons.TrendingUp size={11} className="shrink-0 opacity-75" />
+              <span className="truncate">{openOrdersValue} pipeline</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 5. ACTIVE STORES */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
+          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        >
+          <div>
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100/90 dark:border-purple-900/50 mb-3 group-hover:scale-105 transition-transform">
+              <Icons.Store size={20} strokeWidth={2.2} />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 truncate">
+              ACTIVE STORES
+            </p>
+            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-purple-950 dark:text-white truncate">
+              {activeStoresCount} Accounts
+            </p>
+          </div>
+          <div className="mt-3 pt-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300">
+              <Icons.Clients size={11} className="shrink-0 opacity-75" />
+              <span>{totalRegisteredBuyers || 10} buyers</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 6. PAIRS BOOKED */}
+        <div
+          onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
+          className="bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        >
+          <div>
+            <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-100/90 dark:border-teal-900/50 mb-3 group-hover:scale-105 transition-transform">
+              <Icons.Designs size={20} strokeWidth={2.2} />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 truncate">
+              PAIRS BOOKED
+            </p>
+            <p className="mt-1 font-display text-xl lg:text-2xl font-black tracking-tight text-teal-950 dark:text-white truncate">
+              {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
+            </p>
+          </div>
+          <div className="mt-3 pt-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/60 text-teal-700 dark:text-teal-300">
+              <span className="font-bold">↑ {pairsBookedGrowth || 100}%</span>
+              <span className="text-[10px] opacity-80">production vol</span>
+            </span>
+          </div>
         </div>
       </div>
-
-      {/* 4. OPEN ORDERS */}
-      <div
-        onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
-      >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
-          <OpenOrders3D count={openOrdersCount} />
-        </div>
-
-        <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 truncate" title="Open Orders">
-            Open Orders
-          </p>
-          <p
-            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#78350F] dark:text-amber-200 leading-tight truncate max-w-full"
-            title={`${openOrdersCount} Orders`}
-          >
-            {openOrdersCount} Orders
-          </p>
-        </div>
-
-        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-amber-50/90 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 shadow-2xs max-w-full overflow-hidden">
-            <Icons.TrendingUp size={10} className="shrink-0 opacity-75 hidden sm:inline" />
-            <span className="truncate">{openOrdersValue}</span>
-            <span className="hidden sm:inline truncate"> pipeline</span>
-          </span>
-        </div>
-      </div>
-
-      {/* 5. ACTIVE STORES */}
-      <div
-        onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
-      >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
-          <ActiveStores3D />
-        </div>
-
-        <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300 truncate" title="Active Stores">
-            Active Stores
-          </p>
-          <p
-            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#581C87] dark:text-purple-200 leading-tight truncate max-w-full"
-            title={`${activeStoresCount} Accounts`}
-          >
-            {activeStoresCount} <span className="hidden sm:inline">Accounts</span><span className="sm:hidden">Accts</span>
-          </p>
-        </div>
-
-        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
-          <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-purple-50/90 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-800/60 text-purple-800 dark:text-purple-300 shadow-2xs max-w-full overflow-hidden">
-            <Icons.Clients size={10} className="shrink-0 opacity-75 hidden sm:inline" />
-            <span className="truncate">{totalRegisteredBuyers} buyers</span>
-          </span>
-        </div>
-      </div>
-
-      {/* 6. PAIRS BOOKED */}
-      <div
-        onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-        className="group relative p-2.5 sm:p-3.5 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer bg-gradient-to-b from-surface via-surface to-muted/20 hover:from-muted/30 hover:to-muted/40 dark:from-surface/90 dark:to-surface/50 select-none overflow-hidden min-w-0 active:scale-95 shadow-2xs hover:shadow-xs"
-      >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200 shrink-0">
-          <PairsBooked3D />
-        </div>
-
-        <div className="w-full space-y-0.5 my-0.5 min-w-0">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-cyan-900 dark:text-cyan-300 truncate" title="Pairs Booked">
-            Pairs Booked
-          </p>
-          <p
-            className="mt-0.5 font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-[#0E7490] dark:text-cyan-200 leading-tight truncate max-w-full"
-            title={typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
-          >
-            {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
-          </p>
-        </div>
-
-        <div className="mt-1 sm:mt-2 w-full flex justify-center min-w-0">
-          {renderGrowthChip(pairsBookedGrowth, 'production vol')}
-        </div>
-      </div>
-    </div>
   </>
 );
 };

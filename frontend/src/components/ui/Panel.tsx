@@ -34,9 +34,9 @@ export const Panel: React.FC<PanelProps> = ({
               </div>
             )}
             {subtitle && (
-              <p className="text-xs text-muted-foreground mt-0.5 break-words">
+              <div className="text-xs text-muted-foreground mt-0.5 break-words">
                 {subtitle}
-              </p>
+              </div>
             )}
           </div>
           {headerAction && <div className="shrink-0 max-w-full">{headerAction}</div>}

@@ -37,6 +37,7 @@ import {
   Tag,
   Search,
   ExternalLink,
+  Home,
 } from 'lucide-react';
 import { CustomerRowActionMenu } from '../../components/customers/CustomerRowActionMenu';
 import { ReceiptPreviewModal, mapPaymentStatusToReceiptStatus } from '../../components/payments/ReceiptTemplate';
@@ -376,27 +377,33 @@ export const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground">
       {/* 1. Breadcrumbs Navigation */}
-      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
         <button
           type="button"
           onClick={() => onNavigate(fromPath)}
-          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1"
+          className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
         >
-          <ChevronLeft size={14} />
-          <span>Back to {fromPath.includes('dashboard') ? 'Dashboard' : 'Clients'}</span>
+          <Home className="w-3.5 h-3.5 text-blue-600" />
+          <span>Dashboard</span>
         </button>
         <span>/</span>
-        <span className="text-muted-foreground">Store Profiles</span>
+        <button
+          type="button"
+          onClick={() => onNavigate(fromPath.includes('dashboard') ? fromPath : '/admin/customers')}
+          className="hover:text-blue-600 transition-colors cursor-pointer"
+        >
+          Clients
+        </button>
         <span>/</span>
-        <span className="text-foreground font-semibold">{customer.businessName}</span>
+        <span className="text-slate-800 font-semibold">{customer.businessName}</span>
       </div>
 
       {/* 2. Top Profile Header (Mobile-Optimized & Comprehensive) */}
-      <div className="bg-surface border border-border rounded-2xl p-4 sm:p-6 shadow-2xs space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Client Identity & Title */}
           <div className="flex items-start gap-3.5 sm:gap-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold text-base sm:text-lg flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-900/50 shadow-2xs">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold text-base sm:text-lg flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/50 shadow-2xs">
               {initials}
             </div>
             <div className="min-w-0 flex-1">

@@ -316,17 +316,24 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
   onGstLedger,
 }) => {
   return (
-    <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-2xs grid grid-cols-3 sm:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-border/60">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
       {/* 1. Book Order */}
       <button
         type="button"
         onClick={onBookOrder}
-        className="group relative py-2.5 sm:py-3.5 px-1.5 sm:px-2 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer hover:bg-muted/40 select-none overflow-hidden min-w-0 active:scale-95"
+        className="group relative p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200">
-          <BookOrder3D />
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/90 dark:border-blue-900/50 mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+            <path d="M12 11h4" />
+            <path d="M12 16h4" />
+            <path d="M8 11h.01" />
+            <path d="M8 16h.01" />
+          </svg>
         </div>
-        <span className="text-[10.5px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight mt-0.5 truncate max-w-full">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight truncate max-w-full">
           Book Order
         </span>
       </button>
@@ -335,12 +342,17 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onRecordPayment}
-        className="group relative py-2.5 sm:py-3.5 px-1.5 sm:px-2 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer hover:bg-muted/40 select-none overflow-hidden min-w-0 active:scale-95"
+        className="group relative p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200">
-          <RecordPayment3D />
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+            <path d="M12 6v2" />
+            <path d="M12 16v2" />
+          </svg>
         </div>
-        <span className="text-[10.5px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight mt-0.5 truncate max-w-full">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight truncate max-w-full">
           Record Payment
         </span>
       </button>
@@ -349,12 +361,17 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onAddCustomer}
-        className="group relative py-2.5 sm:py-3.5 px-1.5 sm:px-2 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer hover:bg-muted/40 select-none overflow-hidden min-w-0 active:scale-95"
+        className="group relative p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200">
-          <AddCustomer3D />
+        <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100/90 dark:border-purple-900/50 mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" y1="8" x2="19" y2="14" />
+            <line x1="22" y1="11" x2="16" y2="11" />
+          </svg>
         </div>
-        <span className="text-[10.5px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight mt-0.5 truncate max-w-full">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight truncate max-w-full">
           Add Customer
         </span>
       </button>
@@ -363,12 +380,15 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onNewDesign}
-        className="group relative py-2.5 sm:py-3.5 px-1.5 sm:px-2 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer hover:bg-muted/40 select-none overflow-hidden min-w-0 active:scale-95"
+        className="group relative p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200">
-          <NewDesign3D />
+        <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/90 dark:border-amber-900/50 mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
         </div>
-        <span className="text-[10.5px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight mt-0.5 truncate max-w-full">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight truncate max-w-full">
           New Design
         </span>
       </button>
@@ -377,12 +397,16 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onShareLookbook}
-        className="group relative py-2.5 sm:py-3.5 px-1.5 sm:px-2 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer hover:bg-muted/40 select-none overflow-hidden min-w-0 active:scale-95"
+        className="group relative p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200">
-          <ShareLookbook3D />
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/90 dark:border-blue-900/50 mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
         </div>
-        <span className="text-[10.5px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors tracking-tight mt-0.5 truncate max-w-full">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight truncate max-w-full">
           Share Lookbook
         </span>
       </button>
@@ -391,12 +415,18 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
       <button
         type="button"
         onClick={onGstLedger}
-        className="group relative py-2.5 sm:py-3.5 px-1.5 sm:px-2 flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer hover:bg-muted/40 select-none overflow-hidden min-w-0 active:scale-95"
+        className="group relative p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="mb-1 flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-90 duration-200">
-          <GstAuditLedger3D />
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
         </div>
-        <span className="text-[10.5px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors tracking-tight mt-0.5 truncate max-w-full">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight truncate max-w-full">
           GST Tax Ledger
         </span>
       </button>

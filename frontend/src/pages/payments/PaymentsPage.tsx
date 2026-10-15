@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useReceivables, useClearCheque, useBounceCheque } from '../../hooks/usePayments';
 import { Icons } from '../../lib/icons';
+import { Home } from 'lucide-react';
 import { PaymentReceipt } from '../../types';
 import {
   ReceiptPreviewModal,
@@ -267,32 +268,55 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
 
   return (
     <div className="p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 w-full pb-24 md:pb-12 animate-in fade-in duration-150">
-      {/* 1. Page Header */}
-      <PageHeader
-        breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Finance & Payments' }]}
-        title="Commercial Payments & Receivables"
-        subtitle="Ledger settlements, overdue aging buckets, and digital payment receipts."
-        actions={
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button
-              variant="secondary"
-              icon={Icons.Export}
-              onClick={handleExportCSV}
-              className="flex-1 sm:flex-initial text-xs sm:text-sm py-2 px-3"
-            >
-              Export CSV
-            </Button>
-            <Button
-              variant="primary"
-              icon={Icons.Payments}
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="flex-1 sm:flex-initial text-xs sm:text-sm py-2 px-3 shadow-xs"
-            >
-              Record Payment
-            </Button>
-          </div>
-        }
-      />
+      {/* 1. Breadcrumbs */}
+      <div className="flex items-center gap-2 text-xs font-medium">
+        <button
+          type="button"
+          onClick={() => onNavigate?.('/admin/dashboard')}
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
+        >
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
+        </button>
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
+          Payments &amp; Receivables
+        </span>
+      </div>
+
+      {/* 2. Header & Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <span>Payments &amp; Receivables</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
+              {activeTab === 'receivables' ? overdueCustomers.length : payments.length}
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
+            Ledger settlements, overdue aging buckets, and digital payment receipts.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="justify-center px-3 sm:px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-95"
+          >
+            <Icons.Export size={15} />
+            <span>Export CSV</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsPaymentModalOpen(true)}
+            className="justify-center px-3 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+          >
+            <span className="font-bold text-sm">₹</span>
+            <span>Record Payment</span>
+          </button>
+        </div>
+      </div>
 
       {/* 2. KPI Summary Row */}
       <PaymentsKpiCards
@@ -313,30 +337,24 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
           onClick={() => setActiveTab('receivables')}
           className={`relative px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
             activeTab === 'receivables'
-              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 shadow-2xs'
+              ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-900 shadow-2xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
           }`}
         >
-          <Icons.Receivables size={16} className={activeTab === 'receivables' ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'} />
+          <Icons.Receivables size={16} className={activeTab === 'receivables' ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'} />
           <span>Outstanding Accounts ({overdueCustomers.length})</span>
-          {activeTab === 'receivables' && (
-            <span className="absolute -bottom-1 left-3 right-3 h-[2px] bg-emerald-600 dark:bg-emerald-400 rounded-full" />
-          )}
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('payments')}
           className={`relative px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
             activeTab === 'payments'
-              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 shadow-2xs'
+              ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-900 shadow-2xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
           }`}
         >
-          <Icons.Payments size={16} className={activeTab === 'payments' ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'} />
+          <Icons.Payments size={16} className={activeTab === 'payments' ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'} />
           <span>Payment Receipts ({payments.length})</span>
-          {activeTab === 'payments' && (
-            <span className="absolute -bottom-1 left-3 right-3 h-[2px] bg-emerald-600 dark:bg-emerald-400 rounded-full" />
-          )}
         </button>
       </div>
 

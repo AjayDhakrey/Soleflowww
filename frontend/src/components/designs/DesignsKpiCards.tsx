@@ -1,4 +1,5 @@
 import React from 'react';
+import { Layers, Sparkles, TrendingUp, Check } from 'lucide-react';
 
 interface DesignsKpiCardsProps {
   totalActiveModels: number;
@@ -7,238 +8,6 @@ interface DesignsKpiCardsProps {
   selectedCount: number;
 }
 
-/* =========================================================================
-   3D Claymorphic Vector SVGs for Footwear Catalogue & Lookbook
-   ========================================================================= */
-
-// 1. Total Active Articles (3D Stack of Green Specs Documents + Sneaker Silhouette + Badge)
-export const ActiveArticles3D = ({ count = 6 }: { count?: number }) => (
-  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="artGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#D1FAE5" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#D1FAE5" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="artDocBack" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#6EE7B7" />
-          <stop offset="100%" stopColor="#10B981" />
-        </linearGradient>
-        <linearGradient id="artDocFront" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="100%" stopColor="#ECFDF5" />
-        </linearGradient>
-      </defs>
-
-      <circle cx="50" cy="52" r="38" fill="url(#artGlow)" />
-
-      {/* Sparkles */}
-      <path d="M22 36L17 31" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M26 26L22 20" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
-
-      {/* Back Document Sheet */}
-      <rect
-        x="24"
-        y="30"
-        width="38"
-        height="50"
-        rx="7"
-        fill="url(#artDocBack)"
-        stroke="#059669"
-        strokeWidth="2"
-        transform="rotate(-12 43 55)"
-        filter="drop-shadow(0 4px 6px rgba(16,185,129,0.25))"
-      />
-
-      {/* Front Document Sheet */}
-      <g filter="drop-shadow(0 6px 10px rgba(5,150,105,0.3))">
-        <rect x="34" y="24" width="42" height="52" rx="8" fill="url(#artDocFront)" stroke="#10B981" strokeWidth="2.5" />
-        {/* Sneaker Blueprint Drawing on Sheet */}
-        <path
-          d="M44 48C44 44 47 41 52 41C56 41 59 44 63 45C67 46 71 45 73 48C74 50 74 54 74 56H44V48Z"
-          fill="#34D399"
-          stroke="#059669"
-          strokeWidth="1.5"
-        />
-        <rect x="42" y="56" width="34" height="4" rx="2" fill="#047857" />
-        <line x1="42" y1="64" x2="62" y2="64" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
-      </g>
-
-      {/* Green Circular Count Badge on Bottom-Right */}
-      <g filter="drop-shadow(0 3px 5px rgba(4,120,87,0.4))">
-        <circle cx="74" cy="72" r="11" fill="#10B981" stroke="#FFFFFF" strokeWidth="2.5" />
-        <text x="74" y="76" textAnchor="middle" fontSize="11" fontWeight="900" fill="#FFFFFF" fontFamily="var(--font-sans)">
-          {count}
-        </text>
-      </g>
-    </svg>
-  </div>
-);
-
-// 2. Popular Fast-Movers (3D Blue Running Sneaker + Upward Growth Arrow + Speed Rays)
-export const FastMovers3D = () => (
-  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="fastGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#E0F2FE" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#E0F2FE" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="fastShoeBlue" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#38BDF8" />
-          <stop offset="50%" stopColor="#2563EB" />
-          <stop offset="100%" stopColor="#1E40AF" />
-        </linearGradient>
-        <linearGradient id="arrowGreen" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#6EE7B7" />
-          <stop offset="100%" stopColor="#10B981" />
-        </linearGradient>
-      </defs>
-
-      <circle cx="50" cy="52" r="38" fill="url(#fastGlow)" />
-
-      {/* Motion Speed Lines */}
-      <line x1="16" y1="52" x2="26" y2="52" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="18" y1="60" x2="28" y2="60" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
-
-      {/* Upward Growth Arrow */}
-      <g filter="drop-shadow(0 4px 6px rgba(16,185,129,0.35))">
-        <path d="M52 48L72 26" stroke="url(#arrowGreen)" strokeWidth="6" strokeLinecap="round" />
-        <path d="M62 24H74V36" stroke="#10B981" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-      </g>
-
-      {/* 3D Blue Leaping Athletic Sneaker */}
-      <g filter="drop-shadow(0 6px 10px rgba(30,58,138,0.4))" transform="rotate(-15 48 55)">
-        {/* Upper Body */}
-        <path
-          d="M24 52C24 46 28 42 36 42C42 42 46 46 52 48C58 50 68 46 76 50C82 53 86 58 86 64H24V52Z"
-          fill="url(#fastShoeBlue)"
-        />
-        {/* Collar */}
-        <path d="M30 42C30 36 36 32 42 32C48 32 50 38 50 42H30Z" fill="#1E3A8A" />
-        {/* White Outsole */}
-        <rect x="22" y="64" width="66" height="10" rx="4" fill="#FFFFFF" />
-        {/* Dynamic White Swoosh/Stripe */}
-        <path d="M38 56C48 56 60 58 70 52" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M46 42L52 50" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
-      </g>
-    </svg>
-  </div>
-);
-
-// 3. High Margin Lines (3D Tan Leather Dress Shoes + Gold Rupee Coin)
-export const HighMargin3D = () => (
-  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="marGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFEDD5" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#FFEDD5" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="leatherGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#F59E0B" />
-          <stop offset="50%" stopColor="#D97706" />
-          <stop offset="100%" stopColor="#78350F" />
-        </linearGradient>
-        <radialGradient id="coinGoldMar" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#FEF08A" />
-          <stop offset="40%" stopColor="#FACC15" />
-          <stop offset="100%" stopColor="#D97706" />
-        </radialGradient>
-      </defs>
-
-      <circle cx="50" cy="52" r="38" fill="url(#marGlow)" />
-
-      {/* Sparkles */}
-      <path d="M78 24L83 20" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M82 32H87" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
-
-      {/* Back Leather Shoe */}
-      <g filter="drop-shadow(0 4px 6px rgba(120,53,15,0.25))">
-        <path
-          d="M26 42C26 36 34 34 44 34C52 34 58 38 66 40C74 42 80 46 80 50H26V42Z"
-          fill="#B45309"
-        />
-        <rect x="24" y="50" width="58" height="6" rx="2" fill="#451A03" />
-      </g>
-
-      {/* Front Leather Shoe */}
-      <g filter="drop-shadow(0 6px 10px rgba(120,53,15,0.35))">
-        <path
-          d="M20 54C20 46 30 44 42 44C52 44 58 50 68 52C78 54 84 58 84 64H20V54Z"
-          fill="url(#leatherGrad)"
-        />
-        {/* Shoe Heel & Outsole */}
-        <rect x="18" y="64" width="68" height="8" rx="3" fill="#451A03" />
-        <rect x="18" y="70" width="16" height="5" rx="1.5" fill="#1C1917" />
-        {/* Glossy Vamp Highlight */}
-        <path d="M38 48C46 48 54 52 64 54" stroke="#FEF3C7" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.6" />
-      </g>
-
-      {/* Gold Rupee Coin in Front */}
-      <g filter="drop-shadow(0 4px 7px rgba(217,119,6,0.45))">
-        <circle cx="58" cy="68" r="14" fill="url(#coinGoldMar)" stroke="#B45309" strokeWidth="1.5" />
-        <text x="58" y="73" textAnchor="middle" fontSize="14" fontWeight="900" fill="#78350F" fontFamily="var(--font-sans)">
-          ₹
-        </text>
-      </g>
-    </svg>
-  </div>
-);
-
-// 4. Selected for Sharing (3D Tablet displaying Shoe + Purple Sharing Nodes)
-export const SelectedShare3D = () => (
-  <div className="relative w-9 h-9 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="shareGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#F3E8FF" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#F3E8FF" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="tabBody" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#E9D5FF" />
-          <stop offset="100%" stopColor="#C084FC" />
-        </linearGradient>
-        <linearGradient id="nodeGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#C084FC" />
-          <stop offset="100%" stopColor="#9333EA" />
-        </linearGradient>
-      </defs>
-
-      <circle cx="50" cy="52" r="38" fill="url(#shareGlow)" />
-
-      {/* 3D Angled Tablet Screen */}
-      <g filter="drop-shadow(0 6px 10px rgba(147,51,234,0.3))" transform="rotate(-8 38 52)">
-        <rect x="18" y="24" width="44" height="58" rx="8" fill="url(#tabBody)" stroke="#9333EA" strokeWidth="2" />
-        <rect x="22" y="28" width="36" height="50" rx="5" fill="#FFFFFF" />
-        {/* Green Shoe on Screen */}
-        <path d="M26 54C26 50 30 48 36 48C40 48 44 52 50 54H26V54Z" fill="#10B981" />
-        <rect x="25" y="54" width="28" height="3" rx="1.5" fill="#047857" />
-      </g>
-
-      {/* 3D Purple Share Network Node Bubbles */}
-      <g filter="drop-shadow(0 4px 6px rgba(126,34,206,0.35))">
-        {/* Connecting Lines */}
-        <line x1="62" y1="52" x2="76" y2="40" stroke="#A855F7" strokeWidth="3" strokeLinecap="round" />
-        <line x1="62" y1="52" x2="76" y2="64" stroke="#A855F7" strokeWidth="3" strokeLinecap="round" />
-
-        {/* Central Hub Node */}
-        <circle cx="60" cy="52" r="7" fill="url(#nodeGrad)" stroke="#FFFFFF" strokeWidth="2" />
-
-        {/* Top Node */}
-        <circle cx="76" cy="40" r="6" fill="url(#nodeGrad)" stroke="#FFFFFF" strokeWidth="1.5" />
-
-        {/* Bottom Node */}
-        <circle cx="76" cy="64" r="6" fill="url(#nodeGrad)" stroke="#FFFFFF" strokeWidth="1.5" />
-      </g>
-    </svg>
-  </div>
-);
-
-/* =========================================================================
-   Designs KPI Summary Cards Component
-   ========================================================================= */
-
 export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
   totalActiveModels,
   popularStylesCount,
@@ -246,106 +15,120 @@ export const DesignsKpiCards: React.FC<DesignsKpiCardsProps> = ({
   selectedCount,
 }) => {
   return (
-    <div className="space-y-2.5 sm:space-y-3">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
-        {/* 1. Total Active Articles */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <ActiveArticles3D count={totalActiveModels} />
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Active Articles">
-            Active Articles
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
+      {/* 1. Active Footwear Lines */}
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center shrink-0">
+          <Layers className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate">
+            Active Footwear
           </span>
-          <p
-            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
-            title={`${totalActiveModels} Models`}
-          >
-            <span className="tabular-nums whitespace-nowrap">{totalActiveModels}</span>
-            <span className="text-[11px] sm:text-sm font-semibold text-emerald-600/90 dark:text-emerald-400/90 tracking-normal whitespace-nowrap">
-              Models
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-lg sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-display truncate">
+              {totalActiveModels}
             </span>
-          </p>
-          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="Ready for factory booking">
-            Ready for booking
-          </p>
+            <span className="text-xs sm:text-base font-semibold text-blue-600 dark:text-blue-400 hidden xs:inline">
+              Articles
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-1 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
+              Catalog
+            </span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
+              Active
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* 2. Popular Fast-Movers */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <FastMovers3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Popular Fast-Movers">
-            Fast-Movers
+      {/* 2. Fast-Moving Articles */}
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+          <Sparkles className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-600 dark:text-emerald-400" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate">
+            Fast-Moving
           </span>
-          <p
-            className="text-base sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
-            title={`${popularStylesCount} Styles`}
-          >
-            <span className="tabular-nums whitespace-nowrap">{popularStylesCount}</span>
-            <span className="text-[11px] sm:text-sm font-semibold text-blue-600/90 dark:text-blue-400/90 tracking-normal whitespace-nowrap">
-              Styles
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-lg sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-display truncate">
+              {popularStylesCount}
             </span>
-          </p>
-          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="High wholesale repeat rates">
-            High repeat rates
-          </p>
+            <span className="text-xs sm:text-base font-semibold text-emerald-600 dark:text-emerald-400 hidden xs:inline">
+              High Vol
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-1 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
+              Top repeat
+            </span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shrink-0">
+              Top Sellers
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* 3. High Margin Lines */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <HighMargin3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="High Margin Lines">
+      {/* 3. High Margin Styles */}
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-950/60 flex items-center justify-center shrink-0">
+          <TrendingUp className="w-5 h-5 sm:w-7 sm:h-7 text-purple-600 dark:text-purple-400" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate">
             High Margin
           </span>
-          <p
-            className="text-base sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
-            title={`${highMarginCount} SKUs`}
-          >
-            <span className="tabular-nums whitespace-nowrap">{highMarginCount}</span>
-            <span className="text-[11px] sm:text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 tracking-normal whitespace-nowrap">
-              SKUs
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-lg sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 font-display truncate">
+              {highMarginCount}
             </span>
-          </p>
-          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="35%–45% retailer markups">
-            35%–45% markups
-          </p>
+            <span className="text-xs sm:text-base font-semibold text-purple-600 dark:text-purple-400 hidden xs:inline">
+              Premium
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-1 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
+              Retailer margin
+            </span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 shrink-0">
+              High ROI
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* 4. Selected for Sharing */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <SelectedShare3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Selected for Sharing">
-            Selected
+      {/* 4. Lookbook Selection */}
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center shrink-0">
+          <Check className="w-5 h-5 sm:w-7 sm:h-7 text-indigo-600 dark:text-indigo-400" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate">
+            Lookbook
           </span>
-          <p
-            className="text-base sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display flex flex-wrap items-baseline gap-x-1 gap-y-0.5 min-w-0"
-            title={`${selectedCount} Articles`}
-          >
-            <span className="tabular-nums whitespace-nowrap">{selectedCount}</span>
-            <span className="text-[11px] sm:text-sm font-semibold text-purple-600/90 dark:text-purple-400/90 tracking-normal whitespace-nowrap">
-              Items
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-lg sm:text-2xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 font-display truncate">
+              {selectedCount}
             </span>
-          </p>
-          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate hidden xs:block sm:block" title="Included in WhatsApp lookbook">
-            WhatsApp lookbook
-          </p>
+            <span className="text-xs sm:text-base font-semibold text-indigo-600 dark:text-indigo-400 hidden xs:inline">
+              Selected
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-1 mt-0.5 text-xs">
+            <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
+              1-tap share
+            </span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] sm:text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 shrink-0">
+              {selectedCount > 0 ? 'Curated' : 'None'}
+            </span>
+          </div>
         </div>
       </div>
     </div>
-
-    {/* Stitch Catalogue Mobile Insight Banner */}
-    <div className="flex sm:hidden items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/50 dark:border-purple-900/40 text-[11px] text-muted-foreground">
-      <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse shrink-0" />
-      <span className="truncate">
-        <strong className="text-foreground font-semibold">Wholesale Catalogue:</strong> Tap checkmark to select articles for bulk WhatsApp Lookbook.
-      </span>
-    </div>
-  </div>
-);
+  );
 };
 
 export default DesignsKpiCards;

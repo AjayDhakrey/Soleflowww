@@ -8,6 +8,7 @@ import { OrderInspectDrawer } from '../../components/orders/OrderInspectDrawer';
 import { EmptyState, Button } from '../../components/ui';
 import { Icons } from '../../lib/icons';
 import {
+  Home,
   ChevronRight,
   Clock,
   Building2,
@@ -580,32 +581,31 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
   return (
     <div className="p-3.5 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
       {/* 1. Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+      <div className="flex items-center gap-2 text-xs font-medium">
         <button
           type="button"
           onClick={() => onNavigate('/admin/dashboard')}
-          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
         >
-          Dashboard
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
         </button>
-        <ChevronRight size={13} className="text-muted-foreground/60" />
-        <span className="text-blue-600 dark:text-blue-400 font-semibold truncate">
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
           Foundries &amp; Plants
         </span>
-      </nav>
+      </div>
 
       {/* 2. Header & Action Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-3xl font-bold text-foreground tracking-tight">
-              Manufacturing Plants &amp; Foundries
-            </h1>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-              SUPPLY CHAIN
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <span>Manufacturing Plants &amp; Foundries</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
+              {manufacturers.length}
             </span>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
             OEM partner plants &amp; foundries, assembly line capacity utilization, and QC ratings.
           </p>
         </div>
@@ -613,38 +613,34 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
         {/* Global Plant Search Bar & Add Manufacturer Action */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-72 shrink-0">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search plant, hub, or GM..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-9 py-2 rounded-xl text-xs sm:text-sm bg-surface border border-border focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground/70"
+              className="w-full pl-9 pr-9 py-2 rounded-xl text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-slate-400 shadow-xs"
             />
-            {searchQuery ? (
+            {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-foreground p-0.5 cursor-pointer"
               >
                 <X size={14} />
               </button>
-            ) : (
-              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none p-1 rounded-md bg-muted/40">
-                <Sparkles size={13} className="text-blue-500" />
-              </div>
             )}
           </div>
 
-          <Button
-            variant="primary"
-            icon={Icons.Add}
+          <button
+            type="button"
             onClick={() => setIsAddManufacturerModalOpen(true)}
-            className="shrink-0 h-[38px] px-3.5 sm:px-4 text-xs sm:text-sm font-semibold shadow-xs"
+            className="shrink-0 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
           >
+            <Icons.Add size={15} />
             <span className="hidden sm:inline">Add Manufacturer</span>
             <span className="sm:hidden">Add</span>
-          </Button>
+          </button>
         </div>
       </div>
 

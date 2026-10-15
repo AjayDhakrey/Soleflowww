@@ -19,6 +19,7 @@ import {
   ArrowUpDown,
   DollarSign,
   UserCheck,
+  Home,
 } from 'lucide-react';
 
 interface OverdueAccountsInsightPageProps {
@@ -163,108 +164,129 @@ export const OverdueAccountsInsightPage: React.FC<OverdueAccountsInsightPageProp
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
-      {/* 1. Breadcrumbs & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <button
-              type="button"
-              onClick={() => onNavigate(fromPath)}
-              className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1"
-            >
-              <ChevronLeft size={14} />
-              <span>Back to {fromPath.includes('dashboard') ? 'Dashboard' : 'Clients'}</span>
-            </button>
-            <span>/</span>
-            <span className="text-muted-foreground">Insights</span>
-            <span>/</span>
-            <span className="text-foreground font-semibold">Overdue Accounts</span>
-          </div>
-          <div className="flex items-center gap-3 mt-1">
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-500 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <AlertTriangle size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                Overdue Accounts
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                High-priority recovery list of retail clients who have crossed agreed payment terms and credit cycles.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Global Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
+      {/* 1. Standardized Header with Breadcrumbs & Action Buttons */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
           <button
             type="button"
-            onClick={handleExportCSV}
-            className="px-3.5 py-2.5 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            onClick={() => onNavigate(fromPath)}
+            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
           >
-            <Download size={16} />
-            <span>Export CSV</span>
+            <Home className="w-3.5 h-3.5 text-blue-600" />
+            <span>Dashboard</span>
           </button>
+          <span>/</span>
+          <button
+            type="button"
+            onClick={() => onNavigate(fromPath.includes('dashboard') ? fromPath : '/admin/customers')}
+            className="hover:text-blue-600 transition-colors cursor-pointer"
+          >
+            Clients
+          </button>
+          <span>/</span>
+          <span className="text-slate-800 font-semibold">Overdue Accounts</span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                Overdue Accounts
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                {metrics.overdueAccounts} Overdue
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              High-priority recovery list of retail clients who have crossed agreed payment terms and credit cycles.
+            </p>
+          </div>
+
+          <div className="w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-xs transition-colors cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-slate-500" />
+              Export CSV
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
         {/* Overdue Accounts */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Accounts">Overdue Accounts</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={`${metrics.overdueAccounts}`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums wrap-anywhere">
-              {metrics.overdueAccounts}
-            </h3>
-            {metrics.trends.overdueAccounts && (
-              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 shrink-0">
-                {metrics.trends.overdueAccounts.value}
-              </span>
-            )}
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 sm:w-7 sm:h-7 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Retailers with unpaid invoices past due date">
-            Retailers with unpaid invoices past due date
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Overdue Accounts">
+              Overdue Accounts
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate">
+              {metrics.overdueAccounts}
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Unpaid invoices past due date">
+              Unpaid past due
+            </p>
+          </div>
         </div>
 
         {/* Total Overdue Amount */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Amount">Overdue Amount</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={formatIndianCurrency(metrics.overdueAmount)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums wrap-anywhere">
-              {formatIndianCurrency(metrics.overdueAmount, true)}
-            </h3>
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0">
+            <DollarSign className="w-5 h-5 sm:w-7 sm:h-7 text-rose-600 dark:text-rose-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 wrap-anywhere" title={`Full exact: ${formatIndianCurrency(metrics.overdueAmount)}`}>
-            Full exact: <strong className="text-foreground">{formatIndianCurrency(metrics.overdueAmount)}</strong>
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Overdue Amount">
+              Overdue Amount
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 mt-0.5 font-display truncate">
+              {formatIndianCurrency(metrics.overdueAmount, true)}
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={`Full exact: ${formatIndianCurrency(metrics.overdueAmount)}`}>
+              {formatIndianCurrency(metrics.overdueAmount)}
+            </p>
+          </div>
         </div>
 
         {/* Avg Days Overdue */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Avg Days Overdue">Avg Days Overdue</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={`${metrics.avgDaysOverdue || 0} Days`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums wrap-anywhere">
-              {metrics.avgDaysOverdue || 0} Days
-            </h3>
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Average delay across delinquent accounts">
-            Average delay across delinquent accounts
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Avg Days Overdue">
+              Avg Days Overdue
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate">
+              {metrics.avgDaysOverdue || 0} Days
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Average delay across accounts">
+              Average delay
+            </p>
+          </div>
         </div>
 
         {/* Over Credit Limit */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Credit Limit Breaches">Credit Limit Breaches</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={`${overLimitCount} Stores`} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums wrap-anywhere">
-              {overLimitCount} Stores
-            </h3>
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-950/60 flex items-center justify-center shrink-0">
+            <ShieldAlert className="w-5 h-5 sm:w-7 sm:h-7 text-purple-600 dark:text-purple-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Outstanding exceeds sanctioned limit">
-            Outstanding exceeds sanctioned limit
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Credit Limit Breaches">
+              Limit Breaches
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400 mt-0.5 font-display truncate">
+              {overLimitCount} Stores
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Exceeds sanctioned credit limit">
+              Exceeds limit
+            </p>
+          </div>
         </div>
       </div>
 

@@ -95,7 +95,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       style={{ paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom))' }}
     >
       <nav
-        className="pointer-events-auto bg-surface/85 dark:bg-card/85 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-[26px] p-1.5 shadow-[0_12px_36px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] dark:ring-white/[0.06] flex items-center justify-between select-none transition-all duration-200"
+        className="pointer-events-auto bg-white/92 dark:bg-slate-900/92 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 rounded-[26px] p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.10),0_2px_8px_rgba(15,23,42,0.05)] ring-1 ring-slate-900/[0.03] dark:ring-white/[0.06] flex items-center justify-between select-none transition-all duration-200"
         aria-label="Mobile Bottom Navigation"
       >
         {navItems.map((item) => {
@@ -109,23 +109,23 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               onClick={() => handleTabClick(item.path)}
               className={`flex-1 relative flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 select-none cursor-pointer group active:scale-95 ${
                 isActive
-                  ? 'text-primary font-bold bg-gradient-to-b from-primary/15 via-primary/8 to-primary/0 dark:from-primary/25 dark:via-primary/10 border border-primary/20 shadow-2xs'
-                  : 'text-muted-foreground/75 hover:text-foreground hover:bg-muted/40'
+                  ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800/40 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100/50'
               }`}
             >
               {/* Icon Container with micro-bounce on active */}
               <div
                 className={`relative p-1 rounded-xl transition-all duration-200 ${
                   isActive
-                    ? 'scale-110 -translate-y-0.5 text-primary'
-                    : 'group-hover:scale-105'
+                    ? 'scale-110 -translate-y-0.5 text-blue-600 dark:text-blue-400'
+                    : 'group-hover:scale-105 text-slate-500 dark:text-slate-400'
                 }`}
               >
-                <Icon size={20} strokeWidth={isActive ? 2.5 : 1.75} />
+                <Icon size={20} strokeWidth={isActive ? 2.25 : 1.75} />
 
                 {/* Micro-badge for active orders counter */}
                 {item.badge !== null && (
-                  <span className="absolute -top-1 -right-2.5 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-surface shadow-xs animate-in zoom-in-75 duration-150">
+                  <span className="absolute -top-1 -right-2.5 min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-slate-900 shadow-xs animate-in zoom-in-75 duration-150">
                     {item.badge}
                   </span>
                 )}
@@ -135,8 +135,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               <span
                 className={`text-[10px] mt-0.5 tracking-tight transition-all duration-200 ${
                   isActive
-                    ? 'font-bold text-primary scale-105'
-                    : 'font-medium text-muted-foreground'
+                    ? 'font-bold text-blue-600 dark:text-blue-400 scale-105'
+                    : 'font-medium text-slate-500 dark:text-slate-400'
                 }`}
               >
                 {item.label}
@@ -144,7 +144,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
               {/* Glowing Active Micro-Dot */}
               {isActive && (
-                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.9)] mt-0.5 animate-in zoom-in duration-200" />
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.7)] mt-0.5 animate-in zoom-in duration-200" />
               )}
             </button>
           );

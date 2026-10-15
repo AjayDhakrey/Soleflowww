@@ -72,109 +72,118 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
   return (
     <div className="p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6 max-w-[1440px] w-full mx-auto pb-28 md:pb-12 bg-background text-foreground overflow-x-hidden animate-in fade-in duration-200">
-      {/* 1. Welcome Banner (Compact, Sleek & High-Density for Mobile & Desktop) */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-white via-blue-50/60 to-blue-100/40 dark:from-card dark:via-blue-950/20 dark:to-card border border-blue-100/80 dark:border-blue-900/40 p-3 sm:p-4 shadow-2xs">
-        {/* Subtle Ambient Glow */}
-        <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-400/10 dark:bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
-
-        <div className="flex items-center justify-between gap-3 relative z-10">
-          {/* Left: Greeting & Compact Subtitle */}
-          <div className="min-w-0 flex-1 space-y-0.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs font-semibold text-muted-foreground">
-                {greeting.text},
-              </span>
-              <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight flex items-center gap-1">
-                <span>{currentUser.name}</span>
-                <span className="inline-block text-sm">👋</span>
-              </h1>
+      {/* 1. Welcome Banner (Exact match to photo) */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-blue-50/80 dark:from-card dark:via-blue-950/20 dark:to-card border border-blue-100/90 dark:border-blue-900/50 p-4 sm:p-5 shadow-xs">
+        <div className="flex items-center justify-between gap-4 relative z-10">
+          {/* Left: Greeting Icon Box & Subtitle */}
+          <div className="flex items-center gap-3.5 min-w-0 flex-1">
+            <div className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 shadow-xs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <path d="M8 14h.01" />
+                <path d="M12 14h.01" />
+                <path d="M16 14h.01" />
+                <path d="M8 18h.01" />
+                <path d="M12 18h.01" />
+              </svg>
             </div>
-            <div className="flex items-center gap-2 text-[11px] sm:text-xs text-muted-foreground font-medium flex-wrap">
-              <span className="flex items-center gap-1 text-primary/80 shrink-0">
-                <Icons.Calendar size={12} className="shrink-0" />
-                <span>{todayDateFormatted}</span>
-              </span>
-              <span className="text-muted-foreground/40 hidden xs:inline">•</span>
-              <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold shrink-0">
-                <Icons.Building size={12} className="shrink-0" />
-                <span>Wholesale Operations</span>
-              </span>
+
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 truncate">
+                  <span>{greeting.text},</span>
+                  <span className="font-extrabold">{currentUser.name}</span>
+                  <span className="inline-block text-base">👋</span>
+                </h1>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium flex-wrap">
+                <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 shrink-0 font-semibold">
+                  <Icons.Calendar size={13} className="shrink-0" />
+                  <span>{todayDateFormatted}</span>
+                </span>
+                <span className="text-slate-300 dark:text-slate-600 hidden xs:inline">•</span>
+                <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold shrink-0">
+                  <Icons.Building size={13} className="shrink-0" />
+                  <span>Wholesale Operations</span>
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Right: Compact 3D Sneaker Asset with Integrated Growth Chip */}
-          <div className="relative shrink-0 flex items-center gap-1.5 sm:gap-2">
+          {/* Right: +100% Sales badge and 3D Blue Sneaker Image */}
+          <div className="relative shrink-0 flex items-center gap-2.5 sm:gap-3.5">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                <Icons.TrendingUp size={11} className="shrink-0" />
-                <span>+100% Sales</span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-300/80 dark:border-emerald-800">
+                <span>↗ +100% Sales</span>
               </span>
-              <span className="text-[8.5px] text-muted-foreground mt-0.5">vs last month</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">vs last month</span>
             </div>
-            <div className="w-14 sm:w-20 md:w-24 h-11 sm:h-13 md:h-14 flex items-center justify-center">
+            <div className="w-16 sm:w-24 md:w-28 h-12 sm:h-16 flex items-center justify-center">
               <img
                 src={heroShoeImg}
                 alt="Premium Footwear"
-                className="w-full h-auto max-h-full object-contain drop-shadow-[0_6px_14px_rgba(37,99,235,0.25)] -rotate-6 transform hover:scale-105 transition-transform"
+                className="w-full h-auto max-h-full object-contain drop-shadow-[0_8px_16px_rgba(37,99,235,0.22)] -rotate-6 transform hover:scale-105 transition-transform"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Commercial Period Selector & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">
-            Period:
+      {/* 2. Commercial Period Selector & Quick Actions (Exact match to photo) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider shrink-0">
+            PERIOD:
           </span>
-          {/* iOS Style 4-Segmented Control */}
-          <div className="grid grid-cols-4 w-full sm:flex sm:w-auto p-1 bg-muted/80 dark:bg-muted/40 rounded-2xl border border-border/80 shadow-2xs gap-0.5 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {(
               [
-                { label: 'Today', shortLabel: 'Today', value: 'today' },
-                { label: 'This Week', shortLabel: 'Week', value: 'week' },
-                { label: 'This Month', shortLabel: 'Month', value: 'month' },
-                { label: 'This Quarter', shortLabel: 'Quarter', value: 'quarter' },
-              ] as { label: string; shortLabel: string; value: DashboardPeriod }[]
-            ).map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setPeriod(tab.value)}
-                className={`py-1.5 px-1 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-xl transition-all duration-150 cursor-pointer whitespace-nowrap text-center select-none active:scale-95 min-w-0 truncate ${
-                  period === tab.value
-                    ? 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white shadow-xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <span className="sm:hidden">{tab.shortLabel}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
+                { label: 'Today', value: 'today' },
+                { label: 'This Week', value: 'week' },
+                { label: 'This Month', value: 'month' },
+                { label: 'This Quarter', value: 'quarter' },
+              ] as { label: string; value: DashboardPeriod }[]
+            ).map((tab) => {
+              const isSelected = period === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setPeriod(tab.value)}
+                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none active:scale-95 ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-xs font-bold'
+                      : 'bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Quick Modals Trigger */}
-        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={Icons.Payments}
+        {/* Quick Action Buttons */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+          <button
+            type="button"
             onClick={() => setIsPaymentModalOpen(true)}
-            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2 sm:px-3 h-8 sm:h-9"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-card border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
           >
-            Record Payment
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            icon={Icons.Add}
+            <span className="font-bold text-sm">₹</span>
+            <span>Record Payment</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setIsCreateOrderModalOpen(true)}
-            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2 sm:px-3 h-8 sm:h-9"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
           >
-            New Order
-          </Button>
+            <span className="font-bold text-base leading-none">+</span>
+            <span>New Order</span>
+          </button>
         </div>
       </div>
 
@@ -225,103 +234,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         />
       </div>
 
-      {/* 5. Needs Immediate Attention (4 Alert Cards) */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-            <Icons.AlertCircle size={14} className="animate-pulse" />
-            <span>Needs Immediate Attention ({needsAttention?.length || 4})</span>
-          </h2>
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-            <span>Action Required</span>
+      {/* 5. Needs Immediate Attention (Exact match to photo) */}
+      <div className="rounded-2xl border border-rose-100 dark:border-rose-950/60 bg-white dark:bg-card p-4 sm:p-5 shadow-xs space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-rose-500">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+              NEEDS IMMEDIATE ATTENTION ({needsAttention?.length || 1})
+            </h2>
+          </div>
+          <span className="inline-flex items-center text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-2.5 py-0.5 rounded-full border border-rose-200/80 dark:border-rose-900/60">
+            Action Required
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">
+
+        <div className="space-y-2">
           {(needsAttention && needsAttention.length > 0
             ? needsAttention
             : [
                 {
-                  id: 'att-1',
-                  title: '1 Order Awaiting Approval',
-                  route: '/admin/orders?status=Submitted',
-                  badgeVariant: 'amber',
-                  subtitle: 'Pending approval',
-                },
-                {
-                  id: 'att-2',
-                  title: '3 Overdue Store Accounts',
-                  route: '/admin/customers/insights/overdue',
-                  amount: 515000,
-                  badgeVariant: 'rose',
-                  subtitle: 'Total Due: ₹5,15,000',
-                },
-                {
-                  id: 'att-3',
-                  title: '3 Orders Past Due Delivery',
+                  id: 'att-past-due',
+                  title: '1 Order Past Due Delivery',
                   route: '/admin/orders?filter=delayed',
-                  badgeVariant: 'orange',
-                  subtitle: 'Orders not delivered on time',
-                },
-                {
-                  id: 'att-4',
-                  title: '1 Overdue Client Follow-up',
-                  route: '/admin/sales-team',
-                  badgeVariant: 'blue',
-                  subtitle: 'Pending follow-up',
+                  badgeVariant: 'rose',
                 },
               ]
-          ).map((item: any) => {
-            const isRose = item.badgeVariant === 'rose';
-            const isAmber = item.badgeVariant === 'amber';
-            const isOrange = item.badgeVariant === 'orange';
-            const isBlue = item.badgeVariant === 'blue';
-
-            return (
-              <div
-                key={item.id}
-                onClick={() => onNavigate(item.route)}
-                className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 select-none active:scale-[0.98] shadow-2xs ${
-                  isRose
-                    ? 'bg-rose-50/70 dark:bg-rose-950/30 border-l-4 border-l-rose-500 border-rose-200 dark:border-rose-900/60 hover:bg-rose-100/60'
-                    : isAmber
-                    ? 'bg-amber-50/70 dark:bg-amber-950/30 border-l-4 border-l-amber-500 border-amber-200 dark:border-amber-900/60 hover:bg-amber-100/60'
-                    : isOrange
-                    ? 'bg-orange-50/70 dark:bg-orange-950/30 border-l-4 border-l-orange-500 border-orange-200 dark:border-orange-900/60 hover:bg-orange-100/60'
-                    : 'bg-blue-50/70 dark:bg-blue-950/30 border-l-4 border-l-blue-500 border-blue-200 dark:border-blue-900/60 hover:bg-blue-100/60'
-                }`}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`w-2 h-2 rounded-full shrink-0 ${
-                        isRose
-                          ? 'bg-rose-500 animate-ping'
-                          : isAmber
-                          ? 'bg-amber-500'
-                          : isOrange
-                          ? 'bg-orange-500'
-                          : 'bg-blue-500'
-                      }`}
-                    />
-                    <span className="text-xs font-bold text-foreground truncate">{item.title}</span>
-                  </div>
-                  {item.amount !== undefined && item.amount > 0 ? (
-                    <p className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400 mt-0.5">
-                      Total Due: ₹{item.amount.toLocaleString('en-IN')}
-                    </p>
-                  ) : item.subtitle ? (
-                    <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                      {item.subtitle}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-surface/90 dark:bg-card/90 border border-border/80 shadow-2xs text-xs font-bold text-primary active:scale-95 transition-transform">
-                  <span>Resolve</span>
-                  <Icons.ChevronRight size={13} />
-                </div>
+          ).map((item: any) => (
+            <div
+              key={item.id}
+              onClick={() => onNavigate(item.route)}
+              className="p-3 sm:p-3.5 rounded-xl border border-rose-100 dark:border-rose-950/60 border-l-[3.5px] border-l-rose-500 bg-white dark:bg-card hover:bg-rose-50/40 transition-all cursor-pointer flex items-center justify-between gap-3 select-none"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                  {item.title}
+                </span>
+                {item.amount && item.amount > 0 && (
+                  <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                    • ₹{item.amount.toLocaleString('en-IN')}
+                  </span>
+                )}
               </div>
-            );
-          })}
+              <button
+                type="button"
+                className="shrink-0 px-3 py-1 rounded-full text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 flex items-center gap-1 transition-colors"
+              >
+                <span>Resolve</span>
+                <span className="text-sm leading-none">→</span>
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 

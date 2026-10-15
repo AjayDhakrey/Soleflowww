@@ -9,6 +9,7 @@ import {
 } from '../../components/payments/ReceiptTemplate';
 import { OverviewKpiCards } from '../../components/dashboard/OverviewKpiCards';
 import { QuickShortcutsGrid } from '../../components/dashboard/QuickShortcutsGrid';
+import heroShoeImg from '../../assets/images/hero-3d-sneaker-crisp.png';
 import {
   Panel,
   Button,
@@ -100,54 +101,95 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
 
   return (
     <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
-      {/* 1. Header & Live Territory Status */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-border/70">
-        <div className="flex items-center justify-between sm:justify-start gap-2.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xl select-none shrink-0">{greeting.icon}</span>
-            <h1 className="text-base sm:text-2xl font-bold tracking-tight text-foreground truncate">
-              {greeting.text}, {currentUser.name}
-            </h1>
+      {/* 1. Header & Live Territory Status - Styled identical to reference photo */}
+      <div className="relative rounded-2xl p-4 sm:p-5 overflow-hidden bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-white dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 border border-blue-100/80 dark:border-slate-800 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Left: Calendar Icon + Greeting + Date & Territory info */}
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white dark:bg-slate-800 border border-blue-100 dark:border-slate-700 shadow-xs flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                <line x1="16" x2="16" y1="2" y2="6" />
+                <line x1="8" x2="8" y1="2" y2="6" />
+                <line x1="3" x2="21" y1="10" y2="10" />
+                <path d="M8 14h.01" />
+                <path d="M12 14h.01" />
+                <path d="M16 14h.01" />
+                <path d="M8 18h.01" />
+                <path d="M12 18h.01" />
+              </svg>
+            </div>
+
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 truncate">
+                  <span>{greeting.text},</span>
+                  <span className="font-extrabold">{currentUser.name}</span>
+                  <span className="inline-block text-base">👋</span>
+                </h1>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium flex-wrap">
+                <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 shrink-0 font-semibold">
+                  <Icons.Calendar size={13} className="shrink-0" />
+                  <span>{todayDateFormatted}</span>
+                </span>
+                <span className="text-slate-300 dark:text-slate-600 hidden xs:inline">•</span>
+                <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                  <span>Field Territory Operations</span>
+                </span>
+              </div>
+            </div>
           </div>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5 animate-pulse shrink-0" />
-            <span>Field Territory Mode</span>
-          </span>
+
+          {/* Right: Target progress badge and 3D Blue Sneaker Image */}
+          <div className="relative shrink-0 flex items-center gap-2.5 sm:gap-3.5">
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-300/80 dark:border-emerald-800">
+                <span>↗ {targetPct}% Monthly Quota</span>
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{formatLakh(repBooked)} booked</span>
+            </div>
+            <div className="w-16 sm:w-24 md:w-28 h-12 sm:h-16 flex items-center justify-center">
+              <img
+                src={heroShoeImg}
+                alt="Premium Footwear"
+                className="w-full h-auto max-h-full object-contain drop-shadow-[0_8px_16px_rgba(37,99,235,0.22)] -rotate-6 transform hover:scale-105 transition-transform"
+              />
+            </div>
+          </div>
         </div>
-        <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
-          {todayDateFormatted} • Territory Performance &amp; Client Visits
-        </p>
       </div>
 
       {/* 2. Sales Representative Territory Quota & Incentive Card */}
-      <div className="rounded-2xl border border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-blue-50/70 via-surface to-indigo-50/40 dark:from-slate-900 dark:via-slate-850 dark:to-blue-950/40 p-3.5 sm:p-5 shadow-xs">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
+      <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-card p-4 sm:p-5 shadow-xs">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 dark:divide-slate-800">
           {/* Milestone 1: Monthly Target Progress */}
-          <div className="space-y-2 min-w-0 pr-0 sm:pr-3">
+          <div className="space-y-2 min-w-0 pr-0 sm:pr-4">
             <div className="flex items-center justify-between gap-1">
-              <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
-                <Icons.Target size={13} className="text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 truncate">
+                <Icons.Target size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
                 <span>Monthly Quota</span>
               </span>
-              <span className={`text-[9.5px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full border shrink-0 ${
+              <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border shrink-0 ${
                 targetPct >= 80
-                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/80'
-                  : 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200/80'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 border-emerald-200/80'
+                  : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 border-blue-200/80'
               }`}>
                 {targetPct}% Achieved
               </span>
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-1">
-                <span className="text-base sm:text-2xl font-bold tracking-tight text-foreground font-display truncate">
+                <span className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-display truncate">
                   {formatLakh(repBooked)}
                 </span>
-                <span className="text-[11px] sm:text-xs text-muted-foreground font-semibold shrink-0">
+                <span className="text-xs text-slate-400 font-semibold shrink-0">
                   / {formatLakh(repTarget)}
                 </span>
               </div>
               {/* Progress bar */}
-              <div className="w-full bg-blue-100 dark:bg-blue-950/80 rounded-full h-2 mt-1.5 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-2 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${targetPct}%` }}
@@ -158,15 +200,15 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
 
           {/* Milestone 2: Accrued Commission */}
           <div className="space-y-1.5 min-w-0 pt-3 sm:pt-0 pl-0 sm:pl-4">
-            <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
-              <Icons.TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Icons.TrendingUp size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Accrued Commission</span>
             </span>
-            <p className="text-base sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-display truncate">
+            <p className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-display truncate">
               {formatINR(repCommission)}
             </p>
             <div className="flex items-center gap-1.5">
-              <span className="text-[9.5px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
                 {currentRep.commissionRate || 4}% Field Incentive Rate
               </span>
             </div>
@@ -174,24 +216,24 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
 
           {/* Milestone 3: Field Store Visits */}
           <div className="space-y-1.5 min-w-0 pt-3 sm:pt-0 pl-0 sm:pl-4">
-            <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
-              <Icons.Visits size={13} className="text-purple-600 dark:text-purple-400 shrink-0" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Icons.Visits size={14} className="text-purple-600 dark:text-purple-400 shrink-0" />
               <span>Today's Field Visits</span>
             </span>
             <div className="flex items-baseline justify-between gap-1">
-              <p className="text-base sm:text-2xl font-bold tracking-tight text-foreground font-display">
-                {visitsDone} <span className="text-xs text-muted-foreground font-normal">/ {visitsTotal} Stores</span>
+              <p className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-display">
+                {visitsDone} <span className="text-xs text-slate-400 font-normal">/ {visitsTotal} Stores</span>
               </p>
               <button
                 type="button"
                 onClick={() => onNavigate('/sales/visits')}
-                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
+                className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5 cursor-pointer"
               >
                 <span>Full Route</span>
-                <Icons.ChevronRight size={11} />
+                <Icons.ChevronRight size={12} />
               </button>
             </div>
-            <div className="w-full bg-purple-100 dark:bg-purple-950/80 rounded-full h-1.5 mt-1 overflow-hidden">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mt-1.5 overflow-hidden">
               <div
                 className="bg-purple-600 h-1.5 rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.round((visitsDone / (visitsTotal || 1)) * 100))}%` }}
@@ -201,24 +243,24 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
 
           {/* Milestone 4: Route Collections Outstanding */}
           <div className="space-y-1.5 min-w-0 pt-3 sm:pt-0 pl-0 sm:pl-4">
-            <span className="text-[10.5px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 truncate">
-              <Icons.Payments size={13} className="text-rose-600 dark:text-rose-400 shrink-0" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Icons.Payments size={14} className="text-rose-600 dark:text-rose-400 shrink-0" />
               <span>Territory Dues</span>
             </span>
             <div className="flex items-baseline justify-between gap-1">
-              <p className="text-base sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-display truncate">
+              <p className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-display truncate">
                 {formatLakh(routeDues)}
               </p>
               <button
                 type="button"
                 onClick={() => onNavigate('/sales/collections')}
-                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5 cursor-pointer shrink-0"
+                className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5 cursor-pointer shrink-0"
               >
                 <span>Ledger</span>
-                <Icons.ChevronRight size={11} />
+                <Icons.ChevronRight size={12} />
               </button>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">
+            <p className="text-xs text-slate-400 truncate">
               Pending cheque &amp; credit clearing
             </p>
           </div>
@@ -226,67 +268,65 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
       </div>
 
       {/* 3. Field Sales Period Filter Strip & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1 sm:pt-2 border-t border-border">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">
-            Period:
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider shrink-0">
+            PERIOD:
           </span>
-          {/* iOS/Stitch Style 4-Segmented Control */}
-          <div className="grid grid-cols-4 w-full sm:flex sm:w-auto p-1 bg-muted/80 dark:bg-muted/40 rounded-2xl border border-border/80 shadow-2xs gap-0.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {(
               [
-                { label: 'Today', shortLabel: 'Today', value: 'today' },
-                { label: 'This Week', shortLabel: 'Week', value: 'week' },
-                { label: 'This Month', shortLabel: 'Month', value: 'month' },
-                { label: 'This Quarter', shortLabel: 'Quarter', value: 'quarter' },
-              ] as { label: string; shortLabel: string; value: DashboardPeriod }[]
-            ).map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setPeriod(tab.value)}
-                className={`py-1.5 px-2 sm:px-3 text-xs font-semibold rounded-xl transition-all duration-150 cursor-pointer whitespace-nowrap text-center select-none active:scale-95 ${
-                  period === tab.value
-                    ? 'bg-primary text-white dark:bg-primary dark:text-white shadow-xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <span className="sm:hidden">{tab.shortLabel}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
+                { label: 'Today', value: 'today' },
+                { label: 'This Week', value: 'week' },
+                { label: 'This Month', value: 'month' },
+                { label: 'This Quarter', value: 'quarter' },
+              ] as { label: string; value: DashboardPeriod }[]
+            ).map((tab) => {
+              const isSelected = period === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setPeriod(tab.value)}
+                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none active:scale-95 ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-xs font-bold'
+                      : 'bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Quick Action Buttons (Responsive on both desktop and mobile) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={Icons.Visits}
+        {/* Quick Action Buttons */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+          <button
+            type="button"
             onClick={() => onNavigate('/sales/visits')}
-            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 h-8 sm:h-9"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-card border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
           >
-            Log Visit
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={Icons.Payments}
+            <Icons.Visits size={14} className="text-blue-600 dark:text-blue-400" />
+            <span>Log Visit</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setIsPaymentModalOpen(true)}
-            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 h-8 sm:h-9"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-card border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
           >
-            Record Payment
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            icon={Icons.Add}
+            <span className="font-bold text-sm text-blue-600">₹</span>
+            <span>Record Payment</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setIsCreateOrderModalOpen(true)}
-            className="flex-1 sm:flex-initial text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 h-8 sm:h-9 font-semibold"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
           >
-            New Order
-          </Button>
+            <span className="font-bold text-base leading-none">+</span>
+            <span>New Order</span>
+          </button>
         </div>
       </div>
 
@@ -295,7 +335,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
         <div className="flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Icons.TrendingUp size={14} className="text-primary" />
-            <span>Key Territory Metrics</span>
+            <span>Key Business Performance</span>
           </h2>
         </div>
         <OverviewKpiCards
@@ -321,7 +361,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
         <div className="flex items-center justify-between px-0.5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Icons.Dashboard size={14} className="text-primary" />
-            <span>Quick Field Operations</span>
+            <span>Quick Operational Shortcuts</span>
           </h2>
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
             <span>1-Tap Actions</span>
@@ -339,56 +379,47 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
 
       {/* 6. Urgent Field Action Items */}
       {needsAttention && needsAttention.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between px-0.5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-              <Icons.AlertCircle size={14} className="animate-pulse" />
-              <span>Urgent Field Action Items ({needsAttention.length})</span>
-            </h2>
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-              <span>Action Required</span>
+        <div className="rounded-2xl border border-rose-200/80 dark:border-rose-950/60 bg-white dark:bg-card p-4 sm:p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-rose-500">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                NEEDS IMMEDIATE ATTENTION ({needsAttention.length})
+              </h2>
+            </div>
+            <span className="inline-flex items-center text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-2.5 py-0.5 rounded-full border border-rose-200/80 dark:border-rose-900/60">
+              Action Required
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
+
+          <div className="space-y-2">
             {needsAttention.map((item) => (
               <div
                 key={item.id}
                 onClick={() => onNavigate(item.route)}
-                className={`p-2.5 sm:p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 select-none active:scale-[0.98] ${
-                  item.badgeVariant === 'rose'
-                    ? 'bg-rose-50/80 dark:bg-rose-950/40 border-l-[3.5px] border-l-rose-500 border-rose-200 dark:border-rose-900/60 hover:bg-rose-100/70 shadow-2xs'
-                    : item.badgeVariant === 'amber'
-                    ? 'bg-amber-50/80 dark:bg-amber-950/40 border-l-[3.5px] border-l-amber-500 border-amber-200 dark:border-amber-900/60 hover:bg-amber-100/70 shadow-2xs'
-                    : item.badgeVariant === 'purple'
-                    ? 'bg-purple-50/80 dark:bg-purple-950/40 border-l-[3.5px] border-l-purple-500 border-purple-200 dark:border-purple-900/60 hover:bg-purple-100/70 shadow-2xs'
-                    : 'bg-blue-50/80 dark:bg-blue-950/40 border-l-[3.5px] border-l-blue-500 border-blue-200 dark:border-blue-900/60 hover:bg-blue-100/70 shadow-2xs'
-                }`}
+                className="p-3 sm:p-3.5 rounded-xl border border-rose-100 dark:border-rose-950/60 border-l-[3.5px] border-l-rose-500 bg-white dark:bg-card hover:bg-rose-50/40 transition-all cursor-pointer flex items-center justify-between gap-3 select-none"
               >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`w-2 h-2 rounded-full shrink-0 ${
-                        item.badgeVariant === 'rose'
-                          ? 'bg-rose-500 animate-ping'
-                          : item.badgeVariant === 'amber'
-                          ? 'bg-amber-500'
-                          : item.badgeVariant === 'purple'
-                          ? 'bg-purple-500'
-                          : 'bg-blue-500'
-                      }`}
-                    />
-                    <span className="text-xs font-bold text-foreground truncate">{item.title}</span>
-                  </div>
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                    {item.title}
+                  </span>
                   {item.amount !== undefined && item.amount > 0 && (
-                    <p className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400 mt-0.5">
-                      Total Due: ₹{item.amount.toLocaleString('en-IN')}
-                    </p>
+                    <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                      • ₹{item.amount.toLocaleString('en-IN')}
+                    </span>
                   )}
                 </div>
-                <div className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface/90 dark:bg-card/90 border border-border/80 shadow-2xs text-xs font-bold text-primary active:scale-95 transition-transform">
-                  <span>Open</span>
-                  <Icons.ChevronRight size={13} />
-                </div>
+                <button
+                  type="button"
+                  className="shrink-0 px-3 py-1 rounded-full text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 flex items-center gap-1 transition-colors"
+                >
+                  <span>Resolve</span>
+                  <span className="text-sm leading-none">→</span>
+                </button>
               </div>
             ))}
           </div>

@@ -25,9 +25,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1 text-sm text-muted-foreground break-words">
+            <div className="mt-1 text-sm text-muted-foreground break-words">
               {subtitle}
-            </p>
+            </div>
           )}
         </div>
         {actions && (

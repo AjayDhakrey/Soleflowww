@@ -226,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                   isCollapsed ? 'justify-center px-0' : 'px-2.5 gap-3'
                 } ${
                   isActive
-                    ? 'bg-emerald-50/90 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 font-semibold shadow-2xs'
+                    ? 'bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/60 text-blue-600 dark:text-blue-400 font-semibold shadow-2xs'
                     : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 font-medium'
                 }`}
               >
@@ -235,19 +235,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                 </div>
 
                 {!isCollapsed && (
-                  <span title={item.name} className={`text-[13px] font-medium truncate flex-1 text-left ${isActive ? 'text-emerald-700 dark:text-emerald-300 font-semibold' : 'text-slate-700 dark:text-slate-200'}`}>
+                  <span title={item.name} className={`text-[13px] font-medium truncate flex-1 text-left ${isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-700 dark:text-slate-200'}`}>
                     {item.name}
                   </span>
                 )}
 
                 {!isCollapsed && item.badge && item.badge > 0 && (
-                  <span className="w-5 h-5 flex items-center justify-center text-xs font-medium tabular-nums rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 shrink-0">
+                  <span className="w-5 h-5 flex items-center justify-center text-xs font-medium tabular-nums rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shrink-0">
                     {item.badge}
                   </span>
                 )}
 
                 {!isCollapsed && isActive && (
-                  <Icons.ChevronRight size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <Icons.ChevronRight size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
                 )}
 
                 {isCollapsed && item.badge && item.badge > 0 && (

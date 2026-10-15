@@ -5,6 +5,7 @@ import { OrderInspectDrawer } from '../../components/orders/OrderInspectDrawer';
 import { OrdersKpiCards } from '../../components/orders/OrdersKpiCards';
 import { InvoicePreviewModal } from '../../components/orders/OrderInvoiceTemplate';
 import {
+  Home,
   ShoppingBag,
   Factory,
   Truck,
@@ -268,16 +269,17 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
   return (
     <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
       {/* 1. Breadcrumbs */}
-      <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400">
+      <div className="flex items-center gap-2 text-xs font-medium">
         <button
           type="button"
           onClick={() => onNavigate?.('/admin/dashboard')}
-          className="hover:underline cursor-pointer"
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
         >
-          Dashboard
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
         </button>
-        <ChevronRight size={13} className="text-muted-foreground/60" />
-        <span className="text-blue-600 dark:text-blue-400 font-bold">
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
           {viewMode === 'detail' && selectedOrder ? selectedOrder.id : 'Orders'}
         </span>
       </div>
@@ -285,32 +287,34 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
       {/* 2. Header & Action Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
             <span>Wholesale Orders</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-800/60">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
               {orders.length}
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
             Track production batches, factory allocations, dispatch bilty, and invoice balances.
           </p>
         </div>
 
         {viewMode === 'list' ? (
-          <button
-            type="button"
-            onClick={() => setIsCreateOrderModalOpen(true)}
-            className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>New Wholesale Order</span>
-          </button>
+          <div className="w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setIsCreateOrderModalOpen(true)}
+              className="w-full sm:w-auto justify-center px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              <span>New Order</span>
+            </button>
+          </div>
         ) : (
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ChevronLeft size={16} />
               <span>Back</span>
@@ -318,7 +322,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
             <button
               type="button"
               onClick={() => setIsInvoiceModalOpen(true)}
-              className="flex-1 sm:flex-initial justify-center px-3.5 py-2 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Printer size={15} />
               <span>Print Invoice</span>
@@ -326,7 +330,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
             <button
               type="button"
               onClick={() => setIsPaymentModalOpen(true)}
-              className="w-full sm:w-auto justify-center px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-95"
             >
               <span>Record Payment</span>
             </button>

@@ -16,6 +16,7 @@ import { DesignsKpiCards } from '../../components/designs/DesignsKpiCards';
 import { DesignSharesModal } from '../../components/designs/DesignSharesModal';
 import { AddDesignModal } from '../../components/designs/AddDesignModal';
 import {
+  Home,
   Plus,
   Edit2,
   Archive,
@@ -256,45 +257,68 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
   return (
     <div className="p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-[1600px] mx-auto pb-24 md:pb-12 font-sans">
-      {/* 1. Page Header */}
-      <PageHeader
-        breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Catalogue' }]}
-        title="Footwear Catalogue & Lookbook"
-        subtitle="Curated B2B wholesale designs, material specs, and WhatsApp shareable lookbooks."
-        actions={
-          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-            <Button
-              variant="secondary"
-              icon={Icons.Clock}
-              onClick={() => setIsShareHistoryOpen(true)}
-              className="rounded-xl text-xs sm:text-sm py-2 px-3 hidden sm:inline-flex"
+      {/* 1. Breadcrumbs */}
+      <div className="flex items-center gap-2 text-xs font-medium">
+        <button
+          type="button"
+          onClick={() => onNavigate?.('/admin/dashboard')}
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
+        >
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
+        </button>
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
+          Catalogue
+        </span>
+      </div>
+
+      {/* 2. Header & Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <span>Footwear Catalogue &amp; Lookbook</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
+              {rawDesigns.length}
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
+            Curated B2B wholesale designs, material specs, and WhatsApp shareable lookbooks.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+          <button
+            type="button"
+            onClick={() => setIsShareHistoryOpen(true)}
+            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-95 hidden sm:inline-flex"
+          >
+            <Icons.Clock size={14} />
+            <span>Sharing History</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800 inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+          >
+            <Icons.WhatsApp size={14} />
+            <span>Share Lookbook ({selectedDesignIds.length})</span>
+          </button>
+          {isUserAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingDesign(null);
+                setIsAddModalOpen(true);
+              }}
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
             >
-              Sharing History
-            </Button>
-            <Button
-              variant="secondary"
-              icon={Icons.WhatsApp}
-              onClick={() => setIsShareModalOpen(true)}
-              className="flex-1 sm:flex-initial text-xs sm:text-sm py-2 px-3 text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 hover:bg-emerald-100/70 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-800 rounded-xl"
-            >
-              Share Lookbook ({selectedDesignIds.length})
-            </Button>
-            {isUserAdmin && (
-              <Button
-                variant="primary"
-                icon={Plus}
-                onClick={() => {
-                  setEditingDesign(null);
-                  setIsAddModalOpen(true);
-                }}
-                className="flex-1 sm:flex-initial text-xs sm:text-sm py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/25 rounded-xl font-bold"
-              >
-                Add Design
-              </Button>
-            )}
-          </div>
-        }
-      />
+              <Plus size={16} strokeWidth={2.5} />
+              <span>Add Design</span>
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* 2. KPI Summary Row */}
       <DesignsKpiCards

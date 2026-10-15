@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { AppProvider, useApp } from './context/AppContext';
@@ -7,44 +7,46 @@ import { useRealtimeSubscriptions } from './hooks/useRealtime';
 import { useDesignsRealtime } from './hooks/useDesignsRealtime';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { CustomersPage } from './pages/customers/CustomersPage';
-import { DesignsPage } from './pages/designs/DesignsPage';
-import { OrdersPage } from './pages/orders/OrdersPage';
-import { SalesTeamPage } from './pages/sales/SalesTeamPage';
-import { ManufacturersPage } from './pages/manufacturers/ManufacturersPage';
-import { PaymentsPage } from './pages/payments/PaymentsPage';
-import { ReportsPage } from './pages/reports/ReportsPage';
-import { SettingsPage } from './pages/settings/SettingsPage';
-import { NotificationsPage } from './pages/notifications/NotificationsPage';
-import { SalesDashboard } from './pages/sales/SalesDashboard';
-import { FollowUpsPage } from './pages/sales/FollowUpsPage';
-import { VisitsPage } from './pages/sales/VisitsPage';
-import { CollectionsPage } from './pages/sales/CollectionsPage';
-import { ReceiptPage } from './pages/payments/ReceiptPage';
-import { LoginPage } from './pages/login/LoginPage';
-import { LandingPage } from './pages/landing/LandingPage';
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
-import { PublicLookbookPage } from './pages/public/PublicLookbookPage';
-import {
-  TotalCustomersInsightPage,
-  TotalReceivablesInsightPage,
-  OverdueAccountsInsightPage,
-  ClearedAccountsInsightPage,
-} from './pages/customers/insights';
-import { RecordPaymentModal } from './components/payments/RecordPaymentModal';
-import { CreateOrderWizardModal } from './components/orders/CreateOrderWizardModal';
-import { AddCustomerModal } from './components/customers/AddCustomerModal';
-import { EditCustomerModal } from './components/customers/EditCustomerModal';
-import { ShareLookbookModal } from './components/designs/ShareLookbookModal';
-import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
-import { AddManufacturerModal } from './components/manufacturers/AddManufacturerModal';
-import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
-import { AccountsPage } from './pages/platform/AccountsPage';
 import { ViewModeProvider } from './context/ViewModeContext';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+
+// Code-split pages for instant initial page load
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const SalesDashboard = lazy(() => import('./pages/sales/SalesDashboard').then(m => ({ default: m.SalesDashboard })));
+const CustomersPage = lazy(() => import('./pages/customers/CustomersPage').then(m => ({ default: m.CustomersPage })));
+const DesignsPage = lazy(() => import('./pages/designs/DesignsPage').then(m => ({ default: m.DesignsPage })));
+const OrdersPage = lazy(() => import('./pages/orders/OrdersPage').then(m => ({ default: m.OrdersPage })));
+const SalesTeamPage = lazy(() => import('./pages/sales/SalesTeamPage').then(m => ({ default: m.SalesTeamPage })));
+const ManufacturersPage = lazy(() => import('./pages/manufacturers/ManufacturersPage').then(m => ({ default: m.ManufacturersPage })));
+const PaymentsPage = lazy(() => import('./pages/payments/PaymentsPage').then(m => ({ default: m.PaymentsPage })));
+const ReportsPage = lazy(() => import('./pages/reports/ReportsPage').then(m => ({ default: m.ReportsPage })));
+const SettingsPage = lazy(() => import('./pages/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
+const FollowUpsPage = lazy(() => import('./pages/sales/FollowUpsPage').then(m => ({ default: m.FollowUpsPage })));
+const VisitsPage = lazy(() => import('./pages/sales/VisitsPage').then(m => ({ default: m.VisitsPage })));
+const CollectionsPage = lazy(() => import('./pages/sales/CollectionsPage').then(m => ({ default: m.CollectionsPage })));
+const ReceiptPage = lazy(() => import('./pages/payments/ReceiptPage').then(m => ({ default: m.ReceiptPage })));
+const LoginPage = lazy(() => import('./pages/login/LoginPage').then(m => ({ default: m.LoginPage })));
+const LandingPage = lazy(() => import('./pages/landing/LandingPage').then(m => ({ default: m.LandingPage })));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const PublicLookbookPage = lazy(() => import('./pages/public/PublicLookbookPage').then(m => ({ default: m.PublicLookbookPage })));
+
+const TotalCustomersInsightPage = lazy(() => import('./pages/customers/insights').then(m => ({ default: m.TotalCustomersInsightPage })));
+const TotalReceivablesInsightPage = lazy(() => import('./pages/customers/insights').then(m => ({ default: m.TotalReceivablesInsightPage })));
+const OverdueAccountsInsightPage = lazy(() => import('./pages/customers/insights').then(m => ({ default: m.OverdueAccountsInsightPage })));
+const ClearedAccountsInsightPage = lazy(() => import('./pages/customers/insights').then(m => ({ default: m.ClearedAccountsInsightPage })));
+
+const RecordPaymentModal = lazy(() => import('./components/payments/RecordPaymentModal').then(m => ({ default: m.RecordPaymentModal })));
+const CreateOrderWizardModal = lazy(() => import('./components/orders/CreateOrderWizardModal').then(m => ({ default: m.CreateOrderWizardModal })));
+const AddCustomerModal = lazy(() => import('./components/customers/AddCustomerModal').then(m => ({ default: m.AddCustomerModal })));
+const EditCustomerModal = lazy(() => import('./components/customers/EditCustomerModal').then(m => ({ default: m.EditCustomerModal })));
+const ShareLookbookModal = lazy(() => import('./components/designs/ShareLookbookModal').then(m => ({ default: m.ShareLookbookModal })));
+const DemoWalkthroughModal = lazy(() => import('./components/demo/DemoWalkthroughModal').then(m => ({ default: m.DemoWalkthroughModal })));
+const AddManufacturerModal = lazy(() => import('./components/manufacturers/AddManufacturerModal').then(m => ({ default: m.AddManufacturerModal })));
+const PlatformAdminPage = lazy(() => import('./pages/admin/PlatformAdminPage').then(m => ({ default: m.PlatformAdminPage })));
+const AccountsPage = lazy(() => import('./pages/platform/AccountsPage').then(m => ({ default: m.AccountsPage })));
 
 
 const queryClient = new QueryClient({
@@ -296,36 +298,42 @@ const AppContent: React.FC = () => {
   // 1. Anonymous Public Share Lookbook Route (/s/:token or #s/:token)
   if (unauthView === 'lookbook') {
     return (
-      <PublicLookbookPage
-        shareToken={activeShareToken || 'token-abc-001'}
-        onReturnToApp={() => {
-          window.location.hash = '#login';
-          setUnauthView('login');
-        }}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+        <PublicLookbookPage
+          shareToken={activeShareToken || 'token-abc-001'}
+          onReturnToApp={() => {
+            window.location.hash = '#login';
+            setUnauthView('login');
+          }}
+        />
+      </Suspense>
     );
   }
 
   // 2. Forgot / Reset Password
   if (unauthView === 'forgot_password') {
     return (
-      <ForgotPasswordPage
-        onBackToLogin={() => {
-          window.location.hash = '#login';
-          setUnauthView('login');
-        }}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+        <ForgotPasswordPage
+          onBackToLogin={() => {
+            window.location.hash = '#login';
+            setUnauthView('login');
+          }}
+        />
+      </Suspense>
     );
   }
 
   if (unauthView === 'reset_password') {
     return (
-      <ResetPasswordPage
-        onSuccess={() => {
-          window.location.hash = '#login';
-          setUnauthView('login');
-        }}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+        <ResetPasswordPage
+          onSuccess={() => {
+            window.location.hash = '#login';
+            setUnauthView('login');
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -349,42 +357,46 @@ const AppContent: React.FC = () => {
   // 3. Public Landing Page (Default for root URL /)
   if (unauthView === 'landing') {
     return (
-      <LandingPage
-        isAlreadyLoggedIn={isLoggedIn}
-        onReturnToDashboard={() => {
-          const targetPath = effectiveRole === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
-          setCurrentPath(targetPath);
-          setUnauthView('app');
-          try {
-            if (window.location.pathname !== targetPath) {
-              window.history.pushState({ path: targetPath }, '', targetPath);
-            }
-          } catch (e) {}
-        }}
-        onLoginSuccess={handleLoginSuccess}
-        onNavigateToLogin={(mode = 'login') => {
-          window.location.hash = mode;
-          setUnauthView(mode);
-        }}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+        <LandingPage
+          isAlreadyLoggedIn={isLoggedIn}
+          onReturnToDashboard={() => {
+            const targetPath = effectiveRole === 'admin' ? '/admin/dashboard' : '/sales/dashboard';
+            setCurrentPath(targetPath);
+            setUnauthView('app');
+            try {
+              if (window.location.pathname !== targetPath) {
+                window.history.pushState({ path: targetPath }, '', targetPath);
+              }
+            } catch (e) {}
+          }}
+          onLoginSuccess={handleLoginSuccess}
+          onNavigateToLogin={(mode = 'login') => {
+            window.location.hash = mode;
+            setUnauthView(mode);
+          }}
+        />
+      </Suspense>
     );
   }
 
   // 4. Login / Signup Page
   if (unauthView === 'login' || unauthView === 'signup' || !isLoggedIn) {
     return (
-      <LoginPage
-        initialMode={unauthView === 'signup' ? 'signup' : 'login'}
-        onSuccess={handleLoginSuccess}
-        onBackToLanding={() => {
-          window.location.hash = '#landing';
-          setUnauthView('landing');
-        }}
-        onForgotPassword={() => {
-          window.location.hash = '#auth/forgot-password';
-          setUnauthView('forgot_password');
-        }}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+        <LoginPage
+          initialMode={unauthView === 'signup' ? 'signup' : 'login'}
+          onSuccess={handleLoginSuccess}
+          onBackToLanding={() => {
+            window.location.hash = '#landing';
+            setUnauthView('landing');
+          }}
+          onForgotPassword={() => {
+            window.location.hash = '#auth/forgot-password';
+            setUnauthView('forgot_password');
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -619,21 +631,30 @@ const AppContent: React.FC = () => {
 
         {/* Dynamic Page Body with smooth scroll and bottom padding for fixed mobile nav */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-0 bg-background">
-          {renderPage()}
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+              <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs font-medium">Loading page...</span>
+            </div>
+          }>
+            {renderPage()}
+          </Suspense>
         </main>
       </div>
 
       {/* 3. Mobile Persistent Bottom Tab Bar */}
       <MobileBottomNav currentPath={currentPath} onNavigate={handleNavigate} />
 
-      {/* 4. Global Modals */}
-      <RecordPaymentModal />
-      <CreateOrderWizardModal />
-      <AddCustomerModal />
-      <EditCustomerModal />
-      <AddManufacturerModal />
-      <ShareLookbookModal />
-      <DemoWalkthroughModal onNavigate={handleNavigate} />
+      {/* 4. Global Modals (Lazy Loaded) */}
+      <Suspense fallback={null}>
+        <RecordPaymentModal />
+        <CreateOrderWizardModal />
+        <AddCustomerModal />
+        <EditCustomerModal />
+        <AddManufacturerModal />
+        <ShareLookbookModal />
+        <DemoWalkthroughModal onNavigate={handleNavigate} />
+      </Suspense>
 
       {/* 5. Global Toast Alert */}
       {toastMessage && (

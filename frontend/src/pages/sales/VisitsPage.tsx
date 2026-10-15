@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Icons } from '../../lib/icons';
+import { Home } from 'lucide-react';
 import {
   PageHeader,
   KpiCard,
@@ -56,13 +57,34 @@ export const VisitsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-12 animate-in fade-in duration-150">
-      {/* 1. Page Header */}
-      <PageHeader
-        breadcrumbs={[{ label: 'Dashboard', href: '/sales/dashboard' }, { label: 'Store Visits' }]}
-        title="My Retail Store Visits & Routes"
-        subtitle="Log physical buyer showroom check-ins, record order negotiations, and sample showings."
-      />
+    <div className="p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto pb-24 md:pb-12 animate-in fade-in duration-150">
+      {/* 1. Breadcrumbs */}
+      <div className="flex items-center gap-2 text-xs font-medium">
+        <a
+          href="/sales/dashboard"
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
+        >
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
+        </a>
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
+          Store Visits
+        </span>
+      </div>
+
+      {/* 2. Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+          <span>My Retail Store Visits &amp; Routes</span>
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
+            {fieldVisits.length}
+          </span>
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
+          Log physical buyer showroom check-ins, record order negotiations, and sample showings.
+        </p>
+      </div>
 
       {/* 2. KPI Summary Row (3D Claymorphic Redesign) */}
       <VisitsKpiCards

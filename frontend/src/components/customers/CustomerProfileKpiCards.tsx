@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icons } from '../../lib/icons';
+import { ShoppingBag, CheckCircle2, AlertTriangle, CreditCard } from 'lucide-react';
 
 interface CustomerProfileKpiCardsProps {
   lifetimeBusiness: string;
@@ -15,193 +15,6 @@ interface CustomerProfileKpiCardsProps {
   paymentTerms?: string;
 }
 
-/* =========================================================================
-   3D Claymorphic Vector SVGs for Customer Detail / Profile
-   ========================================================================= */
-
-// 1. Lifetime Business (3D Blue Diamond Vault & Briefcase)
-export const ProfileLifetime3D = () => (
-  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="prfLifeGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#E0F2FE" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#E0F2FE" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="prfLifeSphere" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#7DD3FC" />
-          <stop offset="35%" stopColor="#0284C7" />
-          <stop offset="75%" stopColor="#0369A1" />
-          <stop offset="100%" stopColor="#075985" />
-        </radialGradient>
-      </defs>
-
-      <circle cx="50" cy="50" r="42" fill="url(#prfLifeGlow)" />
-
-      {/* Main Base Shield */}
-      <rect
-        x="22"
-        y="22"
-        width="56"
-        height="56"
-        rx="18"
-        fill="url(#prfLifeSphere)"
-        filter="drop-shadow(0 6px 12px rgba(2,132,199,0.35))"
-      />
-
-      {/* 3D Rupee / Consignment Box */}
-      <rect x="32" y="38" width="36" height="28" rx="6" fill="#FFFFFF" opacity="0.95" />
-      <path d="M42 38V32C42 29.8 43.8 28 46 28H54C56.2 28 58 29.8 58 32V38" stroke="#0284C7" strokeWidth="3" fill="none" />
-      <line x1="32" y1="50" x2="68" y2="50" stroke="#0284C7" strokeWidth="2" opacity="0.4" />
-      <circle cx="50" cy="50" r="3" fill="#0369A1" />
-
-      {/* Specular Highlight */}
-      <ellipse cx="36" cy="28" rx="7" ry="2.5" fill="#FFFFFF" opacity="0.5" />
-    </svg>
-  </div>
-);
-
-// 2. Total Realized (3D Emerald Realized Stack & Checkmark)
-export const ProfilePaid3D = () => (
-  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="prfPaidGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#D1FAE5" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#D1FAE5" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="prfPaidSphere" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#6EE7B7" />
-          <stop offset="35%" stopColor="#10B981" />
-          <stop offset="75%" stopColor="#059669" />
-          <stop offset="100%" stopColor="#064E3B" />
-        </radialGradient>
-      </defs>
-
-      <circle cx="50" cy="50" r="42" fill="url(#prfPaidGlow)" />
-
-      {/* Main Base Shield */}
-      <circle cx="50" cy="50" r="32" fill="url(#prfPaidSphere)" filter="drop-shadow(0 6px 12px rgba(5,150,105,0.35))" />
-
-      {/* Inner Concentric Ring */}
-      <circle cx="50" cy="50" r="25" stroke="#A7F3D0" strokeWidth="2" strokeDasharray="5 3" opacity="0.8" />
-
-      {/* 3D Checkmark */}
-      <path
-        d="M36 50L45 59L65 39"
-        stroke="#FFFFFF"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        filter="drop-shadow(0 2px 4px rgba(0,0,0,0.25))"
-      />
-
-      {/* Specular Highlight */}
-      <ellipse cx="40" cy="27" rx="7" ry="3" fill="#FFFFFF" opacity="0.5" transform="rotate(-20 40 27)" />
-    </svg>
-  </div>
-);
-
-// 3. Outstanding Due (3D Rose-Red Debt Ledger / Exclamation)
-export const ProfileDue3D = () => (
-  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="prfDueGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFE4E6" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#FFE4E6" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="prfDueSphere" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#FDA4AF" />
-          <stop offset="35%" stopColor="#F43F5E" />
-          <stop offset="75%" stopColor="#E11D48" />
-          <stop offset="100%" stopColor="#9F1239" />
-        </radialGradient>
-      </defs>
-
-      <circle cx="50" cy="50" r="42" fill="url(#prfDueGlow)" />
-
-      {/* 3D Octagonal Alert Coin */}
-      <polygon
-        points="50,18 76,29 82,55 68,78 32,78 18,55 24,29"
-        fill="url(#prfDueSphere)"
-        filter="drop-shadow(0 6px 12px rgba(225,29,72,0.35))"
-      />
-
-      {/* Inset Rupee Symbol */}
-      <path
-        d="M40 37H58M40 44H56M40 37V63M46 44C52 44 54 49 51 53C48 56 42 56 42 56L56 65"
-        stroke="#FFFFFF"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Specular Glint */}
-      <ellipse cx="40" cy="27" rx="7" ry="2.5" fill="#FFFFFF" opacity="0.45" />
-    </svg>
-  </div>
-);
-
-// 4. Credit Limit Usage (3D Purple Gauge / Meter)
-export const ProfileCredit3D = () => (
-  <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
-    <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm select-none" fill="none">
-      <defs>
-        <radialGradient id="prfCrdGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#EDE9FE" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#EDE9FE" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="prfCrdSphere" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#C4B5FD" />
-          <stop offset="35%" stopColor="#8B5CF6" />
-          <stop offset="75%" stopColor="#6D28D9" />
-          <stop offset="100%" stopColor="#4C1D95" />
-        </radialGradient>
-      </defs>
-
-      <circle cx="50" cy="50" r="42" fill="url(#prfCrdGlow)" />
-
-      {/* Main Base Card */}
-      <rect
-        x="22"
-        y="22"
-        width="56"
-        height="56"
-        rx="18"
-        fill="url(#prfCrdSphere)"
-        filter="drop-shadow(0 6px 12px rgba(109,40,217,0.35))"
-      />
-
-      {/* Gauge Arc */}
-      <path
-        d="M34 60A20 20 0 1 1 66 60"
-        stroke="#DDD6FE"
-        strokeWidth="5"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M34 60A20 20 0 0 1 54 30"
-        stroke="#F59E0B"
-        strokeWidth="5"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      {/* Gauge Needle Center */}
-      <circle cx="50" cy="56" r="4.5" fill="#FFFFFF" />
-      <line x1="50" y1="56" x2="57" y2="40" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
-
-      {/* Specular Highlight */}
-      <ellipse cx="36" cy="27" rx="7" ry="2.5" fill="#FFFFFF" opacity="0.45" />
-    </svg>
-  </div>
-);
-
-/* =========================================================================
-   Main Component: CustomerProfileKpiCards
-   ========================================================================= */
 export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = ({
   lifetimeBusiness,
   lifetimeCaption = 'Wholesale consignments',
@@ -218,18 +31,17 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
       {/* 1. Lifetime Business */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <ProfileLifetime3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Lifetime Business">
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center shrink-0">
+          <ShoppingBag className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Lifetime Business">
             Lifetime Business
           </span>
-          <p
-            className="text-base sm:text-2xl font-bold tracking-tight text-blue-700 dark:text-blue-300 mt-0.5 font-display truncate"
-            title={lifetimeBusiness}
-          >
+          <div className="text-lg sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate" title={lifetimeBusiness}>
             {lifetimeBusiness}
-          </p>
+          </div>
           <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={lifetimeCaption}>
             {lifetimeCaption}
           </p>
@@ -237,18 +49,17 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
       </div>
 
       {/* 2. Total Realized */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <ProfilePaid3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Total Realized">
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+          <CheckCircle2 className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-600 dark:text-emerald-400" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Total Realized">
             Total Realized
           </span>
-          <p
-            className="text-base sm:text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 mt-0.5 font-display truncate"
-            title={totalPaid}
-          >
+          <div className="text-lg sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate" title={totalPaid}>
             {totalPaid}
-          </p>
+          </div>
           <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={paidCaption}>
             {paidCaption}
           </p>
@@ -256,24 +67,38 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
       </div>
 
       {/* 3. Outstanding Due */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <ProfileDue3D />
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Outstanding Balance">
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className={`w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
+          isOverdue 
+            ? 'bg-rose-50 dark:bg-rose-950/60' 
+            : isCleared 
+            ? 'bg-emerald-50 dark:bg-emerald-950/60' 
+            : 'bg-amber-50 dark:bg-amber-950/60'
+        }`}>
+          <AlertTriangle className={`w-5 h-5 sm:w-7 sm:h-7 ${
+            isOverdue 
+              ? 'text-rose-600 dark:text-rose-400' 
+              : isCleared 
+              ? 'text-emerald-600 dark:text-emerald-400' 
+              : 'text-amber-600 dark:text-amber-400'
+          }`} strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Outstanding Due">
             Outstanding Due
           </span>
-          <p
-            className={`text-base sm:text-2xl font-bold tracking-tight mt-0.5 font-display truncate ${
+          <div
+            className={`text-lg sm:text-2xl font-bold tracking-tight mt-0.5 font-display truncate ${
               isOverdue
                 ? 'text-rose-600 dark:text-rose-400'
                 : isCleared
                 ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-slate-900 dark:text-white'
+                : 'text-amber-600 dark:text-amber-400'
             }`}
             title={outstandingDue}
           >
             {outstandingDue}
-          </p>
+          </div>
           <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={dueCaption}>
             {dueCaption}
           </p>
@@ -281,24 +106,26 @@ export const CustomerProfileKpiCards: React.FC<CustomerProfileKpiCardsProps> = (
       </div>
 
       {/* 4. Credit Limit Usage */}
-      <div className="group relative rounded-xl sm:rounded-2xl p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
-        <ProfileCredit3D />
-        <div className="flex-1 min-w-0">
+      <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-950/60 flex items-center justify-center shrink-0">
+          <CreditCard className="w-5 h-5 sm:w-7 sm:h-7 text-purple-600 dark:text-purple-400" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center justify-between gap-1.5">
-            <span className="text-[11px] sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 block truncate" title="Credit Limit Usage">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Credit Limit Usage">
               Credit Usage
             </span>
-            <span className={`text-[10px] sm:text-xs font-bold font-mono px-1.5 py-0.2 rounded-md shrink-0 ${
+            <span className={`text-[9px] sm:text-xs font-bold font-mono px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md shrink-0 ${
               limitUsage > 100
-                ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
                 : limitUsage >= 80
-                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
-                : 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
+                ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                : 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
             }`}>
               {limitUsage}%
             </span>
           </div>
-          <div className="w-full h-1.5 sm:h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden my-1 sm:my-1.5">
+          <div className="w-full h-1 sm:h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden my-0.5 sm:my-1.5">
             <div
               style={{ width: `${Math.min(limitUsage, 100)}%` }}
               className={`h-full rounded-full transition-all duration-500 ${

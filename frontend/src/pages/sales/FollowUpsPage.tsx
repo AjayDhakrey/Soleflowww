@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { FollowUpsKpiCards } from '../../components/sales/FollowUpsKpiCards';
 import {
+  Home,
   CalendarCheck2,
   Hourglass,
   CheckCircle2,
@@ -71,29 +72,33 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
+    <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground animate-in fade-in duration-150">
       {/* 1. Breadcrumbs */}
-      <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+      <div className="flex items-center gap-2 text-xs font-medium">
         <button
           type="button"
           onClick={() => onNavigate?.('/sales/dashboard')}
-          className="hover:underline cursor-pointer"
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
         >
-          Dashboard
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
         </button>
-        <ChevronRight size={13} className="text-muted-foreground/60" />
-        <span className="text-primary font-bold">
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
           Follow-ups
         </span>
       </div>
 
       {/* 2. Header & Action Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-            Follow-ups &amp; Buyer Reminders
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <span>Follow-ups &amp; Buyer Reminders</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
+              {followUps.length}
+            </span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
             Manage scheduled retailer phone callbacks, sample reviews, and payment promises.
           </p>
         </div>
@@ -101,7 +106,7 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
+          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
         >
           <Plus size={16} strokeWidth={2.5} />
           <span>Add Follow-up</span>

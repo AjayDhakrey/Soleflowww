@@ -22,6 +22,7 @@ import {
   Send,
   Plus,
   Calendar,
+  Home,
 } from 'lucide-react';
 
 interface TotalReceivablesInsightPageProps {
@@ -175,122 +176,137 @@ export const TotalReceivablesInsightPage: React.FC<TotalReceivablesInsightPagePr
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1500px] mx-auto pb-24 md:pb-12 bg-background text-foreground">
-      {/* 1. Breadcrumbs & Top Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <button
-              type="button"
-              onClick={() => onNavigate(fromPath)}
-              className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1"
-            >
-              <ChevronLeft size={14} />
-              <span>Back to {fromPath.includes('dashboard') ? 'Dashboard' : 'Clients'}</span>
-            </button>
-            <span>/</span>
-            <span className="text-muted-foreground">Insights</span>
-            <span>/</span>
-            <span className="text-foreground font-semibold">Total Receivables</span>
-          </div>
-          <div className="flex items-center gap-3 mt-1">
-            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400 flex items-center justify-center shrink-0">
-              <Wallet size={22} strokeWidth={2} />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                Total Receivables
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Outstanding wholesale ledger balances, ageing analysis, and payment collection queue.
-              </p>
-            </div>
-          </div>
+      {/* 1. Standardized Header with Breadcrumbs & Action Buttons */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+          <button
+            type="button"
+            onClick={() => onNavigate(fromPath)}
+            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
+          >
+            <Home className="w-3.5 h-3.5 text-blue-600" />
+            <span>Dashboard</span>
+          </button>
+          <span>/</span>
+          <button
+            type="button"
+            onClick={() => onNavigate(fromPath.includes('dashboard') ? fromPath : '/admin/customers')}
+            className="hover:text-blue-600 transition-colors cursor-pointer"
+          >
+            Clients
+          </button>
+          <span>/</span>
+          <span className="text-slate-800 font-semibold">Total Receivables</span>
         </div>
 
-        {/* Global Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="px-3.5 py-2.5 rounded-xl border border-border bg-surface hover:bg-muted text-foreground text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-          >
-            <Download size={16} />
-            <span>Export CSV</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsPaymentModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-          >
-            <DollarSign size={16} strokeWidth={2.5} />
-            <span>Record Payment</span>
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                Total Receivables
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100">
+                {formatIndianCurrency(metrics.totalReceivables, true)}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Outstanding wholesale ledger balances, ageing analysis, and payment collection queue.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-xs transition-colors cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-slate-500" />
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+            >
+              <DollarSign className="w-4 h-4" />
+              Record Payment
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 2. Top Summary KPI Row (4 Cards) */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
         {/* Total Outstanding */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Total Outstanding">Total Outstanding</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={formatIndianCurrency(metrics.totalReceivables)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-foreground tracking-tight tabular-nums wrap-anywhere">
-              {formatIndianCurrency(metrics.totalReceivables, true)}
-            </h3>
-            {metrics.trends.totalReceivables && (
-              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 shrink-0">
-                {metrics.trends.totalReceivables.value}
-              </span>
-            )}
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center shrink-0">
+            <Wallet className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 wrap-anywhere" title={`Full exact: ${formatIndianCurrency(metrics.totalReceivables)}`}>
-            Full exact: <strong className="text-foreground">{formatIndianCurrency(metrics.totalReceivables)}</strong>
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Total Outstanding">
+              Total Outstanding
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-0.5 font-display truncate">
+              {formatIndianCurrency(metrics.totalReceivables, true)}
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title={`Full exact: ${formatIndianCurrency(metrics.totalReceivables)}`}>
+              Ledger total
+            </p>
+          </div>
         </div>
 
         {/* Due This Week */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Due This Week">Due This Week</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={formatIndianCurrency(metrics.dueThisWeek)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-amber-600 dark:text-amber-400 tracking-tight tabular-nums wrap-anywhere">
-              {formatIndianCurrency(metrics.dueThisWeek, true)}
-            </h3>
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5 sm:w-7 sm:h-7 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Approaching credit period threshold">
-            Approaching credit period threshold
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Due This Week">
+              Due This Week
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-0.5 font-display truncate">
+              {formatIndianCurrency(metrics.dueThisWeek, true)}
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Approaching credit period threshold">
+              Credit threshold
+            </p>
+          </div>
         </div>
 
         {/* Overdue */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Overdue Amount">Overdue Amount</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={formatIndianCurrency(metrics.overdueAmount)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight tabular-nums wrap-anywhere">
-              {formatIndianCurrency(metrics.overdueAmount, true)}
-            </h3>
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 shrink-0">
-              ({metrics.overdueAccounts} Stores)
-            </span>
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 sm:w-7 sm:h-7 text-rose-600 dark:text-rose-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Exceeded agreed credit duration">
-            Exceeded agreed credit duration
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Overdue Amount">
+              Overdue Amount
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 mt-0.5 font-display truncate">
+              {formatIndianCurrency(metrics.overdueAmount, true)}
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Exceeded agreed credit duration">
+              {metrics.overdueAccounts} overdue
+            </p>
+          </div>
         </div>
 
         {/* Collected This Month */}
-        <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground truncate" title="Collected This Month">Collected This Month</p>
-          <div className="flex items-baseline gap-2 mt-1 flex-wrap">
-            <h3 title={formatIndianCurrency(metrics.collectedThisMonth)} className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums wrap-anywhere">
-              {formatIndianCurrency(metrics.collectedThisMonth, true)}
-            </h3>
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
-              Realized
-            </span>
+        <div className="group relative rounded-2xl p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xs hover:shadow-md hover:-translate-y-0.5 select-none overflow-hidden min-w-0">
+          <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-600 dark:text-emerald-400" strokeWidth={1.8} />
           </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 truncate" title="Bank credits & UPI clearances">
-            Bank credits &amp; UPI clearances
-          </p>
+          <div className="flex-1 min-w-0 w-full">
+            <span className="text-[11px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 block truncate" title="Collected This Month">
+              Collected MTD
+            </span>
+            <div className="text-lg sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 font-display truncate">
+              {formatIndianCurrency(metrics.collectedThisMonth, true)}
+            </div>
+            <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate" title="Bank credits & UPI clearances">
+              Bank cleared
+            </p>
+          </div>
         </div>
       </div>
 

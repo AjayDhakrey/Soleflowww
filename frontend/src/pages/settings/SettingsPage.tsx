@@ -43,7 +43,9 @@ import {
   EyeOff,
   Briefcase,
   ShoppingBag,
+  Home,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { supabase, isDemoModeActive } from '../../lib/supabase';
 import { OrgInvite, UserRole } from '../../types';
 import { CreateSalesRepresentativeModal } from '../../components/team/CreateSalesRepresentativeModal';
@@ -129,12 +131,12 @@ export const SettingsPage: React.FC = () => {
 
   const [repName, setRepName] = useState(currentUser.name || 'Sales Representative');
   const [repPhone, setRepPhone] = useState(currentUser.phone || matchingRep?.phone || '+91 98231 04412');
-  const [repZone, setRepZone] = useState(currentUser.zone || matchingRep?.territory || 'Hing Ki Mandi & Sadar Bazar');
+  const [repZone, setRepZone] = useState(currentUser.zone || (matchingRep as any)?.territory || matchingRep?.zone || 'Hing Ki Mandi & Sadar Bazar');
 
   useEffect(() => {
     setRepName(currentUser.name || 'Sales Representative');
     setRepPhone(currentUser.phone || matchingRep?.phone || '+91 98231 04412');
-    setRepZone(currentUser.zone || matchingRep?.territory || 'Hing Ki Mandi & Sadar Bazar');
+    setRepZone(currentUser.zone || (matchingRep as any)?.territory || matchingRep?.zone || 'Hing Ki Mandi & Sadar Bazar');
   }, [currentUser, matchingRep]);
 
   // Password Update State
@@ -445,13 +447,13 @@ export const SettingsPage: React.FC = () => {
       );
 
       if (supabase && !isDemoModeActive) {
-        await supabase
+        await (supabase as any)
           .from('profiles')
           .update({ name: repName, phone: repPhone, zone: repZone })
           .eq('id', currentUser.id);
 
         if (currentUser.email) {
-          await supabase
+          await (supabase as any)
             .from('sales_team')
             .update({ name: repName, phone: repPhone, territory: repZone })
             .eq('email', currentUser.email);
@@ -548,12 +550,12 @@ export const SettingsPage: React.FC = () => {
   const repStats = useMemo(() => {
     const assignedCustomers = customers.filter(
       (c) =>
-        (matchingRep && (c.salespersonId === matchingRep.id || c.salesperson === matchingRep.name)) ||
+        (matchingRep && (c.salespersonId === matchingRep.id || c.salespersonName === matchingRep.name || (c as any).salesperson === matchingRep.name)) ||
         c.salespersonId === currentUser.id
     ).length;
 
     const activeOrders = orders.filter(
-      (o) => o.status !== 'delivered' && o.status !== 'cancelled'
+      (o) => o.status !== 'Delivered' && o.status !== 'Cancelled'
     ).length;
 
     return {
@@ -566,41 +568,54 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-6xl mx-auto pb-28 md:pb-16 bg-background text-foreground animate-in fade-in duration-200">
-      {/* 1. Page Header */}
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: 'Dashboard',
-            href: isSalesperson ? '/sales/dashboard' : '/admin/dashboard',
-          },
-          { label: isSalesperson ? 'Representative Profile & Settings' : 'Settings' },
-        ]}
-        title={isSalesperson ? 'Field Representative Profile & Settings' : 'Settings & Workspace Control'}
-        subtitle={
-          isSalesperson
-            ? 'Manage your personal sales identity, contact phone, field territory, appearance themes, and view firm billing credentials.'
-            : 'Manage legal business identity, team staff permissions, wholesale invoicing defaults, and workspace aesthetics.'
-        }
-      />
+      {/* 1. Standardized Header with Breadcrumbs */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+          <Link
+            to={isSalesperson ? '/sales/dashboard' : '/admin/dashboard'}
+            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors"
+          >
+            <Home className="w-3.5 h-3.5 text-blue-600" />
+            <span>Dashboard</span>
+          </Link>
+          <span>/</span>
+          <span className="text-slate-800 font-semibold">{isSalesperson ? 'Representative Profile' : 'Settings'}</span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                {isSalesperson ? 'Field Representative Profile & Settings' : 'Settings & Workspace Control'}
+              </h1>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              {isSalesperson
+                ? 'Manage your personal sales identity, contact phone, field territory, appearance themes, and view firm billing credentials.'
+                : 'Manage legal business identity, team staff permissions, wholesale invoicing defaults, and workspace aesthetics.'}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* 2. Quick Status Hero Card */}
-      <div className="bg-surface border border-border rounded-2xl p-4 sm:p-6 shadow-xs relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-full bg-linear-to-l from-primary/5 to-transparent pointer-events-none" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-full bg-linear-to-l from-blue-500/5 to-transparent pointer-events-none" />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 flex items-center justify-center text-primary shadow-xs shrink-0">
-              {isSalesperson ? <User size={28} className="text-primary" /> : <Building2 size={28} className="text-primary" />}
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-xs shrink-0">
+              {isSalesperson ? <User size={28} className="text-blue-600 dark:text-blue-400" /> : <Building2 size={28} className="text-blue-600 dark:text-blue-400" />}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground font-display">
+                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white font-display">
                   {isSalesperson ? repName : companyName || 'Wholesale Firm'}
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
                   <CheckCircle2 size={12} />
                   {isSalesperson ? 'Verified Field Agent' : 'Verified Hub'}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
                   {isSalesperson ? 'Field Representative' : 'Administrative Principal'}
                 </span>
               </div>

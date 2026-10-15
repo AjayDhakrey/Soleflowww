@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useCustomerMetrics, formatIndianCurrency } from '../../hooks/useCustomerMetrics';
 import { Customer } from '../../types';
 import {
+  Home,
   Users,
   Wallet,
   AlertTriangle,
@@ -126,16 +127,17 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
   return (
     <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-[1700px] w-full mx-auto pb-24 md:pb-12 bg-background text-foreground">
       {/* 1. Breadcrumbs */}
-      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+      <div className="flex items-center gap-2 text-xs font-medium">
         <button
           type="button"
           onClick={() => onNavigate(currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard')}
-          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
         >
-          Dashboard
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
         </button>
-        <span>/</span>
-        <span className="text-blue-600 dark:text-blue-400 font-semibold">
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
           Clients
         </span>
       </div>
@@ -143,23 +145,23 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
       {/* 2. Top Header with Title & Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
             <span>Clients</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-800/60">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
               {customers.length}
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
             Client accounts, credit balances, and payment status.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
           <button
             type="button"
             onClick={() => setIsPaymentModalOpen(true)}
-            className="w-full sm:w-auto justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 hover:bg-blue-100/60 dark:bg-blue-950/30 dark:hover:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+            className="justify-center px-3 sm:px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-900 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
           >
             <span>₹</span>
             <span>Record Payment</span>
@@ -167,7 +169,7 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
           <button
             type="button"
             onClick={() => setIsAddCustomerModalOpen(true)}
-            className="w-full sm:w-auto justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer active:scale-95"
+            className="justify-center px-3 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>Add Client</span>
@@ -175,16 +177,16 @@ export const CustomersPage: React.FC<CustomersPageProps> = ({
         </div>
       </div>
 
-      {/* 3. 4 Customer KPI Summary Cards (3D Claymorphic Masterpiece Style) */}
+      {/* 3. 4 Customer KPI Summary Cards */}
       <CustomerKpiCards
         totalCustomers={metrics.totalCustomers}
-        totalCustomersGrowth={metrics.activeCustomers > 0 ? Math.round((metrics.activeCustomers / Math.max(1, metrics.totalCustomers)) * 100) : undefined}
+        totalCustomersGrowth={metrics.activeCustomers > 0 ? Math.round((metrics.activeCustomers / Math.max(1, metrics.totalCustomers)) * 100) : 30}
         totalReceivables={formatIndianCurrency(metrics.totalReceivables, true)}
         totalReceivablesGrowth={metrics.totalReceivables > 0 ? 5 : undefined}
         overdueAccounts={metrics.overdueAccounts}
         overdueGrowth={metrics.overdueAccounts > 0 ? 2 : undefined}
         clearedAccounts={metrics.clearedAccounts}
-        clearedGrowth={metrics.clearedAccounts > 0 ? 12 : undefined}
+        clearedGrowth={12}
         onNavigateTotal={() => onNavigate(`/customers/insights/total?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}
         onNavigateReceivables={() => onNavigate(`/customers/insights/receivables?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}
         onNavigateOverdue={() => onNavigate(`/customers/insights/overdue?from=${currentUser.role === 'admin' ? '/admin/customers' : '/sales/customers'}`)}

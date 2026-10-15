@@ -114,7 +114,7 @@ const BackgroundVideoPlayer = React.memo(() => {
         playsInline
         controls={false}
         disablePictureInPicture
-        preload="auto"
+        preload="none"
         poster={heroVideoPosterImg}
         aria-hidden="true"
         tabIndex={-1}

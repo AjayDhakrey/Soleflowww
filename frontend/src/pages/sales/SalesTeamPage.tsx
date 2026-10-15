@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
+  Home,
   Users,
   TrendingUp,
   Wallet,
@@ -352,42 +353,59 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
 
   return (
     <div className="p-3.5 sm:p-6 md:p-8 space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-28 sm:pb-32 md:pb-12 animate-in fade-in duration-150">
-      {/* 1. Page Header */}
-      <PageHeader
-        breadcrumbs={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Sales Team & Field Force' }]}
-        title="Sales Force & Field Dispatch"
-        subtitle="Track field sales reps, target quotas, live market routes, and daily store visits."
-        actions={
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-semibold shadow-xs whitespace-nowrap shrink-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                {activeInMarketCount} Reps Active In Market
-              </span>
-            </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={FileText}
-                onClick={() => setIsExportRoutesModalOpen(true)}
-                className="flex-1 sm:flex-none justify-center shadow-2xs font-semibold"
-              >
-                Export Routes
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                icon={UserPlus}
-                onClick={() => setIsCreateRepModalOpen(true)}
-                className="flex-1 sm:flex-none justify-center shadow-xs font-semibold"
-              >
-                + Add Representative
-              </Button>
-            </div>
-          </div>
-        }
-      />
+      {/* 1. Breadcrumbs */}
+      <div className="flex items-center gap-2 text-xs font-medium">
+        <button
+          type="button"
+          onClick={() => onNavigate('/admin/dashboard')}
+          className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1.5"
+        >
+          <Home size={14} className="text-blue-600 dark:text-blue-400" />
+          <span>Dashboard</span>
+        </button>
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-400 dark:text-slate-500 font-medium">
+          Sales Force &amp; Field Dispatch
+        </span>
+      </div>
+
+      {/* 2. Header & Action Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <span>Sales Force &amp; Field Dispatch</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
+              {salesTeam.length}
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
+            Track field sales reps, target quotas, live market routes, and daily store visits.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-semibold shadow-xs whitespace-nowrap shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            {activeInMarketCount} Active In Market
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsExportRoutesModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-95"
+          >
+            <FileText size={15} />
+            <span>Export Routes</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsCreateRepModalOpen(true)}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+          >
+            <UserPlus size={15} />
+            <span>+ Add Representative</span>
+          </button>
+        </div>
+      </div>
 
       {/* 2. KPI Summary Cards (3D Claymorphic Redesign) */}
       <SalesTeamKpiCards
