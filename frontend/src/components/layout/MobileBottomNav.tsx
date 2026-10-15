@@ -89,15 +89,15 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     onNavigate(path);
   };
 
-  // Symmetrical 2+2 curved royal blue wave bottom bar with center action button
-  // Matching reference image 2 and 3: Dark royal blue curved dock with center circular cutout
+  // Direct 4-tab + 1 center FAB matching reference image
+  // Home | Orders/Tasks | (+) NEW ACTION | Payments | Clients/Profile
   return (
     <div
       className="md:hidden fixed bottom-0 inset-x-0 z-40 pointer-events-none"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="relative max-w-md mx-auto">
-        {/* Center Floating Action Button (Cyan / Light Blue circular button like in reference image 2/3) */}
+      <div className="relative max-w-lg mx-auto px-4 pb-2">
+        {/* Raised Circular Center Action Button (+) */}
         <div className="absolute left-1/2 -top-5 -translate-x-1/2 z-50 pointer-events-auto">
           <button
             type="button"
@@ -108,60 +108,83 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 setIsCreateOrderModalOpen(true);
               }
             }}
-            className="w-13 h-13 rounded-full bg-cyan-400 text-slate-950 flex items-center justify-center shadow-[0_8px_20px_rgba(34,211,238,0.4)] border-4 border-slate-900 active:scale-90 transition-transform cursor-pointer"
+            className="w-13 h-13 rounded-full bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center shadow-[0_8px_20px_rgba(15,23,42,0.35)] dark:shadow-[0_8px_20px_rgba(37,99,235,0.4)] border-4 border-slate-50 dark:border-slate-950 active:scale-90 transition-transform cursor-pointer"
             aria-label="Create new order"
             title="Create New Order"
           >
-            {/* Filter / Funnel / Quick Order Action Icon matching reference */}
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-slate-950">
-              <path d="M4.5 4h15a.5.5 0 0 1 .37.834L14 11.5v7a.5.5 0 0 1-.724.447l-3-1.5A.5.5 0 0 1 10 17v-5.5L4.13 4.834A.5.5 0 0 1 4.5 4z" />
-            </svg>
+            <Icons.Add size={24} strokeWidth={2.75} />
           </button>
         </div>
 
-        {/* Royal Blue Curved Bottom Bar Dock (Matching Reference Image 2 & 3) */}
+        {/* Floating Nav Bar Container */}
         <nav
-          className="pointer-events-auto bg-blue-900 text-white rounded-t-[32px] h-16 px-6 shadow-2xl flex items-center justify-between select-none relative overflow-hidden"
+          className="pointer-events-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/90 dark:border-slate-800 rounded-3xl h-16 px-3 shadow-[0_12px_32px_rgba(15,23,42,0.08),0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between select-none"
           aria-label="Mobile Bottom Navigation"
         >
-          {/* Subtle curved background wave shape cutout */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-7 bg-transparent border-b-[8px] border-blue-900 rounded-b-full pointer-events-none" />
+          {/* 1. Home */}
+          <button
+            type="button"
+            onClick={() => handleTabClick(isAdmin ? '/admin/dashboard' : '/sales/dashboard')}
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+              isItemActive(isAdmin ? '/admin/dashboard' : '/sales/dashboard')
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
+            }`}
+          >
+            <Icons.Dashboard size={20} strokeWidth={isItemActive(isAdmin ? '/admin/dashboard' : '/sales/dashboard') ? 2.4 : 1.8} />
+            <span className="text-[10px] mt-1 tracking-tight">Home</span>
+          </button>
 
-          {/* 1. Left Nav Action: Mail / Notifications / Orders */}
+          {/* 2. Tasks / Orders */}
           <button
             type="button"
             onClick={() => handleTabClick(isAdmin ? '/admin/orders' : '/sales/orders')}
-            className={`flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer relative ${
               isItemActive(isAdmin ? '/admin/orders' : '/sales/orders')
-                ? 'text-cyan-300 font-bold'
-                : 'text-blue-200/80 hover:text-white'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
             }`}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-            </svg>
-            <span className="text-[9px] mt-0.5 tracking-tight">Orders</span>
+            <div className="relative">
+              <Icons.Orders size={20} strokeWidth={isItemActive(isAdmin ? '/admin/orders' : '/sales/orders') ? 2.4 : 1.8} />
+              {pendingOrdersCount > 0 && (
+                <span className="absolute -top-1 -right-2.5 min-w-3.5 h-3.5 px-0.5 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+                  {pendingOrdersCount > 9 ? '9+' : pendingOrdersCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] mt-1 tracking-tight">Orders</span>
           </button>
 
-          {/* Spacer for center cutout button */}
-          <div className="w-16 shrink-0" aria-hidden="true" />
+          {/* Spacer for center (+) button */}
+          <div className="w-14 shrink-0" aria-hidden="true" />
 
-          {/* 2. Right Nav Action: User / Account / Clients */}
+          {/* 3. Payments */}
+          <button
+            type="button"
+            onClick={() => handleTabClick(isAdmin ? '/admin/payments' : '/sales/collections')}
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+              isItemActive(isAdmin ? '/admin/payments' : '/sales/collections')
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
+            }`}
+          >
+            <Icons.Payments size={20} strokeWidth={isItemActive(isAdmin ? '/admin/payments' : '/sales/collections') ? 2.4 : 1.8} />
+            <span className="text-[10px] mt-1 tracking-tight">Payments</span>
+          </button>
+
+          {/* 4. Profile / Clients */}
           <button
             type="button"
             onClick={() => handleTabClick(isAdmin ? '/admin/customers' : '/sales/customers')}
-            className={`flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
               isItemActive(isAdmin ? '/admin/customers' : '/sales/customers')
-                ? 'text-cyan-300 font-bold'
-                : 'text-blue-200/80 hover:text-white'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'
             }`}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            <span className="text-[9px] mt-0.5 tracking-tight">Clients</span>
+            <Icons.Clients size={20} strokeWidth={isItemActive(isAdmin ? '/admin/customers' : '/sales/customers') ? 2.4 : 1.8} />
+            <span className="text-[10px] mt-1 tracking-tight">Clients</span>
           </button>
         </nav>
       </div>

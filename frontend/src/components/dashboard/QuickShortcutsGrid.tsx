@@ -316,124 +316,119 @@ export const QuickShortcutsGrid: React.FC<QuickShortcutsGridProps> = ({
   onGstLedger,
 }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-      {/* 1. Book Order (My Account / Orders style card) */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+      {/* 1. Book Order */}
       <button
         type="button"
         onClick={onBookOrder}
-        className="group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-850 shadow-[0_8px_20px_rgba(15,23,42,0.04)] hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none active:scale-95"
+        className="group relative p-3 sm:p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="w-12 h-12 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-blue-500">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/90 dark:border-blue-900/50 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
             <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
             <path d="M12 11h4" />
             <path d="M12 16h4" />
+            <path d="M8 11h.01" />
+            <path d="M8 16h.01" />
           </svg>
         </div>
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight">
+        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight truncate max-w-full">
           Book Order
         </span>
-        <span className="text-[10px] text-slate-400 mt-0.5">Wholesale</span>
       </button>
 
-      {/* 2. Inventory / Catalogue (Truck/Inventory style card) */}
+      {/* 2. Record Payment */}
       <button
         type="button"
-        onClick={onNewDesign}
-        className="group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-850 shadow-[0_8px_20px_rgba(15,23,42,0.04)] hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none active:scale-95"
+        onClick={onRecordPayment}
+        className="group relative p-3 sm:p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="w-12 h-12 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-indigo-500">
-            <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
-            <path d="M15 18H9" />
-            <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
-            <circle cx="17" cy="18" r="2" />
-            <circle cx="7" cy="18" r="2" />
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+            <path d="M12 6v2" />
+            <path d="M12 16v2" />
           </svg>
         </div>
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors tracking-tight">
-          Footwear Stock
+        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight truncate max-w-full">
+          Record Payment
         </span>
-        <span className="text-[10px] text-slate-400 mt-0.5">Inventory</span>
       </button>
 
-      {/* 3. Add Customer (Technician / Rep style card) */}
+      {/* 3. Add Customer */}
       <button
         type="button"
         onClick={onAddCustomer}
-        className="group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-850 shadow-[0_8px_20px_rgba(15,23,42,0.04)] hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none active:scale-95"
+        className="group relative p-3 sm:p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="w-12 h-12 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-amber-500">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100/90 dark:border-purple-900/50 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <line x1="19" y1="8" x2="19" y2="14" />
             <line x1="22" y1="11" x2="16" y2="11" />
           </svg>
         </div>
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight">
-          New Client
+        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight truncate max-w-full">
+          Add Customer
         </span>
-        <span className="text-[10px] text-slate-400 mt-0.5">Dealer Registration</span>
       </button>
 
-      {/* 4. Record Payment (Invoice / Request style card) */}
+      {/* 4. New Design */}
       <button
         type="button"
-        onClick={onRecordPayment}
-        className="group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-850 shadow-[0_8px_20px_rgba(15,23,42,0.04)] hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none active:scale-95"
+        onClick={onNewDesign}
+        className="group relative p-3 sm:p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="w-12 h-12 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-emerald-500">
-            <rect x="2" y="4" width="20" height="16" rx="2" />
-            <line x1="2" y1="10" x2="22" y2="10" />
-            <circle cx="7" cy="15" r="1" />
-            <circle cx="12" cy="15" r="1" />
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/90 dark:border-amber-900/50 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
         </div>
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight">
-          Record Payment
+        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors tracking-tight truncate max-w-full">
+          New Design
         </span>
-        <span className="text-[10px] text-slate-400 mt-0.5">Realized Receipts</span>
       </button>
 
-      {/* 5. Analytics & Ledger (Analytics chart style card) */}
-      <button
-        type="button"
-        onClick={onGstLedger}
-        className="group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-850 shadow-[0_8px_20px_rgba(15,23,42,0.04)] hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none active:scale-95"
-      >
-        <div className="w-12 h-12 rounded-2xl bg-purple-50/80 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-purple-500">
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
-          </svg>
-        </div>
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors tracking-tight">
-          GST Ledger
-        </span>
-        <span className="text-[10px] text-slate-400 mt-0.5">Tax Analytics</span>
-      </button>
-
-      {/* 6. Share Lookbook (Contact us / Share card) */}
+      {/* 5. Share Lookbook */}
       <button
         type="button"
         onClick={onShareLookbook}
-        className="group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-850 shadow-[0_8px_20px_rgba(15,23,42,0.04)] hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none active:scale-95"
+        className="group relative p-3 sm:p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
       >
-        <div className="w-12 h-12 rounded-2xl bg-teal-50/80 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-teal-500">
-            <rect x="2" y="3" width="20" height="14" rx="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/90 dark:border-blue-900/50 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
           </svg>
         </div>
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors tracking-tight">
-          Share Catalogue
+        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight truncate max-w-full">
+          Share Lookbook
         </span>
-        <span className="text-[10px] text-slate-400 mt-0.5">Wholesale B2B</span>
+      </button>
+
+      {/* 6. GST Tax Ledger */}
+      <button
+        type="button"
+        onClick={onGstLedger}
+        className="group relative p-3 sm:p-4 lg:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-card shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col items-center justify-center text-center select-none min-w-0 active:scale-95"
+      >
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 sm:w-5 sm:h-5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+        </div>
+        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors tracking-tight truncate max-w-full">
+          GST Tax Ledger
+        </span>
       </button>
     </div>
   );
