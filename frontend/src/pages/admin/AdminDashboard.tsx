@@ -153,9 +153,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           <button
             type="button"
             onClick={() => onNavigate('/admin/orders')}
-            className="text-xs font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 cursor-pointer"
+            className="text-xs font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 inline-flex items-center gap-1 cursor-pointer transition-colors"
           >
-            View all
+            <span>View all</span>
+            <span className="text-sm leading-none">→</span>
           </button>
         </div>
         <OverviewKpiCards

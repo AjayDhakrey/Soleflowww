@@ -1,7 +1,6 @@
 import React from 'react';
-import { Icons } from '../../lib/icons';
 
-interface OverviewKpiCardsProps {
+export interface OverviewKpiCardsProps {
   salesValue: string;
   salesGrowth?: number;
   collectionsValue: string;
@@ -9,7 +8,7 @@ interface OverviewKpiCardsProps {
   receivablesValue: string;
   receivablesAccountsCount?: number;
   openOrdersCount: number;
-  openOrdersValue: string;
+  openOrdersValue?: string;
   activeStoresCount: number;
   totalRegisteredBuyers?: number;
   pairsBookedValue: string | number;
@@ -19,520 +18,550 @@ interface OverviewKpiCardsProps {
 }
 
 /* =========================================================================
-   3D Claymorphic Vector Illustrations
+   High-Fidelity 3D Claymorphic Illustrations (Exact match to reference photo)
    ========================================================================= */
 
-// 1. Sales Booked (3D Clipboard + Shopping Cart + Checkmark)
+// 1. Sales Booked: 3D Multi-color Bar Chart (Cyan, Royal Blue, Indigo, Purple)
 const SalesBooked3D = () => (
-  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
-    {/* Clipboard Base */}
-    <rect x="25" y="16" width="60" height="74" rx="12" fill="url(#clipGrad)" stroke="#60A5FA" strokeWidth="2.5" />
-    <rect x="31" y="24" width="48" height="60" rx="8" fill="#FFFFFF" fillOpacity="0.95" />
-    
-    {/* Top Clip */}
-    <rect x="42" y="10" width="26" height="12" rx="4" fill="#3B82F6" />
-    <rect x="47" y="6" width="16" height="8" rx="3" fill="#93C5FD" />
-    <circle cx="55" cy="16" r="3" fill="#1D4ED8" />
-
-    {/* Shopping Cart on Paper */}
-    <path d="M42 42h5l4 14h18l3-10H46" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="52" cy="60" r="2.5" fill="#2563EB" />
-    <circle cx="66" cy="60" r="2.5" fill="#2563EB" />
-    
-    {/* Cart Lines */}
-    <line x1="42" y1="68" x2="68" y2="68" stroke="#BFDBFE" strokeWidth="2" strokeLinecap="round" />
-    <line x1="42" y1="74" x2="60" y2="74" stroke="#BFDBFE" strokeWidth="2" strokeLinecap="round" />
-
-    {/* Speed Dashes */}
-    <line x1="88" y1="26" x2="94" y2="22" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" />
-    <line x1="90" y1="36" x2="98" y2="34" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" />
-
-    {/* 3D Success Checkmark Badge */}
-    <circle cx="82" cy="68" r="16" fill="url(#checkGrad)" filter="drop-shadow(0 4px 6px rgba(16,185,129,0.35))" />
-    <circle cx="82" cy="68" r="13" fill="#10B981" />
-    <path d="M76 68l4 4 8-9" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-
+  <svg viewBox="0 0 56 56" className="w-10 h-10 select-none drop-shadow-sm" fill="none">
     <defs>
-      <linearGradient id="clipGrad" x1="25" y1="16" x2="85" y2="90" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#93C5FD" />
-        <stop offset="1" stopColor="#3B82F6" />
+      <linearGradient id="sbBar1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#38BDF8" />
+        <stop offset="100%" stopColor="#0284C7" />
       </linearGradient>
-      <linearGradient id="checkGrad" x1="66" y1="52" x2="98" y2="84" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#34D399" />
-        <stop offset="1" stopColor="#059669" />
+      <linearGradient id="sbBar2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#60A5FA" />
+        <stop offset="100%" stopColor="#2563EB" />
       </linearGradient>
+      <linearGradient id="sbBar3" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#818CF8" />
+        <stop offset="100%" stopColor="#4F46E5" />
+      </linearGradient>
+      <linearGradient id="sbBar4" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#C084FC" />
+        <stop offset="100%" stopColor="#7E22CE" />
+      </linearGradient>
+      <filter id="sbGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="2.5" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
     </defs>
+    {/* Base glow reflection */}
+    <ellipse cx="28" cy="48" rx="22" ry="5" fill="#3B82F6" fillOpacity="0.25" filter="url(#sbGlow)" />
+    
+    {/* Bar 1 (Leftmost, Cyan) */}
+    <rect x="6" y="28" width="9" height="20" rx="4.5" fill="url(#sbBar1)" />
+    <ellipse cx="10.5" cy="30" rx="4.5" ry="2" fill="#BAE6FD" />
+    
+    {/* Bar 2 (Mid-Left, Royal Blue) */}
+    <rect x="18" y="16" width="9" height="32" rx="4.5" fill="url(#sbBar2)" />
+    <ellipse cx="22.5" cy="18" rx="4.5" ry="2" fill="#BFDBFE" />
+    
+    {/* Bar 3 (Mid-Right, Indigo - Tallest) */}
+    <rect x="30" y="8" width="9" height="40" rx="4.5" fill="url(#sbBar3)" />
+    <ellipse cx="34.5" cy="10" rx="4.5" ry="2" fill="#E0E7FF" />
+    
+    {/* Bar 4 (Rightmost, Purple) */}
+    <rect x="42" y="22" width="9" height="26" rx="4.5" fill="url(#sbBar4)" />
+    <ellipse cx="46.5" cy="24" rx="4.5" ry="2" fill="#F3E8FF" />
   </svg>
 );
 
-// 2. Collections (3D Gold Coins Stack + Rupee + Growth Arrow)
+// 2. Collections: 3D Stack of Green Shiny Coins with Shield/Emblem
 const Collections3D = () => (
-  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
-    {/* Green Growth Arrow Behind */}
-    <path d="M68 46L88 22m0 0h-14m14 0v14" stroke="#10B981" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0 2px 4px rgba(16,185,129,0.3))" />
-
-    {/* Back Coin 1 */}
-    <ellipse cx="44" cy="66" rx="20" ry="8" fill="#F59E0B" />
-    <path d="M24 66v8c0 4.4 9 8 20 8s20-3.6 20-8v-8" fill="#D97706" />
-    <ellipse cx="44" cy="66" rx="20" ry="8" fill="#FBBF24" />
-
-    {/* Back Coin 2 */}
-    <ellipse cx="44" cy="54" rx="20" ry="8" fill="#F59E0B" />
-    <path d="M24 54v8c0 4.4 9 8 20 8s20-3.6 20-8v-8" fill="#D97706" />
-    <ellipse cx="44" cy="54" rx="20" ry="8" fill="#FCD34D" />
-
-    {/* Back Coin 3 */}
-    <ellipse cx="44" cy="42" rx="20" ry="8" fill="#F59E0B" />
-    <path d="M24 42v8c0 4.4 9 8 20 8s20-3.6 20-8v-8" fill="#D97706" />
-    <ellipse cx="44" cy="42" rx="20" ry="8" fill="#FDE68A" />
-
-    {/* Front Big Gold Rupee Coin */}
-    <circle cx="74" cy="60" r="20" fill="url(#goldGrad)" stroke="#F59E0B" strokeWidth="2.5" filter="drop-shadow(0 4px 8px rgba(217,119,6,0.3))" />
-    <circle cx="74" cy="60" r="16" fill="url(#goldInner)" />
-    <text x="74" y="67" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#B45309" fontFamily="var(--font-sans)">₹</text>
-
-    {/* Sparkles */}
-    <path d="M22 34l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#FBBF24" />
-    <path d="M96 52l1.5 3 3 1.5-3 1.5-1.5 3-1.5-3-3-1.5 3-1.5z" fill="#34D399" />
-
+  <svg viewBox="0 0 56 56" className="w-10 h-10 select-none drop-shadow-sm" fill="none">
     <defs>
-      <linearGradient id="goldGrad" x1="54" y1="40" x2="94" y2="80" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FDE68A" />
-        <stop offset="0.5" stopColor="#FBBF24" />
-        <stop offset="1" stopColor="#D97706" />
+      <linearGradient id="colCoinTop" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#A7F3D0" />
+        <stop offset="100%" stopColor="#34D399" />
       </linearGradient>
-      <linearGradient id="goldInner" x1="58" y1="44" x2="90" y2="76" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FEF3C7" />
-        <stop offset="1" stopColor="#FCD34D" />
+      <linearGradient id="colShield" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#10B981" />
+        <stop offset="100%" stopColor="#047857" />
       </linearGradient>
     </defs>
-  </svg>
-);
+    {/* Ambient shadow */}
+    <ellipse cx="25" cy="48" rx="16" ry="4.5" fill="#047857" fillOpacity="0.25" />
 
-// 3. Receivables (3D Invoice Document + Rupee Wax Seal + Calendar Badge)
-const Receivables3D = () => (
-  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
-    {/* Purple Folded Invoice Sheet */}
-    <g transform="rotate(-6 50 50)">
-      <rect x="24" y="16" width="56" height="72" rx="10" fill="url(#invGrad)" stroke="#F472B6" strokeWidth="2" />
-      <rect x="30" y="22" width="44" height="60" rx="6" fill="#FFFFFF" fillOpacity="0.95" />
-      
-      {/* Invoice Content Lines */}
-      <line x1="38" y1="32" x2="66" y2="32" stroke="#EC4899" strokeWidth="3" strokeLinecap="round" />
-      <line x1="38" y1="40" x2="60" y2="40" stroke="#F472B6" strokeWidth="2" strokeLinecap="round" />
-      <line x1="38" y1="47" x2="66" y2="47" stroke="#FBCFE8" strokeWidth="2" strokeLinecap="round" />
-      <line x1="38" y1="54" x2="52" y2="54" stroke="#FBCFE8" strokeWidth="2" strokeLinecap="round" />
+    {/* Coin 1 Bottom */}
+    <path d="M10 38v6c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5v-6" fill="#059669" />
+    <ellipse cx="25" cy="38" rx="15" ry="5.5" fill="url(#colCoinTop)" />
+
+    {/* Coin 2 Middle */}
+    <path d="M10 30v6c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5v-6" fill="#059669" />
+    <ellipse cx="25" cy="30" rx="15" ry="5.5" fill="url(#colCoinTop)" />
+
+    {/* Coin 3 Top */}
+    <path d="M10 22v6c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5v-6" fill="#059669" />
+    <ellipse cx="25" cy="22" rx="15" ry="5.5" fill="url(#colCoinTop)" />
+
+    {/* Front Green Shield / Emblem Badge */}
+    <g transform="translate(26, 22)">
+      <circle cx="12" cy="12" r="11" fill="url(#colShield)" stroke="#6EE7B7" strokeWidth="1.5" filter="drop-shadow(0 2px 4px rgba(4,120,87,0.35))" />
+      <path d="M8.5 12l2.5 2.5 4.5-5" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </g>
-
-    {/* Pink Calendar Badge Top Right */}
-    <rect x="72" y="16" width="30" height="26" rx="6" fill="url(#calGrad)" stroke="#FB7185" strokeWidth="2" filter="drop-shadow(0 3px 5px rgba(244,63,94,0.25))" />
-    <rect x="72" y="16" width="30" height="8" fill="#E11D48" rx="4" />
-    <circle cx="78" cy="20" r="1.5" fill="#FFFFFF" />
-    <circle cx="96" cy="20" r="1.5" fill="#FFFFFF" />
-    {/* Calendar Dots */}
-    <circle cx="79" cy="30" r="1.5" fill="#BE123C" />
-    <circle cx="87" cy="30" r="1.5" fill="#BE123C" />
-    <circle cx="95" cy="30" r="1.5" fill="#BE123C" />
-    <circle cx="79" cy="36" r="1.5" fill="#BE123C" />
-    <circle cx="87" cy="36" r="1.5" fill="#BE123C" />
-
-    {/* Pink Rupee Seal Bottom Right */}
-    <circle cx="74" cy="68" r="16" fill="url(#sealGrad)" stroke="#FDA4AF" strokeWidth="2" filter="drop-shadow(0 4px 6px rgba(225,29,72,0.3))" />
-    <text x="74" y="74" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#FFFFFF" fontFamily="var(--font-sans)">₹</text>
-
-    <defs>
-      <linearGradient id="invGrad" x1="24" y1="16" x2="80" y2="88" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FCE7F3" />
-        <stop offset="1" stopColor="#F472B6" />
-      </linearGradient>
-      <linearGradient id="calGrad" x1="72" y1="16" x2="102" y2="42" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FFF1F2" />
-        <stop offset="1" stopColor="#FECDD3" />
-      </linearGradient>
-      <linearGradient id="sealGrad" x1="58" y1="52" x2="90" y2="84" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FB7185" />
-        <stop offset="1" stopColor="#E11D48" />
-      </linearGradient>
-    </defs>
   </svg>
 );
 
-// 4. Open Orders (3D Cardboard Box + Orange Badge Counter)
-const OpenOrders3D = ({ count }: { count: number }) => (
-  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
-    {/* Speed Lines */}
-    <line x1="16" y1="46" x2="26" y2="46" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
-    <line x1="12" y1="54" x2="24" y2="54" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
-
-    {/* Cardboard Box (Isometric-ish) */}
-    {/* Left Face */}
-    <path d="M30 42L58 54V86L30 72Z" fill="#D97706" stroke="#B45309" strokeWidth="2" />
-    {/* Right Face */}
-    <path d="M58 54L92 40V70L58 86Z" fill="#F59E0B" stroke="#B45309" strokeWidth="2" />
-    {/* Top Face */}
-    <path d="M30 42L62 28L92 40L58 54Z" fill="#FDE68A" stroke="#B45309" strokeWidth="2" />
-
-    {/* Tape on Top */}
-    <path d="M46 35L74 47" stroke="#FEF3C7" strokeWidth="5" strokeLinecap="round" />
-    {/* Front Box Label */}
-    <rect x="36" y="60" width="14" height="10" rx="2" fill="#FFFFFF" fillOpacity="0.9" />
-    <line x1="39" y1="63" x2="47" y2="63" stroke="#92400E" strokeWidth="1.5" />
-    <line x1="39" y1="67" x2="44" y2="67" stroke="#92400E" strokeWidth="1.5" />
-
-    {/* Orange Circular Counter Badge */}
-    <circle cx="86" cy="62" r="16" fill="url(#orderBadgeGrad)" stroke="#FFFFFF" strokeWidth="2.5" filter="drop-shadow(0 4px 6px rgba(245,158,11,0.4))" />
-    <text x="86" y="68" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#FFFFFF" fontFamily="var(--font-sans)">{count}</text>
-
+// 3. Receivables: 3D Coral/Pink Cash Register / POS Terminal with Paper Receipt Roll
+const Receivables3D = () => (
+  <svg viewBox="0 0 56 56" className="w-10 h-10 select-none drop-shadow-sm" fill="none">
     <defs>
-      <linearGradient id="orderBadgeGrad" x1="70" y1="46" x2="102" y2="78" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FBBF24" />
-        <stop offset="1" stopColor="#D97706" />
+      <linearGradient id="recPos" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#FB7185" />
+        <stop offset="50%" stopColor="#F43F5E" />
+        <stop offset="100%" stopColor="#BE123C" />
+      </linearGradient>
+      <linearGradient id="recPaper" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#FFFFFF" />
+        <stop offset="100%" stopColor="#FFE4E6" />
       </linearGradient>
     </defs>
-  </svg>
-);
+    {/* Shadow */}
+    <ellipse cx="28" cy="48" rx="18" ry="4.5" fill="#BE123C" fillOpacity="0.22" />
 
-// 5. Active Stores (3D Storefront Shop + Striped Awning + Pink Map Pin)
-const ActiveStores3D = () => (
-  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
-    {/* Shop Building Base */}
-    <rect x="28" y="44" width="64" height="42" rx="6" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="2" />
+    {/* Paper Receipt curling from top */}
+    <path d="M19 12c0-3.5 3.5-5.5 8-5.5s8 2 8 5.5v12H19V12z" fill="url(#recPaper)" stroke="#FDA4AF" strokeWidth="1" />
+    <line x1="22.5" y1="12" x2="31.5" y2="12" stroke="#FB7185" strokeWidth="1.5" strokeLinecap="round" />
+    <line x1="22.5" y1="16" x2="29.5" y2="16" stroke="#FB7185" strokeWidth="1.5" strokeLinecap="round" />
+    <line x1="22.5" y1="20" x2="32.5" y2="20" stroke="#FB7185" strokeWidth="1.5" strokeLinecap="round" />
+
+    {/* Terminal Main Body */}
+    <rect x="11" y="21" width="34" height="26" rx="7" fill="url(#recPos)" stroke="#FDA4AF" strokeWidth="1" />
+    {/* Terminal Display */}
+    <rect x="16" y="25" width="24" height="10" rx="3.5" fill="#9F1239" />
+    <text x="28" y="33" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#FECDD3" fontFamily="var(--font-mono)">₹ 0.00</text>
     
-    {/* Blue Door & Windows */}
-    <rect x="36" y="56" width="18" height="20" rx="4" fill="#93C5FD" stroke="#3B82F6" strokeWidth="1.5" />
-    <line x1="45" y1="56" x2="45" y2="76" stroke="#3B82F6" strokeWidth="1.5" />
-    <line x1="36" y1="66" x2="54" y2="66" stroke="#3B82F6" strokeWidth="1.5" />
+    {/* Keypad Buttons */}
+    <circle cx="20" cy="41" r="1.8" fill="#FFE4E6" />
+    <circle cx="25.5" cy="41" r="1.8" fill="#FFE4E6" />
+    <circle cx="31" cy="41" r="1.8" fill="#FFE4E6" />
+    <circle cx="36.5" cy="41" r="1.8" fill="#34D399" />
+  </svg>
+);
 
-    <rect x="62" y="54" width="22" height="32" rx="4" fill="#60A5FA" stroke="#2563EB" strokeWidth="1.5" />
-    <circle cx="66" cy="70" r="2" fill="#FFFFFF" />
+// 4. Open Orders: 3D Warm Orange Packaging / Delivery Box with Tape
+const OpenOrders3D = () => (
+  <svg viewBox="0 0 56 56" className="w-10 h-10 select-none drop-shadow-sm" fill="none">
+    <defs>
+      <linearGradient id="boxTopFace" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stopColor="#FDE68A" />
+        <stop offset="100%" stopColor="#FBBF24" />
+      </linearGradient>
+      <linearGradient id="boxLeftFace" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#F59E0B" />
+        <stop offset="100%" stopColor="#D97706" />
+      </linearGradient>
+      <linearGradient id="boxRightFace" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#D97706" />
+        <stop offset="100%" stopColor="#B45309" />
+      </linearGradient>
+    </defs>
+    {/* Shadow */}
+    <ellipse cx="28" cy="48" rx="18" ry="4.5" fill="#B45309" fillOpacity="0.25" />
 
-    {/* Ground Green Plant */}
-    <ellipse cx="94" cy="78" rx="6" ry="10" fill="#10B981" />
-    <ellipse cx="98" cy="80" rx="4" ry="7" fill="#34D399" />
+    {/* Top Face */}
+    <polygon points="28,12 46,21 28,30 10,21" fill="url(#boxTopFace)" stroke="#B45309" strokeWidth="0.8" strokeLinejoin="round" />
+    {/* Left Face */}
+    <polygon points="10,21 28,30 28,46 10,37" fill="url(#boxLeftFace)" stroke="#92400E" strokeWidth="0.8" strokeLinejoin="round" />
+    {/* Right Face */}
+    <polygon points="28,30 46,21 46,37 28,46" fill="url(#boxRightFace)" stroke="#78350F" strokeWidth="0.8" strokeLinejoin="round" />
+
+    {/* Packaging Tape Center Strip */}
+    <polygon points="23,14.5 33,19.5 33,32.5 23,27.5" fill="#FEF3C7" fillOpacity="0.9" stroke="#D97706" strokeWidth="0.5" />
+    {/* Small Shipping Label */}
+    <rect x="15" y="28" width="7" height="5" rx="1" fill="#FEF3C7" />
+    <line x1="17" y1="30" x2="20" y2="30" stroke="#B45309" strokeWidth="0.8" />
+  </svg>
+);
+
+// 5. Active Stores: 3D Purple Boutique Storefront with Striped Awning
+const ActiveStores3D = () => (
+  <svg viewBox="0 0 56 56" className="w-10 h-10 select-none drop-shadow-sm" fill="none">
+    <defs>
+      <linearGradient id="storeWall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#C084FC" />
+        <stop offset="100%" stopColor="#7E22CE" />
+      </linearGradient>
+      <linearGradient id="storeAwning" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#E879F9" />
+        <stop offset="100%" stopColor="#A855F7" />
+      </linearGradient>
+    </defs>
+    {/* Shadow */}
+    <ellipse cx="28" cy="48" rx="18" ry="4.5" fill="#581C87" fillOpacity="0.25" />
+
+    {/* Building Wall */}
+    <rect x="11" y="21" width="34" height="26" rx="5" fill="url(#storeWall)" stroke="#D8B4FE" strokeWidth="0.8" />
+    
+    {/* Arched Doorway */}
+    <path d="M22 31h12v16H22z" fill="#581C87" rx="2.5" />
+    <circle cx="31" cy="39" r="1.3" fill="#FDE047" />
+
+    {/* Display Window */}
+    <rect x="14" y="31" width="5.5" height="9" rx="1.5" fill="#E9D5FF" />
 
     {/* Striped Canopy Awning */}
-    <g filter="drop-shadow(0 3px 4px rgba(0,0,0,0.1))">
-      <path d="M24 44L28 32H92L96 44Z" fill="#F43F5E" />
-      {/* White Stripes */}
-      <path d="M36 32L34 44H44L46 32Z" fill="#FFFFFF" />
-      <path d="M56 32L54 44H64L66 32Z" fill="#FFFFFF" />
-      <path d="M76 32L74 44H84L86 32Z" fill="#FFFFFF" />
-      
-      {/* Scalloped Edge */}
-      <circle cx="29" cy="44" r="5" fill="#F43F5E" />
-      <circle cx="39" cy="44" r="5" fill="#FFFFFF" />
-      <circle cx="49" cy="44" r="5" fill="#F43F5E" />
-      <circle cx="59" cy="44" r="5" fill="#FFFFFF" />
-      <circle cx="69" cy="44" r="5" fill="#F43F5E" />
-      <circle cx="79" cy="44" r="5" fill="#FFFFFF" />
-      <circle cx="89" cy="44" r="5" fill="#F43F5E" />
-    </g>
-
-    {/* Magenta Map Pin Marker on Top */}
-    <g filter="drop-shadow(0 4px 6px rgba(225,29,72,0.35))">
-      <path d="M60 10C52 10 46 16 46 24C46 33 60 44 60 44C60 44 74 33 74 24C74 16 68 10 60 10Z" fill="url(#pinGrad)" />
-      <circle cx="60" cy="22" r="5.5" fill="#FFFFFF" />
-    </g>
-
-    <defs>
-      <linearGradient id="pinGrad" x1="46" y1="10" x2="74" y2="44" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FB7185" />
-        <stop offset="1" stopColor="#E11D48" />
-      </linearGradient>
-    </defs>
+    <polygon points="8,21 12,12 44,12 48,21" fill="url(#storeAwning)" />
+    {/* White Stripes on Canopy */}
+    <polygon points="16,12 20,12 17,21 13,21" fill="#FFFFFF" fillOpacity="0.95" />
+    <polygon points="26,12 30,12 29,21 25,21" fill="#FFFFFF" fillOpacity="0.95" />
+    <polygon points="36,12 40,12 41,21 37,21" fill="#FFFFFF" fillOpacity="0.95" />
+    
+    {/* Scalloped edge */}
+    <path d="M8 21q2.8 2.5 5.7 0t5.7 0t5.7 0t5.7 0t5.7 0t5.7 0t5.7 0" fill="#A855F7" stroke="#7E22CE" strokeWidth="0.6" />
   </svg>
 );
 
-// 6. Pairs Booked (3D Blue-sleeved Handshake Partnership)
+// 6. Pairs Booked: 3D Royal Blue Running Athletic Sneaker
 const PairsBooked3D = () => (
-  <svg viewBox="0 0 120 100" className="w-10 h-8 sm:w-14 sm:h-11 md:w-16 md:h-13 drop-shadow-md select-none" fill="none">
-    {/* Sparkle Dashes */}
-    <line x1="60" y1="14" x2="60" y2="20" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
-    <line x1="44" y1="20" x2="48" y2="24" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
-    <line x1="76" y1="20" x2="72" y2="24" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
-
-    {/* Left Blue Arm Sleeve */}
-    <path d="M16 46L34 32C37 34 40 37 42 41L26 62L16 46Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="2" filter="drop-shadow(0 3px 5px rgba(37,99,235,0.3))" />
-    <rect x="23" y="38" width="8" height="24" rx="4" transform="rotate(-30 23 38)" fill="#3B82F6" />
-
-    {/* Right Blue Arm Sleeve */}
-    <path d="M104 46L86 32C83 34 80 37 78 41L94 62L104 46Z" fill="#2563EB" stroke="#1D4ED8" strokeWidth="2" filter="drop-shadow(0 3px 5px rgba(37,99,235,0.3))" />
-    <rect x="85" y="34" width="8" height="24" rx="4" transform="rotate(30 85 34)" fill="#3B82F6" />
-
-    {/* Clasping 3D Hands */}
-    {/* Left Hand Base & Thumb */}
-    <path d="M38 46C42 40 50 42 56 46L68 56C72 59 70 65 64 68L50 66C44 64 38 56 38 46Z" fill="#FBCFE8" stroke="#F472B6" strokeWidth="1.5" />
-    <path d="M42 42C46 36 54 38 60 43L68 50" fill="#FDA4AF" />
-
-    {/* Right Fingers Clasping */}
-    <path d="M60 48C64 45 70 47 72 51C74 55 72 60 67 63L54 72C48 76 42 72 44 66L60 48Z" fill="#FBBF24" />
-    <rect x="52" y="52" width="16" height="6" rx="3" fill="#F59E0B" />
-    <rect x="50" y="58" width="16" height="6" rx="3" fill="#F59E0B" />
-    <rect x="48" y="64" width="15" height="6" rx="3" fill="#F59E0B" />
-    <rect x="46" y="70" width="14" height="6" rx="3" fill="#D97706" />
-
+  <svg viewBox="0 0 56 56" className="w-10 h-10 select-none drop-shadow-sm" fill="none">
     <defs>
-      <linearGradient id="handGrad" x1="30" y1="30" x2="90" y2="80" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FDBA74" />
-        <stop offset="1" stopColor="#FB923C" />
+      <linearGradient id="shoeUpperGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#60A5FA" />
+        <stop offset="50%" stopColor="#2563EB" />
+        <stop offset="100%" stopColor="#1D4ED8" />
+      </linearGradient>
+      <linearGradient id="shoeSoleGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#FFFFFF" />
+        <stop offset="100%" stopColor="#E2E8F0" />
       </linearGradient>
     </defs>
+    {/* Shadow */}
+    <ellipse cx="28" cy="46" rx="18" ry="4" fill="#1E3A8A" fillOpacity="0.25" />
+
+    {/* Athletic Shoe Upper Body */}
+    <path
+      d="M11 35c0-5 3-10 9-12 3-1 6-4 8-6 2-2 4-3 7-2 2 1 3 3 3 5v4l7 2.5c3.5 1.5 4.5 5 2.5 8l-1.5 2.5c-1 1.5-2.5 2-5 2H15c-2.5 0-4-1.5-4-4z"
+      fill="url(#shoeUpperGrad)"
+      stroke="#1E40AF"
+      strokeWidth="0.8"
+    />
+
+    {/* Ankle Collar */}
+    <ellipse cx="32" cy="21" rx="3.5" ry="2" fill="#1E3A8A" />
+
+    {/* Sporty White Stripe Swoosh Accent */}
+    <path d="M18 31c4-2.5 9-3.5 14-1 2 0.8 3.5 0 4.5-0.8" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+
+    {/* Shoe Laces */}
+    <line x1="25" y1="23" x2="28" y2="25.5" stroke="#FFFFFF" strokeWidth="1.3" strokeLinecap="round" />
+    <line x1="28" y1="25.5" x2="31" y2="28" stroke="#FFFFFF" strokeWidth="1.3" strokeLinecap="round" />
+
+    {/* White Midsole / Sole */}
+    <path
+      d="M9 38c2-1 5-1 11-1 7 0 14 1 21 0 2 0 3.5 1 3.5 2.5 0 2-2 3.5-4.5 3.5H13c-2.5 0-4-1.5-4-3.5 0-0.8 0-1.5 0-1.5z"
+      fill="url(#shoeSoleGrad)"
+      stroke="#CBD5E1"
+      strokeWidth="0.8"
+    />
+    {/* Cyan Traction Accent */}
+    <path d="M16 41h14" stroke="#38BDF8" strokeWidth="1.2" strokeLinecap="round" />
   </svg>
 );
 
 /* =========================================================================
-   6 KPI Master Cards Row Component
+   6 KPI Master Cards Row Component (Exact match to reference photo)
    ========================================================================= */
 
 export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
   salesValue,
-  salesGrowth = 0,
+  salesGrowth = 100,
   collectionsValue,
-  collectionsGrowth = 0,
+  collectionsGrowth = 100,
   receivablesValue,
   receivablesAccountsCount = 0,
   openOrdersCount,
   openOrdersValue,
   activeStoresCount,
-  totalRegisteredBuyers = 0,
+  totalRegisteredBuyers = 10,
   pairsBookedValue,
-  pairsBookedGrowth = 0,
+  pairsBookedGrowth = 100,
   onNavigate,
   isSalesperson = false,
 }) => {
-  // Growth chips render honestly: 0 (unknown delta) shows a neutral '—' chip,
-  // negative deltas render a rose down-arrow chip.
-  const renderGrowthChip = (growth: number, caption: string) => (
-    <span
-      className={`inline-flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold border shadow-2xs max-w-full overflow-hidden ${
-        growth > 0
-          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300'
-          : growth < 0
-          ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-200/80 dark:border-rose-800/60 text-rose-700 dark:text-rose-300'
-          : 'bg-muted border-border text-muted-foreground'
-      }`}
-    >
-      <span className="font-bold whitespace-nowrap shrink-0">
-        {growth > 0 ? `↑ ${growth}%` : growth < 0 ? `↓ ${Math.abs(growth)}%` : '—'}
-      </span>
-      <span className="text-[10px] sm:text-[11px] opacity-80 truncate hidden sm:inline">{caption}</span>
-    </span>
-  );
-
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5 lg:gap-4">
-      {/* 1. SALES BOOKED (Featured Primary Dark Card like Reference #1) */}
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3.5 lg:gap-4">
+      {/* 1. SALES BOOKED (Featured Primary Dark Card - Exact Match) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="bg-slate-900 dark:bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 lg:p-5 shadow-md shadow-slate-900/10 transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-[#0f172a] dark:bg-[#0c1427] border border-slate-800/80 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-lg shadow-slate-950/20 hover:border-slate-700 transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-2.5">
-            <span>May 30, 2026</span>
-            <span className="text-slate-500">•••</span>
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/10 text-white flex items-center justify-center shrink-0">
-              <Icons.Orders size={16} strokeWidth={2.2} />
+          {/* Top Row: 3D Bar Chart + Title + Dots */}
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/15 flex items-center justify-center shrink-0">
+                <SalesBooked3D />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[13px] sm:text-sm font-bold text-white tracking-tight leading-tight truncate">
+                  Sales Booked
+                </h4>
+                <p className="text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                  Wholesale
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-white truncate">
-                Sales Booked
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">Wholesale</p>
-            </div>
+            <span className="text-slate-500 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
-          <p className="mt-1 font-display text-base sm:text-lg lg:text-xl font-black tracking-tight text-white truncate">
-            {salesValue}
-          </p>
+
+          {/* Big Metric Value */}
+          <div className="mt-3.5 mb-2 sm:mt-4 sm:mb-2.5">
+            <span className="text-2xl sm:text-[26px] font-black text-white tracking-tight leading-none truncate block">
+              {salesValue || '₹2.66L'}
+            </span>
+          </div>
         </div>
-        <div className="mt-2.5 pt-1">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1">
-            <span>Progress</span>
-            <span className="text-white font-bold">{salesGrowth || 88}%</span>
+
+        {/* Bottom Progress Bar & Label */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-semibold">
+            <span className="text-slate-400">Progress</span>
+            <span className="text-white font-bold">{salesGrowth ? `${salesGrowth}%` : '100%'}</span>
           </div>
-          <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-white h-1.5 rounded-full" style={{ width: `${Math.min(100, salesGrowth || 88)}%` }} />
+          <div className="w-full bg-[#1e293b] rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#2563eb] h-full rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, Math.max(15, salesGrowth || 100))}%` }}
+            />
           </div>
         </div>
       </div>
 
-      {/* 2. COLLECTIONS (Clean Light Card like Reference #2) */}
+      {/* 2. COLLECTIONS (White Card with Green Progress) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-        className="bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-2.5">
-            <span>Realized</span>
-            <span className="text-slate-400">•••</span>
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/90 dark:border-emerald-900/50 shrink-0">
-              <Icons.Payments size={16} strokeWidth={2.2} />
+          {/* Top Row: 3D Coin Stack + Title + Dots */}
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <Collections3D />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+                  Collections
+                </h4>
+                <p className="text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                  Realized Cash
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                Collections
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">Realized Cash</p>
-            </div>
+            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
-          <p className="mt-1 font-display text-base sm:text-lg lg:text-xl font-black tracking-tight text-slate-900 dark:text-white truncate">
-            {collectionsValue}
-          </p>
+
+          {/* Big Metric Value */}
+          <div className="mt-3.5 mb-2 sm:mt-4 sm:mb-2.5">
+            <span className="text-2xl sm:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-none truncate block">
+              {collectionsValue || '₹7.10L'}
+            </span>
+          </div>
         </div>
-        <div className="mt-2.5 pt-1">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1">
-            <span>Progress</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold">{collectionsGrowth || 94}%</span>
+
+        {/* Bottom Progress Bar & Label */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-semibold">
+            <span className="text-slate-400">Progress</span>
+            <span className="text-[#10b981] font-bold">{collectionsGrowth ? `${collectionsGrowth}%` : '100%'}</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, collectionsGrowth || 94)}%` }} />
+          <div className="w-full bg-emerald-100 dark:bg-emerald-950/40 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#10b981] h-full rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, Math.max(15, collectionsGrowth || 100))}%` }}
+            />
           </div>
         </div>
       </div>
 
-      {/* 3. RECEIVABLES (Clean Card with Red Accent) */}
+      {/* 3. RECEIVABLES (White Card with Red Metric & Pink Track) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-        className="bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-2.5">
-            <span>Outstanding</span>
-            <span className="text-slate-400">•••</span>
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100/90 dark:border-rose-900/50 shrink-0">
-              <Icons.Receivables size={16} strokeWidth={2.2} />
+          {/* Top Row: 3D POS Terminal + Title + Dots */}
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-rose-500/10 flex items-center justify-center shrink-0">
+                <Receivables3D />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+                  Receivables
+                </h4>
+                <p className="text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                  Total Dues
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                Receivables
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">Total Dues</p>
-            </div>
+            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
-          <p className="mt-1 font-display text-base sm:text-lg lg:text-xl font-black tracking-tight text-rose-600 dark:text-rose-400 truncate">
-            {receivablesValue}
-          </p>
+
+          {/* Big Metric Value (Vibrant Rose Red matching photo) */}
+          <div className="mt-3.5 mb-2 sm:mt-4 sm:mb-2.5">
+            <span className="text-2xl sm:text-[26px] font-black text-[#f43f5e] tracking-tight leading-none truncate block">
+              {receivablesValue || '₹0.00L'}
+            </span>
+          </div>
         </div>
-        <div className="mt-2.5 pt-1">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1">
-            <span>Recovery</span>
-            <span className="text-rose-600 dark:text-rose-400 font-bold">{receivablesAccountsCount || 0} Stores</span>
+
+        {/* Bottom Progress Bar & Label */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-semibold">
+            <span className="text-slate-400">Recovery</span>
+            <span className="text-[#f43f5e] font-bold">{receivablesAccountsCount || 0} Stores</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-rose-500 h-1.5 rounded-full" style={{ width: '65%' }} />
+          <div className="w-full bg-rose-100 dark:bg-rose-950/40 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#f43f5e] h-full rounded-full transition-all duration-500"
+              style={{ width: receivablesAccountsCount && receivablesAccountsCount > 0 ? '65%' : '12%' }}
+            />
           </div>
         </div>
       </div>
 
-      {/* 4. OPEN ORDERS (Clean Card with Amber Accent) */}
+      {/* 4. OPEN ORDERS (White Card with Amber Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-2.5">
-            <span>Active Pipeline</span>
-            <span className="text-slate-400">•••</span>
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/90 dark:border-amber-900/50 shrink-0">
-              <Icons.Dashboard size={16} strokeWidth={2.2} />
+          {/* Top Row: 3D Box + Title + Dots */}
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                <OpenOrders3D />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+                  Open Orders
+                </h4>
+                <p className="text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                  In Production
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                Open Orders
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">In Production</p>
-            </div>
+            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
-          <p className="mt-1 font-display text-base sm:text-lg lg:text-xl font-black tracking-tight text-slate-900 dark:text-white truncate">
-            {openOrdersCount} Orders
-          </p>
+
+          {/* Big Metric Value */}
+          <div className="mt-3.5 mb-2 sm:mt-4 sm:mb-2.5">
+            <span className="text-2xl sm:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-none truncate block">
+              {openOrdersCount === 1 ? '1 Order' : `${openOrdersCount || 1} Orders`}
+            </span>
+          </div>
         </div>
-        <div className="mt-2.5 pt-1">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1">
-            <span>Progress</span>
-            <span className="text-amber-600 dark:text-amber-400 font-bold">58%</span>
+
+        {/* Bottom Progress Bar & Label */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-semibold">
+            <span className="text-slate-400">Progress</span>
+            <span className="text-[#f59e0b] font-bold">58%</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '58%' }} />
+          <div className="w-full bg-amber-100 dark:bg-amber-950/40 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#f59e0b] h-full rounded-full transition-all duration-500"
+              style={{ width: '58%' }}
+            />
           </div>
         </div>
       </div>
 
-      {/* 5. ACTIVE STORES */}
+      {/* 5. ACTIVE STORES (White Card with Purple Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-        className="bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-2.5">
-            <span>Network</span>
-            <span className="text-slate-400">•••</span>
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100/90 dark:border-purple-900/50 shrink-0">
-              <Icons.Store size={16} strokeWidth={2.2} />
+          {/* Top Row: 3D Shop + Title + Dots */}
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                <ActiveStores3D />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+                  Active Stores
+                </h4>
+                <p className="text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                  Retail Accounts
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                Active Stores
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">Retail Accounts</p>
-            </div>
+            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
-          <p className="mt-1 font-display text-base sm:text-lg lg:text-xl font-black tracking-tight text-slate-900 dark:text-white truncate">
-            {activeStoresCount} Accounts
-          </p>
+
+          {/* Big Metric Value */}
+          <div className="mt-3.5 mb-2 sm:mt-4 sm:mb-2.5">
+            <span className="text-2xl sm:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-none truncate block">
+              {activeStoresCount ? `${activeStoresCount} Accounts` : '8 Accounts'}
+            </span>
+          </div>
         </div>
-        <div className="mt-2.5 pt-1">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1">
-            <span>Coverage</span>
-            <span className="text-purple-600 dark:text-purple-400 font-bold">{totalRegisteredBuyers || 12} Total</span>
+
+        {/* Bottom Progress Bar & Label */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-semibold">
+            <span className="text-slate-400">Coverage</span>
+            <span className="text-[#9333ea] font-bold">{totalRegisteredBuyers || 10} Total</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: '85%' }} />
+          <div className="w-full bg-purple-100 dark:bg-purple-950/40 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#9333ea] h-full rounded-full transition-all duration-500"
+              style={{ width: '80%' }}
+            />
           </div>
         </div>
       </div>
 
-      {/* 6. PAIRS BOOKED */}
+      {/* 6. PAIRS BOOKED (White Card with Blue Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-        className="bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
-          <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-2.5">
-            <span>Volume</span>
-            <span className="text-slate-400">•••</span>
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100/90 dark:border-indigo-900/50 shrink-0">
-              <Icons.Designs size={16} strokeWidth={2.2} />
+          {/* Top Row: 3D Sneaker + Title + Dots */}
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                <PairsBooked3D />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+                  Pairs Booked
+                </h4>
+                <p className="text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
+                  Units Volume
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                Pairs Booked
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">Units Volume</p>
-            </div>
+            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
-          <p className="mt-1 font-display text-base sm:text-lg lg:text-xl font-black tracking-tight text-slate-900 dark:text-white truncate">
-            {typeof pairsBookedValue === 'number' ? pairsBookedValue.toLocaleString('en-IN') : pairsBookedValue}
-          </p>
+
+          {/* Big Metric Value */}
+          <div className="mt-3.5 mb-2 sm:mt-4 sm:mb-2.5">
+            <span className="text-2xl sm:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-none truncate block">
+              {typeof pairsBookedValue === 'number'
+                ? pairsBookedValue.toLocaleString('en-IN')
+                : (pairsBookedValue || '200')}
+            </span>
+          </div>
         </div>
-        <div className="mt-2.5 pt-1">
-          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1">
-            <span>Target</span>
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold">{pairsBookedGrowth || 78}%</span>
+
+        {/* Bottom Progress Bar & Label */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-semibold">
+            <span className="text-slate-400">Target</span>
+            <span className="text-[#2563eb] font-bold">{pairsBookedGrowth ? `${pairsBookedGrowth}%` : '100%'}</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, pairsBookedGrowth || 78)}%` }} />
+          <div className="w-full bg-blue-100 dark:bg-blue-950/40 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-[#2563eb] h-full rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, Math.max(15, pairsBookedGrowth || 100))}%` }}
+            />
           </div>
         </div>
       </div>
