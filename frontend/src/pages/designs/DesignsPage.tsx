@@ -35,6 +35,7 @@ import {
   ShoppingBag,
   LayoutGrid,
   List,
+  MoreVertical,
 } from 'lucide-react';
 
 interface DesignsPageProps {
@@ -590,45 +591,41 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
                       {/* Card Body Information */}
                       <div className="p-2.5 sm:p-4 md:p-5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3.5">
-                        <div className="space-y-1 sm:space-y-2">
+                        <div className="space-y-1.5 sm:space-y-2">
+                          {/* Title & Actions */}
+                          <div className="flex items-center justify-between gap-1.5">
+                            <h3 className="font-bold text-xs sm:text-base text-slate-900 dark:text-white tracking-tight leading-snug line-clamp-1">
+                              {shoe.name}
+                            </h3>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingDesign(shoe);
+                                setIsAddModalOpen(true);
+                              }}
+                              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 sm:p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+                              title="Options"
+                            >
+                              <MoreVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </button>
+                          </div>
+
                           {/* Article Code & Category Tag */}
                           <div className="flex items-center justify-between gap-1.5">
-                            <span className="px-1.5 sm:px-2 py-0.5 rounded font-mono text-[9px] sm:text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 truncate">
+                            <span className="px-1.5 sm:px-2 py-0.5 rounded-md font-mono text-[9px] sm:text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/60 truncate">
                               {shoe.articleCode}
                             </span>
-                            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
-                              {shoe.category.split(' ')[0]}
+                            <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+                              {shoe.category}
                             </span>
                           </div>
 
-                          {/* Shoe Name */}
-                          <h3 className="font-bold text-xs sm:text-base text-slate-900 dark:text-white tracking-tight leading-snug line-clamp-1">
-                            {shoe.name}
-                          </h3>
-
-                          {/* Material Micro-specs Chips */}
-                          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 pt-0.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400">
-                            <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 max-w-full">
-                              <Layers className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400 shrink-0" />
-                              <span className="truncate max-w-[80px] sm:max-w-[130px]">{shoe.upperMaterial}</span>
+                          {/* Material Micro-specs row */}
+                          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                            <span className="truncate">
+                              {shoe.upperMaterial || 'Leather'} | {shoe.colors?.[0] || 'Brown'} | {shoe.sizes?.length ? `${shoe.sizes[0]}-${shoe.sizes[shoe.sizes.length - 1]}` : '6-10'}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 max-w-full">
-                              <Package className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400 shrink-0" />
-                              <span className="truncate max-w-[60px] sm:max-w-[90px]">{shoe.soleType}</span>
-                            </span>
-                          </div>
-
-                          {/* Size Curve Breakdown */}
-                          <div className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto no-scrollbar py-0.5">
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-0.5">Sizes:</span>
-                            {(shoe.sizes?.length ? shoe.sizes : ['6', '7', '8', '9', '10']).map((sz) => (
-                              <span
-                                key={sz}
-                                className="px-1 sm:px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] font-mono font-bold text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 shrink-0"
-                              >
-                                {sz}
-                              </span>
-                            ))}
                           </div>
                         </div>
 

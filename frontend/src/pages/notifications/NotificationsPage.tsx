@@ -15,7 +15,6 @@ import {
 } from '../../components/ui';
 import { NotificationKpiCards } from '../../components/notifications/NotificationKpiCards';
 import { Home, CheckCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 export interface NotificationsPageProps {
   onNavigate?: (path: string) => void;

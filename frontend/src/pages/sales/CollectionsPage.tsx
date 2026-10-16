@@ -34,7 +34,7 @@ interface CollectionsPageProps {
 }
 
 export const CollectionsPage: React.FC<CollectionsPageProps> = ({ onNavigate }) => {
-  const { customers, payments, setPayments, setIsPaymentModalOpen, setSelectedCustomer, currentUser, salesTeam, showToast } = useApp();
+  const { customers, setCustomers, payments, setPayments, setIsPaymentModalOpen, setSelectedCustomer, currentUser, salesTeam, showToast } = useApp();
   const { data: serverCollections } = useSalesmanCollections();
   const clearChequeMutation = useClearCheque();
   const bounceChequeMutation = useBounceCheque();
@@ -114,9 +114,23 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({ onNavigate }) 
   const handleClearCheque = async (paymentId: string) => {
     try {
       await clearChequeMutation.mutateAsync(paymentId);
+      const chq = payments.find((p) => p.id === paymentId);
       setPayments((prev) =>
         prev.map((p) => (p.id === paymentId ? { ...p, status: 'verified' } : p))
       );
+      if (chq) {
+        setCustomers((prev) =>
+          prev.map((c) =>
+            c.id === chq.customerId
+              ? {
+                  ...c,
+                  totalPaid: (c.totalPaid || 0) + Number(chq.paymentAmount || 0),
+                  amountDue: Math.max(0, (c.amountDue || 0) - Number(chq.paymentAmount || 0)),
+                }
+              : c
+          )
+        );
+      }
       showToast('Cheque payment cleared and ledger balance credited!');
     } catch (err: any) {
       showToast(err?.message || 'Failed to clear cheque');

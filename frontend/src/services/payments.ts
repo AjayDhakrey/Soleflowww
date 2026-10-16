@@ -114,6 +114,43 @@ export const paymentsService = {
 
     const effectiveOrgId = toValidOrgId(params.orgId);
 
+    const paymentId = `PAY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const receiptNumber = `SF-REC-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const paymentRow = {
+      id: paymentId,
+      org_id: effectiveOrgId,
+      receiptNumber: params.receiptNumber || receiptNumber,
+      customerId: params.clientId,
+      customerName: params.customerName || 'Valued Customer',
+      customerCity: params.customerCity || 'Agra',
+      orderId: params.orderId || null,
+      orderNumber: params.orderNumber || null,
+      amountDueBefore: params.amountDueBefore ?? Number(params.amount),
+      paymentAmount: Number(params.amount),
+      amountDueAfter: params.method === 'Cheque'
+        ? (params.amountDueBefore ?? Number(params.amount))
+        : (params.amountDueAfter ?? Math.max(0, (params.amountDueBefore ?? Number(params.amount)) - Number(params.amount))),
+      paymentDate: params.paymentDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      paymentMethod: params.method || 'UPI',
+      utrRef: params.reference || (params.method === 'Cheque' ? `CHQ-${params.chequeNo}` : 'Direct'),
+      collectedBy: params.collectedBy || 'Sales Representative',
+      notes: params.notes || '',
+      sentSms: true,
+      status: params.method === 'Cheque' ? 'pending_clearance' : 'verified',
+      cheque_no: params.chequeNo || null,
+      cheque_bank: params.chequeBank || null,
+      cheque_date: params.chequeDate || null,
+      idempotency_key: params.idempotencyKey || safeRandomUUID(),
+      payment_date_at: paymentDateIso,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!supabase || isDemoModeActive) {
+      return { success: true, data: paymentRow };
+    }
+
     // 1. First attempt the multi-tenant record_payment RPC with exact signature matching (including p_org_id)
     try {
       const { data, error } = await (supabase as any).rpc('record_payment', {
@@ -143,37 +180,6 @@ export const paymentsService = {
 
     // 2. Direct Supabase Table Fallback
     try {
-      const paymentId = `PAY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      const receiptNumber = `SF-REC-${Math.floor(10000 + Math.random() * 90000)}`;
-
-      const paymentRow = {
-        id: paymentId,
-        org_id: effectiveOrgId,
-        receiptNumber: params.receiptNumber || receiptNumber,
-        customerId: params.clientId,
-        customerName: params.customerName || 'Valued Customer',
-        customerCity: params.customerCity || 'Agra',
-        orderId: params.orderId || null,
-        orderNumber: params.orderNumber || null,
-        amountDueBefore: params.amountDueBefore ?? Number(params.amount),
-        paymentAmount: Number(params.amount),
-        amountDueAfter: params.amountDueAfter ?? Math.max(0, (params.amountDueBefore ?? Number(params.amount)) - Number(params.amount)),
-        paymentDate: params.paymentDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        paymentMethod: params.method || 'UPI',
-        utrRef: params.reference || 'Direct',
-        collectedBy: params.collectedBy || 'Sales Representative',
-        notes: params.notes || '',
-        sentSms: true,
-        status: params.method === 'Cheque' ? 'pending_clearance' : 'verified',
-        cheque_no: params.chequeNo || null,
-        cheque_bank: params.chequeBank || null,
-        cheque_date: params.chequeDate || null,
-        idempotency_key: params.idempotencyKey || safeRandomUUID(),
-        payment_date_at: paymentDateIso,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
       const { data: inserted, error: insertError } = await (supabase as any)
         .from('payments')
         .insert([paymentRow])

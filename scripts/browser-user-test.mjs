@@ -2,8 +2,14 @@ import puppeteer from 'puppeteer-core';
 import path from 'path';
 import fs from 'fs';
 
-const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const TARGET_URL = process.argv[2] || 'http://localhost:3000';
+const BROWSER_CANDIDATES = [
+  path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe'),
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+];
+const CHROME_PATH = BROWSER_CANDIDATES.find((p) => p && fs.existsSync(p)) || 'chrome';
+const TARGET_URL = process.argv[2] || 'http://localhost:5173';
 const SCREENSHOT_DIR = path.resolve('./browser-qa-screenshots');
 
 if (!fs.existsSync(SCREENSHOT_DIR)) {

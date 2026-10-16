@@ -2,13 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useReceivables, useClearCheque, useBounceCheque } from '../../hooks/usePayments';
 import { Icons } from '../../lib/icons';
-import { Home } from 'lucide-react';
+import { Home, Calendar, AlertTriangle } from 'lucide-react';
 import { PaymentReceipt } from '../../types';
 import {
   ReceiptPreviewModal,
   mapPaymentStatusToReceiptStatus,
 } from '../../components/payments/ReceiptTemplate';
 import PaymentsKpiCards from '../../components/payments/PaymentsKpiCards';
+import { SettledDocument3D } from '../../components/dashboard/EntityKpi3DIcons';
 import {
   PageHeader,
   KpiCard,
@@ -331,29 +332,29 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
       />
 
       {/* Tab Switcher */}
-      <div className="flex items-center gap-2 sm:gap-3 border-b border-border/80 pb-1 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 pb-1 overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab('receivables')}
-          className={`relative px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+          className={`px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 shadow-xs ${
             activeTab === 'receivables'
-              ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-900 shadow-2xs'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+              ? 'bg-blue-600 text-white shadow-blue-500/20 shadow-md ring-2 ring-blue-500/20'
+              : 'bg-white dark:bg-card text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50'
           }`}
         >
-          <Icons.Receivables size={16} className={activeTab === 'receivables' ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'} />
+          <Icons.Receivables size={16} />
           <span>Outstanding Accounts ({overdueCustomers.length})</span>
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('payments')}
-          className={`relative px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0 ${
+          className={`px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
             activeTab === 'payments'
-              ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-900 shadow-2xs'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+              ? 'bg-blue-600 text-white shadow-blue-500/20 shadow-md font-bold ring-2 ring-blue-500/20'
+              : 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
-          <Icons.Payments size={16} className={activeTab === 'payments' ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'} />
+          <span className="font-bold text-sm">₹</span>
           <span>Payment Receipts ({payments.length})</span>
         </button>
       </div>
@@ -361,23 +362,37 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
       {/* 3. TAB 1: Outstanding Accounts Table Panel */}
       {activeTab === 'receivables' && (
         <Panel
-          title="Outstanding Accounts Requiring Settlement"
-          subtitle="Retailers with pending commercial balances exceeding agreed credit cycle"
+          title={
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/30">
+                <Icons.Receivables size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                  Outstanding Accounts Requiring Settlement
+                </h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+                  Retailers with pending commercial balances exceeding agreed credit cycle
+                </p>
+              </div>
+            </div>
+          }
           headerAction={
-            <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/60 dark:border-rose-900/60">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-100 dark:border-rose-900/60">
+                <AlertTriangle size={13} className="text-rose-500" />
                 {filteredOverdue.length} Stores Overdue • ₹{(filteredOverdue.reduce((s, c) => s + Number(c.amountDue || 0), 0) / 100000).toFixed(2)}L
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
-                <Icons.Calendar size={14} className="text-muted-foreground" />
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-50 text-slate-600 dark:bg-slate-800/80 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                <Calendar size={13} className="text-slate-400" />
                 Fiscal Cycle: {now.getFullYear()}–{now.getFullYear() + 1}
               </span>
             </div>
           }
           noPadding
-          className="w-full shadow-sm"
+          className="w-full shadow-2xs rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden"
         >
-          <div className="p-3 sm:p-4 md:p-6 border-b border-border bg-slate-50/50 dark:bg-slate-900/30">
+          <div className="p-3 sm:p-4 md:p-5 border-b border-border bg-slate-50/50 dark:bg-slate-900/30">
             <FilterBar>
               <SearchInput
                 value={search}
@@ -404,11 +419,15 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({
           </div>
 
           {filteredOverdue.length === 0 ? (
-            <EmptyState
-              icon={Icons.Approved}
-              title="All Buyer Accounts in Good Standing"
-              description="No stores currently match the selected aging criteria or search filters."
-            />
+            <div className="py-16 sm:py-20 flex flex-col items-center justify-center text-center px-4">
+              <SettledDocument3D className="w-24 h-24 sm:w-28 sm:h-28 mb-3" />
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                No outstanding accounts require settlement
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1 max-w-md">
+                All retailer accounts are up to date. Great work!
+              </p>
+            </div>
           ) : (
             <>
               {/* MOBILE VIEW: Touch-friendly Outstanding Account Cards (md:hidden) */}

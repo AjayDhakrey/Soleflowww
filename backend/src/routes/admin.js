@@ -189,8 +189,8 @@ adminRouter.post('/users/create', async (req, res, next) => {
     const callerUser = req.user;
     let targetOrgId = orgId || callerUser?.orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
 
-    // If server does not have live supabaseAdmin configured, return local mock response
-    if (!supabaseAdmin) {
+    // If server does not have live supabaseAdmin with service role key configured, return local mock response
+    if (!supabaseAdmin || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       logger.info({ email: cleanEmail, role }, 'Registered member locally (Supabase service key not configured)');
       return res.status(200).json({
         success: true,

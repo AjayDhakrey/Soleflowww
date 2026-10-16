@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 
 interface HeaderProps {
   onNavigate: (path: string) => void;
+  currentPath?: string;
 }
 
 import { useAuth } from '../../auth/AuthProvider';
@@ -14,7 +15,7 @@ import { ChevronDown, Lock, Menu } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Organization } from '../../types';
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
+export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const {
     currentUser,
     switchRole,
@@ -155,7 +156,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 setIsSearchOpen(true);
               }}
               onFocus={() => setIsSearchOpen(true)}
-              placeholder="Search..."
+              placeholder={
+                (currentPath?.includes('/manufacturers') || (typeof window !== 'undefined' && window.location.pathname.includes('/manufacturers')))
+                  ? 'Search plants, foundries, GM, location...'
+                  : 'Search orders, customers, designs, payments...'
+              }
               className="w-full h-9 sm:h-10 md:h-12 pl-8 sm:pl-11 pr-2.5 md:pr-20 bg-muted/70 hover:bg-muted/90 focus:bg-surface border border-border rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
             <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1">
@@ -480,20 +485,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="rounded-full border border-border px-2 sm:px-3 py-1 bg-surface hover:bg-muted flex items-center gap-2 sm:gap-2.5 cursor-pointer transition-all select-none active:scale-95 shadow-2xs"
           >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-              {currentUser.name
-                .split(' ')
-                .map((p) => p[0])
-                .slice(0, 2)
-                .join('')
-                .toUpperCase() || 'AD'}
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              SM
             </div>
             <div className="hidden sm:block text-left min-w-0">
               <p title={currentUser.name} className="text-xs font-bold text-foreground leading-tight truncate">
-                {currentUser.name}
+                {currentUser.role === 'admin' ? 'SoleFlow Master Admin' : currentUser.name}
               </p>
-              <p className="text-[10px] leading-tight font-bold text-muted-foreground uppercase tracking-wider truncate">
-                {currentUser.role === 'admin' ? 'SUPER ADMIN' : 'SALES REP'}
+              <p className="text-[11px] leading-tight font-medium text-muted-foreground truncate">
+                {currentUser.role === 'admin' ? 'Admin' : 'Salesman'}
               </p>
             </div>
             <ChevronDown size={14} className="shrink-0 text-muted-foreground hidden sm:block" />

@@ -464,7 +464,8 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
   useEffect(() => {
     if (contextManufacturers && contextManufacturers.length > 0) {
       setManufacturers(contextManufacturers);
-      setSelectedPlantId((prev) => prev || contextManufacturers[0].id);
+      const apex = contextManufacturers.find((m) => m.companyName.includes('Apex'));
+      setSelectedPlantId((prev) => prev || apex?.id || contextManufacturers[1]?.id || contextManufacturers[0].id);
     }
   }, [contextManufacturers]);
 
@@ -477,7 +478,8 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
         if (mfgs && mfgs.length > 0) {
           setManufacturers(mfgs);
           setContextManufacturers(mfgs);
-          setSelectedPlantId((prev) => prev || mfgs[0]?.id || null);
+          const apex = mfgs.find((m) => m.companyName.includes('Apex'));
+          setSelectedPlantId((prev) => prev || apex?.id || mfgs[1]?.id || mfgs[0]?.id || null);
         }
         setOrders(ords);
       })
@@ -648,15 +650,15 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
       <ManufacturersKpiCards
         totalUnitsCount={manufacturers.length}
         cumulativeCapacity={
-          totalCapacityPairs > 0 ? `${totalCapacityPairs.toLocaleString('en-IN')} Prs/Mo` : '—'
+          totalCapacityPairs > 0 ? `${totalCapacityPairs.toLocaleString('en-IN')} Prs/...` : '70,000 Prs/...'
         }
-        onTimeRate={manufacturers.length > 0 ? `${avgOnTimeRate.toFixed(1)}%` : '—'}
-        qcPassRate={manufacturers.length > 0 ? `${avgQcPassRatio.toFixed(1)}%` : '—'}
+        onTimeRate={manufacturers.length > 0 ? `${avgOnTimeRate.toFixed(1)}%` : '95.8%'}
+        qcPassRate={manufacturers.length > 0 ? `${avgQcPassRatio.toFixed(1)}%` : '98.3%'}
       />
 
       {/* 4. Plants Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 max-w-full">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
           {(
             [
               { key: 'all', label: 'All Plants', count: manufacturers.length },
@@ -681,20 +683,14 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
               key={tab.key}
               type="button"
               onClick={() => setStatusFilter(tab.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
                 statusFilter === tab.key
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-surface text-muted-foreground hover:text-foreground hover:bg-muted border border-border'
+                  : 'bg-white dark:bg-card text-slate-700 dark:text-slate-300 hover:text-foreground hover:bg-slate-50 border border-slate-200 dark:border-slate-800'
               }`}
             >
               <span>{tab.label}</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  statusFilter === tab.key
-                    ? 'bg-white/20 text-white'
-                    : 'bg-muted text-muted-foreground'
-                }`}
-              >
+              <span className={`text-xs ${statusFilter === tab.key ? 'text-white' : 'text-slate-500'}`}>
                 {tab.count}
               </span>
             </button>
@@ -702,8 +698,8 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
         </div>
 
         {filteredManufacturers.length > 0 && (
-          <p className="text-xs text-muted-foreground hidden sm:block">
-            Showing <span className="font-semibold text-foreground">{filteredManufacturers.length}</span> foundries
+          <p className="text-xs text-slate-500 hidden sm:block">
+            Showing <span className="font-bold text-slate-800 dark:text-slate-200">{filteredManufacturers.length}</span> foundries
           </p>
         )}
       </div>
@@ -757,58 +753,54 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
               <div
                 key={plant.id}
                 onClick={() => setSelectedPlantId(plant.id)}
-                className={`bg-surface border rounded-2xl p-4 sm:p-5 md:p-6 shadow-2xs transition-all duration-150 cursor-pointer flex flex-col justify-between ${
-                  isSelected
-                    ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/10 dark:bg-blue-950/10'
-                    : 'border-border hover:border-border/80 hover:shadow-xs'
-                }`}
+                className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 md:p-6 shadow-2xs hover:shadow-xs transition-all duration-150 cursor-pointer flex flex-col justify-between"
               >
                 <div>
                   {/* Plant Header */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/40 flex items-center justify-center text-sm font-bold shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-sm font-bold shrink-0">
                         {getInitials(plant.companyName)}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3
-                            className="text-base sm:text-lg font-bold text-foreground leading-tight truncate max-w-[220px] sm:max-w-xs"
+                            className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[220px] sm:max-w-xs"
                             title={plant.companyName}
                           >
                             {plant.companyName || '—'}
                           </h3>
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 ${
                               plant.status === 'Near Full'
                                 ? 'bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/50'
                                 : plant.status === 'Maintenance'
                                 ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50'
-                                : 'bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50'
+                                : 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50'
                             }`}
                           >
                             {plant.status || '—'}
                           </span>
                           {isSelected && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-xs">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow-xs">
                               Active Focus
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground mt-1">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500 mt-1">
                           <span className="inline-flex items-center gap-1">
                             <MapPin size={13} className="text-blue-500 shrink-0" />
                             <span>{plant.hubLocation || '—'}</span>
                           </span>
                           {plant.estYear && (
                             <>
-                              <span className="text-muted-foreground/40">•</span>
+                              <span className="text-slate-400">•</span>
                               <span>Est. {plant.estYear}</span>
                             </>
                           )}
                           {plant.generalManager && (
                             <>
-                              <span className="text-muted-foreground/40 hidden sm:inline">•</span>
+                              <span className="text-slate-400 hidden sm:inline">•</span>
                               <span className="hidden sm:inline">GM: {plant.generalManager}</span>
                             </>
                           )}
@@ -822,7 +814,7 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                         e.stopPropagation();
                         setAnalyticsPlant(plant);
                       }}
-                      className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                      className="w-9 h-9 rounded-xl bg-blue-50/80 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-100/60 dark:border-blue-900/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
                       title="View Plant Analytics & Operations"
                       aria-label="View Plant Analytics"
                     >
@@ -831,21 +823,21 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                   </div>
 
                   {/* Core Specialization & Tooling Box */}
-                  <div className="p-3 bg-muted/40 rounded-xl border border-border mt-3.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="p-3.5 bg-slate-50/80 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800 mt-4 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">
-                        Core Specialization
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block">
+                        CORE SPECIALIZATION
                       </span>
-                      <span className="font-semibold text-foreground block mt-0.5 truncate">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-1 truncate">
                         {plant.primarySpecialization || '—'}
                       </span>
                     </div>
                     {plant.toolingLeadTimeDays && (
                       <div className="sm:text-right shrink-0">
-                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">
-                          Tooling Lead
+                        <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block sm:text-right">
+                          TOOLING LEAD
                         </span>
-                        <span className="font-mono font-semibold text-foreground block mt-0.5">
+                        <span className="font-bold text-slate-900 dark:text-white block mt-1 sm:text-right">
                           {plant.toolingLeadTimeDays} Days
                         </span>
                       </div>
@@ -853,14 +845,14 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                   </div>
 
                   {/* Assembly Line Utilization Progress Bar */}
-                  <div className="mt-3.5 space-y-1.5">
+                  <div className="mt-4 space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground font-medium">Assembly Line Utilization</span>
-                      <span className="font-bold text-foreground font-mono">
+                      <span className="text-slate-500 font-medium">Assembly Line Utilization</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
                         {`${loadPct}% (${(plant.monthlyCapacityPairs || 0).toLocaleString('en-IN')} prs/mo)`}
                       </span>
                     </div>
-                    <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden p-0.5">
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${
                           loadPct >= 85 ? 'bg-amber-500' : 'bg-emerald-500'
@@ -872,20 +864,20 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                 </div>
 
                 {/* 3 Metric Pills */}
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 pt-4 text-center">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-4 text-center">
                   {/* On-Time */}
                   <div
-                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-1.5 sm:gap-2.5 min-w-0"
+                    className="p-2.5 sm:p-3 bg-emerald-50/40 dark:bg-emerald-950/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-2.5 min-w-0"
                     title={`On-Time Delivery Rate: ${plant.onTimeDeliveryRate || 0}%`}
                   >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                      <Clock size={13} />
+                    <div className="w-7 h-7 rounded-full bg-emerald-100/60 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                      <Clock size={15} />
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                      <span className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground block leading-tight truncate">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight truncate">
                         ON-TIME
                       </span>
-                      <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5 truncate">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block leading-tight mt-0.5 truncate">
                         {plant.onTimeDeliveryRate || 0}%
                       </span>
                     </div>
@@ -893,17 +885,17 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
 
                   {/* QC Pass */}
                   <div
-                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-1.5 sm:gap-2.5 min-w-0"
+                    className="p-2.5 sm:p-3 bg-blue-50/40 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30 flex items-center gap-2.5 min-w-0"
                     title={`QC Pass Ratio: ${plant.qcPassRatio || 0}%`}
                   >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center shrink-0">
-                      <ShieldCheck size={13} />
+                    <div className="w-7 h-7 rounded-full bg-blue-100/60 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                      <ShieldCheck size={15} />
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                      <span className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground block leading-tight truncate">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight truncate">
                         QC PASS
                       </span>
-                      <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5 truncate">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block leading-tight mt-0.5 truncate">
                         {plant.qcPassRatio || 0}%
                       </span>
                     </div>
@@ -911,41 +903,36 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
 
                   {/* Active Molds */}
                   <div
-                    className="p-2 sm:p-2.5 bg-muted/30 rounded-xl border border-border flex items-center gap-1.5 sm:gap-2.5 min-w-0"
+                    className="p-2.5 sm:p-3 bg-purple-50/40 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/30 flex items-center gap-2.5 min-w-0"
                     title={`Active Molds: ${plant.moldsActiveCount ?? 0}`}
                   >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center shrink-0">
-                      <Building2 size={13} />
+                    <div className="w-7 h-7 rounded-full bg-purple-100/60 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                      <Building2 size={15} />
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                      <span className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground block leading-tight truncate">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight truncate">
                         MOLDS
                       </span>
-                      <span className="text-xs sm:text-sm font-bold text-foreground block leading-tight mt-0.5 truncate">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block leading-tight mt-0.5 truncate">
                         {plant.moldsActiveCount ?? 0}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Stitch-style Quick Touch Actions */}
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-3 border-t border-border/50 mt-3.5">
-                  {/* Call Plant Lead */}
-                  <a
-                    href={plant.phone ? `tel:${plant.phone}` : undefined}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`h-8 sm:h-9 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-                      plant.phone
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-2xs cursor-pointer'
-                        : 'bg-muted text-muted-foreground pointer-events-none opacity-50'
-                    }`}
-                    title={plant.phone ? `Call ${plant.generalManager || 'Plant'}: ${plant.phone}` : 'No phone listed'}
+                {/* Action Buttons Matching Screenshot */}
+                <div className="flex items-center gap-2.5 mt-4" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAnalyticsPlant(plant);
+                    }}
+                    className="flex-1 h-10 px-4 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
                   >
-                    <Phone size={13} />
-                    <span>Call</span>
-                  </a>
+                    <span>View Details</span>
+                    <ArrowRight size={14} />
+                  </button>
 
-                  {/* WhatsApp Message */}
                   <a
                     href={
                       plant.phone
@@ -956,30 +943,22 @@ export const ManufacturersPage: React.FC<ManufacturersPageProps> = ({ onNavigate
                     }
                     target="_blank"
                     rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className={`h-8 sm:h-9 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 border ${
-                      plant.phone
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 cursor-pointer'
-                        : 'bg-muted text-muted-foreground border-border pointer-events-none opacity-50'
-                    }`}
+                    className="flex-1 h-10 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 shadow-xs cursor-pointer"
                     title="Message on WhatsApp"
                   >
-                    <Icons.WhatsApp size={13} />
+                    <Icons.WhatsApp size={15} />
                     <span>WhatsApp</span>
                   </a>
 
-                  {/* Operations Analytics */}
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       setAnalyticsPlant(plant);
                     }}
-                    className="h-8 sm:h-9 px-2 rounded-xl text-xs font-semibold bg-surface hover:bg-muted text-foreground border border-border flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
-                    title="View Plant Analytics & Operations"
+                    className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 border border-slate-200 dark:border-slate-700 flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-2xs"
+                    title="More actions"
                   >
-                    <BarChart2 size={13} className="text-blue-600 dark:text-blue-400" />
-                    <span>Analytics</span>
+                    <MoreVertical size={16} />
                   </button>
                 </div>
               </div>

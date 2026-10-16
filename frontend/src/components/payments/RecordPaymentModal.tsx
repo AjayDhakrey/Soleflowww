@@ -63,8 +63,6 @@ export const RecordPaymentModal: React.FC = () => {
     }
   }, [isPaymentModalOpen]);
 
-  if (!isPaymentModalOpen) return null;
-
   const sortedCustomers = useMemo(() => {
     if (currentUser.role === 'admin') return customers;
     return [...customers].sort((a, b) => {
@@ -79,6 +77,8 @@ export const RecordPaymentModal: React.FC = () => {
       return 0;
     });
   }, [customers, currentUser]);
+
+  if (!isPaymentModalOpen) return null;
 
   const currentCust = customers.find((c) => c.id === selectedCustId) || sortedCustomers[0] || customers[0];
   const beforeDue = currentCust ? Number(currentCust.amountDue || 0) : 0;

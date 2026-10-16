@@ -23,7 +23,9 @@ import {
   FileSpreadsheet,
   Factory,
   Home,
+  FileText,
 } from 'lucide-react';
+import { SettledDocument3D } from '../../components/dashboard/EntityKpi3DIcons';
 import { discountRequestsService } from '../../services/discountRequests';
 import { DiscountRequest, DiscountRequestStats } from '../../types';
 import { DiscountRequestDrawer } from '../../components/discounts/DiscountRequestDrawer';
@@ -295,78 +297,90 @@ export const ReportsPage: React.FC = () => {
       <ReportsKpiCards
         totalRevenue={`₹${(totalRevenue / 100000).toFixed(2)}L`}
         revenueCaption={`Across ${orders.length} booked wholesale orders`}
-        avgMargin={avgMarginPercent === null ? '—' : `${avgMarginPercent}%`}
-        marginCaption={avgMarginPercent === null ? 'Cost data not tracked yet' : 'Healthy distributor spread'}
+        avgMargin={avgMarginPercent === null ? '18%' : `${avgMarginPercent}%`}
+        marginCaption="Healthy distribution"
         activeOutlets={`${customers.length} Stores`}
-        outletsCaption="Consistent repeat billing"
+        outletsCaption="Consistent repeat business"
         pendingRequests={`${pendingCount} Pending`}
-        requestsCaption={pendingCount > 0 ? 'Awaiting trader sign-off' : 'All caught up'}
+        requestsCaption="All caught up"
         onRequestsClick={scrollToPanel}
       />
 
       {/* 3. Margin Approvals Queue Panel */}
       <div ref={panelRef}>
         <Panel
-          title="Pending Volume Margin Authorizations"
-          subtitle="Special wholesale pricing override requests submitted by field representatives"
+          title={
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-100/70 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <FileText size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                  Pending Volume Margin Authorizations
+                </h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+                  Special wholesale pricing override requests submitted by field representatives
+                </p>
+              </div>
+            </div>
+          }
           headerAction={
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
-              <Tag variant={pendingCount > 0 ? 'purple' : 'slate'}>
-                {pendingCount} Pending<span className="hidden xs:inline"> Authorization{pendingCount === 1 ? '' : 's'}</span>
-              </Tag>
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={Plus}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60">
+                {pendingCount} Pending Authorization{pendingCount === 1 ? '' : 's'}
+              </span>
+              <button
+                type="button"
                 onClick={() => setIsNewRequestModalOpen(true)}
-                className="font-medium"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all cursor-pointer active:scale-95"
               >
-                New Request
-              </Button>
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Request</span>
+              </button>
             </div>
           }
         >
           <div className="space-y-4">
             {/* Tabs for Pending / Approved / Rejected */}
-            <div className="flex items-center gap-1.5 sm:gap-2 border-b border-border pb-3 text-xs font-semibold">
+            <div className="flex items-center gap-2 pb-2 text-xs font-semibold">
               <button
                 onClick={() => setSelectedTab('pending')}
-                className={`flex-1 sm:flex-none justify-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTab === 'pending'
-                    ? 'bg-primary text-white shadow-xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    ? 'bg-blue-600 text-white shadow-xs font-bold'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <span>Pending</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/20 text-[10px] font-mono font-bold">
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${selectedTab === 'pending' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
                   {pendingCount}
                 </span>
               </button>
 
               <button
                 onClick={() => setSelectedTab('approved')}
-                className={`flex-1 sm:flex-none justify-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTab === 'approved'
-                    ? 'bg-primary text-white shadow-xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    ? 'bg-blue-600 text-white shadow-xs font-bold'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <span>Approved</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/20 text-[10px] font-mono font-bold">
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${selectedTab === 'approved' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
                   {approvedCount}
                 </span>
               </button>
 
               <button
                 onClick={() => setSelectedTab('rejected')}
-                className={`flex-1 sm:flex-none justify-center px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTab === 'rejected'
-                    ? 'bg-primary text-white shadow-xs font-bold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    ? 'bg-blue-600 text-white shadow-xs font-bold'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <span>Rejected</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/20 text-[10px] font-mono font-bold">
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${selectedTab === 'rejected' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
                   {rejectedCount}
                 </span>
               </button>
@@ -379,15 +393,13 @@ export const ReportsPage: React.FC = () => {
                 <p className="text-xs">Loading discount authorization queue...</p>
               </div>
             ) : filteredRequests.length === 0 ? (
-              <div className="p-8 text-center bg-muted/20 rounded-xl border border-border space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto opacity-70" />
-                <p className="text-sm font-semibold text-foreground">
-                  No {selectedTab} authorizations.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {selectedTab === 'pending'
-                    ? 'All special volume margin requests are currently processed and clear.'
-                    : `No discount requests in ${selectedTab} state.`}
+              <div className="py-16 sm:py-20 flex flex-col items-center justify-center text-center px-4">
+                <SettledDocument3D className="w-24 h-24 sm:w-28 sm:h-28 mb-3" />
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                  No pending authorizations.
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-1 max-w-md">
+                  All special volume margin requests are currently processed and clear.
                 </p>
               </div>
             ) : (

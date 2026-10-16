@@ -979,21 +979,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setPayments(prev => [saved, ...prev.filter(p => p.id !== saved.id)]);
 
-    // Update customer balances in local UI state
-    setCustomers(prev => prev.map(c => {
-      if (c.id === input.customerId) {
-        const newPaid = (c.totalPaid || 0) + Number(input.paymentAmount);
-        const newDue = Math.max(0, (c.amountDue || 0) - Number(input.paymentAmount));
-        return {
-          ...c,
-          totalPaid: newPaid,
-          amountDue: newDue,
-          lastPaymentDate: 'Today',
-          lastPaymentAmount: Number(input.paymentAmount),
-        };
-      }
-      return c;
-    }));
+    // Update customer balances in local UI state (verified/immediate payment modes)
+    const isPendingCheque = saved.status === 'pending_clearance';
+    if (!isPendingCheque) {
+      setCustomers(prev => prev.map(c => {
+        if (c.id === input.customerId) {
+          const newPaid = (c.totalPaid || 0) + Number(input.paymentAmount);
+          const newDue = Math.max(0, (c.amountDue || 0) - Number(input.paymentAmount));
+          return {
+            ...c,
+            totalPaid: newPaid,
+            amountDue: newDue,
+            lastPaymentDate: 'Today',
+            lastPaymentAmount: Number(input.paymentAmount),
+          };
+        }
+        return c;
+      }));
+    }
 
     // Update target order balance if specified
     if (input.orderId && input.orderId !== 'auto_fifo' && input.orderId !== 'general_on_account') {

@@ -217,7 +217,7 @@ salesRouter.post('/', requireRole('admin'), async (req, res, next) => {
     const callerUser = req.user;
     const targetOrgId = orgId || req.viewSession?.orgId || callerUser?.orgId || '00000000-0000-0000-0000-000000000001';
 
-    if (!supabaseAdmin) {
+    if (!supabaseAdmin || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return res.status(200).json({
         success: true,
         message: `Registered salesperson locally for ${cleanEmail}`,

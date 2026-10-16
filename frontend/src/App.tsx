@@ -71,7 +71,8 @@ const getInitialPath = (defaultRole?: string): string => {
     pathname.startsWith('/sales') ||
     pathname.startsWith('/platform') ||
     pathname.startsWith('/receipts/') ||
-    pathname.startsWith('/customers/insights')
+    pathname.startsWith('/customers/insights') ||
+    pathname === '/settings'
   ) {
     return pathname;
   }
@@ -84,7 +85,8 @@ const getInitialPath = (defaultRole?: string): string => {
       cleanHash.startsWith('/sales') ||
       cleanHash.startsWith('/platform') ||
       cleanHash.startsWith('/receipts/') ||
-      cleanHash.startsWith('/customers/insights')
+      cleanHash.startsWith('/customers/insights') ||
+      cleanHash === '/settings'
     ) {
       return cleanHash;
     }
@@ -230,9 +232,11 @@ const AppContent: React.FC = () => {
         pathname.startsWith('/sales') ||
         pathname.startsWith('/platform') ||
         pathname.startsWith('/customers/insights') ||
+        pathname === '/settings' ||
         hash.startsWith('#admin') ||
         hash.startsWith('#sales') ||
-        hash.startsWith('#app')
+        hash.startsWith('#app') ||
+        hash === '#settings'
       ) {
         if (pathname.length > 1 && pathname !== '/') {
           setCurrentPath(pathname);
@@ -519,7 +523,7 @@ const AppContent: React.FC = () => {
     if (basePath === '/admin/settings') {
       return (
         <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
-          <SettingsPage />
+          <SettingsPage onNavigate={handleNavigate} />
         </RequireRole>
       );
     }
@@ -576,10 +580,19 @@ const AppContent: React.FC = () => {
     }
 
     if (basePath === '/sales/profile' || basePath === '/sales/settings') {
-      return <SettingsPage />;
+      return <SettingsPage onNavigate={handleNavigate} />;
     }
 
-    // Top-level aliases for direct navigation (e.g. /designs, /orders, /customers, /payments)
+    // Top-level aliases for direct navigation (e.g. /designs, /orders, /customers, /payments, /settings)
+    if (basePath === '/settings') {
+      return currentUser.role === 'admin' ? (
+        <RequireRole role="admin" onReturnHome={() => setCurrentPath('/sales/dashboard')}>
+          <SettingsPage onNavigate={handleNavigate} />
+        </RequireRole>
+      ) : (
+        <SettingsPage onNavigate={handleNavigate} />
+      );
+    }
     if (basePath === '/designs') {
       return <DesignsPage onNavigate={handleNavigate} />;
     }
@@ -627,7 +640,7 @@ const AppContent: React.FC = () => {
       {/* 2. Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-background">
         {/* Top Header */}
-        <Header onNavigate={handleNavigate} />
+        <Header onNavigate={handleNavigate} currentPath={currentPath} />
 
         {/* Dynamic Page Body with smooth scroll and bottom padding for fixed mobile nav */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-0 bg-background">

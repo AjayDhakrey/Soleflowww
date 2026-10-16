@@ -45,10 +45,13 @@ import {
   ShoppingBag,
   Home,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { supabase, isDemoModeActive } from '../../lib/supabase';
 import { OrgInvite, UserRole } from '../../types';
 import { CreateSalesRepresentativeModal } from '../../components/team/CreateSalesRepresentativeModal';
+
+export interface SettingsPageProps {
+  onNavigate?: (path: string) => void;
+}
 
 interface MemberItem {
   id: string;
@@ -88,7 +91,15 @@ const DEFAULT_PREFERENCES: WholesalePreferences = {
   orgPhone: '+91 98970 12345',
 };
 
-export const SettingsPage: React.FC = () => {
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigate }) => {
+  const navigateTo = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      window.location.href = path;
+    }
+  };
+
   const {
     currentUser,
     setCurrentUser,
@@ -571,13 +582,14 @@ export const SettingsPage: React.FC = () => {
       {/* 1. Standardized Header with Breadcrumbs */}
       <div className="space-y-3">
         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-          <Link
-            to={isSalesperson ? '/sales/dashboard' : '/admin/dashboard'}
-            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors"
+          <button
+            type="button"
+            onClick={() => navigateTo(isSalesperson ? '/sales/dashboard' : '/admin/dashboard')}
+            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
           >
             <Home className="w-3.5 h-3.5 text-blue-600" />
             <span>Dashboard</span>
-          </Link>
+          </button>
           <span>/</span>
           <span className="text-slate-800 font-semibold">{isSalesperson ? 'Representative Profile' : 'Settings'}</span>
         </div>

@@ -3,8 +3,10 @@ import { useApp } from '../../context/AppContext';
 import { Icons } from '../../lib/icons';
 import { Avatar } from '../ui/Avatar';
 import projectLogo from '../../assets/images/project_logo.png';
+import blueSneakerLogo from '../../assets/images/login/clean_shoe_athletic_blue.png';
 
 import {
+  NavBrandLogo3D,
   NavDashboard3D,
   NavCustomers3D,
   NavSalesTeam3D,
@@ -207,13 +209,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
   const renderNavGroup = (group: NavGroupDef, isMobile = false) => {
     const isCollapsed = isMobile ? false : isSidebarCollapsed;
     return (
-      <div key={group.label} className="mb-4">
+      <div key={group.label} className="mb-3">
         {!isCollapsed && (
-          <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400/50 dark:text-slate-500/50 select-none">
+          <div className="px-3.5 pt-3 pb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#94A3B8] dark:text-slate-400 select-none">
             {group.label}
           </div>
         )}
-        <div className="space-y-1 mt-1">
+        <div className="space-y-1 mt-0.5">
           {group.items.map((item) => {
             const isActive = currentPath === item.path || (item.path !== '/admin/dashboard' && item.path !== '/sales/dashboard' && currentPath.startsWith(item.path));
 
@@ -222,12 +224,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                 key={item.path}
                 onClick={() => handleNavClick(item.path)}
                 title={isCollapsed ? item.name : undefined}
-                className={`w-full flex items-center h-12 rounded-2xl transition-all duration-150 group relative select-none cursor-pointer ${
-                  isCollapsed ? 'justify-center px-0' : 'px-2.5 gap-3'
+                className={`w-full flex items-center h-[50px] rounded-2xl transition-all duration-150 group relative select-none cursor-pointer ${
+                  isCollapsed ? 'justify-center px-0' : 'px-3 gap-3.5'
                 } ${
                   isActive
-                    ? 'bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/60 text-blue-600 dark:text-blue-400 font-semibold shadow-2xs'
-                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 font-medium'
+                    ? 'bg-[#EEF5FF] dark:bg-blue-950/40 border border-[#DBEAFE] dark:border-blue-800/60 text-blue-600 dark:text-blue-400 font-bold shadow-2xs'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 font-medium'
                 }`}
               >
                 <div className="shrink-0 transition-transform group-hover:scale-105">
@@ -235,7 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                 </div>
 
                 {!isCollapsed && (
-                  <span title={item.name} className={`text-[13px] font-medium truncate flex-1 text-left ${isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-700 dark:text-slate-200'}`}>
+                  <span title={item.name} className={`text-[15px] truncate flex-1 text-left ${isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-700 dark:text-slate-200 font-medium'}`}>
                     {item.name}
                   </span>
                 )}
@@ -247,7 +249,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
                 )}
 
                 {!isCollapsed && isActive && (
-                  <Icons.ChevronRight size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                  <Icons.ChevronRight size={17} className="text-blue-600 dark:text-blue-400 shrink-0" strokeWidth={2.4} />
                 )}
 
                 {isCollapsed && item.badge && item.badge > 0 && (
@@ -267,7 +269,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
       <div className="flex flex-col h-full bg-white dark:bg-slate-900">
         {/* Brand Header */}
         <div
-          className={`h-[68px] px-4 sm:px-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 ${
+          className={`h-[74px] px-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 ${
             isCollapsed ? 'justify-center' : 'gap-3'
           }`}
         >
@@ -276,32 +278,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
               if (isMobile) setIsMobileSidebarOpen(false);
               onNavigate(currentUser.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard');
             }}
-            title="SoleFlow Dashboard"
-            className={`flex items-center cursor-pointer hover:opacity-90 transition-opacity min-w-0 ${
-              isCollapsed ? 'justify-center' : 'gap-3 flex-1'
+            title="ShoeConnect Dashboard"
+            className={`flex items-center cursor-pointer select-none ${
+              isCollapsed ? 'justify-center' : 'gap-3 flex-1 min-w-0'
             }`}
           >
-            <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden group">
-              <img
-                src={projectLogo}
-                alt="SoleFlow Logo"
-                className="w-full h-full object-contain rounded-lg transition-transform group-hover:scale-105"
-              />
+            <div className="w-[48px] h-[48px] flex items-center justify-center shrink-0">
+              <NavBrandLogo3D className="w-[48px] h-[48px]" />
             </div>
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                  <h2 title={org?.name || 'SoleFlow'} className="font-display text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {org?.name || 'SoleFlow'}
-                  </h2>
-                  {isDemoAccount && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-bold shrink-0">
-                      DEMO
-                    </span>
-                  )}
+                <div className="flex items-baseline min-w-0 truncate text-[16px] leading-tight">
+                  <span className="font-bold text-slate-900 dark:text-white">Shoe</span>
+                  <span className="font-bold text-blue-600 dark:text-blue-400">Connect</span>
+                  <span className="font-bold text-slate-900 dark:text-white">&nbsp;(default)</span>
                 </div>
-                <p className="text-[11px] text-slate-400/60 dark:text-slate-500/60 truncate">
-                  {org?.city ? `${org.city} • Footwear Workspace` : 'Step Towards Better Tomorrow'}
+                <p className="text-[12px] text-slate-400 dark:text-slate-500 truncate mt-1 font-normal">
+                  Agra • Footwear Workspace
                 </p>
               </div>
             )}
@@ -329,26 +322,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
         <div className="p-3 border-t border-slate-100 dark:border-slate-800 relative" ref={userMenuRef}>
           <div
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className={`rounded-2xl border border-slate-200/80 dark:border-slate-800 p-2.5 flex items-center gap-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-all shadow-2xs select-none ${
+            className={`rounded-2xl border border-slate-100/90 dark:border-slate-800 p-2.5 sm:p-3 flex items-center gap-3 bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-800/80 cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)] select-none ${
               isCollapsed ? 'justify-center' : ''
             }`}
           >
-            <NavUserAvatar3D className="w-10 h-10 shrink-0" />
+            <div className="w-10 h-10 rounded-full bg-[#EBF3FF] dark:bg-blue-950/60 text-[#1E3A8A] dark:text-blue-300 font-bold text-sm flex items-center justify-center shrink-0">
+              SM
+            </div>
 
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold leading-tight text-slate-900 dark:text-white truncate">
-                  {currentUser.name}
+                <p className="text-[13px] font-bold leading-tight text-slate-900 dark:text-white truncate">
+                  {currentUser.role === 'admin' ? 'SoleFlow Master Admin' : currentUser.name}
                 </p>
-                <p className="text-[11px] leading-tight text-muted-foreground capitalize truncate mt-0.5">
-                  {currentUser.role === 'admin' ? 'Trader / Admin' : 'Sales Executive'}
+                <p className="text-[11px] leading-tight font-normal text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  {currentUser.role === 'admin' ? 'Admin' : 'Sales Executive'}
                 </p>
               </div>
             )}
 
             {!isCollapsed && (
-              <div className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 shrink-0">
-                <Icons.ChevronDown size={17} strokeWidth={2} />
+              <div className="text-blue-600 dark:text-blue-400 shrink-0">
+                <Icons.ChevronRight size={16} strokeWidth={2.2} />
               </div>
             )}
           </div>

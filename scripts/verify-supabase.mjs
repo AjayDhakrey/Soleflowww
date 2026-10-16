@@ -17,7 +17,7 @@ async function main() {
     'follow_ups',
     'orders',
     'payments',
-    'design_catalog',
+    'designs',
     'manufacturers',
     'sales_team',
     'notifications',
