@@ -33,6 +33,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const {
     currentUser,
     customers,
+    notifications,
     setIsPaymentModalOpen,
     setIsCreateOrderModalOpen,
     setIsAddCustomerModalOpen,
@@ -42,13 +43,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const {
     period,
     setPeriod,
-    needsAttention,
     kpis,
     collectionsData,
     customersSummary,
     approvalsSummary,
     actions,
   } = useDashboardOverview();
+
+  const unreadAlertsCount = notifications?.filter((n) => !n.read).length || 0;
 
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
 
@@ -91,11 +93,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             </span>
             <button
               type="button"
-              onClick={() => onNavigate('/admin/reports')}
-              className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+              onClick={() => onNavigate('/admin/notifications')}
+              className="relative w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
               title="Notifications & Alerts"
+              aria-label="Notifications & Alerts"
             >
               <Icons.Notifications size={18} />
+              {unreadAlertsCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
+                  {unreadAlertsCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -189,62 +197,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         />
       </div>
 
-      {/* 5. Needs Immediate Attention (Exact match to photo) */}
-      <div className="rounded-2xl border border-rose-100 dark:border-rose-950/60 bg-white dark:bg-card p-4 sm:p-5 shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-rose-500">
-              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-              NEEDS IMMEDIATE ATTENTION ({needsAttention?.length || 1})
-            </h2>
-          </div>
-          <span className="inline-flex items-center text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-2.5 py-0.5 rounded-full border border-rose-200/80 dark:border-rose-900/60">
-            Action Required
-          </span>
-        </div>
 
-        <div className="space-y-2">
-          {(needsAttention && needsAttention.length > 0
-            ? needsAttention
-            : [
-                {
-                  id: 'att-past-due',
-                  title: '1 Order Past Due Delivery',
-                  route: '/admin/orders?filter=delayed',
-                  badgeVariant: 'rose',
-                },
-              ]
-          ).map((item: any) => (
-            <div
-              key={item.id}
-              onClick={() => onNavigate(item.route)}
-              className="p-3 sm:p-3.5 rounded-xl border border-rose-100 dark:border-rose-950/60 border-l-[3.5px] border-l-rose-500 bg-white dark:bg-card hover:bg-rose-50/40 transition-all cursor-pointer flex items-center justify-between gap-3 select-none"
-            >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                  {item.title}
-                </span>
-                {item.amount && item.amount > 0 && (
-                  <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                    • ₹{item.amount.toLocaleString('en-IN')}
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                className="shrink-0 px-3 py-1 rounded-full text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 flex items-center gap-1 transition-colors"
-              >
-                <span>Resolve</span>
-                <span className="text-sm leading-none">→</span>
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* 6. Collections & Receivables */}
       <Panel

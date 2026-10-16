@@ -26,6 +26,7 @@ import {
   MOCK_FIELD_VISITS,
   MOCK_AUDIT_LOGS,
   MOCK_DESIGN_SHARES,
+  MOCK_NOTIFICATIONS,
 } from '../data/mockData';
 import { supabase, supabaseApi, isSupabaseConfigured } from '../lib/supabase';
 import { paymentsService } from '../services/payments';
@@ -247,7 +248,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [orders, setOrders] = useState<Order[]>([]);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
   const [salesTeam, setSalesTeam] = useState<Salesperson[]>([]);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
   const [fieldVisits, setFieldVisits] = useState<FieldVisitItem[]>([]);
   const [payments, setPayments] = useState<PaymentReceipt[]>([]);
@@ -298,6 +299,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setManufacturers(MOCK_MANUFACTURERS); setSalesTeam(getMergedSalesTeam(MOCK_SALES_TEAM));
       setFollowUps(MOCK_FOLLOWUPS); setFieldVisits(MOCK_FIELD_VISITS);
       setAuditLogs(MOCK_AUDIT_LOGS); setDesignShares(MOCK_DESIGN_SHARES);
+      setNotifications(MOCK_NOTIFICATIONS);
       return;
     }
     if (isSupabaseActive && orgId) {
@@ -311,7 +313,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       void load(() => supabaseApi.getPayments(orgId), setPayments);
       void load(() => followUpsService.fetchFollowUps({ orgId }), setFollowUps);
       void load(() => visitsService.fetchVisits({ orgId }), setFieldVisits);
-      void load(() => notificationsService.fetchNotifications(orgId), setNotifications);
+      void load(
+        () => notificationsService.fetchNotifications(orgId),
+        (data) => setNotifications(data && data.length > 0 ? data : MOCK_NOTIFICATIONS)
+      );
       void load(() => supabaseApi.getAuditLogs(orgId), setAuditLogs);
       void load(() => supabaseApi.getDesignShares(orgId), setDesignShares);
       void load(() => supabaseApi.getManufacturers(orgId), setManufacturers);

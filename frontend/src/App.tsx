@@ -524,7 +524,7 @@ const AppContent: React.FC = () => {
       );
     }
     if (basePath === '/admin/notifications') {
-      return <NotificationsPage />;
+      return <NotificationsPage onNavigate={handleNavigate} />;
     }
 
     // Sales routes
@@ -559,7 +559,7 @@ const AppContent: React.FC = () => {
       return <VisitsPage />;
     }
     if (basePath === '/sales/notifications') {
-      return <NotificationsPage />;
+      return <NotificationsPage onNavigate={handleNavigate} />;
     }
     if (basePath === '/sales/activity') {
       return <SalesTeamPage onNavigate={handleNavigate} />;

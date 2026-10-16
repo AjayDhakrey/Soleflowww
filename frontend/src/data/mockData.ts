@@ -899,6 +899,15 @@ export const MOCK_SALES_TEAM: Salesperson[] = [
 
 export const MOCK_NOTIFICATIONS: NotificationItem[] = [
   {
+    id: 'notif-past-due-delivery',
+    title: '1 Order Past Due Delivery',
+    time: 'Just now',
+    desc: 'Order #ORD-0145 for ABC Footwear is past expected delivery date. Requires factory production and dispatch clearance.',
+    category: 'alert',
+    read: false,
+    linkTab: 'orders',
+  },
+  {
     id: 'notif-1',
     title: 'ABC Footwear: Balance Overdue 18 Days (₹2,30,000)',
     time: '4 mins ago',

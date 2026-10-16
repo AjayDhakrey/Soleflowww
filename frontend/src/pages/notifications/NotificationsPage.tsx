@@ -17,9 +17,21 @@ import { NotificationKpiCards } from '../../components/notifications/Notificatio
 import { Home, CheckCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export const NotificationsPage: React.FC = () => {
-  const { notifications, payments, customers, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
+export interface NotificationsPageProps {
+  onNavigate?: (path: string) => void;
+}
+
+export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate }) => {
+  const { currentUser, notifications, payments, customers, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
+
+  const navigateTo = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      window.location.href = path;
+    }
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const criticalCount = notifications.filter((n) => !n.read && n.category === 'alert').length;
@@ -45,13 +57,14 @@ export const NotificationsPage: React.FC = () => {
       {/* 1. Standardized Header with Breadcrumbs & Action Buttons */}
       <div className="space-y-2.5 sm:space-y-3">
         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-          <Link
-            to="/sales/dashboard"
-            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors"
+          <button
+            type="button"
+            onClick={() => navigateTo(currentUser?.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard')}
+            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
           >
             <Home className="w-3.5 h-3.5 text-blue-600" />
             <span>Dashboard</span>
-          </Link>
+          </button>
           <span>/</span>
           <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">Notifications</span>
         </div>
@@ -191,6 +204,38 @@ export const NotificationsPage: React.FC = () => {
                       <div className="mt-1.5 sm:mt-2 flex items-center gap-1 text-[11px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
                         <Icons.Designs size={12} />
                         <span>Wholesale catalog</span>
+                      </div>
+                    )}
+                    {(n.category === 'alert' || n.linkTab === 'orders' || n.title.toLowerCase().includes('past due') || n.desc.toLowerCase().includes('past due')) && (
+                      <div className="mt-2.5 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markNotificationAsRead(n.id);
+                            navigateTo(currentUser?.role === 'admin' ? '/admin/orders?filter=delayed' : '/sales/orders');
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900 transition-colors cursor-pointer"
+                        >
+                          <Icons.Orders size={13} />
+                          <span>Resolve in Orders →</span>
+                        </button>
+                      </div>
+                    )}
+                    {n.linkTab === 'payments' && !isPaymentNotification && (
+                      <div className="mt-2.5 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markNotificationAsRead(n.id);
+                            navigateTo(currentUser?.role === 'admin' ? '/admin/payments' : '/sales/collections');
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/80 transition-colors cursor-pointer"
+                        >
+                          <Icons.Payments size={13} />
+                          <span>Inspect Overdue Ledger →</span>
+                        </button>
                       </div>
                     )}
                   </div>
