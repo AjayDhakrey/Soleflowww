@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShoeDesign } from '../../types';
 import { designsService } from '../../services/designs';
+import { useAuth } from '../../auth/AuthProvider';
+import { useEffectiveOrgId } from '../../context/ViewModeContext';
 import { Icons } from '../../lib/icons';
 import { Button } from '../ui';
 import { X, Upload, Image as ImageIcon, Check, Plus, AlertCircle, Loader2, Trash2 } from 'lucide-react';
@@ -35,6 +37,8 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
   designToEdit,
   onSaved,
 }) => {
+  const auth = useAuth();
+  const effectiveOrgId = useEffectiveOrgId() || auth.orgId || auth.org?.id;
   const isEditing = Boolean(designToEdit);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -264,6 +268,7 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         subline: subline.trim(),
         status,
         image: imageUrl,
+        orgId: effectiveOrgId,
       });
 
       setIsSaving(false);
@@ -289,6 +294,7 @@ export const AddDesignModal: React.FC<AddDesignModalProps> = ({
         upperMaterial: upperMaterial.trim(),
         subline: subline.trim(),
         image: imageUrl,
+        orgId: effectiveOrgId,
       });
 
       setIsSaving(false);

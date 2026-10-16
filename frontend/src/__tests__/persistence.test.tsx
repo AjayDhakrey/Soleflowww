@@ -10,7 +10,30 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock('../auth/AuthProvider', () => ({ useAuth: () => mocks.auth }));
 vi.mock('../context/ViewModeContext', () => ({ useEffectiveOrgId: () => mocks.auth.profile.org_id, useReadOnly: () => false }));
-vi.mock('../lib/supabase', () => ({ isSupabaseConfigured: () => true, supabaseApi: { getCustomers: mocks.customers, getOrders: mocks.orders, getPayments: mocks.payments, getAuditLogs: mocks.empty, getDesignShares: mocks.empty, getManufacturers: mocks.empty, getSalesTeam: mocks.salesTeam } }));
+vi.mock('../lib/supabase', () => ({
+  isSupabaseConfigured: () => true,
+  supabase: {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+        }),
+      }),
+      update: () => ({
+        eq: () => Promise.resolve({ error: null }),
+      }),
+    }),
+  },
+  supabaseApi: {
+    getCustomers: mocks.customers,
+    getOrders: mocks.orders,
+    getPayments: mocks.payments,
+    getAuditLogs: mocks.empty,
+    getDesignShares: mocks.empty,
+    getManufacturers: mocks.empty,
+    getSalesTeam: mocks.salesTeam,
+  },
+}));
 vi.mock('../services/salesmen', () => ({ salesmenService: { updateSalesman: mocks.updateSalesman } }));
 vi.mock('../services/clients', () => ({ clientsService: { createClient: mocks.createClient }, mapClientRowToCustomer: (row: any) => row }));
 vi.mock('../services/orders', () => ({ ordersService: { createOrderDraft: mocks.createOrder } }));

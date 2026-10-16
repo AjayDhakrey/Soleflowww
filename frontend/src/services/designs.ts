@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured, isDemoModeActive, toValidOrgId } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, isDemoModeActive, toValidOrgId, DEFAULT_ORG_ID } from '../lib/supabase';
 import { ShoeDesign, DesignShareRecord } from '../types';
 import { resolveDesignImage, currentStorageOrg } from './designImageUrl';
 import { Database } from '../types/database.types';
@@ -49,7 +49,7 @@ export const mapDesignRowToShoeDesign = fromDesignRow;
  * Map form object to create_design RPC argument dictionary
  */
 export function toCreateDesignArgs(form: any) {
-  return {
+  const args: any = {
     p_article_code: form.articleCode || form.article_code || '',
     p_name: form.name || '',
     p_category: form.category || 'Athletic Sneakers',
@@ -63,6 +63,11 @@ export function toCreateDesignArgs(form: any) {
     p_sole_type: form.soleType || form.sole_type || 'TPR / Phylon Sole',
     p_upper_material: form.upperMaterial || form.upper_material || 'Synthetic Microfibre Leather',
   };
+  const targetOrg = toValidOrgId(form.orgId || form.org_id);
+  if (targetOrg) {
+    args.p_org_id = targetOrg;
+  }
+  return args;
 }
 
 /**
@@ -90,8 +95,12 @@ function formatDesignError(err: any): string {
 
 const SESSION_DESIGNS: ShoeDesign[] = [];
 
-function mergeSessionDesigns(list: ShoeDesign[], filters?: { category?: string; status?: string; search?: string }): ShoeDesign[] {
-  const matchingSession = SESSION_DESIGNS.filter((d) => {
+function mergeSessionDesigns(list: ShoeDesign[], filters?: { category?: string; status?: string; search?: string; orgId?: string }): ShoeDesign[] {
+  const targetOrg = filters?.orgId ? toValidOrgId(filters.orgId) : null;
+  const matchingSession = SESSION_DESIGNS.filter((d: any) => {
+    if (targetOrg && d.orgId && toValidOrgId(d.orgId) !== targetOrg) {
+      return false;
+    }
     if (filters?.category && filters.category !== 'All' && filters.category !== 'all' && d.category !== filters.category) {
       return false;
     }
@@ -118,10 +127,11 @@ export const designsService = {
    */
   async fetchDesigns(filters?: { category?: string; status?: string; search?: string; orgId?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = isDemoModeActive;
+    const isExplicitDemoOrg = filters?.orgId === DEFAULT_ORG_ID;
+    const allowDemo = isDemoModeActive && (!filters?.orgId || isExplicitDemoOrg);
 
-    if (!supabase || !isConfigured || isDemoModeActive) {
-      if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) throw new Error('Supabase database client is not configured.');
       let baseMocks = [...MOCK_DESIGNS];
       if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
         baseMocks = baseMocks.filter((d) => d.category === filters.category);
@@ -167,8 +177,8 @@ export const designsService = {
 
     const liveList = await Promise.all((data || []).map(hydrateDesign));
 
-    // Only merge mocks if demo mode is explicitly enabled
-    if (allowDemo) {
+    // Only merge mocks if demo mode is explicitly enabled AND it is the demo org
+    if (allowDemo && (!filters?.orgId || filters.orgId === DEFAULT_ORG_ID)) {
       const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
       const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
       let combined = [...liveList, ...filteredMocks];
@@ -194,10 +204,11 @@ export const designsService = {
    */
   async fetchAllDesigns(options?: { includeArchived?: boolean; onlyArchived?: boolean; search?: string; orgId?: string }): Promise<ShoeDesign[]> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = isDemoModeActive;
+    const isExplicitDemoOrg = options?.orgId === DEFAULT_ORG_ID;
+    const allowDemo = isDemoModeActive && (!options?.orgId || isExplicitDemoOrg);
 
-    if (!supabase || !isConfigured || isDemoModeActive) {
-      if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) throw new Error('Supabase database client is not configured.');
       return mergeSessionDesigns(MOCK_DESIGNS, options);
     }
 
@@ -228,7 +239,7 @@ export const designsService = {
 
     const liveList = await Promise.all((data || []).map(hydrateDesign));
 
-    if (allowDemo) {
+    if (allowDemo && (!options?.orgId || options.orgId === DEFAULT_ORG_ID)) {
       const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
       const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
       return mergeSessionDesigns([...liveList, ...filteredMocks], options);
@@ -241,8 +252,8 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = isDemoModeActive;
 
-    if (!supabase || !isConfigured || isDemoModeActive) {
-      if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) throw new Error('Supabase database client is not configured.');
       return MOCK_DESIGNS.find((d) => d.id === id) || null;
     }
 
@@ -269,7 +280,8 @@ export const designsService = {
    */
   async createDesignV2(form: any): Promise<{ success: boolean; data?: ShoeDesign; error?: string }> {
     const isConfigured = isSupabaseConfigured();
-    const allowDemo = isDemoModeActive;
+    const isExplicitDemoOrg = form.orgId === DEFAULT_ORG_ID;
+    const allowDemo = isDemoModeActive && (!form.orgId || isExplicitDemoOrg);
 
     const dummyDesign: ShoeDesign = {
       id: `DSG-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -291,14 +303,15 @@ export const designsService = {
       velocityBadge: 'Trending',
       tags: [],
       createdAt: new Date().toISOString(),
-    };
+      ...(form.orgId ? { orgId: form.orgId } : {}),
+    } as any;
 
-    if (!supabase || !isConfigured || isDemoModeActive) {
-      if (!allowDemo && !isDemoModeActive) {
+    if (!supabase || !isConfigured) {
+      if (!allowDemo) {
         return { success: false, error: 'Database connection is not configured.' };
       }
       SESSION_DESIGNS.unshift(dummyDesign);
-      MOCK_DESIGNS.unshift(dummyDesign);
+      if (allowDemo) MOCK_DESIGNS.unshift(dummyDesign);
       return { success: true, data: dummyDesign };
     }
 
@@ -308,8 +321,9 @@ export const designsService = {
 
       if (!error && res) {
         const hydrated = await hydrateDesign(res);
+        if (form.orgId) (hydrated as any).orgId = form.orgId;
         SESSION_DESIGNS.unshift(hydrated);
-        MOCK_DESIGNS.unshift(hydrated);
+        if (allowDemo) MOCK_DESIGNS.unshift(hydrated);
         return { success: true, data: hydrated };
       }
     } catch (err: any) {
@@ -345,17 +359,18 @@ export const designsService = {
 
       if (!insertErr && inserted) {
         const hydrated = await hydrateDesign(inserted);
+        if (form.orgId) (hydrated as any).orgId = form.orgId;
         SESSION_DESIGNS.unshift(hydrated);
-        MOCK_DESIGNS.unshift(hydrated);
+        if (allowDemo) MOCK_DESIGNS.unshift(hydrated);
         return { success: true, data: hydrated };
       }
     } catch (insertErr) {
       console.warn('Direct designs table insert warning:', insertErr);
     }
 
-    // Always persist to session and mock catalog so portal displays it immediately
+    // Always persist to session so portal displays it immediately
     SESSION_DESIGNS.unshift(dummyDesign);
-    MOCK_DESIGNS.unshift(dummyDesign);
+    if (allowDemo) MOCK_DESIGNS.unshift(dummyDesign);
     return { success: true, data: dummyDesign };
   },
 

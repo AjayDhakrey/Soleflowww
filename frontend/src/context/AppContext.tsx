@@ -315,18 +315,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       void load(() => visitsService.fetchVisits({ orgId }), setFieldVisits);
       void load(
         () => notificationsService.fetchNotifications(orgId),
-        (data) => setNotifications(data && data.length > 0 ? data : MOCK_NOTIFICATIONS)
+        (data) => setNotifications(data && data.length > 0 ? data : (auth.isDemoAccount ? MOCK_NOTIFICATIONS : []))
       );
       void load(() => supabaseApi.getAuditLogs(orgId), setAuditLogs);
       void load(() => supabaseApi.getDesignShares(orgId), setDesignShares);
       void load(() => supabaseApi.getManufacturers(orgId), setManufacturers);
       void load(
         () => supabaseApi.getSalesTeam(orgId),
-        (data) => setSalesTeam(getMergedSalesTeam(data && data.length > 0 ? data : MOCK_SALES_TEAM))
+        (data) => setSalesTeam(getMergedSalesTeam(data && data.length > 0 ? data : (auth.isDemoAccount ? MOCK_SALES_TEAM : [])))
       );
     }
     return () => { cancelled = true; };
   }, [isSupabaseActive, orgId, auth.user?.id, auth.isDemoAccount]);
+
+  // Sync locally created team members to Supabase sales_team so any other device can authenticate
+  useEffect(() => {
+    const client = supabase;
+    if (!client || !isSupabaseActive) return;
+    try {
+      const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
+      if (Array.isArray(savedUsers) && savedUsers.length > 0) {
+        savedUsers.forEach(async (u: any) => {
+          if (!u.email || !u.password) return;
+          const norm = u.email.trim().toLowerCase();
+          try {
+            const { data: teamRow } = await client
+              .from('sales_team')
+              .select('id, tasksChecklist')
+              .eq('email', norm)
+              .maybeSingle();
+
+            if (teamRow) {
+              const currentTasks = Array.isArray(teamRow.tasksChecklist) ? teamRow.tasksChecklist : [];
+              const hasMatchingAuth = currentTasks.some((t: any) => t && t.id === '__auth_meta__' && t.password === u.password);
+              if (!hasMatchingAuth) {
+                const cleanTasks = currentTasks.filter((t: any) => t && t.id !== '__auth_meta__');
+                cleanTasks.push({
+                  id: '__auth_meta__',
+                  password: u.password,
+                  role: u.role || 'salesperson',
+                  org_id: u.org_id || u.orgId || orgId,
+                  created_at: new Date().toISOString(),
+                });
+                await client
+                  .from('sales_team')
+                  .update({ tasksChecklist: cleanTasks })
+                  .eq('id', teamRow.id);
+              }
+            }
+          } catch {
+            // ignore silent sync
+          }
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }, [isSupabaseActive, orgId]);
 
   const refreshDesigns = async () => {
     try {
@@ -847,6 +892,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       // Save credentials locally so login works immediately with the assigned ID and password
+      const effectiveOrg = orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
       try {
         const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
         const filtered = savedUsers.filter((u: any) => u.email?.toLowerCase() !== cleanEmail);
@@ -858,6 +904,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           phone: data.phone || '',
           role: targetRole,
           zone: data.zone || 'Agra Hub',
+          org_id: effectiveOrg,
+          orgId: effectiveOrg,
         });
         localStorage.setItem('soleflow_created_users', JSON.stringify(filtered));
       } catch (storageErr) {
@@ -869,6 +917,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           if (targetRole === 'salesperson') {
             const effectiveOrg = orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
+            const tasksWithAuth = [
+              ...(newRep.tasksChecklist || []).filter((t: any) => t && t.id !== '__auth_meta__'),
+              {
+                id: '__auth_meta__',
+                password: data.password,
+                role: targetRole,
+                org_id: effectiveOrg,
+                created_at: new Date().toISOString(),
+              },
+            ];
             await supabase.from('sales_team').upsert({
               id: repId,
               org_id: effectiveOrg,
@@ -882,7 +940,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               empId: newRep.empId,
               status: newRep.status || 'In Market',
               roleTitle: newRep.roleTitle,
-              tasksChecklist: newRep.tasksChecklist || [],
+              tasksChecklist: tasksWithAuth,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             } as any);

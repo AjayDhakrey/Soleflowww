@@ -11,7 +11,15 @@ vi.mock('../lib/supabase', () => ({
   toValidOrgId: (id: string | null | undefined) => id || '00000000-0000-0000-0000-000000000001',
   supabase: {
     auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }), signInWithPassword: mocks.signIn },
-    from: (table: string) => ({ select: () => ({ eq: () => ({ single: () => mocks.profile(table) }) }) }),
+    from: (table: string) => ({
+      select: () => ({
+        eq: () => ({
+          single: () => mocks.profile(table),
+          maybeSingle: () => mocks.profile(table),
+        }),
+      }),
+      update: () => ({ eq: () => Promise.resolve({ error: null }) }),
+    }),
   },
 }));
 let auth: ReturnType<typeof useAuth>;

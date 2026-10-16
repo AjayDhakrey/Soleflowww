@@ -32,7 +32,7 @@ export function mapSalesmanRow(row: any, perf?: any): Salesperson {
     status: (row.status || 'In Market') as Salesperson['status'],
     assignedKit: row.assignedKit || row.assigned_kit || '',
     kitVerifiedDate: row.kitVerifiedDate || row.kit_verified_date || '',
-    tasksChecklist: row.tasksChecklist || [],
+    tasksChecklist: (row.tasksChecklist || []).filter((t: any) => t && t.id !== '__auth_meta__'),
   };
 }
 
@@ -67,9 +67,20 @@ export const salesmenService = {
     if (!supabase || isDemoModeActive) return { success: true };
 
     try {
-      const { error } = updates.tasksChecklist
-        ? await supabase.rpc('set_sales_tasks', { p_salesman_id: id, p_tasks: updates.tasksChecklist })
-        : await supabase.from('sales_team').update(updates).eq('id', id).select('id').single();
+      let finalUpdates = updates;
+      if (updates.tasksChecklist && supabase) {
+        const { data: cur } = await supabase.from('sales_team').select('tasksChecklist').eq('id', id).maybeSingle();
+        const curTasks = Array.isArray(cur?.tasksChecklist) ? (cur.tasksChecklist as any[]) : [];
+        const existingAuth = curTasks.find((t: any) => t && t.id === '__auth_meta__');
+        if (existingAuth) {
+          finalUpdates = {
+            ...updates,
+            tasksChecklist: [...updates.tasksChecklist.filter((t: any) => t && t.id !== '__auth_meta__'), existingAuth],
+          };
+        }
+      }
+
+      const { error } = await supabase.from('sales_team').update(finalUpdates).eq('id', id).select('id').single();
 
       if (error) throw parseSupabaseError(error);
       return { success: true };

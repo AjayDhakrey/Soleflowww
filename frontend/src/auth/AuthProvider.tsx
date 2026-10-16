@@ -185,16 +185,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Check local stored session fallback (for demo mode only)
+      // 2. Check local stored session fallback
       if (isMounted) {
         try {
           const stored = localStorage.getItem(AUTH_STORAGE_KEY);
           if (stored) {
             const data = JSON.parse(stored);
-            if (data?.isLoggedIn && data.user?.is_demo_account) {
-              setDemoModeActive(true);
-              const activeRole: UserRole = data.role === 'salesperson' ? 'salesperson' : 'admin';
-              const activeUser = data.user || (activeRole === 'salesperson' ? MOCK_USERS.salesperson : MOCK_USERS.admin);
+            if (data?.isLoggedIn && data.user) {
+              const activeUser = data.user;
+              const isDemo = Boolean(activeUser.is_demo_account || activeUser.email === 'admin@soleflow.com' || activeUser.email === 'sales@soleflow.com');
+              setDemoModeActive(isDemo);
+              const activeRole: UserRole = data.role === 'salesperson' || activeUser.role === 'salesperson' ? 'salesperson' : 'admin';
+              const userOrgId = activeUser.org_id || activeUser.orgId || DEFAULT_ORG_ID;
               setUser(activeUser);
               setRole(activeRole);
               setProfile({
@@ -202,17 +204,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: activeUser.email,
                 name: activeUser.name,
                 role: activeRole,
-                org_id: DEFAULT_ORG_ID,
+                phone: activeUser.phone,
+                zone: activeUser.zone,
+                org_id: userOrgId,
                 is_super_admin: false,
-                is_demo_account: true,
+                is_demo_account: isDemo,
               });
               setOrg({
-                id: DEFAULT_ORG_ID,
-                name: 'Demo Footwear Traders',
+                id: userOrgId,
+                name: isDemo ? 'Demo Footwear Traders' : 'SoleFlow Organization',
                 status: 'active',
-                is_demo: true,
+                is_demo: isDemo,
               });
-              setHasRealSession(false);
+              setHasRealSession(!isDemo);
             }
           }
         } catch (err) {
@@ -555,6 +559,225 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
 
     try {
+      const loginCustomUser = async (matchedUser: any, normalizedEmail: string) => {
+        const isDemo = normalizedEmail === 'admin@soleflow.com' || normalizedEmail === 'sales@soleflow.com' || Boolean(matchedUser.is_demo_account);
+        let userOrgId = matchedUser.org_id || matchedUser.orgId;
+        let userOrgName = matchedUser.name ? `${matchedUser.name}'s Org` : 'SoleFlow Organization';
+
+        if (!userOrgId && supabase) {
+          try {
+            const { data: teamRow } = await supabase
+              .from('sales_team')
+              .select('org_id, name, phone, zone')
+              .eq('email', normalizedEmail)
+              .maybeSingle();
+
+            if (teamRow?.org_id) {
+              userOrgId = teamRow.org_id;
+              if (teamRow.name) matchedUser.name = teamRow.name;
+              if (teamRow.phone) matchedUser.phone = teamRow.phone;
+              if (teamRow.zone) matchedUser.zone = teamRow.zone;
+            } else {
+              const { data: profRow } = await supabase
+                .from('profiles')
+                .select('org_id, full_name, role')
+                .eq('email', normalizedEmail)
+                .maybeSingle();
+              if (profRow?.org_id) {
+                userOrgId = profRow.org_id;
+              }
+            }
+          } catch (lookupErr) {
+            console.warn('Failed to query user org_id from Supabase:', lookupErr);
+          }
+        }
+
+        if (!userOrgId) {
+          userOrgId = DEFAULT_ORG_ID;
+        }
+
+        if (userOrgId && supabase) {
+          try {
+            const { data: orgRow } = await supabase
+              .from('organizations')
+              .select('name, is_demo')
+              .eq('id', userOrgId)
+              .maybeSingle();
+            if (orgRow?.name) {
+              userOrgName = orgRow.name;
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        const assignedRole: UserRole = matchedUser.role || 'salesperson';
+        const repUser: User = {
+          id: matchedUser.id || `rep-${Date.now()}`,
+          name: matchedUser.name,
+          email: matchedUser.email,
+          role: assignedRole,
+          avatar: assignedRole === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar,
+          initials: (matchedUser.name || 'SF').substring(0, 2).toUpperCase(),
+          roleLabel: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
+          phone: matchedUser.phone,
+          zone: matchedUser.zone || 'Agra Hub',
+          org_id: userOrgId,
+          orgId: userOrgId,
+          is_demo_account: isDemo,
+        };
+
+        setUser(repUser);
+        setRole(assignedRole);
+        setProfile({
+          id: repUser.id,
+          email: repUser.email,
+          name: repUser.name,
+          role: assignedRole,
+          phone: matchedUser.phone,
+          zone: matchedUser.zone,
+          org_id: userOrgId,
+          is_super_admin: false,
+          is_demo_account: isDemo,
+        });
+        setOrg({
+          id: userOrgId,
+          name: userOrgName,
+          status: 'active',
+          is_demo: isDemo,
+        });
+        setHasRealSession(!isDemo);
+        setDemoModeActive(isDemo);
+        localStorage.setItem(
+          AUTH_STORAGE_KEY,
+          JSON.stringify({ isLoggedIn: true, role: assignedRole, email: repUser.email, user: repUser })
+        );
+        // Ensure __auth_meta__ is present in sales_team cloud record so any device can authenticate
+        if (matchedUser.password && supabase) {
+          try {
+            const { data: teamRow } = await supabase
+              .from('sales_team')
+              .select('id, tasksChecklist')
+              .eq('email', normalizedEmail)
+              .maybeSingle();
+            if (teamRow) {
+              const currentTasks = Array.isArray(teamRow.tasksChecklist) ? teamRow.tasksChecklist : [];
+              const hasMatchingAuth = currentTasks.some((t: any) => t && t.id === '__auth_meta__' && t.password === matchedUser.password);
+              if (!hasMatchingAuth) {
+                const cleanTasks = currentTasks.filter((t: any) => t && t.id !== '__auth_meta__');
+                cleanTasks.push({
+                  id: '__auth_meta__',
+                  password: matchedUser.password,
+                  role: assignedRole,
+                  org_id: userOrgId,
+                  created_at: new Date().toISOString(),
+                });
+                await supabase
+                  .from('sales_team')
+                  .update({ tasksChecklist: cleanTasks })
+                  .eq('id', teamRow.id);
+              }
+            }
+          } catch (syncErr) {
+            console.warn('Silent cloud sync warning for auth_meta:', syncErr);
+          }
+        }
+
+        setIsLoading(false);
+        return { success: true, role: assignedRole };
+      };
+
+      const resolveUserCredentials = async (normalizedEmail: string, pass: string) => {
+        let savedUsers: any[] = [];
+        try {
+          savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
+        } catch {
+          savedUsers = [];
+        }
+
+        let matchedUser = savedUsers.find(
+          (u: any) => u.email?.toLowerCase() === normalizedEmail && u.password === pass
+        );
+
+        if (!matchedUser && supabase) {
+          try {
+            const res = await supabase
+              .from('sales_team')
+              .select('*')
+              .eq('email', normalizedEmail)
+              .maybeSingle();
+            const teamRow = res?.data;
+
+            if (teamRow) {
+              const tasks = Array.isArray(teamRow.tasksChecklist) ? teamRow.tasksChecklist : [];
+              const authMeta = tasks.find((t: any) => t && t.id === '__auth_meta__') as any;
+              const storedPass = authMeta?.password;
+
+              if (storedPass) {
+                if (storedPass === pass) {
+                  matchedUser = {
+                    id: teamRow.id,
+                    name: teamRow.name,
+                    email: teamRow.email,
+                    password: pass,
+                    role: authMeta?.role || (teamRow.roleTitle?.toLowerCase().includes('admin') ? 'admin' : 'salesperson'),
+                    phone: teamRow.phone || '',
+                    zone: teamRow.zone || 'Agra Hub',
+                    org_id: teamRow.org_id,
+                    orgId: teamRow.org_id,
+                  };
+                } else {
+                  return { matchedUser: null, error: 'Invalid password. Please check your credentials.' };
+                }
+              } else {
+                // First-time login from a new device before explicit password sync:
+                matchedUser = {
+                  id: teamRow.id,
+                  name: teamRow.name,
+                  email: teamRow.email,
+                  password: pass,
+                  role: teamRow.roleTitle?.toLowerCase().includes('admin') ? 'admin' : 'salesperson',
+                  phone: teamRow.phone || '',
+                  zone: teamRow.zone || 'Agra Hub',
+                  org_id: teamRow.org_id,
+                  orgId: teamRow.org_id,
+                };
+
+                try {
+                  const cleanTasks = tasks.filter((t: any) => t && t.id !== '__auth_meta__');
+                  cleanTasks.push({
+                    id: '__auth_meta__',
+                    password: pass,
+                    role: matchedUser.role,
+                    org_id: teamRow.org_id,
+                    created_at: new Date().toISOString(),
+                  });
+                  await supabase
+                    .from('sales_team')
+                    .update({ tasksChecklist: cleanTasks })
+                    .eq('id', teamRow.id);
+                } catch (syncErr) {
+                  console.warn('Could not persist auth metadata to sales_team:', syncErr);
+                }
+              }
+
+              if (matchedUser) {
+                try {
+                  const updatedUsers = [...savedUsers.filter((u: any) => u.email?.toLowerCase() !== normalizedEmail), matchedUser];
+                  localStorage.setItem('soleflow_created_users', JSON.stringify(updatedUsers));
+                } catch {
+                  // ignore
+                }
+              }
+            }
+          } catch (lookupErr) {
+            console.warn('Error querying sales_team credentials in Supabase:', lookupErr);
+          }
+        }
+
+        return { matchedUser };
+      };
+
       // 1. If real Supabase client is configured, attempt Supabase Auth
       if (supabase && isConfigured) {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -566,44 +789,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Check if credentials match a newly created sales representative / admin user
           const normalizedEmail = email.trim().toLowerCase();
           try {
-            const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
-            const matchedUser = savedUsers.find(
-              (u: any) => u.email?.toLowerCase() === normalizedEmail && u.password === pass
-            );
-            if (matchedUser) {
-              const assignedRole: UserRole = matchedUser.role || 'salesperson';
-              const repUser: User = {
-                id: matchedUser.id || `rep-${Date.now()}`,
-                name: matchedUser.name,
-                email: matchedUser.email,
-                role: assignedRole,
-                avatar: assignedRole === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar,
-                initials: (matchedUser.name || 'SF').substring(0, 2).toUpperCase(),
-                roleLabel: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
-                phone: matchedUser.phone,
-                zone: matchedUser.zone || 'Agra Hub',
-                org_id: DEFAULT_ORG_ID,
-                orgId: DEFAULT_ORG_ID,
-              };
-              setUser(repUser);
-              setRole(assignedRole);
-              setProfile({
-                id: repUser.id,
-                email: repUser.email,
-                name: repUser.name,
-                role: assignedRole,
-                phone: matchedUser.phone,
-                zone: matchedUser.zone,
-                org_id: DEFAULT_ORG_ID,
-              });
-              setHasRealSession(false);
-              setDemoModeActive(true);
-              localStorage.setItem(
-                AUTH_STORAGE_KEY,
-                JSON.stringify({ isLoggedIn: true, role: assignedRole, email: repUser.email, user: repUser })
-              );
+            const { matchedUser, error: resolveErr } = await resolveUserCredentials(normalizedEmail, pass);
+            if (resolveErr) {
+              setAuthError(resolveErr);
               setIsLoading(false);
-              return { success: true, role: assignedRole };
+              return { success: false, error: resolveErr };
+            }
+
+            if (matchedUser) {
+              return await loginCustomUser(matchedUser, normalizedEmail);
             }
 
             if (normalizedEmail === 'admin@soleflow.com' && pass === 'admin123') {
@@ -641,44 +835,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 2. Offline / Demo / Custom User fallback
       const normalizedEmail = email.trim().toLowerCase();
       try {
-        const savedUsers = JSON.parse(localStorage.getItem('soleflow_created_users') || '[]');
-        const matchedUser = savedUsers.find(
-          (u: any) => u.email?.toLowerCase() === normalizedEmail && u.password === pass
-        );
-        if (matchedUser) {
-          const assignedRole: UserRole = matchedUser.role || 'salesperson';
-          const repUser: User = {
-            id: matchedUser.id || `rep-${Date.now()}`,
-            name: matchedUser.name,
-            email: matchedUser.email,
-            role: assignedRole,
-            avatar: assignedRole === 'admin' ? MOCK_USERS.admin.avatar : MOCK_USERS.salesperson.avatar,
-            initials: (matchedUser.name || 'SF').substring(0, 2).toUpperCase(),
-            roleLabel: assignedRole === 'admin' ? 'Trader Admin' : 'Field Sales Rep',
-            phone: matchedUser.phone,
-            zone: matchedUser.zone || 'Agra Hub',
-            org_id: DEFAULT_ORG_ID,
-            orgId: DEFAULT_ORG_ID,
-          };
-          setUser(repUser);
-          setRole(assignedRole);
-          setProfile({
-            id: repUser.id,
-            email: repUser.email,
-            name: repUser.name,
-            role: assignedRole,
-            phone: matchedUser.phone,
-            zone: matchedUser.zone,
-            org_id: DEFAULT_ORG_ID,
-          });
-          setHasRealSession(false);
-          setDemoModeActive(true);
-          localStorage.setItem(
-            AUTH_STORAGE_KEY,
-            JSON.stringify({ isLoggedIn: true, role: assignedRole, email: repUser.email, user: repUser })
-          );
+        const { matchedUser, error: resolveErr } = await resolveUserCredentials(normalizedEmail, pass);
+        if (resolveErr) {
+          setAuthError(resolveErr);
           setIsLoading(false);
-          return { success: true, role: assignedRole };
+          return { success: false, error: resolveErr };
+        }
+
+        if (matchedUser) {
+          return await loginCustomUser(matchedUser, normalizedEmail);
         }
 
         if (normalizedEmail === 'admin@soleflow.com' && pass === 'admin123') {
