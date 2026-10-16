@@ -9,21 +9,39 @@ import {
 } from '../../components/payments/ReceiptTemplate';
 import { OverviewKpiCards } from '../../components/dashboard/OverviewKpiCards';
 import { QuickShortcutsGrid } from '../../components/dashboard/QuickShortcutsGrid';
-import veronaOxfordImg from '../../assets/images/verona-crust-oxford.jpg';
-import runnerClassicImg from '../../assets/images/runner-classic-red.jpg';
-import aeroglideKnitImg from '../../assets/images/aeroglide-knit-sport.jpg';
-import {
-  Panel,
-  Button,
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableAvatarCell,
-  TableMoneyCell,
-} from '../../components/ui';
+import shoe1Img from '../../assets/images/login/shoe1_crisp.png';
+import shoe2Img from '../../assets/images/login/shoe2_crisp.png';
+import shoe3Img from '../../assets/images/login/shoe3_crisp.png';
+import shoe4Img from '../../assets/images/login/shoe4_crisp.png';
+import { Panel } from '../../components/ui';
+
+// 3D Trophy Cup Icon for Top Selling Footwear
+const Trophy3D = () => (
+  <svg viewBox="0 0 36 36" className="w-8 h-8 drop-shadow-sm select-none" fill="none">
+    <circle cx="18" cy="18" r="17" fill="url(#trophyGlowGrad)" />
+    <path d="M11 10H25V17C25 20.8 21.8 24 18 24C14.2 24 11 20.8 11 17V10Z" fill="url(#trophyCupGrad)" stroke="#D97706" strokeWidth="1" />
+    <path d="M11 12H8C6.9 12 6 12.9 6 14V15C6 17.2 7.8 19 10 19H11" stroke="#F59E0B" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M25 12H28C29.1 12 30 12.9 30 14V15C30 17.2 28.2 19 26 19H25" stroke="#F59E0B" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M16 24V27H20V24" fill="#D97706" />
+    <path d="M13 27H23V29C23 29.6 22.6 30 22 30H14C13.4 30 13 29.6 13 29V27Z" fill="url(#trophyBaseGrad)" stroke="#B45309" strokeWidth="1" />
+    <path d="M18 13.5L18.8 15.2L20.6 15.3L19.2 16.5L19.7 18.2L18 17.2L16.3 18.2L16.8 16.5L15.4 15.3L17.2 15.2Z" fill="#FFFFFF" />
+    <defs>
+      <linearGradient id="trophyGlowGrad" x1="1" y1="1" x2="35" y2="35" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FEF3C7" />
+        <stop offset="1" stopColor="#FDE68A" />
+      </linearGradient>
+      <linearGradient id="trophyCupGrad" x1="11" y1="10" x2="25" y2="24" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FDE68A" />
+        <stop offset="0.5" stopColor="#FBBF24" />
+        <stop offset="1" stopColor="#D97706" />
+      </linearGradient>
+      <linearGradient id="trophyBaseGrad" x1="13" y1="27" x2="23" y2="30" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#F59E0B" />
+        <stop offset="1" stopColor="#B45309" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
 
 interface AdminDashboardProps {
   onNavigate: (path: string) => void;
@@ -44,9 +62,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     period,
     setPeriod,
     kpis,
-    collectionsData,
-    approvalsSummary,
-    actions,
   } = useDashboardOverview();
 
   const unreadAlertsCount = notifications?.filter((n) => !n.read).length || 0;
@@ -54,13 +69,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
 
   const formatLakh = (amount: number) => `₹${(amount / 100000).toFixed(2)}L`;
-
-  const todayDateFormatted = new Date().toLocaleDateString('en-IN', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
 
   const getGreeting = () => {
     const hr = new Date().getHours();
@@ -72,44 +80,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
   return (
     <div className="p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6 max-w-[1440px] w-full mx-auto pb-28 md:pb-12 bg-background text-foreground overflow-x-hidden animate-in fade-in duration-200">
-      {/* 1. Top Header & Welcome Banner (Matching Reference Mobile Design) */}
-      <div className="space-y-3.5">
-        {/* Mobile Greeting & Notification Bar (Visible on phone) */}
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Hi {currentUser.name.split(' ')[0]}!
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              {greeting.text}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
-              <Icons.Calendar size={12} className="text-blue-600" />
-              <span>{todayDateFormatted}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => onNavigate('/admin/notifications')}
-              className="relative w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
-              title="Notifications & Alerts"
-              aria-label="Notifications & Alerts"
-            >
-              <Icons.Notifications size={18} />
-              {unreadAlertsCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
-                  {unreadAlertsCount}
-                </span>
-              )}
-            </button>
-          </div>
+      {/* 1. Mobile Greeting Bar (Visible on phone only) */}
+      <div className="sm:hidden flex items-center justify-between gap-3 pt-1">
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+            Hi {currentUser.name.split(' ')[0]}!
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            {greeting.text}
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={() => onNavigate('/admin/notifications')}
+          className="relative w-9 h-9 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+          title="Notifications & Alerts"
+          aria-label="Notifications & Alerts"
+        >
+          <Icons.Notifications size={16} />
+          {unreadAlertsCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
+              {unreadAlertsCount}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* 2. Commercial Period Selector */}
-      <div className="flex items-center justify-between gap-2.5 sm:gap-3 pt-0.5">
+      {/* 2. Commercial Period Selector & Quick Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-0.5">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 hidden sm:inline">
             PERIOD:
@@ -129,7 +127,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   key={tab.value}
                   type="button"
                   onClick={() => setPeriod(tab.value)}
-                  className={`px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none text-center active:scale-95 truncate ${
+                  className={`px-3 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none text-center active:scale-95 truncate ${
                     isSelected
                       ? 'bg-blue-600 text-white shadow-xs font-bold'
                       : 'bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
@@ -140,6 +138,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               );
             })}
           </div>
+        </div>
+
+        {/* Action Buttons on Right of Period Bar */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsPaymentModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-card text-slate-800 dark:text-slate-200 hover:bg-slate-50 font-bold text-xs shadow-2xs transition-all cursor-pointer active:scale-95"
+          >
+            <span className="font-bold text-slate-700 dark:text-slate-300">₹</span>
+            <span>Record Payment</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsCreateOrderModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer active:scale-95"
+          >
+            <Icons.Add size={14} strokeWidth={2.5} />
+            <span>New Order</span>
+          </button>
         </div>
       </div>
 
@@ -197,13 +215,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         />
       </div>
 
-      {/* 5. Top Selling Products (High-Resolution Bestsellers Showcase) */}
+      {/* 5. Top Selling Products (4-Item Horizontal Grid Matching Screenshot) */}
       <Panel
         title={
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
-              <Icons.Designs size={18} strokeWidth={2} />
-            </div>
+            <Trophy3D />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 title="Top Selling Footwear" className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate">
@@ -220,453 +236,83 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           </div>
         }
         headerAction={
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Icons.ChevronRight}
-            iconPosition="right"
+          <button
+            type="button"
             onClick={() => onNavigate('/admin/designs')}
-            className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-2.5 py-1"
+            className="text-xs font-semibold text-primary hover:text-blue-700 dark:hover:text-blue-400 inline-flex items-center gap-1 cursor-pointer transition-colors"
           >
-            View catalogue
-          </Button>
+            <span>View catalogue</span>
+            <span className="text-sm leading-none">&gt;</span>
+          </button>
         }
         noPadding
       >
         <div className="p-3 sm:p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
-                id: 'sf-884',
-                articleCode: 'SF-884',
-                name: 'Verona Crust Leather',
-                category: 'Oxford & Formal Dress',
-                price: 2400,
-                pairs: 680,
-                image: veronaOxfordImg,
-                rankLabel: '#1 Bestseller',
-                rankColor: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+                rank: '#1',
+                name: 'Running Shoes',
+                pairs: '12,480 pairs',
+                growth: '↑ 18%',
+                image: shoe1Img,
               },
               {
-                id: 'sf-1024',
-                articleCode: 'SF-1024',
-                name: 'Runner Classic',
-                category: 'Athletic Running',
-                price: 1250,
-                pairs: 200,
-                image: runnerClassicImg,
-                rankLabel: '#2 Trending',
-                rankColor: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
+                rank: '#2',
+                name: 'Casual Sneakers',
+                pairs: '9,320 pairs',
+                growth: '↑ 12%',
+                image: shoe2Img,
               },
               {
-                id: 'sf-204',
-                articleCode: 'SF-204',
-                name: 'AeroGlide Knit Runner',
-                category: 'Athletic Sneakers',
-                price: 1180,
-                pairs: 120,
-                image: aeroglideKnitImg,
-                rankLabel: '#3 Popular',
-                rankColor: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30',
+                rank: '#3',
+                name: 'Sports Shoes',
+                pairs: '7,860 pairs',
+                growth: '↑ 10%',
+                image: shoe3Img,
               },
-            ].map((d) => (
+              {
+                rank: '#4',
+                name: 'Canvas Shoes',
+                pairs: '6,240 pairs',
+                growth: '↑ 8%',
+                image: shoe4Img,
+              },
+            ].map((item) => (
               <div
-                key={d.id}
+                key={item.rank}
                 onClick={() => onNavigate('/admin/designs')}
-                className="bg-card rounded-2xl border border-border/80 shadow-2xs hover:shadow-xs p-3.5 flex flex-col justify-between transition-all duration-150 active:scale-[0.98] select-none cursor-pointer group"
+                className="bg-white dark:bg-card rounded-[20px] border border-slate-200/80 dark:border-slate-800 p-3 sm:p-3.5 shadow-2xs hover:shadow-xs flex items-center gap-3 transition-all cursor-pointer group active:scale-[0.98]"
               >
-                <div>
-                  {/* Top Rank Badge & Price */}
-                  <div className="flex items-center justify-between gap-1.5">
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${d.rankColor}`}>
-                      {d.rankLabel}
-                    </span>
-                    <span className="font-mono text-xs font-bold text-foreground">
-                      ₹{d.price.toLocaleString('en-IN')}<span className="text-[10px] text-muted-foreground font-normal">/pr</span>
-                    </span>
-                  </div>
-
-                  {/* High-Resolution Shoe Image Showcase */}
-                  <div className="aspect-[16/10] w-full bg-slate-950/5 dark:bg-slate-900/40 rounded-xl overflow-hidden border border-border/60 my-2.5 relative flex items-center justify-center">
-                    <img
-                      src={d.image}
-                      alt={d.name}
-                      className="w-full h-full object-cover object-center rounded-lg group-hover:scale-105 transition-transform duration-300"
-                      loading="eager"
-                      decoding="async"
-                    />
-                    <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/75 backdrop-blur-xs text-[9px] font-mono font-semibold text-white shadow-xs">
-                      {d.articleCode}
-                    </span>
-                  </div>
-
-                  {/* Footwear Details */}
-                  <h5 className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors" title={d.name}>
-                    {d.name}
-                  </h5>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {d.category}
-                  </p>
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-100 dark:bg-slate-800/80 overflow-hidden flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-700/60">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform"
+                    loading="lazy"
+                  />
                 </div>
-
-                {/* Booked Volume Metric Pill */}
-                <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    <Icons.TrendingUp size={11} className="shrink-0" />
-                    <span>{d.pairs} Pairs</span>
-                  </span>
-                  <span className="text-[11px] font-semibold text-primary flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                    <span>View</span>
-                    <Icons.ChevronRight size={12} />
-                  </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 shrink-0">
+                      {item.rank}
+                    </span>
+                    <h4 className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {item.name}
+                    </h4>
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-xs sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200">
+                      {item.pairs}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800/60 shrink-0">
+                      {item.growth}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </Panel>
-
-      {/* 6. Collections & Receivables */}
-      <Panel
-        title={
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
-              <Icons.Payments size={18} strokeWidth={2} />
-            </div>
-            <div className="min-w-0">
-              <h3 title="Collections & Receivables" className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate">
-                Collections & Receivables
-              </h3>
-              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
-                Realized payments and overdue commercial aging brackets
-              </p>
-            </div>
-          </div>
-        }
-        headerAction={
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Icons.ChevronRight}
-            iconPosition="right"
-            onClick={() => onNavigate('/admin/payments')}
-            className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-2.5 py-1"
-          >
-            View ledger
-          </Button>
-        }
-        noPadding
-      >
-        <div className="p-3 sm:p-4 space-y-3">
-          {/* Total Receivables Highlight Banner Card */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-3 sm:p-4 text-white shadow-xs flex flex-wrap xs:flex-nowrap items-center justify-between gap-2.5 sm:gap-3">
-            <div className="space-y-0.5 min-w-0 flex-1">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-100">
-                Total Receivables
-              </span>
-              <div className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white font-display">
-                {formatLakh(kpis.receivables.value)}
-              </div>
-              <p className="text-[10.5px] sm:text-[11px] text-blue-100/90 font-medium">
-                From {kpis.receivables.customerCount || 5} Stores
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="shrink-0 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-white text-blue-700 hover:bg-blue-50 font-bold text-[11px] sm:text-xs shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95 transition-transform"
-            >
-              <Icons.Add size={13} className="text-blue-700" />
-              <span>Record Payment</span>
-            </button>
-          </div>
-
-          {/* 4 Aging Bucket Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
-            {collectionsData.agingBuckets.map((b) => {
-              const isCritical = b.range === '90+' && b.amount > 0;
-              const isOverdue = b.range === '61-90' && b.amount > 0;
-              const isAmber = b.range === '31-60' && b.amount > 0;
-              const isFirst = b.range === '0-30';
-
-              return (
-                <div
-                  key={b.label}
-                  onClick={() => onNavigate(`/admin/payments?aging=${b.range}`)}
-                  className={`p-3 rounded-2xl border transition-all duration-150 cursor-pointer flex flex-col justify-between text-left min-w-0 select-none active:scale-[0.98] ${
-                    isCritical
-                      ? 'bg-rose-50/80 border-rose-300 dark:bg-rose-950/40 dark:border-rose-900/60 shadow-2xs'
-                      : isOverdue
-                      ? 'bg-orange-50/80 border-orange-300 dark:bg-orange-950/40 dark:border-orange-900/60 shadow-2xs'
-                      : isAmber
-                      ? 'bg-amber-50/80 border-amber-300 dark:bg-amber-950/40 dark:border-amber-900/60 shadow-2xs'
-                      : isFirst
-                      ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50 shadow-2xs'
-                      : 'bg-card border-border/80 hover:bg-muted/40 shadow-2xs'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-1 min-w-0">
-                    <span title={b.label} className="text-[11px] font-bold text-muted-foreground truncate">
-                      {b.label}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-semibold shrink-0">
-                      {b.count} Stores
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-baseline justify-between gap-1">
-                    <span
-                      title={`₹${b.amount.toLocaleString('en-IN')}`}
-                      className={`text-base sm:text-lg font-black font-display tracking-tight tabular-nums truncate ${
-                        isCritical ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'
-                      }`}
-                    >
-                      {formatLakh(b.amount)}
-                    </span>
-                    <span className="text-[10px] font-semibold text-muted-foreground shrink-0">
-                      {kpis.receivables.value > 0
-                        ? `${Math.round((b.amount / kpis.receivables.value) * 100)}%`
-                        : '0%'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Realized Payments Ledger (Desktop Table + Mobile Cards) */}
-        {collectionsData.latestPayments.length > 0 && (
-          <div className="border-t border-border">
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <Table className="min-w-[500px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Receipt #</TableHead>
-                    <TableHead>Store &amp; City</TableHead>
-                    <TableHead>Mode</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Realized</TableHead>
-                    <TableHead className="text-center">Receipt</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {collectionsData.latestPayments.map((p) => (
-                    <TableRow key={p.id} className="hover:bg-muted/40 transition-colors">
-                      <TableCell className="font-mono font-bold text-xs text-primary">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                          <span>{p.receiptNumber || `SF-REC-${p.id.slice(-5)}`}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-semibold text-foreground text-xs block truncate max-w-[130px]">
-                          {p.customerName}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground">{p.customerCity || 'Agra'}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-muted/80 text-foreground border border-border">
-                          {p.paymentMethod}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground">
-                        {p.paymentDate}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <TableMoneyCell
-                          amount={p.paymentAmount}
-                          isBold
-                          className="text-emerald-600 dark:text-emerald-400"
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedReceiptPayment(p);
-                          }}
-                          className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer inline-flex items-center justify-center"
-                          title="View & Print Official Receipt"
-                        >
-                          <Icons.FileText size={16} />
-                        </button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile Card List View */}
-            <div className="md:hidden divide-y divide-border">
-              {collectionsData.latestPayments.slice(0, 3).map((p) => (
-                <div
-                  key={p.id}
-                  className="p-3 hover:bg-muted/30 transition-colors flex items-center justify-between gap-2.5 active:bg-muted/40"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                      <span className="font-mono font-bold text-xs text-primary truncate">
-                        {p.receiptNumber || `SF-REC-${p.id.slice(-5)}`}
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-muted text-foreground border border-border shrink-0">
-                        {p.paymentMethod}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1 truncate">
-                      <span className="font-semibold text-foreground truncate">{p.customerName}</span>
-                      <span>•</span>
-                      <span className="text-[11px] font-mono">{p.paymentDate}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="text-right">
-                      <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400 block">
-                        ₹{Number(p.paymentAmount || 0).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedReceiptPayment(p);
-                      }}
-                      className="w-8 h-8 rounded-xl bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center border border-border cursor-pointer active:scale-95"
-                      title="View Receipt"
-                    >
-                      <Icons.FileText size={15} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </Panel>
-
-
-
-
-      {/* 9. Pending Approvals & Authorizations */}
-      <Panel
-        title={
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/20">
-              <Icons.Check size={18} strokeWidth={2} />
-            </div>
-            <div className="min-w-0">
-              <h3 title="Pending Approvals" className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate">
-                Pending Approvals
-              </h3>
-              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
-                Discounts and orders requiring authorization
-              </p>
-            </div>
-          </div>
-        }
-        headerAction={
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Icons.ChevronRight}
-            iconPosition="right"
-            onClick={() => onNavigate('/admin/reports')}
-            className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-2.5 py-1"
-          >
-            Review all
-          </Button>
-        }
-        noPadding
-      >
-        <div className="divide-y divide-border">
-          {/* 1. Pending Discount Requests */}
-          {approvalsSummary.pendingDiscounts.map((d) => (
-            <div key={d.id} className="p-3.5 space-y-2 hover:bg-muted/30 transition-colors">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-xs text-foreground">{d.clientName}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold whitespace-nowrap shrink-0 bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-300">
-                      {d.requestedPercent}% Discount Requested
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Order #{d.orderId} • Rep: {d.salesmanName} • Concession: ₹{Number(d.marginConcession || 0).toLocaleString('en-IN')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 flex-wrap">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => actions.rejectDiscount(d.id)}
-                >
-                  Reject
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={Icons.Check}
-                  onClick={() => actions.approveDiscount(d.id)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  Approve Margin
-                </Button>
-              </div>
-            </div>
-          ))}
-
-          {/* 2. Orders Awaiting Approval matching mockup */}
-          {(approvalsSummary.ordersAwaitingReview.length > 0
-            ? approvalsSummary.ordersAwaitingReview
-            : [
-                {
-                  id: 'ORD-0145',
-                  customerName: 'ABC Footwear Hub',
-                  pairsCount: 320,
-                  netPayable: 612864,
-                },
-              ]
-          ).map((ord: any) => (
-            <div key={ord.id} className="p-3.5 flex flex-wrap items-center justify-between gap-2.5 hover:bg-muted/30 transition-colors">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-xs text-foreground truncate">
-                    Order #{ord.id} — {ord.customerName}
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                    <span>Pending Approval</span>
-                  </span>
-                </div>
-                <span className="text-[11px] text-muted-foreground font-mono mt-0.5 block">
-                  {ord.pairsCount} Pairs • Value: ₹{(ord.netPayable || ord.subtotal || 0).toLocaleString('en-IN')}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => onNavigate(`/admin/orders?inspect=${ord.id}`)}
-                >
-                  Inspect
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={Icons.Check}
-                  onClick={() => actions.approveOrder(ord.id)}
-                >
-                  Approve
-                </Button>
-              </div>
-            </div>
-          ))}
         </div>
       </Panel>
 

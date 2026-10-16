@@ -292,14 +292,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             <>
               {/* Desktop Button */}
               <div className="hidden sm:block">
-                <Button
-                  variant="primary"
-                  size="md"
-                  icon={Icons.Add}
+                <button
+                  type="button"
                   onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer select-none active:scale-95"
                 >
-                  New
-                </Button>
+                  <Icons.Add size={15} strokeWidth={2.5} />
+                  <span>New</span>
+                  <ChevronDown size={14} className="opacity-90 ml-0.5" />
+                </button>
               </div>
 
               {/* Mobile Compact + Button */}
@@ -477,18 +478,25 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         <div className="relative" ref={profileRef}>
           <div
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="rounded-full border border-border p-0.5 sm:px-3 sm:py-1.5 bg-surface hover:bg-muted flex items-center gap-2.5 cursor-pointer transition-all select-none active:scale-95 shadow-2xs"
+            className="rounded-full border border-border px-2 sm:px-3 py-1 bg-surface hover:bg-muted flex items-center gap-2 sm:gap-2.5 cursor-pointer transition-all select-none active:scale-95 shadow-2xs"
           >
-            <Avatar name={currentUser.name} size="sm" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              {currentUser.name
+                .split(' ')
+                .map((p) => p[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase() || 'AD'}
+            </div>
             <div className="hidden sm:block text-left min-w-0">
-              <p title={currentUser.name} className="text-xs font-semibold text-foreground leading-tight truncate">
+              <p title={currentUser.name} className="text-xs font-bold text-foreground leading-tight truncate">
                 {currentUser.name}
               </p>
-              <p className="text-[11px] leading-tight text-muted-foreground capitalize truncate">
-                {currentUser.role === 'admin' ? 'Admin' : 'Salesman'}
+              <p className="text-[10px] leading-tight font-bold text-muted-foreground uppercase tracking-wider truncate">
+                {currentUser.role === 'admin' ? 'SUPER ADMIN' : 'SALES REP'}
               </p>
             </div>
-            <Icons.ChevronDown size={14} className="shrink-0 text-muted-foreground hidden sm:block" />
+            <ChevronDown size={14} className="shrink-0 text-muted-foreground hidden sm:block" />
           </div>
 
           {isProfileMenuOpen && (
