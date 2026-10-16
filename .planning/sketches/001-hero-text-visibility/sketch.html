@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sketch 001 — Hero Section Video & Text Visibility</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .variant { display: none; }
+    .variant.active { display: block; }
+    .tab-btn.active {
+      background-color: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-white font-sans antialiased min-h-screen pt-14 selection:bg-blue-600 selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- VARIANT CONTROLLER BAR                                                    -->
+  <!-- ========================================================================= -->
+  <header id="variant-nav" class="fixed top-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 py-2.5 flex items-center justify-between text-xs">
+    <div class="flex items-center gap-2">
+      <span class="font-bold text-white uppercase tracking-wider text-[11px] px-2 py-0.5 rounded bg-blue-600/30 text-blue-400 border border-blue-500/30">Sketch 001</span>
+      <span class="text-slate-400 hidden sm:inline">Hero Video &amp; Text Legibility Comparison</span>
+    </div>
+
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <button class="tab-btn active px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-semibold hover:text-white transition-all" onclick="showVariant('a')">
+        Option A: Directional Scrim (Recommended)
+      </button>
+      <button class="tab-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-semibold hover:text-white transition-all" onclick="showVariant('b')">
+        Option B: Frosted Glass Panel
+      </button>
+      <button class="tab-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-semibold hover:text-white transition-all" onclick="showVariant('c')">
+        Option C: Ambient Radial Scrim
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- VARIANT A: DIRECTIONAL SCRIM (LEFT DENSE GRADIENT + SKY BLUE SOLID ACCENT) -->
+  <!-- ========================================================================= -->
+  <section id="variant-a" class="variant active relative isolate overflow-hidden min-h-[calc(100vh-3.5rem)] flex items-center py-12 px-4 sm:px-6 lg:px-8">
+    <!-- Video element -->
+    <video class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none -z-20 brightness-[1.05] contrast-[1.05]" autoPlay muted loop playsInline>
+      <source src="../../../frontend/public/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4">
+      <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4">
+    </video>
+
+    <!-- Scrim A: Strong Left Gradient (95% -> 85% -> 30% -> Transparent) -->
+    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 40% via-slate-950/35 70% to-transparent -z-10"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70 -z-10"></div>
+
+    <div class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <!-- Left Column -->
+      <div class="lg:col-span-7 space-y-6 text-left">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 border border-blue-400/40 text-blue-300 text-xs sm:text-[13px] font-bold shadow-xl backdrop-blur-md">
+          <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+          <span>India's #1 Footwear Wholesale Operating System</span>
+        </div>
+
+        <!-- Headline with fixed solid vibrant sky-400 and drop-shadow -->
+        <h1 class="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
+          Manage Your Entire <br>
+          <span class="text-sky-400 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Footwear Business</span> <br>
+          From One Place
+        </h1>
+
+        <!-- Subtitle with crisp text shadow -->
+        <p class="text-sm sm:text-base lg:text-lg text-slate-100 max-w-xl leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+          SoleFlow helps footwear wholesalers, distributors, manufacturers, and sales teams manage products, stock, wholesale orders, customers, factory production, and collections — without spreadsheet chaos.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button class="h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-500 font-bold text-sm shadow-xl shadow-black/50 transition-all flex items-center gap-2">
+            <span>Get started free</span>
+            <span>&rarr;</span>
+          </button>
+          <button class="h-12 px-6 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-white/30 text-white font-bold text-sm backdrop-blur-md shadow-xl transition-all">
+            &#9658; Watch Walkthrough
+          </button>
+        </div>
+
+        <!-- 1-Click Demo Login -->
+        <div class="pt-3 space-y-2.5">
+          <div class="text-xs font-bold text-white tracking-wider uppercase drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] flex items-center gap-2">
+            <span class="text-amber-400">&#9889;</span>
+            <span>Instant 1-Click Demo Login:</span>
+          </div>
+          <div class="flex flex-wrap gap-2.5">
+            <button class="px-4 py-2.5 rounded-xl bg-slate-900/85 hover:bg-slate-800 border border-blue-400/50 text-blue-200 text-xs sm:text-sm font-bold backdrop-blur-md shadow-xl transition-all">
+              &#127970; Admin / Owner
+            </button>
+            <button class="px-4 py-2.5 rounded-xl bg-slate-900/85 hover:bg-slate-800 border border-emerald-400/50 text-emerald-200 text-xs sm:text-sm font-bold backdrop-blur-md shadow-xl transition-all">
+              &#128101; Salesman
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Translucent Glass Metrics -->
+      <div class="lg:col-span-5 space-y-4">
+        <div class="rounded-3xl bg-slate-950/50 backdrop-blur-md border border-white/20 p-6 shadow-2xl space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-white/10">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-bold text-white uppercase tracking-wider">SoleFlow Cloud Platform</span>
+            </div>
+            <span class="text-[11px] font-semibold text-slate-400">v2.4 Live</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 text-center">
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-white block">350+</span>
+              <span class="text-[11px] text-slate-300">Hubs</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-blue-400 block">1M+</span>
+              <span class="text-[11px] text-slate-300">Pairs</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-emerald-400 block">99.4%</span>
+              <span class="text-[11px] text-slate-300">Accuracy</span>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-xs text-slate-200">
+            <div class="flex items-center gap-2">&#10003; Size-curve assortments (EU 39-44, UK 6-10)</div>
+            <div class="flex items-center gap-2">&#10003; Indian GST (5%, 12%, 18%) &amp; HSN invoicing</div>
+            <div class="flex items-center gap-2">&#10003; Real-time factory job cards &amp; dispatch</div>
+            <div class="flex items-center gap-2">&#10003; Dealer ledger aging &amp; 1-tap WhatsApp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- VARIANT B: FROSTED GLASS HERO CARD BACKPLATE                              -->
+  <!-- ========================================================================= -->
+  <section id="variant-b" class="variant relative isolate overflow-hidden min-h-[calc(100vh-3.5rem)] flex items-center py-12 px-4 sm:px-6 lg:px-8">
+    <!-- Video element (100% visible, fully clear) -->
+    <video class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none -z-20 brightness-[1.05]" autoPlay muted loop playsInline>
+      <source src="../../../frontend/public/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4">
+      <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4">
+    </video>
+
+    <!-- Minimal top/bottom fade -->
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/80 -z-10"></div>
+
+    <div class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <!-- Left Column Enclosed in Frosted Glass Pod -->
+      <div class="lg:col-span-7 bg-slate-950/70 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-left">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs sm:text-[13px] font-bold shadow-md">
+          <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+          <span>India's #1 Footwear Wholesale Operating System</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
+          Manage Your Entire <br>
+          <span class="text-sky-400">Footwear Business</span> <br>
+          From One Place
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-sm sm:text-base lg:text-lg text-slate-200 max-w-xl leading-relaxed">
+          SoleFlow helps footwear wholesalers, distributors, manufacturers, and sales teams manage products, stock, wholesale orders, customers, factory production, and collections — without spreadsheet chaos.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button class="h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-500 font-bold text-sm shadow-xl shadow-blue-600/40 transition-all flex items-center gap-2">
+            <span>Get started free</span>
+            <span>&rarr;</span>
+          </button>
+          <button class="h-12 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-sm backdrop-blur-md shadow-lg transition-all">
+            &#9658; Watch Walkthrough
+          </button>
+        </div>
+
+        <!-- 1-Click Demo Login -->
+        <div class="pt-2 space-y-2.5">
+          <div class="text-xs font-bold text-slate-300 tracking-wider uppercase flex items-center gap-2">
+            <span class="text-amber-400">&#9889;</span>
+            <span>Instant 1-Click Demo Login:</span>
+          </div>
+          <div class="flex flex-wrap gap-2.5">
+            <button class="px-4 py-2.5 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/40 text-blue-100 text-xs sm:text-sm font-bold backdrop-blur-md transition-all">
+              &#127970; Admin / Owner
+            </button>
+            <button class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-100 text-xs sm:text-sm font-bold backdrop-blur-md transition-all">
+              &#128101; Salesman
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column Metrics -->
+      <div class="lg:col-span-5 space-y-4">
+        <div class="rounded-3xl bg-slate-950/60 backdrop-blur-xl border border-white/15 p-6 shadow-2xl space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-white/10">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-bold text-white uppercase tracking-wider">SoleFlow Cloud Platform</span>
+            </div>
+            <span class="text-[11px] font-semibold text-slate-400">v2.4 Live</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 text-center">
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-white block">350+</span>
+              <span class="text-[11px] text-slate-300">Hubs</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-blue-400 block">1M+</span>
+              <span class="text-[11px] text-slate-300">Pairs</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-emerald-400 block">99.4%</span>
+              <span class="text-[11px] text-slate-300">Accuracy</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- VARIANT C: AMBIENT RADIAL SPOTLIGHT                                       -->
+  <!-- ========================================================================= -->
+  <section id="variant-c" class="variant relative isolate overflow-hidden min-h-[calc(100vh-3.5rem)] flex items-center py-12 px-4 sm:px-6 lg:px-8">
+    <!-- Video element -->
+    <video class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none -z-20 brightness-[1.02]" autoPlay muted loop playsInline>
+      <source src="../../../frontend/public/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4">
+      <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4">
+    </video>
+
+    <!-- Scrim C: Full dark base with left radial focus -->
+    <div class="absolute inset-0 bg-slate-950/65 -z-10"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_25%_45%,rgba(2,6,23,0.95),rgba(2,6,23,0.4)_70%,transparent)] -z-10"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70 -z-10"></div>
+
+    <div class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div class="lg:col-span-7 space-y-6 text-left">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs sm:text-[13px] font-bold shadow-lg backdrop-blur-md">
+          <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+          <span>India's #1 Footwear Wholesale Operating System</span>
+        </div>
+
+        <h1 class="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
+          Manage Your Entire <br>
+          <span class="text-sky-400">Footwear Business</span> <br>
+          From One Place
+        </h1>
+
+        <p class="text-sm sm:text-base lg:text-lg text-slate-200 max-w-xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+          SoleFlow helps footwear wholesalers, distributors, manufacturers, and sales teams manage products, stock, wholesale orders, customers, factory production, and collections — without spreadsheet chaos.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button class="h-12 px-7 rounded-full bg-blue-600 hover:bg-blue-500 font-bold text-sm shadow-xl shadow-blue-600/40 transition-all flex items-center gap-2">
+            <span>Get started free</span>
+            <span>&rarr;</span>
+          </button>
+          <button class="h-12 px-6 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-white/30 text-white font-bold text-sm backdrop-blur-md shadow-xl transition-all">
+            &#9658; Watch Walkthrough
+          </button>
+        </div>
+
+        <div class="pt-3 space-y-2.5">
+          <div class="text-xs font-bold text-white tracking-wider uppercase flex items-center gap-2">
+            <span class="text-amber-400">&#9889;</span>
+            <span>Instant 1-Click Demo Login:</span>
+          </div>
+          <div class="flex flex-wrap gap-2.5">
+            <button class="px-4 py-2.5 rounded-xl bg-slate-900/85 hover:bg-slate-800 border border-blue-400/50 text-blue-200 text-xs sm:text-sm font-bold backdrop-blur-md shadow-xl transition-all">
+              &#127970; Admin / Owner
+            </button>
+            <button class="px-4 py-2.5 rounded-xl bg-slate-900/85 hover:bg-slate-800 border border-emerald-400/50 text-emerald-200 text-xs sm:text-sm font-bold backdrop-blur-md shadow-xl transition-all">
+              &#128101; Salesman
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 space-y-4">
+        <div class="rounded-3xl bg-slate-950/60 backdrop-blur-xl border border-white/15 p-6 shadow-2xl space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-white/10">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-bold text-white uppercase tracking-wider">SoleFlow Cloud Platform</span>
+            </div>
+            <span class="text-[11px] font-semibold text-slate-400">v2.4 Live</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 text-center">
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-white block">350+</span>
+              <span class="text-[11px] text-slate-300">Hubs</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-blue-400 block">1M+</span>
+              <span class="text-[11px] text-slate-300">Pairs</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-white/10 border border-white/10">
+              <span class="text-xl font-black text-emerald-400 block">99.4%</span>
+              <span class="text-[11px] text-slate-300">Accuracy</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function showVariant(id) {
+      document.querySelectorAll('.variant').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      const activeSection = document.getElementById('variant-' + id);
+      if (activeSection) activeSection.classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>

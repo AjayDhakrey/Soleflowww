@@ -492,9 +492,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
           </video>
 
-          {/* High-visibility cinematic scrim: focused darkening behind text, open & vibrant on video showcase */}
-          {/* Horizontal directional scrim: darker on the left text column, leaving the right video action bright and clear */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/50 to-slate-950/20 -z-10" />
+          {/* High-visibility cinematic scrim: calibrated deep left density (95% -> 80%) to block light video frames behind text, while keeping right video action 100% bright */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 40% via-slate-950/30 70% to-transparent -z-10" />
           {/* Subtle top & bottom edge transition so navbar and bottom border blend seamlessly */}
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/80 -z-10" />
           {/* Subtle blue accent glow */}
@@ -509,17 +508,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <span>India's #1 Footwear Wholesale Operating System</span>
               </div>
 
-              {/* Hero Headline with high-contrast text shadow */}
-              <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12] [text-shadow:_0_2px_14px_rgba(0,0,0,0.9),_0_1px_3px_rgba(0,0,0,0.95)]">
+              {/* Hero Headline with solid luminous sky-400 (prevents browser text-clip shadow bug) */}
+              <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                 Manage Your Entire <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300 drop-shadow-none">
+                <span className="text-sky-400 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                   Footwear Business
                 </span> <br />
                 From One Place
               </h1>
 
               {/* Hero Description with high-contrast text shadow */}
-              <p className="text-sm sm:text-base lg:text-lg text-white max-w-xl leading-relaxed font-medium [text-shadow:_0_2px_10px_rgba(0,0,0,0.95),_0_1px_3px_rgba(0,0,0,0.95)]">
+              <p className="text-sm sm:text-base lg:text-lg text-slate-100 max-w-xl leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 SoleFlow helps footwear wholesalers, distributors, manufacturers, and sales teams manage products, stock,
                 wholesale orders, customers, factory production, and collections — without spreadsheet chaos.
               </p>
