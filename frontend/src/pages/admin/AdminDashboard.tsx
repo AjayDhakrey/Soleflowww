@@ -9,7 +9,6 @@ import {
 } from '../../components/payments/ReceiptTemplate';
 import { OverviewKpiCards } from '../../components/dashboard/OverviewKpiCards';
 import { QuickShortcutsGrid } from '../../components/dashboard/QuickShortcutsGrid';
-import heroShoeImg from '../../assets/images/hero-3d-sneaker-crisp.png';
 import veronaOxfordImg from '../../assets/images/verona-crust-oxford.jpg';
 import runnerClassicImg from '../../assets/images/runner-classic-red.jpg';
 import aeroglideKnitImg from '../../assets/images/aeroglide-knit-sport.jpg';
@@ -100,32 +99,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             </button>
           </div>
         </div>
-
-        {/* Clean Welcome Card (Matching Reference Card with curved border and blue accent) */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center justify-between gap-3 relative z-10">
-            <div className="min-w-0 flex-1 space-y-1">
-              <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white block tracking-tight">
-                Welcome back!
-              </span>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-snug">
-                Track active wholesale orders, verify payments &amp; review production.
-              </p>
-            </div>
-
-            <div className="w-16 sm:w-20 md:w-24 h-12 sm:h-14 flex items-center justify-center shrink-0">
-              <img
-                src={heroShoeImg}
-                alt="SoleFlow Footwear"
-                className="w-full h-auto max-h-full object-contain drop-shadow-[0_4px_12px_rgba(37,99,235,0.25)] -rotate-6 transform hover:scale-105 transition-transform"
-              />
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* 2. Commercial Period Selector & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1">
+      {/* 2. Commercial Period Selector */}
+      <div className="flex items-center justify-between gap-2.5 sm:gap-3 pt-0.5">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 hidden sm:inline">
             PERIOD:
@@ -145,7 +122,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   key={tab.value}
                   type="button"
                   onClick={() => setPeriod(tab.value)}
-                  className={`px-2 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none text-center active:scale-95 truncate ${
+                  className={`px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer select-none text-center active:scale-95 truncate ${
                     isSelected
                       ? 'bg-blue-600 text-white shadow-xs font-bold'
                       : 'bg-white dark:bg-card border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
@@ -156,26 +133,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               );
             })}
           </div>
-        </div>
-
-        {/* Quick Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto justify-end">
-          <button
-            type="button"
-            onClick={() => setIsPaymentModalOpen(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-card border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs shadow-2xs hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
-          >
-            <span className="font-bold text-sm">₹</span>
-            <span>Record Payment</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsCreateOrderModalOpen(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
-          >
-            <span className="font-bold text-base leading-none">+</span>
-            <span>New Order</span>
-          </button>
         </div>
       </div>
 
