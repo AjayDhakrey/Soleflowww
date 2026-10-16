@@ -465,7 +465,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* ========================================================================= */}
         <section
           id="hero"
-          className="relative isolate overflow-hidden bg-slate-950 text-white pt-20 sm:pt-28 pb-16 sm:pb-24 px-3.5 sm:px-6 lg:px-8 border-b border-slate-800/80"
+          className="relative isolate overflow-hidden bg-slate-950 text-white min-h-[580px] sm:min-h-[640px] lg:min-h-[720px] xl:min-h-[760px] flex items-center pt-20 sm:pt-28 pb-16 sm:pb-24 px-3.5 sm:px-6 lg:px-8 border-b border-slate-800/80"
         >
           {/* Fallback Poster Layer */}
           <div
@@ -474,31 +474,47 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             aria-hidden="true"
           />
 
-          {/* Background Video playing behind the entire hero with rich clarity */}
-          <video
-            ref={heroVideoRef}
-            className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none -z-20 will-change-transform opacity-90 sm:opacity-95 lg:opacity-100 brightness-[1.02] contrast-[1.05]"
-            autoPlay
-            muted
-            loop
-            playsInline
-            controls={false}
-            disablePictureInPicture
-            preload="auto"
-            poster={heroVideoPosterImg}
-          >
-            <source media="(min-width: 768px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
-            <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
-          </video>
+          {/* Background Video Container: Full vertical video is 100% visible from top to bottom without cropping */}
+          <div className="absolute inset-0 pointer-events-none -z-20 overflow-hidden flex items-center justify-center lg:justify-end">
+            {/* Ambient subtle blur to diffuse video color and motion across the wide canvas */}
+            <video
+              className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-30 -z-30 pointer-events-none"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+            >
+              <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+            </video>
+
+            {/* Crisp main video: Sized to fit the hero height with native aspect ratio, fully visible without cutoffs */}
+            <video
+              ref={heroVideoRef}
+              className="h-full w-full object-cover sm:object-contain sm:w-auto lg:max-w-none max-w-full object-center lg:object-right pointer-events-none opacity-95 lg:opacity-100 brightness-[1.02] contrast-[1.05] will-change-transform"
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls={false}
+              disablePictureInPicture
+              preload="auto"
+              poster={heroVideoPosterImg}
+            >
+              <source media="(min-width: 768px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+              <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
+            </video>
+          </div>
 
           {/* High-visibility cinematic scrim: calibrated deep left density (95% -> 80%) to block light video frames behind text, while keeping right video action 100% bright */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 40% via-slate-950/30 70% to-transparent -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 40% via-slate-950/20 65% to-transparent -z-10" />
           {/* Subtle top & bottom edge transition so navbar and bottom border blend seamlessly */}
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/80 -z-10" />
           {/* Subtle blue accent glow */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(37,99,235,0.18),transparent_60%)] -z-10 pointer-events-none" />
 
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto w-full">
             {/* Hero Content: Required Headlines, Subtitle, CTAs & 1-Click Demo Login */}
             <div className="max-w-2xl sm:max-w-3xl space-y-6 sm:space-y-7 text-left">
               {/* Product Badge */}
