@@ -51,12 +51,14 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
     setIsShareModalOpen,
     setIsCreateOrderModalOpen,
     showToast,
+    setDesigns,
   } = useApp();
 
   const { canManageCatalog, isAdmin, role: authRole } = useAuth();
   const queryClient = useQueryClient();
 
   const isUserAdmin = canManageCatalog || isAdmin || authRole === 'admin' || currentUser?.role === 'admin';
+  const canAddDesign = isUserAdmin || currentUser?.role === 'salesperson';
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -308,7 +310,7 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
             <Icons.WhatsApp size={14} />
             <span className="truncate">Share ({selectedDesignIds.length})</span>
           </button>
-          {isUserAdmin && (
+          {canAddDesign && (
             <button
               type="button"
               onClick={() => {
@@ -531,15 +533,21 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
                     >
                       {/* Top Image Showcase Area */}
                       <div className="relative aspect-[4/3] bg-gradient-to-b from-slate-50 via-slate-100/50 to-slate-100/80 dark:from-slate-900/80 dark:via-slate-900/50 dark:to-slate-900 p-2 sm:p-4 flex items-center justify-center overflow-hidden">
-                        <img
-                          src={shoe.image}
-                          alt={shoe.name}
-                          className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-300 group-hover:scale-105 select-none"
-                          onError={(e) => {
-                            // No stock-photo substitution: hide the broken image and let the placeholder background show
-                            (e.target as any).style.visibility = 'hidden';
-                          }}
-                        />
+                        {shoe.image ? (
+                          <img
+                            src={shoe.image}
+                            alt={shoe.name}
+                            className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-300 group-hover:scale-105 select-none"
+                            onError={(e) => {
+                              // No stock-photo substitution: hide the broken image and let the placeholder background show
+                              (e.target as any).style.visibility = 'hidden';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-2xl bg-slate-200/60 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                            <Icons.Designs size={32} />
+                          </div>
+                        )}
 
                         {/* Top Left: Selection Checkbox */}
                         {!shoe.isArchived && (
@@ -785,11 +793,17 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
 
             <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 overscroll-contain">
               <div className="bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-center border border-slate-100 dark:border-slate-800">
-                <img
-                  src={quickViewShoe.image}
-                  alt={quickViewShoe.name}
-                  className="max-h-44 sm:max-h-52 object-contain mix-blend-multiply dark:mix-blend-normal"
-                />
+                {quickViewShoe.image ? (
+                  <img
+                    src={quickViewShoe.image}
+                    alt={quickViewShoe.name}
+                    className="max-h-44 sm:max-h-52 object-contain mix-blend-multiply dark:mix-blend-normal"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-slate-200/60 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                    <Icons.Designs size={40} />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs sm:text-sm">
@@ -887,6 +901,9 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         }}
         designToEdit={editingDesign}
         onSaved={(saved) => {
+          if (setDesigns) {
+            setDesigns((old) => [saved, ...(old || []).filter((d) => d.id !== saved.id && d.articleCode !== saved.articleCode)]);
+          }
           queryClient.setQueriesData<ShoeDesign[]>({ queryKey: ['designs'] }, (old) => {
             if (!old) return [saved];
             if (editingDesign) {
@@ -1092,8 +1109,8 @@ export const DesignsPage: React.FC<DesignsPageProps> = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* 10. Mobile Floating Action Button (Admin only) */}
-      {isUserAdmin && selectedDesignIds.length === 0 && (
+      {/* 10. Mobile Floating Action Button */}
+      {canAddDesign && selectedDesignIds.length === 0 && (
         <button
           type="button"
           onClick={() => {

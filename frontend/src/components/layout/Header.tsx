@@ -333,7 +333,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
                 <Icons.Orders size={16} strokeWidth={1.75} className="text-primary" />
                 Create New Order
               </button>
-              {currentUser.role === 'admin' && (
+              {(currentUser.role === 'admin' || currentUser.role === 'salesperson') && (
                 <button
                   type="button"
                   onClick={() => {

@@ -918,10 +918,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
   const addFollowUp = async (input: Partial<FollowUpItem>) => {
     if (!requirePersistence()) return false;
-    const result = await followUpsService.createFollowUp({ ...input, owner_id: auth.user?.id, owner_name: currentUser.name });
+    const result = await followUpsService.createFollowUp({ ...input, orgId, owner_id: auth.user?.id, owner_name: currentUser.name });
     if (!result.success || !result.data) { showToast(result.error || 'Follow-up could not be saved.'); return false; }
-    const saved = { ...input, ...mapFollowUpRow(result.data), customerName: input.customerName || '', customerCity: input.customerCity || '', phone: input.phone || '' };
-    setFollowUps(prev => [saved, ...prev]); showToast('Follow-up saved.'); return true;
+    const mapped = mapFollowUpRow(result.data);
+    const saved: FollowUpItem = {
+      ...mapped,
+      ...input,
+      id: mapped.id || input.id || `fu-${Date.now()}`,
+      customerName: input.customerName || mapped.customerName || '',
+      customerCity: input.customerCity || mapped.customerCity || '',
+      phone: input.phone || mapped.phone || '',
+      reason: input.reason || mapped.reason || 'Follow-up',
+      notes: input.notes || mapped.notes || '',
+      date: input.date || mapped.date || new Date().toISOString().split('T')[0],
+      time: input.time || mapped.time || '11:00 AM',
+      status: (input.status as any) || mapped.status || 'today',
+    };
+    setFollowUps(prev => [saved, ...prev.filter(f => f.id !== saved.id)]);
+    showToast('Follow-up saved.');
+    return true;
   };
   const completeFollowUp = async (id: string) => {
     if (!requirePersistence()) return false;

@@ -209,7 +209,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           onBookOrder={() => setIsCreateOrderModalOpen(true)}
           onRecordPayment={() => setIsPaymentModalOpen(true)}
           onAddCustomer={() => setIsAddCustomerModalOpen(true)}
-          onNewDesign={() => onNavigate('/admin/designs')}
+          onNewDesign={() => {
+            onNavigate('/admin/designs');
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('open-add-design-modal'));
+            }, 100);
+          }}
           onShareLookbook={() => setIsShareModalOpen(true)}
           onGstLedger={() => onNavigate('/admin/reports')}
         />

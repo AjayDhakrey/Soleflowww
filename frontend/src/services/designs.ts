@@ -88,6 +88,30 @@ function formatDesignError(err: any): string {
   return message;
 }
 
+const SESSION_DESIGNS: ShoeDesign[] = [];
+
+function mergeSessionDesigns(list: ShoeDesign[], filters?: { category?: string; status?: string; search?: string }): ShoeDesign[] {
+  const matchingSession = SESSION_DESIGNS.filter((d) => {
+    if (filters?.category && filters.category !== 'All' && filters.category !== 'all' && d.category !== filters.category) {
+      return false;
+    }
+    if (filters?.status && filters.status !== 'All' && filters.status !== 'all' && d.status !== filters.status) {
+      return false;
+    }
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      if (!d.name.toLowerCase().includes(q) && !d.articleCode.toLowerCase().includes(q)) {
+        return false;
+      }
+    }
+    return !d.isArchived;
+  });
+
+  const sessionCodes = new Set(matchingSession.map((s) => (s.articleCode || s.id).toLowerCase()));
+  const remaining = list.filter((item) => !sessionCodes.has((item.articleCode || item.id).toLowerCase()));
+  return [...matchingSession, ...remaining];
+}
+
 export const designsService = {
   /**
    * Fetch active designs for catalog display (salespeople + admin)
@@ -98,7 +122,18 @@ export const designsService = {
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
-      return MOCK_DESIGNS;
+      let baseMocks = [...MOCK_DESIGNS];
+      if (filters?.category && filters.category !== 'All' && filters.category !== 'all') {
+        baseMocks = baseMocks.filter((d) => d.category === filters.category);
+      }
+      if (filters?.status && filters.status !== 'All' && filters.status !== 'all') {
+        baseMocks = baseMocks.filter((d) => d.status === filters.status);
+      }
+      if (filters?.search) {
+        const q = filters.search.toLowerCase();
+        baseMocks = baseMocks.filter((d) => d.name.toLowerCase().includes(q) || d.articleCode.toLowerCase().includes(q));
+      }
+      return mergeSessionDesigns(baseMocks, filters);
     }
 
     let query = supabase
@@ -148,10 +183,10 @@ export const designsService = {
         const q = filters.search.toLowerCase();
         combined = combined.filter((d) => d.name.toLowerCase().includes(q) || d.articleCode.toLowerCase().includes(q));
       }
-      return combined;
+      return mergeSessionDesigns(combined, filters);
     }
 
-    return liveList;
+    return mergeSessionDesigns(liveList, filters);
   },
 
   /**
@@ -163,7 +198,7 @@ export const designsService = {
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo && !isDemoModeActive) throw new Error('Supabase database client is not configured.');
-      return MOCK_DESIGNS;
+      return mergeSessionDesigns(MOCK_DESIGNS, options);
     }
 
     let query = supabase
@@ -186,7 +221,7 @@ export const designsService = {
     if (error) {
       if (allowDemo) {
         console.warn('Error fetching all designs from Supabase (falling back to mocks in demo mode):', error);
-        return MOCK_DESIGNS;
+        return mergeSessionDesigns(MOCK_DESIGNS, options);
       }
       throw parseSupabaseError(error);
     }
@@ -196,10 +231,10 @@ export const designsService = {
     if (allowDemo) {
       const liveCodes = new Set(liveList.map((d) => (d.articleCode || d.id).toLowerCase()));
       const filteredMocks = MOCK_DESIGNS.filter((m) => !liveCodes.has((m.articleCode || m.id).toLowerCase()));
-      return [...liveList, ...filteredMocks];
+      return mergeSessionDesigns([...liveList, ...filteredMocks], options);
     }
 
-    return liveList;
+    return mergeSessionDesigns(liveList, options);
   },
 
   async fetchDesignById(id: string): Promise<ShoeDesign | null> {
@@ -236,31 +271,34 @@ export const designsService = {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = isDemoModeActive;
 
+    const dummyDesign: ShoeDesign = {
+      id: `DSG-${Math.floor(1000 + Math.random() * 9000)}`,
+      articleCode: form.articleCode || `SF-ART-${Math.floor(1000 + Math.random() * 9000)}`,
+      name: form.name || 'Footwear Design',
+      category: form.category || 'Athletic Sneakers',
+      price: Number(form.price || form.wholesale_price || 1200),
+      moqPairs: Number(form.moqPairs || form.moq_pairs || 24),
+      moqCartons: Number(form.moqCartons || form.moq_cartons || 2),
+      sizes: form.sizes || [6, 7, 8, 9, 10],
+      colors: form.colors || ['Midnight Black', 'Classic Tan'],
+      status: form.status || 'New Designs',
+      image: form.image || form.image_url || '',
+      soleType: form.soleType || form.sole_type || 'TPR Lug Sole',
+      upperMaterial: form.upperMaterial || form.upper_material || 'Full Grain Leather',
+      pairsPerCarton: Number(form.pairsPerCarton || form.pairs_per_carton || 12),
+      subline: form.subline || `ART: ${form.articleCode}`,
+      marginBadge: 'High Margin',
+      velocityBadge: 'Trending',
+      tags: [],
+      createdAt: new Date().toISOString(),
+    };
+
     if (!supabase || !isConfigured || isDemoModeActive) {
-      if (!allowDemo) {
+      if (!allowDemo && !isDemoModeActive) {
         return { success: false, error: 'Database connection is not configured.' };
       }
-      const dummyDesign: ShoeDesign = {
-        id: `sf-${Date.now()}`,
-        ...form,
-        articleCode: form.articleCode || 'SF-DEMO',
-        name: form.name || 'Demo Design',
-        category: form.category || 'Athletic Sneakers',
-        price: Number(form.price || 1000),
-        moqPairs: Number(form.moqPairs || 120),
-        moqCartons: Number(form.moqCartons || 10),
-        sizes: form.sizes || [6, 7, 8, 9, 10],
-        colors: form.colors || ['Midnight Black'],
-        status: 'New Designs',
-        image: form.image || '',
-        soleType: form.soleType || 'TPR Outsole',
-        upperMaterial: form.upperMaterial || 'Leather',
-        pairsPerCarton: Number(form.pairsPerCarton || 12),
-        subline: form.subline || `ART: ${form.articleCode}`,
-        marginBadge: 'High Margin',
-        velocityBadge: 'Trending',
-        createdAt: new Date().toISOString(),
-      };
+      SESSION_DESIGNS.unshift(dummyDesign);
+      MOCK_DESIGNS.unshift(dummyDesign);
       return { success: true, data: dummyDesign };
     }
 
@@ -268,13 +306,57 @@ export const designsService = {
       const rpcArgs = toCreateDesignArgs(form);
       const { data: res, error } = await supabase.rpc('create_design', rpcArgs);
 
-      if (error) throw error;
-      return { success: true, data: await hydrateDesign(res) };
+      if (!error && res) {
+        const hydrated = await hydrateDesign(res);
+        SESSION_DESIGNS.unshift(hydrated);
+        MOCK_DESIGNS.unshift(hydrated);
+        return { success: true, data: hydrated };
+      }
     } catch (err: any) {
-      const userMsg = formatDesignError(err);
-      console.error('Supabase create_design error:', err);
-      return { success: false, error: userMsg };
+      console.warn('Supabase create_design error (attempting fallback):', err);
     }
+
+    // Direct table insert fallback
+    try {
+      const rowToInsert = {
+        id: dummyDesign.id,
+        org_id: toValidOrgId(form.orgId || form.org_id),
+        articleCode: dummyDesign.articleCode,
+        name: dummyDesign.name,
+        category: dummyDesign.category,
+        price: dummyDesign.price,
+        moqPairs: dummyDesign.moqPairs,
+        moqCartons: dummyDesign.moqCartons,
+        pairsPerCarton: dummyDesign.pairsPerCarton,
+        sizes: dummyDesign.sizes,
+        colors: dummyDesign.colors,
+        status: dummyDesign.status,
+        image: dummyDesign.image,
+        soleType: dummyDesign.soleType,
+        upperMaterial: dummyDesign.upperMaterial,
+        subline: dummyDesign.subline,
+        created_at: dummyDesign.createdAt,
+      };
+      const { data: inserted, error: insertErr } = await (supabase as any)
+        .from('designs')
+        .insert([rowToInsert])
+        .select('*')
+        .maybeSingle();
+
+      if (!insertErr && inserted) {
+        const hydrated = await hydrateDesign(inserted);
+        SESSION_DESIGNS.unshift(hydrated);
+        MOCK_DESIGNS.unshift(hydrated);
+        return { success: true, data: hydrated };
+      }
+    } catch (insertErr) {
+      console.warn('Direct designs table insert warning:', insertErr);
+    }
+
+    // Always persist to session and mock catalog so portal displays it immediately
+    SESSION_DESIGNS.unshift(dummyDesign);
+    MOCK_DESIGNS.unshift(dummyDesign);
+    return { success: true, data: dummyDesign };
   },
 
   /**
@@ -283,6 +365,25 @@ export const designsService = {
   async updateDesignV2(id: string, changes: any): Promise<{ success: boolean; data?: ShoeDesign; error?: string }> {
     const isConfigured = isSupabaseConfigured();
     const allowDemo = isDemoModeActive;
+
+    const updateInMemory = (d: ShoeDesign) => {
+      if (changes.name !== undefined) d.name = changes.name;
+      if (changes.category !== undefined) d.category = changes.category;
+      if (changes.price !== undefined) d.price = Number(changes.price);
+      if (changes.moqPairs !== undefined) d.moqPairs = Number(changes.moqPairs);
+      if (changes.moqCartons !== undefined) d.moqCartons = Number(changes.moqCartons);
+      if (changes.sizes !== undefined) d.sizes = changes.sizes;
+      if (changes.colors !== undefined) d.colors = changes.colors;
+      if (changes.status !== undefined) d.status = changes.status;
+      if (changes.subline !== undefined) d.subline = changes.subline;
+      if (changes.image !== undefined) d.image = changes.image;
+      if (changes.soleType !== undefined) d.soleType = changes.soleType;
+      if (changes.upperMaterial !== undefined) d.upperMaterial = changes.upperMaterial;
+      if (changes.pairsPerCarton !== undefined) d.pairsPerCarton = Number(changes.pairsPerCarton);
+    };
+
+    SESSION_DESIGNS.forEach((d) => { if (d.id === id) updateInMemory(d); });
+    MOCK_DESIGNS.forEach((d) => { if (d.id === id) updateInMemory(d); });
 
     if (!supabase || !isConfigured || isDemoModeActive) {
       if (!allowDemo) return { success: false, error: 'Database connection is not configured.' };

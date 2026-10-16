@@ -371,7 +371,12 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
           onBookOrder={() => setIsCreateOrderModalOpen(true)}
           onRecordPayment={() => setIsPaymentModalOpen(true)}
           onAddCustomer={() => setIsAddCustomerModalOpen(true)}
-          onNewDesign={() => onNavigate('/sales/designs')}
+          onNewDesign={() => {
+            onNavigate('/sales/designs');
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('open-add-design-modal'));
+            }, 100);
+          }}
           onShareLookbook={() => setIsShareModalOpen(true)}
           onGstLedger={() => onNavigate('/sales/collections')}
         />

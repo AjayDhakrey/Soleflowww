@@ -120,7 +120,9 @@ export function parseIsoDueAt(dateStr?: string, timeStr?: string): string {
 
 export const followUpsService = {
   async fetchFollowUps(filters?: { status?: string; salespersonId?: string; orgId?: string }): Promise<FollowUpItem[]> {
-    if (!supabase) return [];
+    if (!supabase || isDemoModeActive) {
+      return isDemoModeActive ? MOCK_FOLLOWUPS : [];
+    }
 
     try {
       let query = (supabase as any)
@@ -154,22 +156,61 @@ export const followUpsService = {
   async createFollowUp(data: any): Promise<{ success: boolean; data?: any; error?: string }> {
     if (!supabase) return { success: false, error: 'Database service is not configured.' };
 
-    try {
-      const rawReason = data.reason || data.type || 'Follow-up';
-      const rawNotes = data.notes || data.outcome || '';
-      const combinedOutcome = rawNotes
-        ? `${rawReason !== 'call' && rawReason !== 'collection' && rawReason !== 'visit' && rawReason !== 'design_followup' ? `[${rawReason}] ` : ''}${rawNotes}`
-        : rawReason;
+    const rawReason = data.reason || data.type || 'Follow-up';
+    const rawNotes = data.notes || data.outcome || '';
+    const combinedOutcome = rawNotes
+      ? `${rawReason !== 'call' && rawReason !== 'collection' && rawReason !== 'visit' && rawReason !== 'design_followup' ? `[${rawReason}] ` : ''}${rawNotes}`
+      : rawReason;
 
+    const isValidUuid = (val?: string) =>
+      typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
+    const effectiveOrgId = toValidOrgId(data.orgId || data.org_id);
+    const dueIso = parseIsoDueAt(data.due_at || data.date, data.time);
+
+    const fallbackRecord = {
+      id: data.id || `fu-${Date.now().toString(36)}`,
+      org_id: effectiveOrgId,
+      client_id: data.client_id || data.customerId,
+      due_at: dueIso,
+      owner_id: isValidUuid(data.owner_id) ? data.owner_id : null,
+      owner_name: data.owner_name || data.ownerName || 'Field Rep',
+      type: sanitizeFollowUpType(rawReason),
+      status: sanitizeFollowUpStatus(data.status),
+      outcome: combinedOutcome || null,
+      priority: sanitizeFollowUpPriority(data.priority),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!supabase || isDemoModeActive) {
+      MOCK_FOLLOWUPS.unshift({
+        id: fallbackRecord.id,
+        customerId: fallbackRecord.client_id,
+        customerName: data.customerName || 'Client Store',
+        customerCity: data.customerCity || 'Agra',
+        phone: data.phone || '',
+        reason: rawReason,
+        date: data.date || dueIso.split('T')[0],
+        time: data.time || '11:00 AM',
+        notes: rawNotes,
+        status: data.status || 'today',
+        amountDue: data.amountDue,
+      });
+      return { success: true, data: fallbackRecord };
+    }
+
+    try {
       const payload = {
-        client_id: data.client_id || data.customerId,
-        due_at: parseIsoDueAt(data.due_at || data.date, data.time),
-        owner_id: data.owner_id || null,
-        owner_name: data.owner_name || data.ownerName || 'Field Rep',
-        type: sanitizeFollowUpType(rawReason),
-        status: sanitizeFollowUpStatus(data.status),
-        outcome: combinedOutcome || null,
-        priority: sanitizeFollowUpPriority(data.priority),
+        org_id: effectiveOrgId,
+        client_id: fallbackRecord.client_id,
+        due_at: fallbackRecord.due_at,
+        owner_id: fallbackRecord.owner_id,
+        owner_name: fallbackRecord.owner_name,
+        type: fallbackRecord.type,
+        status: fallbackRecord.status,
+        outcome: fallbackRecord.outcome,
+        priority: fallbackRecord.priority,
       };
 
       const { data: res, error } = await (supabase as any)
@@ -182,7 +223,7 @@ export const followUpsService = {
         console.warn('Supabase createFollowUp warning:', error);
         return { success: false, error: error.message };
       }
-      return { success: true, data: res };
+      return { success: true, data: res || fallbackRecord };
     } catch (err: any) {
       console.warn('Supabase createFollowUp exception:', err);
       return { success: false, error: err?.message || 'Failed to create follow-up' };
@@ -190,7 +231,7 @@ export const followUpsService = {
   },
 
   async completeFollowUp(id: string): Promise<{ success: boolean; error?: string }> {
-    if (!supabase) return { success: false, error: 'Database service is not configured.' };
+    if (!supabase || isDemoModeActive) return { success: true };
 
     try {
       const { error } = await (supabase as any)

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { FollowUpsKpiCards } from '../../components/sales/FollowUpsKpiCards';
 import {
@@ -33,6 +33,12 @@ export const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ onNavigate }) => {
   const [time, setTime] = useState('11:00 AM');
   const [notes, setNotes] = useState('');
   const [selectedItem, setSelectedItem] = useState<typeof followUps[0] | null>(null);
+
+  useEffect(() => {
+    if (!selectedCustId && customers.length > 0) {
+      setSelectedCustId(customers[0].id);
+    }
+  }, [customers, selectedCustId]);
 
   const completedCount = useMemo(() => followUps.filter((f) => f.status === 'completed').length, [followUps]);
   const pendingCount = useMemo(() => followUps.filter((f) => f.status !== 'completed').length, [followUps]);
