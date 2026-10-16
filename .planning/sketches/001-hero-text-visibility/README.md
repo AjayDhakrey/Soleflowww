@@ -24,3 +24,4 @@ When playing the dynamic wholesale footwear video across the entire Hero section
 
 ## Previewing
 Open `.planning/sketches/001-hero-text-visibility/sketch.html` in your browser to toggle between the three options live with the video playing.
+

@@ -409,10 +409,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
       <div className="relative z-0">
         {/* ========================================================================= */}
-        {/* TOP FLOATING NAVBAR                                                       */}
+        {/* TOP FLOATING NAVBAR (FLOATS DIRECTLY OVER HERO VIDEO)                     */}
         {/* ========================================================================= */}
-        <div className="sticky top-2 sm:top-3 z-50 px-3 sm:px-6">
-          <header className="max-w-6xl mx-auto h-12 sm:h-14 bg-white/95 backdrop-blur-md px-4 sm:px-6 rounded-full border border-slate-200/90 shadow-md flex items-center justify-between transition-all">
+        <div className="fixed top-2 sm:top-3 inset-x-0 z-50 px-3 sm:px-6 pointer-events-none">
+          <header className="max-w-6xl mx-auto h-12 sm:h-14 bg-white/95 backdrop-blur-md px-4 sm:px-6 rounded-full border border-slate-200/90 shadow-md flex items-center justify-between transition-all pointer-events-auto">
             {/* Logo */}
             <a href="#hero" className="flex items-center gap-2.5 text-sm sm:text-base font-black tracking-tight text-slate-900 shrink-0">
               <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
@@ -462,11 +462,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* HERO SECTION — CINEMATIC VIDEO BACKGROUND ACROSS THE ENTIRE HERO         */}
+        {/* HERO SECTION — CINEMATIC VIDEO BACKGROUND EXTENDS BEHIND NAVBAR           */}
         {/* ========================================================================= */}
         <section
           id="hero"
-          className="relative isolate overflow-hidden bg-slate-950 text-white pt-10 sm:pt-16 pb-16 sm:pb-24 px-3.5 sm:px-6 lg:px-8 border-b border-slate-800/80"
+          className="relative isolate overflow-hidden bg-slate-950 text-white pt-20 sm:pt-28 pb-16 sm:pb-24 px-3.5 sm:px-6 lg:px-8 border-b border-slate-800/80"
         >
           {/* Fallback Poster Layer */}
           <div
