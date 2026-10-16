@@ -47,7 +47,6 @@ import {
   Boxes,
   HelpCircle,
   Play,
-  CheckCircle,
 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { FootwearMotionStage } from './FootwearMotionStage';
@@ -499,9 +498,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Subtle blue accent glow */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(37,99,235,0.18),transparent_60%)] -z-10 pointer-events-none" />
 
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left Hero Column: Required Headlines, Subtitle, CTAs & 1-Click Demo Login */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-7 text-left">
+          <div className="max-w-6xl mx-auto">
+            {/* Hero Content: Required Headlines, Subtitle, CTAs & 1-Click Demo Login */}
+            <div className="max-w-2xl sm:max-w-3xl space-y-6 sm:space-y-7 text-left">
               {/* Product Badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 border border-blue-400/40 text-blue-300 text-xs sm:text-[13px] font-bold shadow-xl backdrop-blur-md">
                 <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
@@ -518,7 +517,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </h1>
 
               {/* Hero Description with high-contrast text shadow */}
-              <p className="text-sm sm:text-base lg:text-lg text-slate-100 max-w-xl leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+              <p className="text-sm sm:text-base lg:text-lg text-slate-100 max-w-xl sm:max-w-2xl leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                 SoleFlow helps footwear wholesalers, distributors, manufacturers, and sales teams manage products, stock,
                 wholesale orders, customers, factory production, and collections — without spreadsheet chaos.
               </p>
@@ -580,56 +579,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <Users className="w-4 h-4 text-emerald-300 group-hover:scale-110 transition-transform" />
                     <span>Salesman</span>
                   </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Hero Column: Frosted Glass Highlights & Live Metrics */}
-            <div className="lg:col-span-5 space-y-4">
-              <div className="rounded-3xl bg-slate-950/50 hover:bg-slate-950/60 transition-colors backdrop-blur-md border border-white/20 p-5 sm:p-6 shadow-2xl space-y-5">
-                {/* Status Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-xs font-bold text-white tracking-wide uppercase">SoleFlow Cloud Platform</span>
-                  </div>
-                  <span className="text-[11px] font-semibold text-slate-400">v2.4 Live</span>
-                </div>
-
-                {/* Key Metrics */}
-                <div className="grid grid-cols-3 gap-2.5">
-                  <div className="p-3 rounded-2xl bg-white/10 border border-white/10 text-center">
-                    <span className="text-lg sm:text-xl font-black text-white block font-display">350+</span>
-                    <span className="text-[10px] sm:text-[11px] font-medium text-slate-300 block truncate">Wholesale Hubs</span>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-white/10 border border-white/10 text-center">
-                    <span className="text-lg sm:text-xl font-black text-blue-400 block font-display">1M+</span>
-                    <span className="text-[10px] sm:text-[11px] font-medium text-slate-300 block truncate">Pairs Managed</span>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-white/10 border border-white/10 text-center">
-                    <span className="text-lg sm:text-xl font-black text-emerald-400 block font-display">99.4%</span>
-                    <span className="text-[10px] sm:text-[11px] font-medium text-slate-300 block truncate">Order Accuracy</span>
-                  </div>
-                </div>
-
-                {/* Operating Capabilities Checklist */}
-                <div className="space-y-2.5 pt-1 text-xs text-slate-200">
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Size-curve assortments (EU 39-44, UK 6-10)</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Indian GST (5%, 12%, 18%) & HSN footwear invoicing</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Real-time factory job cards & dispatch tracking</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Dealer ledger aging & 1-tap WhatsApp sharing</span>
-                  </div>
                 </div>
               </div>
             </div>
