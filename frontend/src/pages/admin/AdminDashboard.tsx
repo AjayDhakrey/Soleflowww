@@ -197,7 +197,134 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         />
       </div>
 
+      {/* 5. Top Selling Products (High-Resolution Bestsellers Showcase) */}
+      <Panel
+        title={
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
+              <Icons.Designs size={18} strokeWidth={2} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 title="Top Selling Footwear" className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate">
+                  Top Selling Footwear
+                </h3>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                  ★ Bestsellers
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
+                Highest volume articles booked across retail dealer accounts
+              </p>
+            </div>
+          </div>
+        }
+        headerAction={
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={Icons.ChevronRight}
+            iconPosition="right"
+            onClick={() => onNavigate('/admin/designs')}
+            className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-2.5 py-1"
+          >
+            View catalogue
+          </Button>
+        }
+        noPadding
+      >
+        <div className="p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              {
+                id: 'sf-884',
+                articleCode: 'SF-884',
+                name: 'Verona Crust Leather',
+                category: 'Oxford & Formal Dress',
+                price: 2400,
+                pairs: 680,
+                image: veronaOxfordImg,
+                rankLabel: '#1 Bestseller',
+                rankColor: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+              },
+              {
+                id: 'sf-1024',
+                articleCode: 'SF-1024',
+                name: 'Runner Classic',
+                category: 'Athletic Running',
+                price: 1250,
+                pairs: 200,
+                image: runnerClassicImg,
+                rankLabel: '#2 Trending',
+                rankColor: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
+              },
+              {
+                id: 'sf-204',
+                articleCode: 'SF-204',
+                name: 'AeroGlide Knit Runner',
+                category: 'Athletic Sneakers',
+                price: 1180,
+                pairs: 120,
+                image: aeroglideKnitImg,
+                rankLabel: '#3 Popular',
+                rankColor: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30',
+              },
+            ].map((d) => (
+              <div
+                key={d.id}
+                onClick={() => onNavigate('/admin/designs')}
+                className="bg-card rounded-2xl border border-border/80 shadow-2xs hover:shadow-xs p-3.5 flex flex-col justify-between transition-all duration-150 active:scale-[0.98] select-none cursor-pointer group"
+              >
+                <div>
+                  {/* Top Rank Badge & Price */}
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${d.rankColor}`}>
+                      {d.rankLabel}
+                    </span>
+                    <span className="font-mono text-xs font-bold text-foreground">
+                      ₹{d.price.toLocaleString('en-IN')}<span className="text-[10px] text-muted-foreground font-normal">/pr</span>
+                    </span>
+                  </div>
 
+                  {/* High-Resolution Shoe Image Showcase */}
+                  <div className="aspect-[16/10] w-full bg-slate-950/5 dark:bg-slate-900/40 rounded-xl overflow-hidden border border-border/60 my-2.5 relative flex items-center justify-center">
+                    <img
+                      src={d.image}
+                      alt={d.name}
+                      className="w-full h-full object-cover object-center rounded-lg group-hover:scale-105 transition-transform duration-300"
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/75 backdrop-blur-xs text-[9px] font-mono font-semibold text-white shadow-xs">
+                      {d.articleCode}
+                    </span>
+                  </div>
+
+                  {/* Footwear Details */}
+                  <h5 className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors" title={d.name}>
+                    {d.name}
+                  </h5>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {d.category}
+                  </p>
+                </div>
+
+                {/* Booked Volume Metric Pill */}
+                <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    <Icons.TrendingUp size={11} className="shrink-0" />
+                    <span>{d.pairs} Pairs</span>
+                  </span>
+                  <span className="text-[11px] font-semibold text-primary flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                    <span>View</span>
+                    <Icons.ChevronRight size={12} />
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Panel>
 
       {/* 6. Collections & Receivables */}
       <Panel
@@ -559,134 +686,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         </div>
       </Panel>
 
-      {/* 8. Top Selling Products (High-Resolution Bestsellers Showcase) */}
-      <Panel
-        title={
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
-              <Icons.Designs size={18} strokeWidth={2} />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 title="Top Selling Footwear" className="text-sm sm:text-base font-bold text-foreground tracking-tight truncate">
-                  Top Selling Footwear
-                </h3>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                  ★ Bestsellers
-                </span>
-              </div>
-              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
-                Highest volume articles booked across retail dealer accounts
-              </p>
-            </div>
-          </div>
-        }
-        headerAction={
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Icons.ChevronRight}
-            iconPosition="right"
-            onClick={() => onNavigate('/admin/designs')}
-            className="text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-2.5 py-1"
-          >
-            View catalogue
-          </Button>
-        }
-        noPadding
-      >
-        <div className="p-3 sm:p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              {
-                id: 'sf-884',
-                articleCode: 'SF-884',
-                name: 'Verona Crust Leather',
-                category: 'Oxford & Formal Dress',
-                price: 2400,
-                pairs: 680,
-                image: veronaOxfordImg,
-                rankLabel: '#1 Bestseller',
-                rankColor: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
-              },
-              {
-                id: 'sf-1024',
-                articleCode: 'SF-1024',
-                name: 'Runner Classic',
-                category: 'Athletic Running',
-                price: 1250,
-                pairs: 200,
-                image: runnerClassicImg,
-                rankLabel: '#2 Trending',
-                rankColor: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
-              },
-              {
-                id: 'sf-204',
-                articleCode: 'SF-204',
-                name: 'AeroGlide Knit Runner',
-                category: 'Athletic Sneakers',
-                price: 1180,
-                pairs: 120,
-                image: aeroglideKnitImg,
-                rankLabel: '#3 Popular',
-                rankColor: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30',
-              },
-            ].map((d) => (
-              <div
-                key={d.id}
-                onClick={() => onNavigate('/admin/designs')}
-                className="bg-card rounded-2xl border border-border/80 shadow-2xs hover:shadow-xs p-3.5 flex flex-col justify-between transition-all duration-150 active:scale-[0.98] select-none cursor-pointer group"
-              >
-                <div>
-                  {/* Top Rank Badge & Price */}
-                  <div className="flex items-center justify-between gap-1.5">
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${d.rankColor}`}>
-                      {d.rankLabel}
-                    </span>
-                    <span className="font-mono text-xs font-bold text-foreground">
-                      ₹{d.price.toLocaleString('en-IN')}<span className="text-[10px] text-muted-foreground font-normal">/pr</span>
-                    </span>
-                  </div>
-
-                  {/* High-Resolution Shoe Image Showcase */}
-                  <div className="aspect-[16/10] w-full bg-slate-950/5 dark:bg-slate-900/40 rounded-xl overflow-hidden border border-border/60 my-2.5 relative flex items-center justify-center">
-                    <img
-                      src={d.image}
-                      alt={d.name}
-                      className="w-full h-full object-cover object-center rounded-lg group-hover:scale-105 transition-transform duration-300"
-                      loading="eager"
-                      decoding="async"
-                    />
-                    <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/75 backdrop-blur-xs text-[9px] font-mono font-semibold text-white shadow-xs">
-                      {d.articleCode}
-                    </span>
-                  </div>
-
-                  {/* Footwear Details */}
-                  <h5 className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors" title={d.name}>
-                    {d.name}
-                  </h5>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {d.category}
-                  </p>
-                </div>
-
-                {/* Booked Volume Metric Pill */}
-                <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    <Icons.TrendingUp size={11} className="shrink-0" />
-                    <span>{d.pairs} Pairs</span>
-                  </span>
-                  <span className="text-[11px] font-semibold text-primary flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                    <span>View</span>
-                    <Icons.ChevronRight size={12} />
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Panel>
 
       {/* 9. Pending Approvals & Authorizations */}
       <Panel
