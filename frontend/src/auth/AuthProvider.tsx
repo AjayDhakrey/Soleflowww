@@ -885,7 +885,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveOrgId(null);
     setHasRealSession(false);
     localStorage.removeItem(AUTH_STORAGE_KEY);
-    window.location.hash = '#login';
+    try {
+      localStorage.removeItem('soleflow_active_path');
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', '/login');
+        window.location.hash = '#login';
+      }
+    } catch (e) {}
     setIsLoading(false);
   };
 

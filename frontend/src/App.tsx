@@ -241,6 +241,11 @@ const AppContent: React.FC = () => {
         if (pathname.length > 1 && pathname !== '/') {
           setCurrentPath(pathname);
         }
+        if (!isLoggedIn) {
+          try {
+            window.history.replaceState(null, '', '/login');
+          } catch (e) {}
+        }
         setUnauthView(isLoggedIn ? 'app' : 'login');
       } else {
         setUnauthView('landing');
@@ -376,6 +381,9 @@ const AppContent: React.FC = () => {
           }}
           onLoginSuccess={handleLoginSuccess}
           onNavigateToLogin={(mode = 'login') => {
+            try {
+              window.history.pushState(null, '', `/${mode}`);
+            } catch (e) {}
             window.location.hash = mode;
             setUnauthView(mode);
           }}
@@ -392,6 +400,9 @@ const AppContent: React.FC = () => {
           initialMode={unauthView === 'signup' ? 'signup' : 'login'}
           onSuccess={handleLoginSuccess}
           onBackToLanding={() => {
+            try {
+              window.history.pushState(null, '', '/');
+            } catch (e) {}
             window.location.hash = '#landing';
             setUnauthView('landing');
           }}

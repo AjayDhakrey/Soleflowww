@@ -357,8 +357,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   const openAuth = (mode: 'login' | 'signup') => {
-    setAuthMode(mode);
-    setIsAuthModalOpen(true);
+    if (onNavigateToLogin) {
+      onNavigateToLogin(mode);
+    } else {
+      setAuthMode(mode);
+      setIsAuthModalOpen(true);
+    }
   };
 
   // Frequently Asked Questions

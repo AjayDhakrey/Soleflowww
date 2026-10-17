@@ -637,7 +637,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.warn('Sign out sync error:', e);
     }
-    window.location.hash = '#landing';
+    try {
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', '/login');
+        window.location.hash = '#login';
+      }
+    } catch (e) {}
     showToast('Signed out of SoleFlow');
   };
 

@@ -467,7 +467,37 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           ) : mode === 'login' ? (
             /* Login Form */
             <form onSubmit={handleLoginSubmit} className="space-y-2">
-              
+              {/* 1-Click Instant Demo Login */}
+              <div className="p-2 sm:p-2.5 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-blue-50/80 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-blue-950/40 rounded-xl border border-blue-100 dark:border-blue-900/60 mb-2">
+                <div className="flex items-center justify-between mb-1.5 px-0.5">
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span>1-Click Instant Demo Login:</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">No password required</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin('admin')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100/90 dark:bg-blue-900/50 dark:hover:bg-blue-900/80 border border-blue-200/90 dark:border-blue-700 text-blue-700 dark:text-blue-300 transition-all cursor-pointer shadow-2xs active:scale-95"
+                    title="Demo Business Admin / Owner"
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Admin / Owner</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin('salesperson')}
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold bg-emerald-50 hover:bg-emerald-100/90 dark:bg-emerald-900/50 dark:hover:bg-emerald-900/80 border border-emerald-200/90 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 transition-all cursor-pointer shadow-2xs active:scale-95"
+                    title="Demo Salesman"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Salesman</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Email Address */}
               <div className="relative flex items-center">
                 <Mail className="absolute left-2.5 w-3.5 h-3.5 text-[#2B7FFF] pointer-events-none" />
@@ -717,12 +747,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </form>
           )}
 
-          {/* Quick Demo Logins */}
-          {!needsVerification && (
+          {/* Quick Demo Logins for Signup mode */}
+          {mode === 'signup' && !needsVerification && (
             <div className="mt-2 pt-1.5 flex flex-col items-center">
               <div className="w-full flex items-center gap-1.5 mb-1">
                 <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
-                <span className="text-[9px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">Quick Demo Login</span>
+                <span className="text-[9px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">Or Instant Demo Login</span>
                 <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
               </div>
               
@@ -732,10 +762,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   type="button"
                   onClick={() => handleDemoLogin('admin')}
                   className="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-md bg-[#EEF4FF] dark:bg-blue-950/60 hover:bg-blue-100/90 dark:hover:bg-blue-900/60 text-[#1E5AE6] dark:text-blue-300 transition-all cursor-pointer border border-blue-100/60 dark:border-blue-800/60 shadow-2xs active:scale-[0.97]"
-                  title="Demo Business Admin"
+                  title="Demo Business Admin / Owner"
                 >
                   <Building2 size={11} className="text-[#1E5AE6] dark:text-blue-300 mb-0.5" />
-                  <span className="text-[9px] font-bold">Admin</span>
+                  <span className="text-[9px] font-bold">Admin / Owner</span>
                 </button>
 
                 {/* Salesperson */}
@@ -743,10 +773,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   type="button"
                   onClick={() => handleDemoLogin('salesperson')}
                   className="flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-md bg-[#EAFBF3] dark:bg-emerald-950/60 hover:bg-emerald-100/90 dark:hover:bg-emerald-900/60 text-[#059669] dark:text-emerald-300 transition-all cursor-pointer border border-emerald-100/60 dark:border-emerald-800/60 shadow-2xs active:scale-[0.97]"
-                  title="Demo Sales Rep"
+                  title="Demo Salesman"
                 >
                   <Users size={11} className="text-[#059669] dark:text-emerald-300 mb-0.5" />
-                  <span className="text-[9px] font-bold">Sales Rep</span>
+                  <span className="text-[9px] font-bold">Salesman</span>
                 </button>
               </div>
             </div>
