@@ -222,10 +222,25 @@ const AppContent: React.FC = () => {
       } else if (hash === '#auth/reset') {
         setUnauthView('reset_password');
       } else if (hash === '#login' || hash === '#auth/login' || pathname === '/login') {
+        if (hash) {
+          try {
+            window.history.replaceState(null, '', '/login');
+          } catch (e) {}
+        }
         setUnauthView('login');
       } else if (hash === '#signup' || hash === '#auth/signup' || pathname === '/signup') {
+        if (hash) {
+          try {
+            window.history.replaceState(null, '', '/signup');
+          } catch (e) {}
+        }
         setUnauthView('signup');
       } else if (hash === '#landing' || hash === '#home' || pathname === '/landing' || pathname === '/') {
+        if (hash) {
+          try {
+            window.history.replaceState(null, '', '/');
+          } catch (e) {}
+        }
         setUnauthView('landing');
       } else if (
         pathname.startsWith('/admin') ||
@@ -254,7 +269,11 @@ const AppContent: React.FC = () => {
 
     handleRoute();
     window.addEventListener('hashchange', handleRoute);
-    return () => window.removeEventListener('hashchange', handleRoute);
+    window.addEventListener('popstate', handleRoute);
+    return () => {
+      window.removeEventListener('hashchange', handleRoute);
+      window.removeEventListener('popstate', handleRoute);
+    };
   }, [isLoggedIn]);
 
   // Keep browser URL and localStorage in sync with currentPath
@@ -311,7 +330,9 @@ const AppContent: React.FC = () => {
         <PublicLookbookPage
           shareToken={activeShareToken || 'token-abc-001'}
           onReturnToApp={() => {
-            window.location.hash = '#login';
+            try {
+              window.history.pushState(null, '', '/login');
+            } catch (e) {}
             setUnauthView('login');
           }}
         />
@@ -325,7 +346,9 @@ const AppContent: React.FC = () => {
       <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
         <ForgotPasswordPage
           onBackToLogin={() => {
-            window.location.hash = '#login';
+            try {
+              window.history.pushState(null, '', '/login');
+            } catch (e) {}
             setUnauthView('login');
           }}
         />
@@ -338,7 +361,9 @@ const AppContent: React.FC = () => {
       <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
         <ResetPasswordPage
           onSuccess={() => {
-            window.location.hash = '#login';
+            try {
+              window.history.pushState(null, '', '/login');
+            } catch (e) {}
             setUnauthView('login');
           }}
         />
@@ -353,11 +378,7 @@ const AppContent: React.FC = () => {
     setUnauthView('app');
     try {
       localStorage.setItem('soleflow_active_path', targetPath);
-      if (window.location.hash) {
-        window.history.replaceState({ path: targetPath }, '', targetPath);
-      } else if (window.location.pathname !== targetPath) {
-        window.history.pushState({ path: targetPath }, '', targetPath);
-      }
+      window.history.replaceState({ path: targetPath }, '', targetPath);
     } catch (e) {
       console.warn('History navigation error:', e);
     }
@@ -384,7 +405,6 @@ const AppContent: React.FC = () => {
             try {
               window.history.pushState(null, '', `/${mode}`);
             } catch (e) {}
-            window.location.hash = mode;
             setUnauthView(mode);
           }}
         />
@@ -403,11 +423,12 @@ const AppContent: React.FC = () => {
             try {
               window.history.pushState(null, '', '/');
             } catch (e) {}
-            window.location.hash = '#landing';
             setUnauthView('landing');
           }}
           onForgotPassword={() => {
-            window.location.hash = '#auth/forgot-password';
+            try {
+              window.history.pushState(null, '', '/auth/forgot-password');
+            } catch (e) {}
             setUnauthView('forgot_password');
           }}
         />

@@ -329,7 +329,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <div className="flex items-center justify-center p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg mb-2">
               <button
                 type="button"
-                onClick={() => { setMode('login'); setError(''); }}
+                onClick={() => {
+                  setMode('login');
+                  setError('');
+                  try {
+                    window.history.replaceState(null, '', '/login');
+                  } catch (e) {}
+                }}
                 className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
                   mode === 'login'
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
@@ -340,7 +346,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => { setMode('signup'); setError(''); }}
+                onClick={() => {
+                  setMode('signup');
+                  setError('');
+                  try {
+                    window.history.replaceState(null, '', '/signup');
+                  } catch (e) {}
+                }}
                 className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
                   mode === 'signup'
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'

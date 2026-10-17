@@ -640,7 +640,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       if (typeof window !== 'undefined') {
         window.history.replaceState(null, '', '/login');
-        window.location.hash = '#login';
       }
     } catch (e) {}
     showToast('Signed out of SoleFlow');

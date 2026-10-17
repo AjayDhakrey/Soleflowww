@@ -889,7 +889,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('soleflow_active_path');
       if (typeof window !== 'undefined') {
         window.history.replaceState(null, '', '/login');
-        window.location.hash = '#login';
       }
     } catch (e) {}
     setIsLoading(false);
