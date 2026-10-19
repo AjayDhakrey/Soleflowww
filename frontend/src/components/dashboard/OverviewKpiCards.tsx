@@ -282,20 +282,20 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3.5 lg:gap-4">
-      {/* 1. SALES BOOKED (Featured Primary Dark Card - Exact Match) */}
+      {/* 1. SALES BOOKED (Clean White/Card with Blue Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="bg-[#0f172a] dark:bg-[#0c1427] border border-slate-800/80 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-lg shadow-slate-950/20 hover:border-slate-700 transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
           {/* Top Row: 3D Bar Chart + Title + Dots */}
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/15 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/10 dark:bg-blue-950/40 flex items-center justify-center shrink-0">
                 <SalesBooked3D />
               </div>
               <div className="min-w-0">
-                <h4 className="text-[13px] sm:text-sm font-bold text-white tracking-tight leading-tight truncate">
+                <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
                   Sales Booked
                 </h4>
                 <p className="text-[11px] font-medium text-slate-400 leading-tight truncate mt-0.5">
@@ -303,12 +303,12 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-slate-500 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
+            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
 
           {/* Big Metric Value */}
           <div className="mt-3.5 mb-2 sm:mt-4 sm:mb-2.5">
-            <span className="text-2xl sm:text-[26px] font-black text-white tracking-tight leading-none truncate block">
+            <span className="text-2xl sm:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-none truncate block">
               {salesValue || '₹2.66L'}
             </span>
           </div>
@@ -318,9 +318,9 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between text-[11px] font-semibold">
             <span className="text-slate-400">Progress</span>
-            <span className="text-white font-bold">{salesGrowth ? `${salesGrowth}%` : '100%'}</span>
+            <span className="text-[#2563eb] font-bold">{salesGrowth ? `${salesGrowth}%` : '100%'}</span>
           </div>
-          <div className="w-full bg-[#1e293b] rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-blue-100 dark:bg-blue-950/40 rounded-full h-2 overflow-hidden">
             <div
               className="bg-[#2563eb] h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, Math.max(15, salesGrowth || 100))}%` }}
