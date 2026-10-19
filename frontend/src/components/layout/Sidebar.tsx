@@ -127,7 +127,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
     {
       label: 'ADMINISTRATION',
       items: [
-        { name: 'Reports & Alerts', path: '/admin/reports', icon3D: 'Reports', badge: unreadAlerts > 0 ? unreadAlerts : undefined },
+        { name: 'Notifications', path: '/admin/notifications', icon3D: 'Reports', badge: unreadSalesNotifications > 0 ? unreadSalesNotifications : undefined },
+        { name: 'Reports & Alerts', path: '/admin/reports', icon3D: 'Dashboard' },
         { name: 'Settings', path: '/admin/settings', icon3D: 'Settings' },
       ],
     },

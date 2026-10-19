@@ -6,6 +6,7 @@ import { mapSalesmanRow } from '../services/salesmen';
 import { mapClientRowToCustomer } from '../services/clients';
 import { mapFollowUpRow } from '../services/followUps';
 import { mapFieldVisitRow } from '../services/visits';
+import { mapNotificationRow } from '../services/notifications';
 import {
   Salesperson,
   Customer,
@@ -60,7 +61,7 @@ export function useRealtimeSubscriptions(
   } = options;
 
   useEffect(() => {
-    if (!supabase || isDemoModeActive) return;
+    if (!supabase) return;
 
     const filterClause = effectiveOrgId ? `org_id=eq.${effectiveOrgId}` : undefined;
     const channelId = `soleflow-live-sync-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
@@ -289,16 +290,36 @@ export function useRealtimeSubscriptions(
           event: 'INSERT',
           schema: 'public',
           table: 'notifications',
-          ...(filterClause ? { filter: filterClause } : {}),
         },
         (payload) => {
+          const raw = payload.new as any;
+          if (!raw) return;
+
+          // Scope check: deliver if org matches, or if org is null/global
+          if (effectiveOrgId && raw.org_id && raw.org_id !== effectiveOrgId) {
+            return;
+          }
+          // Role check: deliver if recipient_role is 'all' or matches current user role
+          if (userRole && raw.recipient_role && raw.recipient_role !== 'all' && raw.recipient_role !== userRole) {
+            return;
+          }
+          // User check: deliver if targeted to current user or unassigned
+          if (userId && raw.user_id && raw.user_id !== userId) {
+            return;
+          }
+
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
-          if (payload.new && setNotifications) {
-            const notif = payload.new as NotificationItem;
-            setNotifications((prev) => [notif, ...prev]);
+          if (setNotifications) {
+            const notif = mapNotificationRow(raw);
+            setNotifications((prev) => {
+              if (prev.some((n) => n.id === notif.id)) return prev;
+              return [notif, ...prev];
+            });
           }
           if (onNotification) {
-            onNotification(`🔔 ${(payload.new as any)?.title || 'New Notification'}: ${(payload.new as any)?.message || ''}`);
+            const title = raw.title || 'New Notification';
+            const body = raw.body || raw.desc || raw.message || '';
+            onNotification(`🔔 ${title}${body ? `: ${body}` : ''}`);
           }
         }
       )

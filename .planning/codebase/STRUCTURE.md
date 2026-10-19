@@ -92,3 +92,4 @@ ShoeFlow-latest/
 ---
 
 *Structure analysis: 2026-10-19*
+

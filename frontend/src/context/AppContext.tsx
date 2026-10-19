@@ -99,6 +99,14 @@ interface AppContextType {
   }) => Promise<{ success: boolean; error?: string; user?: any }>;
   notifications: NotificationItem[];
   setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
+  createNotification: (input: {
+    title: string;
+    desc: string;
+    category?: NotificationItem['category'];
+    linkTab?: string;
+    recipient_role?: 'admin' | 'salesperson' | 'all';
+    user_id?: string;
+  }) => Promise<NotificationItem>;
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   followUps: FollowUpItem[];
@@ -300,6 +308,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setFollowUps(MOCK_FOLLOWUPS); setFieldVisits(MOCK_FIELD_VISITS);
       setAuditLogs(MOCK_AUDIT_LOGS); setDesignShares(MOCK_DESIGN_SHARES);
       setNotifications(MOCK_NOTIFICATIONS);
+
+      // In demo mode with configured Supabase, query live cloud records so stops and notifications sync across devices
+      if (isSupabaseActive && orgId) {
+        supabaseApi.getSalesTeam(orgId).then((data) => {
+          if (!cancelled && data && data.length > 0) {
+            setSalesTeam((prev) => getMergedSalesTeam(data.length > prev.length ? data : prev));
+          }
+        }).catch((err) => console.warn('Supabase demo load salesTeam warning:', err));
+
+        visitsService.fetchVisits({ orgId }).then((data) => {
+          if (!cancelled && data && data.length > 0) {
+            setFieldVisits((prev) => {
+              const existingIds = new Set(prev.map((p) => p.id));
+              const newItems = data.filter((d) => !existingIds.has(d.id));
+              return [...prev, ...newItems];
+            });
+          }
+        }).catch((err) => console.warn('Supabase demo load fieldVisits warning:', err));
+
+        notificationsService.fetchNotifications(orgId, auth.role, auth.user?.id).then((data) => {
+          if (!cancelled && data && data.length > 0) {
+            setNotifications(data);
+          }
+        }).catch((err) => console.warn('Supabase demo load notifications warning:', err));
+      }
       return;
     }
     if (isSupabaseActive && orgId) {
@@ -389,6 +422,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('Failed to refresh designs:', e);
     }
   };
+
+  // Listen for local and cross-component notification broadcasts
+  useEffect(() => {
+    const handleNewNotif = (e: any) => {
+      if (e.detail) {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === e.detail.id)) return prev;
+          return [e.detail, ...prev];
+        });
+      }
+    };
+    window.addEventListener('soleflow-new-notification', handleNewNotif);
+    return () => window.removeEventListener('soleflow-new-notification', handleNewNotif);
+  }, []);
 
   // Interactive Demonstration Walkthrough State
   const [isWalkthroughOpen, setIsWalkthroughOpen] = useState(false);
@@ -822,6 +869,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('Syncing dispatched stop to field_visits warning:', e);
     }
 
+    // Also dispatch notification to salesperson and sync across active sessions
+    if (typeof notificationsService?.createNotification === 'function') {
+      void notificationsService.createNotification({
+        title: `Route Stop Scheduled: ${task.title}`,
+        desc: `Dispatched stop for ${rep.name} at ${task.time || '10:00 AM'}${task.description ? ` (${task.description})` : ''}`,
+        category: 'visit',
+        linkTab: 'visits',
+        recipient_role: 'salesperson',
+        user_id: rep.id,
+        org_id: (rep as any).org_id || orgId,
+        record_type: 'visit',
+        record_id: rep.id,
+      }).then((created) => {
+        if (created) {
+          setNotifications((prev) => [created, ...prev.filter((n) => n.id !== created.id)]);
+        }
+      });
+    }
+
     invalidateData();
     return true;
   };
@@ -1032,13 +1098,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const markNotificationAsRead = async (id: string) => {
-    if (!requirePersistence() || !await notificationsService.markAsRead(id)) return;
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const createNotification = async (input: {
+    title: string;
+    desc: string;
+    category?: NotificationItem['category'];
+    linkTab?: string;
+    recipient_role?: 'admin' | 'salesperson' | 'all';
+    user_id?: string;
+  }): Promise<NotificationItem> => {
+    const created = await notificationsService.createNotification({
+      ...input,
+      org_id: orgId,
+    });
+    setNotifications((prev) => [created, ...prev.filter((n) => n.id !== created.id)]);
+    return created;
   };
+
+  const markNotificationAsRead = async (id: string) => {
+    await notificationsService.markAsRead(id);
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  };
+
   const markAllNotificationsAsRead = async () => {
-    if (!requirePersistence() || !await notificationsService.markAllAsRead()) return;
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const allIds = notifications.map((n) => n.id);
+    await notificationsService.markAllAsRead(allIds);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
   const addFollowUp = async (input: Partial<FollowUpItem>) => {
     if (!requirePersistence()) return false;
@@ -1245,6 +1329,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createTeamMemberAccount,
         notifications,
         setNotifications,
+        createNotification,
         markNotificationAsRead,
         markAllNotificationsAsRead,
         followUps,

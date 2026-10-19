@@ -41,7 +41,15 @@ vi.mock('../services/payments', () => ({ paymentsService: { recordPayment: mocks
 vi.mock('../services/designs', () => ({ designsService: { fetchDesigns: mocks.empty } }));
 vi.mock('../services/followUps', () => ({ followUpsService: { fetchFollowUps: mocks.empty, createFollowUp: mocks.createFollowUp, completeFollowUp: mocks.completeFollowUp }, mapFollowUpRow: (row: any) => row }));
 vi.mock('../services/visits', () => ({ visitsService: { fetchVisits: mocks.empty } }));
-vi.mock('../services/notifications', () => ({ notificationsService: { fetchNotifications: mocks.empty } }));
+vi.mock('../services/notifications', () => ({
+  notificationsService: {
+    fetchNotifications: mocks.empty,
+    createNotification: vi.fn().mockResolvedValue({ id: 'mock-notif-1', title: 'Mock', time: 'Just now', desc: '', category: 'alert', read: false }),
+    markAsRead: vi.fn().mockResolvedValue(true),
+    markAllAsRead: vi.fn().mockResolvedValue(true),
+  },
+  mapNotificationRow: (row: any) => row,
+}));
 let app: ReturnType<typeof useApp>;
 function Probe() { app = useApp(); return <span>{app.customers.length} customers</span>; }
 function mount() { return render(<QueryClientProvider client={new QueryClient()}><AppProvider><Probe /></AppProvider></QueryClientProvider>); }

@@ -7,22 +7,33 @@ import {
   mapPaymentStatusToReceiptStatus,
 } from '../../components/payments/ReceiptTemplate';
 import {
-  PageHeader,
-  KpiCard,
   Panel,
-  Button,
   EmptyState,
 } from '../../components/ui';
 import { NotificationKpiCards } from '../../components/notifications/NotificationKpiCards';
-import { Home, CheckCheck } from 'lucide-react';
+import { Home, CheckCheck, Send, Radio, MapPin } from 'lucide-react';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 export interface NotificationsPageProps {
   onNavigate?: (path: string) => void;
 }
 
 export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate }) => {
-  const { currentUser, notifications, payments, customers, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
+  const {
+    currentUser,
+    notifications,
+    payments,
+    customers,
+    createNotification,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    showToast,
+  } = useApp();
   const [selectedReceiptPayment, setSelectedReceiptPayment] = useState<PaymentReceipt | null>(null);
+  const [filterCategory, setFilterCategory] = useState<'all' | 'unread' | 'alert' | 'visit' | 'design' | 'payment'>('all');
+  const [isSendingTest, setIsSendingTest] = useState(false);
+
+  const isConnected = isSupabaseConfigured();
 
   const navigateTo = (path: string) => {
     if (onNavigate) {
@@ -35,15 +46,26 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
   const unreadCount = notifications.filter((n) => !n.read).length;
   const criticalCount = notifications.filter((n) => !n.read && n.category === 'alert').length;
 
+  const filteredNotifications = notifications.filter((n) => {
+    if (filterCategory === 'unread') return !n.read;
+    if (filterCategory === 'alert') return n.category === 'alert';
+    if (filterCategory === 'visit') return n.category === 'visit' || (n.title || '').toLowerCase().includes('stop');
+    if (filterCategory === 'design') return n.category === 'design' || (n.title || '').toLowerCase().includes('design');
+    if (filterCategory === 'payment') return n.category === 'payment' || (n.title || '').toLowerCase().includes('payment');
+    return true;
+  });
+
   const handleNotificationClick = (n: any) => {
     markNotificationAsRead(n.id);
+    const titleStr = (n.title || '').toLowerCase();
+    const descStr = (n.desc || '').toLowerCase();
     // If notification relates to payment, find matching payment
-    if (n.title.toLowerCase().includes('payment') || n.desc.toLowerCase().includes('payment') || n.desc.toLowerCase().includes('receipt')) {
+    if (titleStr.includes('payment') || descStr.includes('payment') || descStr.includes('receipt')) {
       const matched = payments.find(
         (p) =>
-          n.desc.includes(p.receiptNumber) ||
-          n.desc.includes(p.customerName) ||
-          (p.utrRef && n.desc.includes(p.utrRef))
+          (p.receiptNumber && descStr.includes(p.receiptNumber.toLowerCase())) ||
+          (p.customerName && descStr.includes(p.customerName.toLowerCase())) ||
+          (p.utrRef && descStr.includes(p.utrRef.toLowerCase()))
       ) || payments[0];
       if (matched) {
         setSelectedReceiptPayment(matched);
@@ -51,21 +73,46 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
     }
   };
 
+  const handleSendTestNotification = async () => {
+    try {
+      setIsSendingTest(true);
+      const testAlert = await createNotification({
+        title: `Live Sync Test: Trade Notification #${Math.floor(Math.random() * 900 + 100)}`,
+        desc: `Verified end-to-end connection between Admin and Sales portals. Dispatched at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}.`,
+        category: 'alert',
+        recipient_role: 'all',
+      });
+      showToast(`Test notification sent: "${testAlert.title}"`);
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to send test notification');
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
+
   return (
     <div className="p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6 max-w-5xl mx-auto pb-24 md:pb-12 font-sans overflow-x-hidden">
       {/* 1. Standardized Header with Breadcrumbs & Action Buttons */}
       <div className="space-y-2.5 sm:space-y-3">
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-          <button
-            type="button"
-            onClick={() => navigateTo(currentUser?.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard')}
-            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
-          >
-            <Home className="w-3.5 h-3.5 text-blue-600" />
-            <span>Dashboard</span>
-          </button>
-          <span>/</span>
-          <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">Notifications</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <button
+              type="button"
+              onClick={() => navigateTo(currentUser?.role === 'admin' ? '/admin/dashboard' : '/sales/dashboard')}
+              className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
+            >
+              <Home className="w-3.5 h-3.5 text-blue-600" />
+              <span>Dashboard</span>
+            </button>
+            <span>/</span>
+            <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">Notifications</span>
+          </div>
+
+          {/* Connection Status Pill */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>{isConnected ? 'Supabase Real-Time Connected' : 'Local Storage Mode'}</span>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -79,36 +126,72 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">
-              Real-time factory dispatch delays, overdue accounts, and payment receipts.
+              Real-time route stops dispatched by Admin, new catalogue releases, overdue collections, and orders.
             </p>
           </div>
 
-          {unreadCount > 0 && (
-            <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <button
+              type="button"
+              disabled={isSendingTest}
+              onClick={handleSendTestNotification}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800 rounded-xl shadow-2xs transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
+              title="Trigger a test alert to verify cloud and local delivery"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>{isSendingTest ? 'Sending...' : 'Test Connection'}</span>
+            </button>
+
+            {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={() => markAllNotificationsAsRead()}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs transition-colors cursor-pointer active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs transition-colors cursor-pointer active:scale-95"
               >
                 <CheckCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Mark All as Read</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 2. KPI Summary Row (Compact claymorphic cards) */}
+      {/* 2. KPI Summary Row */}
       <NotificationKpiCards
         totalCount={notifications.length}
         unreadCount={unreadCount}
         criticalCount={criticalCount}
       />
 
+      {/* Category Filter Pills */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+        {[
+          { key: 'all', label: `All (${notifications.length})` },
+          { key: 'unread', label: `Unread (${unreadCount})` },
+          { key: 'visit', label: 'Route Stops' },
+          { key: 'design', label: 'Designs' },
+          { key: 'payment', label: 'Payments' },
+          { key: 'alert', label: 'Critical Alerts' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setFilterCategory(tab.key as any)}
+            className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              filterCategory === tab.key
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* 3. Notifications List Panel */}
       <Panel
         title="All System Alerts"
-        subtitle="Click any notification to acknowledge; payment alerts open digital receipt slips"
+        subtitle="Click any notification to acknowledge; stops open route details and payment alerts open receipts"
         headerAction={
           unreadCount > 0 ? (
             <button
@@ -122,25 +205,39 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
         }
         noPadding
       >
-        {notifications.length === 0 ? (
+        {filteredNotifications.length === 0 ? (
           <EmptyState
             icon={Icons.Notifications}
             title="No Notifications"
-            description="You have no notifications or pending system alerts at this time."
+            description={
+              filterCategory === 'all'
+                ? "You have no notifications or pending system alerts at this time. Use 'Test Connection' above to trigger a test alert."
+                : `No notifications match the filter "${filterCategory}".`
+            }
           />
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {notifications.map((n) => {
+            {filteredNotifications.map((n) => {
+              const titleLower = (n.title || '').toLowerCase();
+              const descLower = (n.desc || '').toLowerCase();
+
               const isPaymentNotification =
-                n.title.toLowerCase().includes('payment') ||
-                n.desc.toLowerCase().includes('payment') ||
-                n.desc.toLowerCase().includes('receipt') ||
-                n.desc.toLowerCase().includes('cheque');
+                titleLower.includes('payment') ||
+                descLower.includes('payment') ||
+                descLower.includes('receipt') ||
+                descLower.includes('cheque') ||
+                n.category === 'payment';
 
               const isDesignNotification =
-                n.title.toLowerCase().includes('design') ||
-                n.desc.toLowerCase().includes('design') ||
+                titleLower.includes('design') ||
+                descLower.includes('design') ||
                 n.category === 'design';
+
+              const isVisitNotification =
+                titleLower.includes('route') ||
+                titleLower.includes('stop') ||
+                descLower.includes('stop') ||
+                n.category === 'visit';
 
               return (
                 <div
@@ -156,6 +253,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
                         ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
                         : isDesignNotification
                         ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400'
+                        : isVisitNotification
+                        ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400'
                         : n.category === 'alert'
                         ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
                         : n.category === 'factory'
@@ -167,6 +266,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
                       <Icons.Payments size={18} strokeWidth={1.8} />
                     ) : isDesignNotification ? (
                       <Icons.Designs size={18} strokeWidth={1.8} />
+                    ) : isVisitNotification ? (
+                      <MapPin size={18} strokeWidth={1.8} />
                     ) : n.category === 'alert' ? (
                       <Icons.Overdue size={18} strokeWidth={1.8} />
                     ) : n.category === 'factory' ? (
@@ -194,7 +295,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
                       {n.desc}
                     </p>
                     {isPaymentNotification && (
-                      <div className="mt-1.5 sm:mt-2 flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 font-semibold">
+                      <div className="mt-1.5 sm:mt-2 flex items-center gap-1 text-[11px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                         <Icons.FileText size={12} />
                         <span>View official receipt</span>
                       </div>
@@ -205,7 +306,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
                         <span>Wholesale catalog</span>
                       </div>
                     )}
-                    {(n.category === 'alert' || n.linkTab === 'orders' || n.title.toLowerCase().includes('past due') || n.desc.toLowerCase().includes('past due')) && (
+                    {isVisitNotification && (
+                      <div className="mt-1.5 sm:mt-2 flex items-center gap-1 text-[11px] sm:text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                        <MapPin size={12} />
+                        <span>Scheduled field visit</span>
+                      </div>
+                    )}
+                    {(n.category === 'alert' || n.linkTab === 'orders' || titleLower.includes('past due') || descLower.includes('past due')) && (
                       <div className="mt-2.5 flex items-center gap-2">
                         <button
                           type="button"
@@ -218,6 +325,22 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
                         >
                           <Icons.Orders size={13} />
                           <span>Resolve in Orders →</span>
+                        </button>
+                      </div>
+                    )}
+                    {isVisitNotification && (
+                      <div className="mt-2.5 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markNotificationAsRead(n.id);
+                            navigateTo(currentUser?.role === 'admin' ? '/admin/sales-team' : '/sales/visits');
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/80 transition-colors cursor-pointer"
+                        >
+                          <MapPin size={13} />
+                          <span>Open Route Stops Console →</span>
                         </button>
                       </div>
                     )}

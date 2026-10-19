@@ -440,7 +440,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
                   notifications.slice(0, 5).map((n) => (
                     <div
                       key={n.id}
-                      onClick={() => markNotificationAsRead(n.id)}
+                      onClick={() => {
+                        markNotificationAsRead(n.id);
+                        setIsNotifDropdownOpen(false);
+                        onNavigate(currentUser.role === 'admin' ? '/admin/notifications' : '/sales/notifications');
+                      }}
                       className={`p-3 rounded-xl hover:bg-muted cursor-pointer transition-colors ${
                         !n.read ? 'bg-muted/70 font-semibold' : 'opacity-80'
                       }`}
@@ -449,9 +453,12 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
                         <p title={n.title} className="text-xs font-semibold text-foreground truncate">
                           {n.title}
                         </p>
-                        {!n.read && (
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                        )}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[10px] text-muted-foreground">{n.time}</span>
+                          {!n.read && (
+                            <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 shrink-0" />
+                          )}
+                        </div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                         {n.desc}
@@ -459,6 +466,18 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
                     </div>
                   ))
                 )}
+              </div>
+              <div className="pt-2 mt-1 border-t border-border flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsNotifDropdownOpen(false);
+                    onNavigate(currentUser.role === 'admin' ? '/admin/notifications' : '/sales/notifications');
+                  }}
+                  className="w-full py-1.5 text-xs font-bold text-primary hover:underline text-center cursor-pointer"
+                >
+                  View all notifications & trade alerts →
+                </button>
               </div>
             </div>
           )}
