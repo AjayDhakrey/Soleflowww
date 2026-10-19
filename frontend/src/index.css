@@ -891,3 +891,53 @@ body {
 .card-cq {
   container-type: inline-size;
 }
+
+/* 3D Ongoing Operations Animations */
+@keyframes ongoing3dSpinSphere {
+  0% {
+    transform: rotateY(0deg) rotateX(15deg);
+  }
+  50% {
+    transform: rotateY(180deg) rotateX(-15deg);
+  }
+  100% {
+    transform: rotateY(360deg) rotateX(15deg);
+  }
+}
+
+@keyframes ongoing3dFloatGently {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+}
+
+@keyframes ongoing3dPulseRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.animate-3d-spin-slow {
+  animation: ongoing3dSpinSphere 7s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+.animate-3d-float {
+  animation: ongoing3dFloatGently 3.5s ease-in-out infinite;
+}
+
+.animate-3d-pulse-ring {
+  animation: ongoing3dPulseRing 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

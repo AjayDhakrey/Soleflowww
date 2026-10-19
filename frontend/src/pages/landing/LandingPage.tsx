@@ -50,6 +50,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { FootwearMotionStage } from './FootwearMotionStage';
+import { SoleFlowwLandingBackground } from './SoleFlowwLandingBackground';
 
 // High-fidelity image and video poster assets
 import heroVideoPosterImg from '../../assets/images/hero_video_poster.jpg';
@@ -100,10 +101,9 @@ export const HeroCinematicVideoPlayer: React.FC<{ onOpenModal?: () => void }> = 
         aria-hidden="true"
       />
 
-      {/* Video element embedded in hero showcase */}
       <video
         ref={videoRef}
-        className="w-full h-full object-cover object-center will-change-transform"
+        className="w-full h-full object-cover object-center will-change-transform transform-gpu contrast-[1.05] brightness-[1.03] saturate-[1.08] [image-rendering:_-webkit-optimize-contrast]"
         autoPlay
         muted
         loop
@@ -113,7 +113,8 @@ export const HeroCinematicVideoPlayer: React.FC<{ onOpenModal?: () => void }> = 
         preload="auto"
         poster={heroVideoPosterImg}
       >
-        <source media="(min-width: 768px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+        <source media="(min-width: 1024px)" src="/assets/videos/soleflow-hero-cinematic-4k.mp4" type="video/mp4" />
+        <source media="(min-width: 640px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
         <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
       </video>
 
@@ -410,7 +411,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Crisp subtle background grid and ambient lighting */}
       <div className="fixed inset-0 -z-10 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(219,234,254,0.7),rgba(255,255,255,0))]" />
 
-      <div className="relative z-0">
+      {/* SoleFloww Full Landing Page 3D Animated Background Layer (Hero through Footer) */}
+      <SoleFlowwLandingBackground />
+
+      <div className="relative z-10">
         {/* ========================================================================= */}
         {/* TOP FLOATING NAVBAR (FLOATS DIRECTLY OVER HERO VIDEO)                     */}
         {/* ========================================================================= */}
@@ -469,20 +473,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* ========================================================================= */}
         <section
           id="hero"
-          className="relative isolate overflow-hidden bg-slate-950 text-white min-h-screen min-h-[100dvh] w-full flex items-center pt-24 sm:pt-28 pb-16 sm:pb-24 px-3.5 sm:px-6 lg:px-8 border-b border-slate-800/80"
+          className="relative isolate overflow-hidden bg-slate-950/75 text-white min-h-screen min-h-[100dvh] w-full flex items-center pt-24 sm:pt-28 pb-16 sm:pb-24 px-3.5 sm:px-6 lg:px-8 border-b border-slate-800/80"
         >
           {/* Fallback Poster Layer */}
           <div
-            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-30 transition-opacity duration-700"
+            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-30 transition-opacity duration-700 opacity-60"
             style={{ backgroundImage: `url(${heroVideoPosterImg})` }}
             aria-hidden="true"
           />
 
-          {/* Background Video: Playing across the ENTIRE hero section background edge-to-edge */}
+          {/* Background Video: 4K Ultra-HD Master Playing across the ENTIRE hero section background edge-to-edge */}
           <div className="absolute inset-0 w-full h-full pointer-events-none -z-20 overflow-hidden">
             <video
               ref={heroVideoRef}
-              className="absolute inset-0 w-full h-full object-cover object-center lg:object-[68%_center] pointer-events-none will-change-transform opacity-95 lg:opacity-100 brightness-[1.02] contrast-[1.06]"
+              className="absolute inset-0 w-full h-full object-cover object-center lg:object-[68%_center] pointer-events-none will-change-transform transform-gpu opacity-95 lg:opacity-100 brightness-[1.03] contrast-[1.06] saturate-[1.08] [image-rendering:_-webkit-optimize-contrast]"
               autoPlay
               muted
               loop
@@ -492,7 +496,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               preload="auto"
               poster={heroVideoPosterImg}
             >
-              <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+              <source media="(min-width: 1024px)" src="/assets/videos/soleflow-hero-cinematic-4k.mp4" type="video/mp4" />
+              <source media="(min-width: 640px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
               <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
             </video>
           </div>

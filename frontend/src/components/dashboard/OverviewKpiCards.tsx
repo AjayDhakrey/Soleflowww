@@ -285,14 +285,16 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 1. SALES BOOKED (Clean White/Card with Blue Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-950/30 hover:-translate-y-1.5 transition-all duration-300 transform-gpu cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
           {/* Top Row: 3D Bar Chart + Title + Dots */}
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/10 dark:bg-blue-950/40 flex items-center justify-center shrink-0">
-                <SalesBooked3D />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/10 dark:bg-blue-950/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <div className="animate-3d-float" style={{ animationDelay: '0s' }}>
+                  <SalesBooked3D />
+                </div>
               </div>
               <div className="min-w-0">
                 <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
@@ -303,7 +305,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
+            <span className="hidden sm:inline-block text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
 
           {/* Big Metric Value */}
@@ -332,14 +334,16 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 2. COLLECTIONS (White Card with Green Progress) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections' : '/admin/payments')}
-        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-950/30 hover:-translate-y-1.5 transition-all duration-300 transform-gpu cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
           {/* Top Row: 3D Coin Stack + Title + Dots */}
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <Collections3D />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <div className="animate-3d-float" style={{ animationDelay: '0.4s' }}>
+                  <Collections3D />
+                </div>
               </div>
               <div className="min-w-0">
                 <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
@@ -350,7 +354,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
+            <span className="hidden sm:inline-block text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
 
           {/* Big Metric Value */}
@@ -379,14 +383,16 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 3. RECEIVABLES (White Card with Red Metric & Pink Track) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/collections?tab=overdue' : '/admin/customers/insights/receivables')}
-        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-xl hover:shadow-rose-500/10 dark:hover:shadow-rose-950/30 hover:-translate-y-1.5 transition-all duration-300 transform-gpu cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
           {/* Top Row: 3D POS Terminal + Title + Dots */}
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-rose-500/10 flex items-center justify-center shrink-0">
-                <Receivables3D />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-rose-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <div className="animate-3d-float" style={{ animationDelay: '0.8s' }}>
+                  <Receivables3D />
+                </div>
               </div>
               <div className="min-w-0">
                 <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
@@ -397,7 +403,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
+            <span className="hidden sm:inline-block text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
 
           {/* Big Metric Value (Vibrant Rose Red matching photo) */}
@@ -426,14 +432,16 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 4. OPEN ORDERS (White Card with Amber Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/orders')}
-        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-xl hover:shadow-amber-500/10 dark:hover:shadow-amber-950/30 hover:-translate-y-1.5 transition-all duration-300 transform-gpu cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
           {/* Top Row: 3D Box + Title + Dots */}
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0">
-                <OpenOrders3D />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <div className="animate-3d-float" style={{ animationDelay: '1.2s' }}>
+                  <OpenOrders3D />
+                </div>
               </div>
               <div className="min-w-0">
                 <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
@@ -444,7 +452,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
+            <span className="hidden sm:inline-block text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
 
           {/* Big Metric Value */}
@@ -473,14 +481,16 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 5. ACTIVE STORES (White Card with Purple Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/customers' : '/admin/customers/insights/total')}
-        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-950/30 hover:-translate-y-1.5 transition-all duration-300 transform-gpu cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
           {/* Top Row: 3D Shop + Title + Dots */}
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-purple-500/10 flex items-center justify-center shrink-0">
-                <ActiveStores3D />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-purple-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <div className="animate-3d-float" style={{ animationDelay: '1.6s' }}>
+                  <ActiveStores3D />
+                </div>
               </div>
               <div className="min-w-0">
                 <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
@@ -491,7 +501,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
+            <span className="hidden sm:inline-block text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
 
           {/* Big Metric Value */}
@@ -520,14 +530,16 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
       {/* 6. PAIRS BOOKED (White Card with Blue Accent) */}
       <div
         onClick={() => onNavigate(isSalesperson ? '/sales/orders' : '/admin/reports')}
-        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
+        className="bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-[26px] p-4 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-950/30 hover:-translate-y-1.5 transition-all duration-300 transform-gpu cursor-pointer flex flex-col justify-between text-left select-none group min-w-0 active:scale-[0.98]"
       >
         <div>
           {/* Top Row: 3D Sneaker + Title + Dots */}
           <div className="flex items-start justify-between gap-1.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                <PairsBooked3D />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <div className="animate-3d-float" style={{ animationDelay: '2.0s' }}>
+                  <PairsBooked3D />
+                </div>
               </div>
               <div className="min-w-0">
                 <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight truncate">
@@ -538,7 +550,7 @@ export const OverviewKpiCards: React.FC<OverviewKpiCardsProps> = ({
                 </p>
               </div>
             </div>
-            <span className="text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
+            <span className="hidden sm:inline-block text-slate-400 font-bold tracking-widest text-xs select-none pt-0.5">•••</span>
           </div>
 
           {/* Big Metric Value */}

@@ -43,6 +43,73 @@ const Trophy3D = () => (
   </svg>
 );
 
+// 3D Gyroscope/Orb Animation for Ongoing Operations
+const OngoingOperations3DIcon = () => (
+  <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 select-none">
+    {/* Pulsing signal halo */}
+    <div className="absolute inset-0 rounded-full bg-blue-500/20 dark:bg-blue-400/20 animate-3d-pulse-ring pointer-events-none" />
+    
+    {/* 3D Gyro Orb SVG with continuous 3D rotation */}
+    <div className="w-full h-full animate-3d-spin-slow flex items-center justify-center">
+      <svg viewBox="0 0 40 40" className="w-full h-full drop-shadow-md" fill="none">
+        <defs>
+          <radialGradient id="gyroCoreGlow" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#93C5FD" />
+            <stop offset="45%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#1E40AF" />
+          </radialGradient>
+          <linearGradient id="gyroRing1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#60A5FA" />
+            <stop offset="50%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#1D4ED8" />
+          </linearGradient>
+          <linearGradient id="gyroRing2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="100%" stopColor="#0284C7" />
+          </linearGradient>
+        </defs>
+
+        {/* Outer Orbit Ellipse Ring 1 */}
+        <ellipse
+          cx="20"
+          cy="20"
+          rx="17"
+          ry="6.5"
+          stroke="url(#gyroRing1)"
+          strokeWidth="2"
+          strokeDasharray="5 2.5"
+          transform="rotate(-28 20 20)"
+          strokeLinecap="round"
+        />
+
+        {/* Orbit Ellipse Ring 2 (Counter-angled) */}
+        <ellipse
+          cx="20"
+          cy="20"
+          rx="17"
+          ry="6.5"
+          stroke="url(#gyroRing2)"
+          strokeWidth="1.8"
+          strokeDasharray="4 3"
+          transform="rotate(35 20 20)"
+          strokeLinecap="round"
+          strokeOpacity="0.85"
+        />
+
+        {/* Central 3D Glowing Core Sphere */}
+        <circle cx="20" cy="20" r="9" fill="url(#gyroCoreGlow)" filter="drop-shadow(0 2px 5px rgba(37,99,235,0.4))" />
+        
+        {/* Specular Highlight on Core */}
+        <ellipse cx="17.5" cy="17" rx="4" ry="2.2" fill="#FFFFFF" fillOpacity="0.55" transform="rotate(-30 17.5 17)" />
+
+        {/* Orbiting Satellite Node */}
+        <circle cx="33" cy="14" r="2.5" fill="#38BDF8" filter="drop-shadow(0 0 4px #38BDF8)" />
+        <circle cx="7" cy="26" r="2" fill="#60A5FA" filter="drop-shadow(0 0 3px #60A5FA)" />
+      </svg>
+    </div>
+  </div>
+);
+
 interface AdminDashboardProps {
   onNavigate: (path: string) => void;
 }
@@ -164,9 +231,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       {/* 3. Key Business Performance (Ongoing Projects style section with View all) */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Ongoing Operations
-          </h2>
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <OngoingOperations3DIcon />
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Ongoing Operations
+              </h2>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live
+              </span>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => onNavigate('/admin/orders')}
