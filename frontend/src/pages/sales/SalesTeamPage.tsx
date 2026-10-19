@@ -109,15 +109,35 @@ export const SalesTeamPage: React.FC<SalesTeamPageProps> = ({ onNavigate }) => {
     return activeRep.tasksChecklist;
   }, [activeRep, taskFilter]);
 
+  const formatTimeSafely = (timeStr: string) => {
+    if (!timeStr) return '10:00 AM';
+    try {
+      const parts = timeStr.split(':');
+      if (parts.length >= 2) {
+        const h = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        if (!isNaN(h) && !isNaN(m)) {
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          const displayH = h % 12 || 12;
+          const displayM = m < 10 ? `0${m}` : m;
+          return `${displayH}:${displayM} ${ampm}`;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return timeStr;
+  };
+
   const handleCreateStop = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStopTitle.trim()) return;
 
     const newTask: SalespersonTask = {
       id: `task-${Date.now()}`,
-      time: new Date(`2000-01-01T${newStopTime}`).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
-      title: newStopTitle,
-      description: newStopDesc || 'Dispatched via Admin Field Console',
+      time: formatTimeSafely(newStopTime),
+      title: newStopTitle.trim(),
+      description: newStopDesc.trim() || 'Dispatched via Admin Field Console',
       verifiedGps: false,
       completed: false,
       badge: 'Scheduled Dispatched Stop',

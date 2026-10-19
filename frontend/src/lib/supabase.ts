@@ -397,13 +397,24 @@ export const supabaseApi = {
   // 8. Sales Team
   async getSalesTeam(orgId?: string): Promise<Salesperson[] | null> {
     if (!supabase) return null;
-    let query = (supabase as any).from('sales_team').select('*');
-    if (orgId) query = query.eq('org_id', orgId);
+    let query = (supabase as any).from('sales_team').select('*').is('archived_at', null).order('created_at', { ascending: false });
+    if (orgId) {
+      query = query.or(`org_id.eq.${orgId},org_id.eq.${DEFAULT_ORG_ID}`);
+    }
     const { data, error } = await query;
     if (error) {
       console.warn('Supabase getSalesTeam error:', error);
       return null;
     }
-    return data as Salesperson[];
+    if (!data) return [];
+    return data.map((row: any) => ({
+      ...row,
+      monthlyTarget: Number(row.monthlyTarget ?? row.monthly_target ?? 0),
+      bookedThisMonth: Number(row.bookedThisMonth ?? row.booked_this_month ?? 0),
+      commissionRate: Number(row.commissionRate ?? row.commission_rate ?? 0),
+      commissionAccrued: Number(row.commissionAccrued ?? row.commission_accrued ?? 0),
+      collectionDue: Number(row.collectionDue ?? row.collection_due ?? 0),
+      tasksChecklist: (row.tasksChecklist || []).filter((t: any) => t && t.id !== '__auth_meta__'),
+    })) as Salesperson[];
   },
 };

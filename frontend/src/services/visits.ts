@@ -9,10 +9,22 @@ export type FieldVisitRow = Database['public']['Tables']['field_visits']['Row'];
 export function mapFieldVisitRow(row: any): FieldVisitItem {
   let purpose = row.purpose || 'Store Visit';
   let location = row.location || '';
+  let time = row.visit_time || row.time || '';
+
+  if (purpose.includes('[Time:') && purpose.endsWith(']')) {
+    const timeIdx = purpose.lastIndexOf('[Time:');
+    time = purpose.substring(timeIdx + 6, purpose.length - 1).trim();
+    purpose = purpose.substring(0, timeIdx).trim();
+  }
+
   if (!location && purpose.includes('[') && purpose.endsWith(']')) {
     const startIdx = purpose.lastIndexOf('[');
     location = purpose.substring(startIdx + 1, purpose.length - 1);
     purpose = purpose.substring(0, startIdx).trim();
+  }
+
+  if (!time) {
+    time = row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : 'Today';
   }
 
   const custName = row.customers?.businessName || row.customerName || row.customer_name || 'Client Store';
@@ -23,11 +35,14 @@ export function mapFieldVisitRow(row: any): FieldVisitItem {
     customerId: row.client_id,
     customerName: custName,
     location: custLoc,
-    time: row.visit_time || (row.visit_date ? new Date(row.visit_date).toLocaleDateString('en-IN') : 'Today'),
+    time: time,
     purpose: purpose,
     status: (row.status === 'completed' ? 'completed' : 'today') as FieldVisitItem['status'],
     outcome: (row.outcome as FieldVisitItem['outcome']) || undefined,
     notes: row.notes || undefined,
+    salesperson_id: row.salesperson_id || undefined,
+    salesperson_name: row.salesperson_name || undefined,
+    org_id: row.org_id || undefined,
   };
 }
 
@@ -48,13 +63,17 @@ export const visitsService = {
         .select('*, customers(businessName, city, state)')
         .order('visit_date', { ascending: false });
 
-      if (filters?.orgId) query = query.eq('org_id', toValidOrgId(filters.orgId));
+      if (filters?.salespersonId && filters?.orgId) {
+        query = query.or(`salesperson_id.eq.${filters.salespersonId},org_id.eq.${toValidOrgId(filters.orgId)}`);
+      } else if (filters?.salespersonId) {
+        query = query.eq('salesperson_id', filters.salespersonId);
+      } else if (filters?.orgId) {
+        query = query.eq('org_id', toValidOrgId(filters.orgId));
+      }
+
       if (filters?.status && filters.status !== 'all') {
         const dbStatus = sanitizeVisitStatus(filters.status);
         query = query.eq('status', dbStatus);
-      }
-      if (filters?.salespersonId) {
-        query = query.eq('salesperson_id', filters.salespersonId);
       }
 
       const { data, error } = await query;
@@ -73,10 +92,33 @@ export const visitsService = {
     try {
       const rawPurpose = data.purpose || 'Store Visit';
       const rawLocation = data.location ? ` [${data.location}]` : '';
-      const finalPurpose = `${rawPurpose}${rawLocation}`;
+      const rawTime = data.time ? ` [Time: ${data.time}]` : '';
+      const finalPurpose = `${rawPurpose}${rawLocation}${rawTime}`;
+
+      const clientId = data.client_id || data.customerId;
+
+      // Ensure org_id matches the client's org_id to satisfy the Postgres database trigger
+      let resolvedOrgId = data.org_id || data.orgId;
+      if (clientId && supabase) {
+        try {
+          const { data: clientRow } = await (supabase as any)
+            .from('customers')
+            .select('org_id')
+            .eq('id', clientId)
+            .maybeSingle();
+          if (clientRow?.org_id) {
+            resolvedOrgId = clientRow.org_id;
+          }
+        } catch {
+          // fallback
+        }
+      }
+      if (!resolvedOrgId) {
+        resolvedOrgId = toValidOrgId(data.org_id || data.orgId);
+      }
 
       const payload: any = {
-        client_id: data.client_id || data.customerId,
+        client_id: clientId,
         salesperson_id: data.salesperson_id || data.salespersonId || null,
         salesperson_name: data.salesperson_name || data.salespersonName || 'Sales Rep',
         visit_date: data.visit_date || new Date().toISOString().split('T')[0],
@@ -84,6 +126,7 @@ export const visitsService = {
         outcome: data.outcome || null,
         notes: data.notes || null,
         status: sanitizeVisitStatus(data.status),
+        org_id: resolvedOrgId,
       };
 
       const updateFields: any = {
@@ -92,6 +135,8 @@ export const visitsService = {
         notes: payload.notes,
         status: payload.status,
         salesperson_name: payload.salesperson_name,
+        salesperson_id: payload.salesperson_id,
+        org_id: payload.org_id,
       };
 
       // 1. Proactively check if a visit already exists for this client today to avoid 409 Conflict

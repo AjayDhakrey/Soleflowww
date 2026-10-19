@@ -312,7 +312,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       void load(() => supabaseApi.getOrders(orgId), setOrders);
       void load(() => supabaseApi.getPayments(orgId), setPayments);
       void load(() => followUpsService.fetchFollowUps({ orgId }), setFollowUps);
-      void load(() => visitsService.fetchVisits({ orgId }), setFieldVisits);
+      void load(
+        () => visitsService.fetchVisits({
+          orgId,
+          salespersonId: auth.role === 'salesperson' ? (auth.user?.id || currentUser.id) : undefined,
+        }),
+        setFieldVisits
+      );
       void load(
         () => notificationsService.fetchNotifications(orgId),
         (data) => setNotifications(data && data.length > 0 ? data : (auth.isDemoAccount ? MOCK_NOTIFICATIONS : []))
@@ -746,10 +752,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!requirePersistence()) return;
     const rep = salesTeam.find(item => item.id === salespersonId);
     if (!rep) return;
-    const tasksChecklist = rep.tasksChecklist.map(task => task.id === taskId ? { ...task, completed: !task.completed } : task);
+    const taskToToggle = (rep.tasksChecklist || []).find(task => task.id === taskId);
+    const newCompleted = taskToToggle ? !taskToToggle.completed : true;
+    const tasksChecklist = (rep.tasksChecklist || []).map(task => task.id === taskId ? { ...task, completed: newCompleted } : task);
     const result = await salesmenService.updateSalesman(salespersonId, { tasksChecklist });
     if (!result.success) { showToast(result.error || 'Task could not be saved.'); return; }
     setSalesTeam(prev => prev.map(item => item.id === salespersonId ? { ...item, tasksChecklist } : item));
+
+    // Also sync with field_visits in Supabase
+    if (taskToToggle) {
+      const targetTitle = (taskToToggle.title || '').trim().toLowerCase();
+      const matchingVisit = fieldVisits.find(v =>
+        (v.salesperson_id === salespersonId || !v.salesperson_id) &&
+        (v.purpose?.toLowerCase().includes(targetTitle) || targetTitle.includes(v.purpose?.toLowerCase() || ''))
+      );
+      if (matchingVisit) {
+        if (newCompleted) {
+          void completeFieldVisit(matchingVisit.id, 'Interested', 'Completed from dashboard route manifest');
+        } else if (supabase) {
+          try {
+            await (supabase as any).from('field_visits').update({ status: 'planned' }).eq('id', matchingVisit.id);
+            setFieldVisits(prev => prev.map(v => v.id === matchingVisit.id ? { ...v, status: 'today' as any } : v));
+          } catch {
+            // non-blocking
+          }
+        }
+      }
+    }
+    invalidateData();
   };
 
   const addSalesTask = async (salespersonId: string, task: Salesperson['tasksChecklist'][number]) => {
@@ -760,6 +790,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const result = await salesmenService.updateSalesman(salespersonId, { tasksChecklist });
     if (!result.success) { showToast(result.error || 'Route stop could not be saved.'); return false; }
     setSalesTeam(prev => prev.map(item => item.id === salespersonId ? { ...item, tasksChecklist } : item));
+
+    // Also persist to Supabase field_visits as a planned stop so store visits portal and mobile see it immediately!
+    try {
+      const cleanTitle = (task.title || '').trim().toLowerCase();
+      const matchedCust = customers.find(c =>
+        c.businessName && (cleanTitle.includes(c.businessName.toLowerCase()) || c.businessName.toLowerCase().includes(cleanTitle))
+      ) || customers.find(c => (c as any).org_id === (rep as any).org_id) || customers[0];
+
+      if (matchedCust) {
+        const visitRes = await visitsService.createVisit({
+          customerId: matchedCust.id,
+          customerName: matchedCust.businessName,
+          salesperson_id: rep.id,
+          salesperson_name: rep.name,
+          location: `${matchedCust.city || 'Agra'}, ${matchedCust.state || 'UP'}`,
+          purpose: task.title,
+          notes: task.description || 'Dispatched via Admin Field Console',
+          time: task.time,
+          status: 'planned',
+          org_id: (matchedCust as any).org_id || (rep as any).org_id || orgId,
+          visit_date: new Date().toISOString().split('T')[0],
+        });
+
+        if (visitRes.success && visitRes.data) {
+          const savedVisit = mapFieldVisitRow(visitRes.data);
+          setFieldVisits(prev => [savedVisit, ...prev.filter(v => v.id !== savedVisit.id)]);
+        }
+      }
+    } catch (e) {
+      console.warn('Syncing dispatched stop to field_visits warning:', e);
+    }
+
     invalidateData();
     return true;
   };
@@ -1009,16 +1071,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
   const addFieldVisit = async (input: Partial<FieldVisitItem>) => {
     if (!requirePersistence()) return false;
-    const result = await visitsService.createVisit({ ...input, salesperson_id: currentUser.id, salesperson_name: currentUser.name });
+    const effectiveOrg = input.org_id || orgId || 'ff415366-0239-4fa2-b7f6-dec643136aa3';
+    const result = await visitsService.createVisit({
+      ...input,
+      salesperson_id: currentUser.id,
+      salesperson_name: currentUser.name,
+      org_id: effectiveOrg,
+    });
     if (!result.success || !result.data) { showToast(result.error || 'Visit could not be saved.'); return false; }
     const saved = { ...mapFieldVisitRow(result.data), customerName: input.customerName || '' };
-    setFieldVisits(prev => [saved, ...prev.filter(v => v.id !== saved.id)]); showToast('Visit saved.'); return true;
+    setFieldVisits(prev => [saved, ...prev.filter(v => v.id !== saved.id)]);
+
+    // Also sync into salesperson's tasksChecklist in sales_team table
+    const rep = salesTeam.find(r => r.id === currentUser.id || (currentUser.email && r.email?.toLowerCase() === currentUser.email?.toLowerCase()));
+    if (rep) {
+      const newStopTask: Salesperson['tasksChecklist'][number] = {
+        id: `task-${Date.now()}`,
+        time: input.time || new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        title: input.customerName ? `Store Visit: ${input.customerName}` : (input.purpose || 'Retail Store Visit'),
+        description: input.notes || input.purpose || 'Store visit logged via Mobile Field Console',
+        verifiedGps: true,
+        completed: true,
+        badge: 'Logged Visit',
+        badgeColor: 'green',
+        type: 'visit',
+      };
+      const updatedTasks = [...(rep.tasksChecklist || []), newStopTask];
+      void salesmenService.updateSalesman(rep.id, { tasksChecklist: updatedTasks });
+      setSalesTeam(prev => prev.map(item => item.id === rep.id ? { ...item, tasksChecklist: updatedTasks } : item));
+    }
+
+    showToast('Visit saved.');
+    invalidateData();
+    return true;
   };
+
   const completeFieldVisit = async (id: string, outcome: FieldVisitItem['outcome'] = 'Order Created', notes = '') => {
     if (!requirePersistence()) return;
     const result = await visitsService.completeVisit(id, outcome, notes);
     if (!result.success) { showToast(result.error || 'Visit could not be completed.'); return; }
+    const targetVisit = fieldVisits.find(v => v.id === id);
     setFieldVisits(prev => prev.map(v => v.id === id ? { ...v, status: 'completed', outcome, notes } : v));
+
+    // Also mark corresponding stop in sales_team.tasksChecklist as completed
+    if (targetVisit) {
+      const repId = targetVisit.salesperson_id || currentUser.id;
+      const rep = salesTeam.find(r => r.id === repId || (currentUser.email && r.email?.toLowerCase() === currentUser.email?.toLowerCase()));
+      if (rep && rep.tasksChecklist) {
+        const matchingTask = rep.tasksChecklist.find(t =>
+          (targetVisit.purpose && t.title && (targetVisit.purpose.toLowerCase().includes(t.title.toLowerCase()) || t.title.toLowerCase().includes(targetVisit.purpose.toLowerCase())))
+        );
+        if (matchingTask && !matchingTask.completed) {
+          const updatedTasks = rep.tasksChecklist.map(t => t.id === matchingTask.id ? { ...t, completed: true } : t);
+          void salesmenService.updateSalesman(rep.id, { tasksChecklist: updatedTasks });
+          setSalesTeam(prev => prev.map(item => item.id === rep.id ? { ...item, tasksChecklist: updatedTasks } : item));
+        }
+      }
+    }
+    invalidateData();
   };
   const recordPayment = async (input: Partial<PaymentReceipt>): Promise<PaymentReceipt> => {
     if (!requirePersistence()) throw new Error('Sign in to an editable account to save payments.');

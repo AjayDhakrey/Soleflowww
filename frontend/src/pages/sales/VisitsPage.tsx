@@ -14,14 +14,50 @@ import {
 import { VisitsKpiCards } from '../../components/sales/VisitsKpiCards';
 
 export const VisitsPage: React.FC = () => {
-  const { fieldVisits, customers, orders, currentUser, addFieldVisit, completeFieldVisit, showToast } = useApp();
+  const { fieldVisits, customers, orders, currentUser, salesTeam, toggleSalesTask, addFieldVisit, completeFieldVisit, showToast } = useApp();
   const [selectedCustId, setSelectedCustId] = useState(customers[0]?.id || '');
   const [purpose, setPurpose] = useState('');
   const [outcome, setOutcome] = useState<'Interested' | 'Order Created' | 'Follow-up Needed' | 'Payment Collected'>('Interested');
   const [notes, setNotes] = useState('');
   const [selectedVisit, setSelectedVisit] = useState<typeof fieldVisits[0] | null>(null);
 
-  const completedVisits = useMemo(() => fieldVisits.filter((v) => v.status === 'completed').length, [fieldVisits]);
+  const currentRep = useMemo(() => {
+    return salesTeam.find(
+      (r) =>
+        (currentUser.email && r.email && r.email.trim().toLowerCase() === currentUser.email.trim().toLowerCase()) ||
+        r.id === currentUser.id ||
+        (currentUser.name && r.name && r.name.toLowerCase().includes(currentUser.name.toLowerCase()))
+    ) || salesTeam[0];
+  }, [salesTeam, currentUser]);
+
+  const combinedVisits = useMemo(() => {
+    const list: typeof fieldVisits = [...fieldVisits];
+    const repTasks = currentRep?.tasksChecklist || [];
+    for (const task of repTasks) {
+      if (!task || task.id === '__auth_meta__') continue;
+      const cleanTaskTitle = (task.title || '').trim().toLowerCase();
+      const alreadyInList = list.some(
+        (v) => (v.purpose && (v.purpose.toLowerCase().includes(cleanTaskTitle) || cleanTaskTitle.includes(v.purpose.toLowerCase())))
+      );
+      if (!alreadyInList) {
+        list.push({
+          id: task.id,
+          customerId: customers[0]?.id || 'cust-1',
+          customerName: task.title,
+          location: currentRep?.zone || 'Agra Hub',
+          time: task.time || 'Today',
+          purpose: task.description || task.title,
+          status: task.completed ? 'completed' : 'today',
+          notes: task.badge ? `[${task.badge}] ${task.description || ''}` : task.description,
+          salesperson_id: currentRep?.id,
+          salesperson_name: currentRep?.name,
+        });
+      }
+    }
+    return list;
+  }, [fieldVisits, currentRep, customers]);
+
+  const completedVisits = useMemo(() => combinedVisits.filter((v) => v.status === 'completed').length, [combinedVisits]);
 
   // Compute real orders booked today by this salesman
   const ordersBookedAmount = useMemo(() => {
@@ -78,7 +114,7 @@ export const VisitsPage: React.FC = () => {
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
           <span>My Retail Store Visits &amp; Routes</span>
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
-            {fieldVisits.length}
+            {combinedVisits.length}
           </span>
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 mt-1 font-normal">
@@ -88,9 +124,9 @@ export const VisitsPage: React.FC = () => {
 
       {/* 2. KPI Summary Row (3D Claymorphic Redesign) */}
       <VisitsKpiCards
-        totalStopsCount={fieldVisits.length}
+        totalStopsCount={combinedVisits.length}
         completedVisitsCount={completedVisits}
-        pendingStopsCount={Math.max(0, fieldVisits.length - completedVisits)}
+        pendingStopsCount={Math.max(0, combinedVisits.length - completedVisits)}
         ordersBookedAmount={ordersBookedAmount || '₹0'}
       />
 
@@ -169,7 +205,7 @@ export const VisitsPage: React.FC = () => {
           Today's Field Route History
         </h3>
 
-        {fieldVisits.length === 0 ? (
+        {combinedVisits.length === 0 ? (
           <Panel>
             <EmptyState
               icon={Icons.Visits}
@@ -179,7 +215,7 @@ export const VisitsPage: React.FC = () => {
           </Panel>
         ) : (
           <div className="space-y-3">
-            {fieldVisits.map((v) => (
+            {combinedVisits.map((v) => (
               <Panel key={v.id}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1.5">
@@ -215,7 +251,14 @@ export const VisitsPage: React.FC = () => {
                         variant="primary"
                         size="sm"
                         icon={Icons.Check}
-                        onClick={() => completeFieldVisit(v.id, 'Interested', 'Completed on route')}
+                        onClick={() => {
+                          if (v.id.startsWith('task-') && currentRep) {
+                            toggleSalesTask(currentRep.id, v.id);
+                            showToast(`Stop "${v.customerName}" marked done.`);
+                          } else {
+                            completeFieldVisit(v.id, 'Interested', 'Completed on route');
+                          }
+                        }}
                       >
                         Mark Done
                       </Button>

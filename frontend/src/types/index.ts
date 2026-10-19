@@ -278,6 +278,9 @@ export interface FieldVisitItem {
   status: 'today' | 'upcoming' | 'completed';
   outcome?: 'Interested' | 'Order Created' | 'Follow-up Needed' | 'Payment Collected' | 'Not Interested' | 'Other';
   notes?: string;
+  salesperson_id?: string;
+  salesperson_name?: string;
+  org_id?: string;
 }
 
 export interface NotificationItem {

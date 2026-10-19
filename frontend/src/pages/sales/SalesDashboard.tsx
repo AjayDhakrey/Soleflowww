@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useDashboardOverview, DashboardPeriod } from '../../hooks/useDashboardOverview';
 import { Icons } from '../../lib/icons';
@@ -22,6 +22,8 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
     customers,
     salesTeam,
     followUps,
+    fieldVisits,
+    completeFieldVisit,
     setIsPaymentModalOpen,
     setIsCreateOrderModalOpen,
     setIsAddCustomerModalOpen,
@@ -77,6 +79,45 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
     month: 'short',
     year: 'numeric',
   });
+
+  const dashboardStops = useMemo(() => {
+    const list: any[] = [...(currentRep.tasksChecklist || []).filter((t: any) => t && t.id !== '__auth_meta__')];
+    for (const v of fieldVisits) {
+      if (v.salesperson_id === currentRep.id || !v.salesperson_id) {
+        const cleanPurpose = (v.purpose || '').trim().toLowerCase();
+        const alreadyExists = list.some(t => {
+          const cleanTitle = (t.title || '').trim().toLowerCase();
+          return cleanTitle && cleanPurpose && (cleanTitle.includes(cleanPurpose) || cleanPurpose.includes(cleanTitle));
+        });
+        if (!alreadyExists) {
+          list.push({
+            id: v.id,
+            time: v.time || 'Today',
+            title: v.customerName || v.purpose,
+            description: v.purpose,
+            completed: v.status === 'completed',
+            badge: v.status === 'completed' ? 'Completed Stop' : 'Scheduled Visit',
+            badgeColor: v.status === 'completed' ? 'emerald' : 'blue',
+            type: 'visit',
+            verifiedGps: false,
+          });
+        }
+      }
+    }
+    return list;
+  }, [currentRep.tasksChecklist, currentRep.id, fieldVisits]);
+
+  const handleToggleStop = (task: any) => {
+    if (String(task.id).startsWith('task-')) {
+      toggleSalesTask(currentRep.id, task.id);
+    } else {
+      if (!task.completed) {
+        completeFieldVisit(task.id, 'Interested', 'Completed from dashboard route manifest');
+      } else {
+        toggleSalesTask(currentRep.id, task.id);
+      }
+    }
+  };
 
   const getGreeting = () => {
     const hr = new Date().getHours();
@@ -395,7 +436,7 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
           </div>
         }
       >
-        {(currentRep.tasksChecklist || []).length === 0 ? (
+        {dashboardStops.length === 0 ? (
           <div className="p-4 rounded-xl border border-dashed border-border bg-muted/20 text-center space-y-2">
             <p className="text-xs text-muted-foreground">No route stops scheduled today</p>
             <Button
@@ -409,10 +450,10 @@ export const SalesDashboard: React.FC<SalesDashboardProps> = ({ onNavigate }) =>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {(currentRep.tasksChecklist || []).map((task: any) => (
+            {dashboardStops.map((task: any) => (
               <div
                 key={task.id}
-                onClick={() => toggleSalesTask(currentRep.id, task.id)}
+                onClick={() => handleToggleStop(task)}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                   task.completed
                     ? 'bg-muted/40 border-border opacity-60'
