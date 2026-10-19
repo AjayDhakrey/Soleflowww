@@ -478,11 +478,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             aria-hidden="true"
           />
 
-          {/* Background Video: Fully covering the hero section edge-to-edge */}
+          {/* Background Video: Playing across the ENTIRE hero section background edge-to-edge */}
           <div className="absolute inset-0 w-full h-full pointer-events-none -z-20 overflow-hidden">
             <video
               ref={heroVideoRef}
-              className="absolute inset-0 w-full h-full object-cover object-center lg:object-[70%_center] pointer-events-none will-change-transform opacity-95 lg:opacity-100 brightness-[1.02] contrast-[1.05]"
+              className="absolute inset-0 w-full h-full object-cover object-center lg:object-[68%_center] pointer-events-none will-change-transform opacity-95 lg:opacity-100 brightness-[1.02] contrast-[1.06]"
               autoPlay
               muted
               loop
@@ -492,15 +492,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               preload="auto"
               poster={heroVideoPosterImg}
             >
-              <source media="(min-width: 768px)" src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
+              <source src="/assets/videos/soleflow-hero-cinematic.mp4" type="video/mp4" />
               <source src="/assets/videos/soleflow-hero-cinematic-mobile.mp4" type="video/mp4" />
             </video>
           </div>
 
-          {/* High-visibility cinematic scrim: calibrated deep left density to keep headlines ultra-crisp while letting the shoe video shine through */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 40% via-slate-950/30 70% to-transparent -z-10 pointer-events-none" />
-          {/* Subtle top & bottom edge transition so navbar and bottom border blend seamlessly */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/80 -z-10 pointer-events-none" />
+          {/* Cinematic Scrim: deep on left to keep headlines ultra-crisp while letting the full video play visibly across the canvas */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 45% via-slate-950/25 70% to-transparent -z-10 pointer-events-none" />
+          {/* Top & bottom edge transition so navbar and bottom border blend seamlessly */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent 40% to-slate-950/80 -z-10 pointer-events-none" />
           {/* Subtle blue accent glow */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(37,99,235,0.18),transparent_60%)] -z-10 pointer-events-none" />
 
