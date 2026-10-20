@@ -48,6 +48,7 @@ interface OrderDisplayItem {
   statusType: 'in_production' | 'ready_dispatch' | 'delivered' | 'under_review';
   netPayable: string;
   balanceDueText: string;
+  salespersonName?: string;
   rawOrder?: Order;
 }
 
@@ -179,6 +180,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
           statusType: mappedStatus.statusType,
           netPayable: `₹${Number(o.netPayable || 0).toLocaleString('en-IN')}`,
           balanceDueText: Number(o.balanceDue || 0) > 0 ? `₹${Number(o.balanceDue).toLocaleString('en-IN')} Bal` : 'Cleared',
+          salespersonName: o.salespersonName || '',
           rawOrder: o,
         };
       });
@@ -194,7 +196,8 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
         ord.customerStore.toLowerCase().includes(q) ||
         ord.proprietorAndCity.toLowerCase().includes(q) ||
         ord.articles.toLowerCase().includes(q) ||
-        ord.factoryName.toLowerCase().includes(q);
+        ord.factoryName.toLowerCase().includes(q) ||
+        (ord.salespersonName ? ord.salespersonName.toLowerCase().includes(q) : false);
 
       const matchesStatus = statusFilter === 'All' || ord.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -486,6 +489,11 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                         <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                           {ord.proprietorAndCity}
                         </p>
+                        {ord.salespersonName ? (
+                          <div className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200/50 dark:border-amber-900/50">
+                            <span>Rep:</span> <strong className="font-semibold">{ord.salespersonName}</strong>
+                          </div>
+                        ) : null}
                         <p className="text-xs text-foreground/90 font-medium mt-1 truncate">
                           {ord.articles}
                         </p>
@@ -580,6 +588,13 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                               <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[200px]" title={ord.proprietorAndCity}>
                                 {ord.proprietorAndCity}
                               </div>
+                              {ord.salespersonName ? (
+                                <div className="mt-1 flex items-center gap-1">
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60 dark:border-amber-900/40">
+                                    Rep: {ord.salespersonName}
+                                  </span>
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </td>

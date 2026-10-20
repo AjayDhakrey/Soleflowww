@@ -15,6 +15,7 @@ export const CreateOrderWizardModal: React.FC = () => {
     designs,
     manufacturers,
     createOrder,
+    currentUser,
     showToast,
   } = useApp();
 
@@ -154,9 +155,14 @@ export const CreateOrderWizardModal: React.FC = () => {
       return;
     }
 
+    const repId = currentUser.role === 'salesperson' ? currentUser.id : (currentCust.salespersonId || currentUser.id);
+    const repName = currentUser.role === 'salesperson' ? currentUser.name : (currentCust.salespersonName || currentUser.name);
+
     setIsSaving(true);
     try {
       const saved = await createOrder({
+        salespersonId: repId,
+        salespersonName: repName,
         customerId: currentCust.id,
         customerName: currentCust.businessName,
         customerCity: currentCust.city,

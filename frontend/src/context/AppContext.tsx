@@ -287,6 +287,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setManufacturers([]); setSalesTeam([]); setNotifications([]); setFollowUps([]);
     setFieldVisits([]); setPayments([]); setAuditLogs([]); setDesignShares([]);
     setSelectedDesignIds([]);
+    const getMergedOrders = (baseOrders: Order[]): Order[] => {
+      try {
+        const storedOrders: Order[] = JSON.parse(localStorage.getItem('soleflow_orders') || '[]');
+        if (!storedOrders || storedOrders.length === 0) return baseOrders;
+        const existingIds = new Set(baseOrders.map((o) => o.id));
+        const additional = storedOrders.filter((o) => !existingIds.has(o.id));
+        return [...additional, ...baseOrders];
+      } catch {
+        return baseOrders;
+      }
+    };
+
     const getMergedSalesTeam = (baseTeam: Salesperson[]): Salesperson[] => {
       try {
         const storedTeam: Salesperson[] = JSON.parse(localStorage.getItem('soleflow_sales_team') || '[]');
@@ -303,7 +315,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     if (!auth.hasRealSession && auth.isDemoAccount) {
-      setCustomers(MOCK_CUSTOMERS); setDesigns(MOCK_DESIGNS); setOrders(MOCK_ORDERS);
+      setCustomers(MOCK_CUSTOMERS); setDesigns(MOCK_DESIGNS); setOrders(getMergedOrders(MOCK_ORDERS));
       setManufacturers(MOCK_MANUFACTURERS); setSalesTeam(getMergedSalesTeam(MOCK_SALES_TEAM));
       setFollowUps(MOCK_FOLLOWUPS); setFieldVisits(MOCK_FIELD_VISITS);
       setAuditLogs(MOCK_AUDIT_LOGS); setDesignShares(MOCK_DESIGN_SHARES);
@@ -767,7 +779,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Non-blocking factory assignment
       }
     }
-    setOrders(prev => [saved, ...prev.filter(o => o.id !== saved.id)]);
+    setOrders(prev => {
+      const next = [saved, ...prev.filter(o => o.id !== saved.id)];
+      try {
+        localStorage.setItem('soleflow_orders', JSON.stringify(next.slice(0, 100)));
+      } catch (e) {
+        console.warn('LocalStorage save orders error:', e);
+      }
+      return next;
+    });
+
+    if (typeof notificationsService?.createNotification === 'function') {
+      const repName = saved.salespersonName || 'Sales Representative';
+      const custName = saved.customerName || 'Retailer';
+      const pairsCount = saved.pairsCount || 0;
+      const netVal = Number(saved.netPayable || 0).toLocaleString('en-IN');
+      void notificationsService.createNotification({
+        title: 'New Order Consignment #' + saved.id,
+        desc: 'Booked by ' + repName + ' for ' + custName + ' • ' + pairsCount + ' pairs (₹' + netVal + ')',
+        category: 'alert',
+        recipient_role: 'admin',
+        record_type: 'order',
+        record_id: saved.id,
+        linkTab: 'orders',
+        org_id: orgId,
+      });
+    }
     if (saved.customerId) {
       setCustomers(prev => prev.map(c => {
         if (c.id === saved.customerId) {
